@@ -35,6 +35,7 @@ pub use pangoro_runtime::RuntimeApi as PangoroRuntimeApi;
 // std
 use std::{
 	collections::BTreeMap,
+	path::Path,
 	sync::{Arc, Mutex},
 	time::Duration,
 };
@@ -44,15 +45,19 @@ use dc_primitives::*;
 use sc_consensus::ImportQueue;
 use sc_network::NetworkBlock;
 
+/// Full client backend type.
 type FullBackend = sc_service::TFullBackend<Block>;
-type FullClient<RuntimeApi, Executor> =
-	sc_service::TFullClient<Block, RuntimeApi, sc_executor::NativeElseWasmExecutor<Executor>>;
-type ParachainBlockImport<RuntimeApi, Executor> =
-	cumulus_client_consensus_common::ParachainBlockImport<
-		Block,
-		Arc<FullClient<RuntimeApi, Executor>>,
-		FullBackend,
-	>;
+/// Frontier backend type.
+type FrontierBackend = fc_db::Backend<Block>;
+/// Full client type.
+type FullClient<RuntimeApi> =
+	sc_service::TFullClient<Block, RuntimeApi, sc_executor::WasmExecutor<HostFunctions>>;
+/// Parachain specific block import.
+type ParachainBlockImport<RuntimeApi> = cumulus_client_consensus_common::ParachainBlockImport<
+	Block,
+	Arc<FullClient<RuntimeApi>>,
+	FullBackend,
+>;
 
 /// Can be called for a `Configuration` to check if it is the specific network.
 pub trait IdentifyVariant {
@@ -96,7 +101,6 @@ pub trait RuntimeApiCollection:
 	+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 	+ fp_rpc::EthereumRuntimeRPCApi<Block>
 	+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
-	+ moonbeam_rpc_primitives_txpool::TxPoolRuntimeApi<Block>
 	+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 	+ sp_api::ApiExt<Block, StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>
 	+ sp_api::Metadata<Block>
@@ -113,7 +117,6 @@ impl<Api> RuntimeApiCollection for Api where
 		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
 		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
-		+ moonbeam_rpc_primitives_txpool::TxPoolRuntimeApi<Block>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ sp_api::ApiExt<Block, StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>
 		+ sp_api::Metadata<Block>
@@ -131,22 +134,22 @@ impl<Api> RuntimeApiCollection for Api where
 /// Use this macro if you don't actually need the full service, but just the builder in order to
 /// be able to perform chain operations.
 #[allow(clippy::type_complexity)]
-pub fn new_partial<RuntimeApi, Executor>(
+pub fn new_partial<RuntimeApi>(
 	config: &sc_service::Configuration,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> Result<
 	sc_service::PartialComponents<
-		FullClient<RuntimeApi, Executor>,
+		FullClient<RuntimeApi>,
 		FullBackend,
 		sc_consensus::LongestChain<FullBackend, Block>,
-		sc_consensus::DefaultImportQueue<Block, FullClient<RuntimeApi, Executor>>,
-		sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>,
+		sc_consensus::DefaultImportQueue<Block, FullClient<RuntimeApi>>,
+		sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi>>,
 		(
-			Arc<fc_db::Backend<Block>>,
+			fc_db::Backend<Block>,
 			Option<fc_rpc_core::types::FilterPool>,
 			fc_rpc_core::types::FeeHistoryCache,
 			fc_rpc_core::types::FeeHistoryCacheLimit,
-			ParachainBlockImport<RuntimeApi, Executor>,
+			ParachainBlockImport<RuntimeApi>,
 			Option<sc_telemetry::Telemetry>,
 			Option<sc_telemetry::TelemetryWorkerHandle>,
 		),
@@ -154,12 +157,8 @@ pub fn new_partial<RuntimeApi, Executor>(
 	sc_service::Error,
 >
 where
-	RuntimeApi: 'static
-		+ Send
-		+ Sync
-		+ sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>,
+	RuntimeApi: 'static + Send + Sync + sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>>,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
-	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
 	let telemetry = config
 		.telemetry_endpoints
@@ -212,11 +211,34 @@ where
 		&task_manager,
 	)?;
 	// Frontier stuffs.
-	let frontier_backend = Arc::new(fc_db::Backend::open(
-		Arc::clone(&client),
-		&config.database,
-		&crate::frontier_service::db_config_dir(config),
-	)?);
+	let overrides = fc_storage::overrides_handle(client.clone());
+	let db_config_dir = crate::frontier_service::db_config_dir(config);
+	let frontier_backend = match eth_rpc_config.frontier_backend_type {
+		crate::cli::FrontierBackendType::KeyValue => FrontierBackend::KeyValue(
+			fc_db::kv::Backend::open(Arc::clone(&client), &config.database, &db_config_dir)?,
+		),
+		crate::cli::FrontierBackendType::Sql => {
+			let db_path = db_config_dir.join("sql");
+			std::fs::create_dir_all(&db_path).expect("failed creating sql db directory");
+			let backend = futures::executor::block_on(fc_db::sql::Backend::new(
+				fc_db::sql::BackendConfig::Sqlite(fc_db::sql::SqliteBackendConfig {
+					path: Path::new("sqlite:///")
+						.join(db_path)
+						.join("frontier.db3")
+						.to_str()
+						.unwrap(),
+					create_if_missing: true,
+					thread_count: eth_rpc_config.frontier_sql_backend_thread_count,
+					cache_size: eth_rpc_config.frontier_sql_backend_cache_size,
+				}),
+				eth_rpc_config.frontier_sql_backend_pool_size,
+				std::num::NonZeroU32::new(eth_rpc_config.frontier_sql_backend_num_ops_timeout),
+				overrides,
+			))
+			.unwrap_or_else(|err| panic!("failed creating sql backend: {:?}", err));
+			FrontierBackend::Sql(backend)
+		},
+	};
 	let filter_pool = Some(Arc::new(Mutex::new(BTreeMap::new())));
 	let fee_history_cache = Arc::new(Mutex::new(BTreeMap::new()));
 	let fee_history_cache_limit = eth_rpc_config.fee_history_limit;
@@ -246,7 +268,7 @@ where
 /// This is the actual implementation that is abstract over the executor and the runtime api.
 #[allow(clippy::too_many_arguments)]
 #[sc_tracing::logging::prefix_logs_with("Parachain")]
-async fn start_node_impl<RuntimeApi, Executor, RB, BIC>(
+async fn start_node_impl<RuntimeApi, RB, BIC>(
 	parachain_config: sc_service::Configuration,
 	polkadot_config: sc_service::Configuration,
 	collator_options: cumulus_client_cli::CollatorOptions,
@@ -255,26 +277,20 @@ async fn start_node_impl<RuntimeApi, Executor, RB, BIC>(
 	build_consensus: BIC,
 	hwbench: Option<sc_sysinfo::HwBench>,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
-) -> sc_service::error::Result<(sc_service::TaskManager, Arc<FullClient<RuntimeApi, Executor>>)>
+) -> sc_service::error::Result<(sc_service::TaskManager, Arc<FullClient<RuntimeApi>>)>
 where
-	RuntimeApi: 'static
-		+ Send
-		+ Sync
-		+ sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>,
+	RuntimeApi: 'static + Send + Sync + sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>>,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
 	sc_client_api::StateBackendFor<FullBackend, Block>: sp_api::StateBackend<Hashing>,
-	Executor: 'static + sc_executor::NativeExecutionDispatch,
-	RB: Fn(
-		Arc<sc_service::TFullClient<Block, RuntimeApi, Executor>>,
-	) -> Result<jsonrpsee::RpcModule<()>, sc_service::Error>,
+	RB: Fn(Arc<FullClient<RuntimeApi>>) -> Result<jsonrpsee::RpcModule<()>, sc_service::Error>,
 	BIC: FnOnce(
-		Arc<FullClient<RuntimeApi, Executor>>,
-		ParachainBlockImport<RuntimeApi, Executor>,
+		Arc<FullClient<RuntimeApi>>,
+		ParachainBlockImport<RuntimeApi>,
 		Option<&substrate_prometheus_endpoint::Registry>,
 		Option<sc_telemetry::TelemetryHandle>,
 		&sc_service::TaskManager,
 		Arc<dyn cumulus_relay_chain_interface::RelayChainInterface>,
-		Arc<sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>>,
+		Arc<sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi>>>,
 		Arc<sc_network_sync::SyncingService<Block>>,
 		sp_keystore::KeystorePtr,
 		bool,
@@ -302,7 +318,7 @@ where
 				mut telemetry,
 				telemetry_worker_handle,
 			),
-	} = new_partial::<RuntimeApi, Executor>(&parachain_config, eth_rpc_config)?;
+	} = new_partial::<RuntimeApi>(&parachain_config, eth_rpc_config)?;
 
 	let (relay_chain_interface, collator_key) =
 		cumulus_client_service::build_relay_chain_interface(
@@ -394,7 +410,10 @@ where
 				network: network.clone(),
 				sync: sync_service.clone(),
 				filter_pool: filter_pool.clone(),
-				backend: frontier_backend.clone(),
+				frontier_backend: match frontier_backend.clone() {
+					fc_db::Backend::KeyValue(bd) => Arc::new(bd),
+					fc_db::Backend::Sql(bd) => Arc::new(bd),
+				},
 				max_past_logs,
 				fee_history_cache: fee_history_cache.clone(),
 				fee_history_cache_limit,
@@ -531,23 +550,16 @@ where
 }
 
 /// Build the import queue for the parachain runtime.
-pub fn parachain_build_import_queue<RuntimeApi, Executor>(
-	client: Arc<FullClient<RuntimeApi, Executor>>,
-	block_import: ParachainBlockImport<RuntimeApi, Executor>,
+pub fn parachain_build_import_queue<RuntimeApi>(
+	client: Arc<FullClient<RuntimeApi>>,
+	block_import: ParachainBlockImport<RuntimeApi>,
 	config: &sc_service::Configuration,
 	telemetry: Option<sc_telemetry::TelemetryHandle>,
 	task_manager: &sc_service::TaskManager,
-) -> Result<
-	sc_consensus::DefaultImportQueue<Block, FullClient<RuntimeApi, Executor>>,
-	sc_service::Error,
->
+) -> Result<sc_consensus::DefaultImportQueue<Block, FullClient<RuntimeApi>>, sc_service::Error>
 where
-	RuntimeApi: 'static
-		+ Send
-		+ Sync
-		+ sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>,
+	RuntimeApi: 'static + Send + Sync + sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>>,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
-	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
 	let slot_duration = cumulus_client_consensus_aura::slot_duration(&*client)?;
 
@@ -580,29 +592,22 @@ where
 }
 
 /// Start a parachain node.
-pub async fn start_parachain_node<RuntimeApi, Executor>(
+pub async fn start_parachain_node<RuntimeApi>(
 	parachain_config: sc_service::Configuration,
 	polkadot_config: sc_service::Configuration,
 	collator_options: cumulus_client_cli::CollatorOptions,
 	para_id: cumulus_primitives_core::ParaId,
 	hwbench: Option<sc_sysinfo::HwBench>,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
-) -> sc_service::error::Result<(
-	sc_service::TaskManager,
-	Arc<sc_service::TFullClient<Block, RuntimeApi, sc_executor::NativeElseWasmExecutor<Executor>>>,
-)>
+) -> sc_service::error::Result<(sc_service::TaskManager, Arc<FullClient<RuntimeApi>>)>
 where
-	RuntimeApi: sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>
-		+ Send
-		+ Sync
-		+ 'static,
+	RuntimeApi: sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>> + Send + Sync + 'static,
 	RuntimeApi::RuntimeApi:
 		RuntimeApiCollection<StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>,
 	RuntimeApi::RuntimeApi:
 		sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>,
-	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
-	start_node_impl::<RuntimeApi, Executor, _, _>(
+	start_node_impl::<RuntimeApi, _, _>(
 		parachain_config,
 		polkadot_config,
 		collator_options,
@@ -690,20 +695,16 @@ where
 
 /// Start a dev node which can seal instantly.
 /// !!! WARNING: DO NOT USE ELSEWHERE
-pub fn start_dev_node<RuntimeApi, Executor>(
+pub fn start_dev_node<RuntimeApi>(
 	mut config: sc_service::Configuration,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> Result<sc_service::TaskManager, sc_service::error::Error>
 where
-	RuntimeApi: sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>
-		+ Send
-		+ Sync
-		+ 'static,
+	RuntimeApi: sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>> + Send + Sync + 'static,
 	RuntimeApi::RuntimeApi:
 		RuntimeApiCollection<StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>,
 	RuntimeApi::RuntimeApi:
 		sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>,
-	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
 	// substrate
 	use sc_client_api::HeaderBackend;
@@ -726,7 +727,7 @@ where
 				_telemetry,
 				_telemetry_worker_handle,
 			),
-	} = new_partial::<RuntimeApi, Executor>(&config, eth_rpc_config)?;
+	} = new_partial::<RuntimeApi>(&config, eth_rpc_config)?;
 	let net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
 
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
@@ -902,7 +903,10 @@ where
 				network: network.clone(),
 				sync: sync_service.clone(),
 				filter_pool: filter_pool.clone(),
-				backend: frontier_backend.clone(),
+				frontier_backend: match frontier_backend.clone() {
+					fc_db::Backend::KeyValue(bd) => Arc::new(bd),
+					fc_db::Backend::Sql(bd) => Arc::new(bd),
+				},
 				max_past_logs,
 				fee_history_cache: fee_history_cache.clone(),
 				fee_history_cache_limit,

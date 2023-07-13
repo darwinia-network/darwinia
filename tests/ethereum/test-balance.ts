@@ -2,9 +2,9 @@ import Web3 from "web3";
 import { describe } from "mocha";
 import { step } from "mocha-steps";
 import { expect } from "chai";
-import { HOST_HTTP_URL, FAITH, FAITH_P, ETHAN, DEFAULT_GAS } from "../config";
+import { HOST_WS_URL, FAITH, FAITH_P, ETHAN, DEFAULT_GAS } from "../config";
 
-const web3 = new Web3(HOST_HTTP_URL);
+const web3 = new Web3(HOST_WS_URL);
 describe("Test balances", () => {
 	const VALUE = "0x200";
 	const GAS_PRICE = "0x12309ce54000"; // 20_000_000_000_000

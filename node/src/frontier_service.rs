@@ -24,22 +24,18 @@ use std::{path::PathBuf, sync::Arc, time::Duration};
 use futures::{future, StreamExt};
 use tokio::sync::Semaphore;
 // darwinia
-use crate::cli::{Cli, EthRpcConfig, TracingApi};
+use crate::cli::{EthRpcConfig, TracingApi};
 use dc_primitives::{BlockNumber, Hash, Hashing};
 // frontier
-use fc_db::Backend as FrontierBackend;
-use fc_mapping_sync::{
-	EthereumBlockNotification, EthereumBlockNotificationSinks, MappingSyncWorker, SyncStrategy,
-};
+use fc_mapping_sync::{EthereumBlockNotification, EthereumBlockNotificationSinks};
 use fc_rpc::{EthTask, OverrideHandle};
 use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
 //  moonbeam
 use moonbeam_rpc_debug::{DebugHandler, DebugRequester};
 use moonbeam_rpc_trace::{CacheRequester as TraceFilterCacheRequester, CacheTask};
 // substrate
-use sc_cli::SubstrateCli;
 use sc_network_sync::SyncingService;
-use sc_service::{BasePath, Configuration, TaskManager};
+use sc_service::{Configuration, TaskManager};
 
 #[derive(Clone)]
 pub struct RpcRequesters {
@@ -52,7 +48,7 @@ pub fn spawn_frontier_tasks<B, BE, C>(
 	task_manager: &TaskManager,
 	client: Arc<C>,
 	backend: Arc<BE>,
-	frontier_backend: Arc<FrontierBackend<B>>,
+	frontier_backend: fc_db::Backend<B>,
 	filter_pool: Option<FilterPool>,
 	overrides: Arc<OverrideHandle<B>>,
 	fee_history_cache: FeeHistoryCache,
@@ -77,24 +73,47 @@ where
 	BE: 'static + sc_client_api::backend::Backend<B>,
 	BE::State: sc_client_api::backend::StateBackend<Hashing>,
 {
-	task_manager.spawn_essential_handle().spawn(
-		"frontier-mapping-sync-worker",
-		Some("frontier"),
-		MappingSyncWorker::new(
-			client.import_notification_stream(),
-			Duration::new(6, 0),
-			client.clone(),
-			backend.clone(),
-			overrides.clone(),
-			frontier_backend.clone(),
-			3,
-			0,
-			SyncStrategy::Parachain,
-			sync,
-			pubsub_notification_sinks,
-		)
-		.for_each(|()| future::ready(())),
-	);
+	match frontier_backend.clone() {
+		fc_db::Backend::KeyValue(bd) => {
+			task_manager.spawn_essential_handle().spawn(
+				"frontier-mapping-sync-worker",
+				Some("frontier"),
+				fc_mapping_sync::kv::MappingSyncWorker::new(
+					client.import_notification_stream(),
+					Duration::new(6, 0),
+					client.clone(),
+					backend.clone(),
+					overrides.clone(),
+					Arc::new(bd),
+					3,
+					0,
+					fc_mapping_sync::SyncStrategy::Parachain,
+					sync,
+					pubsub_notification_sinks,
+				)
+				.for_each(|()| future::ready(())),
+			);
+		},
+		fc_db::Backend::Sql(bd) => {
+			task_manager.spawn_essential_handle().spawn_blocking(
+				"frontier-mapping-sync-worker",
+				Some("frontier"),
+				fc_mapping_sync::sql::SyncWorker::run(
+					client.clone(),
+					backend.clone(),
+					Arc::new(bd),
+					client.import_notification_stream(),
+					fc_mapping_sync::sql::SyncWorkerConfig {
+						read_notification_timeout: Duration::from_secs(10),
+						check_indexed_blocks_interval: Duration::from_secs(60),
+					},
+					fc_mapping_sync::SyncStrategy::Parachain,
+					sync,
+					pubsub_notification_sinks,
+				),
+			);
+		},
+	}
 
 	// Spawn Frontier EthFilterApi maintenance task.
 	if let Some(filter_pool) = filter_pool {
@@ -142,7 +161,10 @@ where
 				let (debug_task, debug_requester) = DebugHandler::task(
 					Arc::clone(&client),
 					Arc::clone(&backend),
-					Arc::clone(&frontier_backend),
+					match frontier_backend {
+						fc_db::Backend::KeyValue(bd) => Arc::new(bd),
+						fc_db::Backend::Sql(bd) => Arc::new(bd),
+					},
 					Arc::clone(&permit_pool),
 					Arc::clone(&overrides),
 					eth_rpc_config.tracing_raw_max_memory_usage,
@@ -179,12 +201,5 @@ where
 }
 
 pub(crate) fn db_config_dir(config: &Configuration) -> PathBuf {
-	config
-		.base_path
-		.as_ref()
-		.map(|base_path| base_path.config_dir(config.chain_spec.id()))
-		.unwrap_or_else(|| {
-			BasePath::from_project("", "", &Cli::executable_name())
-				.config_dir(config.chain_spec.id())
-		})
+	config.base_path.config_dir(config.chain_spec.id())
 }

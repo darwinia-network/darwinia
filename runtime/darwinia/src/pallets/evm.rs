@@ -19,10 +19,11 @@
 // darwinia
 use crate::*;
 // frontier
-use pallet_evm::{ExitError, Precompile};
+use pallet_evm::{ExitError, IsPrecompileResult, Precompile};
 use pallet_evm_precompile_dispatch::DispatchValidateT;
 
 const BLOCK_GAS_LIMIT: u64 = 20_000_000;
+const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
 frame_support::parameter_types! {
 	pub BlockGasLimit: sp_core::U256 = sp_core::U256::from(BLOCK_GAS_LIMIT);
 	pub PrecompilesValue: DarwiniaPrecompiles<Runtime> = DarwiniaPrecompiles::<_>::new();
@@ -30,6 +31,7 @@ frame_support::parameter_types! {
 		fp_evm::weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK),
 		0
 	);
+	pub const GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(MAX_POV_SIZE);
 }
 pub struct DarwiniaPrecompiles<R>(sp_std::marker::PhantomData<R>);
 impl<R> DarwiniaPrecompiles<R>
@@ -75,7 +77,10 @@ where
 
 		let (code_addr, context_addr) = (handle.code_address(), handle.context().address);
 		// Filter known precompile addresses except Ethereum officials
-		if self.is_precompile(code_addr) && code_addr > addr(9) && code_addr != context_addr {
+		if Self::used_addresses().contains(&code_addr)
+			&& code_addr > addr(9)
+			&& code_addr != context_addr
+		{
 			return Some(Err(precompile_utils::prelude::revert(
 				"cannot be called with DELEGATECALL or CALLCODE",
 			)));
@@ -118,8 +123,11 @@ where
 		}
 	}
 
-	fn is_precompile(&self, address: sp_core::H160) -> bool {
-		Self::used_addresses().contains(&address)
+	fn is_precompile(&self, address: sp_core::H160, _gas: u64) -> IsPrecompileResult {
+		IsPrecompileResult::Answer {
+			is_precompile: Self::used_addresses().contains(&address),
+			extra_cost: 0,
+		}
 	}
 }
 
@@ -151,6 +159,7 @@ impl pallet_evm::Config for Runtime {
 	type Currency = Balances;
 	type FeeCalculator = TransactionPaymentGasPrice;
 	type FindAuthor = DarwiniaFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
+	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = ();
 	type OnCreate = ();

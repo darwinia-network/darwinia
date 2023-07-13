@@ -2,11 +2,11 @@ import Web3 from "web3";
 import { describe } from "mocha";
 import { step } from "mocha-steps";
 import { expect } from "chai";
-import { HOST_HTTP_URL, FAITH, FAITH_P, DEFAULT_GAS } from "../config";
+import { HOST_WS_URL, FAITH, FAITH_P, DEFAULT_GAS } from "../config";
 import { opcodesInfo } from "./contracts/contracts_info";
 import { AbiItem } from "web3-utils";
 
-const web3 = new Web3(HOST_HTTP_URL);
+const web3 = new Web3(HOST_WS_URL);
 describe("Test solidity opcodes", () => {
 	web3.eth.accounts.wallet.add(FAITH_P);
 	const opcodes = new web3.eth.Contract(opcodesInfo.abi as AbiItem[]);

@@ -25,13 +25,11 @@ use cumulus_primitives_core::ParaId;
 // darwinia
 use crate::{
 	chain_spec::*,
-	cli::{Cli, RelayChainCli, Subcommand},
+	cli::{Cli, FrontierBackendType, RelayChainCli, Subcommand},
 	frontier_service,
 	service::{self, *},
 };
 use dc_primitives::Block;
-// frontier
-use fc_db::frontier_database_dir;
 // substrate
 use sc_cli::{
 	CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams, NetworkParams,
@@ -39,7 +37,7 @@ use sc_cli::{
 };
 use sc_service::{
 	config::{BasePath, PrometheusConfig},
-	ChainSpec, DatabaseSource, PartialComponents,
+	ChainSpec, DatabaseSource,
 };
 use sp_core::{
 	crypto::{self, Ss58AddressFormatRegistry},
@@ -329,10 +327,7 @@ pub fn run() -> Result<()> {
 			#[cfg(feature = "crab-native")]
 			if chain_spec.is_crab() {
 				return runner.async_run(|$config| {
-					let $components = service::new_partial::<
-						CrabRuntimeApi,
-						CrabRuntimeExecutor,
-					>(
+					let $components = service::new_partial::<CrabRuntimeApi>(
 						&$config,
 						&$cli.eth_args.build_eth_rpc_config()
 					)?;
@@ -345,10 +340,7 @@ pub fn run() -> Result<()> {
 			#[cfg(feature = "darwinia-native")]
 			if chain_spec.is_darwinia() {
 				return runner.async_run(|$config| {
-					let $components = service::new_partial::<
-						DarwiniaRuntimeApi,
-						DarwiniaRuntimeExecutor,
-					>(
+					let $components = service::new_partial::<DarwiniaRuntimeApi>(
 						&$config,
 						&$cli.eth_args.build_eth_rpc_config()
 					)?;
@@ -361,10 +353,7 @@ pub fn run() -> Result<()> {
 			#[cfg(feature = "pangolin-native")]
 			if chain_spec.is_pangolin() {
 				return runner.async_run(|$config| {
-					let $components = service::new_partial::<
-						PangolinRuntimeApi,
-						PangolinRuntimeExecutor,
-					>(
+					let $components = service::new_partial::<PangolinRuntimeApi>(
 						&$config,
 						&$cli.eth_args.build_eth_rpc_config()
 					)?;
@@ -377,10 +366,7 @@ pub fn run() -> Result<()> {
 			#[cfg(feature = "pangoro-native")]
 			if chain_spec.is_pangoro() {
 				return runner.async_run(|$config| {
-					let $components = service::new_partial::<
-						PangoroRuntimeApi,
-						PangoroRuntimeExecutor,
-					>(
+					let $components = service::new_partial::<PangoroRuntimeApi>(
 						&$config,
 						&$cli.eth_args.build_eth_rpc_config()
 					)?;
@@ -435,21 +421,47 @@ pub fn run() -> Result<()> {
 
 			set_default_ss58_version(chain_spec);
 			runner.sync_run(|config| {
-				// Remove Frontier DB.
+				// Remove Frontier off-chain db
 				let db_config_dir = frontier_service::db_config_dir(&config);
-				let frontier_database_config = match config.database {
-					DatabaseSource::RocksDb { .. } => DatabaseSource::RocksDb {
-						path: frontier_database_dir(&db_config_dir, "db"),
-						cache_size: 0,
-					},
-					DatabaseSource::ParityDb { .. } => DatabaseSource::ParityDb {
-						path: frontier_database_dir(&db_config_dir, "paritydb"),
-					},
-					_ =>
-						return Err(format!("Cannot purge `{:?}` database", config.database).into()),
+				match cli.eth_args.frontier_backend_type {
+					FrontierBackendType::KeyValue => {
+						let frontier_database_config = match config.database {
+							DatabaseSource::RocksDb { .. } => DatabaseSource::RocksDb {
+								path: fc_db::kv::frontier_database_dir(&db_config_dir, "db"),
+								cache_size: 0,
+							},
+							DatabaseSource::ParityDb { .. } => DatabaseSource::ParityDb {
+								path: fc_db::kv::frontier_database_dir(&db_config_dir, "paritydb"),
+							},
+							_ => {
+								return Err(format!(
+									"Cannot purge `{:?}` database",
+									config.database
+								)
+								.into())
+							}
+						};
+						cmd.base.run(frontier_database_config)?;
+					}
+					FrontierBackendType::Sql => {
+						let db_path = db_config_dir.join("sql");
+						match std::fs::remove_dir_all(&db_path) {
+							Ok(_) => {
+								println!("{:?} removed.", &db_path);
+							}
+							Err(ref err) if err.kind() == std::io::ErrorKind::NotFound => {
+								eprintln!("{:?} did not exist.", &db_path);
+							}
+							Err(err) => {
+								return Err(format!(
+									"Cannot purge `{:?}` database: {:?}",
+									db_path, err,
+								)
+								.into())
+							}
+						};
+					}
 				};
-
-				cmd.base.run(frontier_database_config)?;
 
 				let polkadot_cli = RelayChainCli::new(
 					&config,
@@ -486,61 +498,6 @@ pub fn run() -> Result<()> {
 				cmd.run(&*spec)
 			})
 		},
-		Some(Subcommand::FrontierDb(cmd)) => {
-			let runner = cli.create_runner(cmd)?;
-
-			runner.sync_run(|config| {
-				let chain_spec = &config.chain_spec;
-
-				set_default_ss58_version(chain_spec);
-
-				#[cfg(feature = "crab-native")]
-				if chain_spec.is_crab() {
-					let PartialComponents { client, other: (frontier_backend, ..), .. } =
-						service::new_partial::<CrabRuntimeApi, CrabRuntimeExecutor>(
-							&config,
-							&cli.eth_args.build_eth_rpc_config(),
-						)?;
-
-					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
-				}
-
-				#[cfg(feature = "darwinia-native")]
-				if chain_spec.is_darwinia() {
-					let PartialComponents { client, other: (frontier_backend, ..), .. } =
-						service::new_partial::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
-							&config,
-							&cli.eth_args.build_eth_rpc_config(),
-						)?;
-
-					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
-				}
-
-				#[cfg(feature = "pangolin-native")]
-				if chain_spec.is_pangolin() {
-					let PartialComponents { client, other: (frontier_backend, ..), .. } =
-						service::new_partial::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
-							&config,
-							&cli.eth_args.build_eth_rpc_config(),
-						)?;
-
-					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
-				}
-
-				#[cfg(feature = "pangoro-native")]
-				if chain_spec.is_pangoro() {
-					let PartialComponents { client, other: (frontier_backend, ..), .. } =
-						service::new_partial::<PangoroRuntimeApi, PangoroRuntimeExecutor>(
-							&config,
-							&cli.eth_args.build_eth_rpc_config(),
-						)?;
-
-					return cmd.run::<_, dc_primitives::Block>(client, frontier_backend);
-				}
-
-				panic!("No feature(crab-native, darwinia-native, pangolin-native, pangoro-native) is enabled!");
-			})
-		},
 		#[cfg(feature = "runtime-benchmarks")]
 		Some(Subcommand::Benchmark(cmd)) => {
 			// substrate
@@ -559,22 +516,22 @@ pub fn run() -> Result<()> {
 
 							#[cfg(feature = "crab-native")]
 							if chain_spec.is_crab() {
-								return cmd.run::<Block, CrabRuntimeExecutor>(config);
+								return cmd.run::<Block>(config);
 							}
 
 							#[cfg(feature = "darwinia-native")]
 							if chain_spec.is_darwinia() {
-								return cmd.run::<Block, DarwiniaRuntimeExecutor>(config);
+								return cmd.run::<Block>(config);
 							}
 
 							#[cfg(feature = "pangolin-native")]
 							if chain_spec.is_pangolin() {
-								return cmd.run::<Block, PangolinRuntimeExecutor>(config);
+								return cmd.run::<Block>(config);
 							}
 
 							#[cfg(feature = "pangoro-native")]
 							if chain_spec.is_pangoro() {
-								return cmd.run::<Block, PangoroRuntimeExecutor>(config);
+								return cmd.run::<Block>(config);
 							}
 
 							panic!("No feature(crab-native, darwinia-native, pangolin-native, pangoro-native) is enabled!");
@@ -706,7 +663,7 @@ pub fn run() -> Result<()> {
 				if chain_spec.is_dev() {
 					#[cfg(feature = "crab-native")]
 					if chain_spec.is_crab() {
-						return service::start_dev_node::<CrabRuntimeApi, CrabRuntimeExecutor>(
+						return service::start_dev_node::<CrabRuntimeApi>(
 							config,
 							&eth_rpc_config,
 						)
@@ -715,7 +672,7 @@ pub fn run() -> Result<()> {
 
 					#[cfg(feature = "darwinia-native")]
 					if chain_spec.is_darwinia() {
-						return service::start_dev_node::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
+						return service::start_dev_node::<DarwiniaRuntimeApi>(
 							config,
 							&eth_rpc_config,
 						)
@@ -724,7 +681,7 @@ pub fn run() -> Result<()> {
 
 					#[cfg(feature = "pangolin-native")]
 					if chain_spec.is_pangolin() {
-						return service::start_dev_node::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
+						return service::start_dev_node::<PangolinRuntimeApi>(
 							config,
 							&eth_rpc_config,
 						)
@@ -733,7 +690,7 @@ pub fn run() -> Result<()> {
 
 					#[cfg(feature = "pangoro-native")]
 					if chain_spec.is_pangoro() {
-						return service::start_dev_node::<PangoroRuntimeApi, PangoroRuntimeExecutor>(
+						return service::start_dev_node::<PangoroRuntimeApi>(
 							config,
 							&eth_rpc_config,
 						)
@@ -747,7 +704,7 @@ pub fn run() -> Result<()> {
 
 				#[cfg(feature = "crab-native")]
 				if chain_spec.is_crab() {
-					return service::start_parachain_node::<CrabRuntimeApi, CrabRuntimeExecutor>(
+					return service::start_parachain_node::<CrabRuntimeApi>(
 						config,
 						polkadot_config,
 						collator_options,
@@ -762,7 +719,7 @@ pub fn run() -> Result<()> {
 
 				#[cfg(feature = "darwinia-native")]
 				if chain_spec.is_darwinia() {
-					return service::start_parachain_node::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
+					return service::start_parachain_node::<DarwiniaRuntimeApi>(
 						config,
 						polkadot_config,
 						collator_options,
@@ -777,7 +734,7 @@ pub fn run() -> Result<()> {
 
 				#[cfg(feature = "pangolin-native")]
 				if chain_spec.is_pangolin() {
-					return service::start_parachain_node::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
+					return service::start_parachain_node::<PangolinRuntimeApi>(
 						config,
 						polkadot_config,
 						collator_options,
@@ -792,7 +749,7 @@ pub fn run() -> Result<()> {
 
 				#[cfg(feature = "pangoro-native")]
 				if chain_spec.is_pangoro() {
-					return service::start_parachain_node::<PangoroRuntimeApi, PangoroRuntimeExecutor>(
+					return service::start_parachain_node::<PangoroRuntimeApi>(
 						config,
 						polkadot_config,
 						collator_options,

@@ -49,9 +49,6 @@ pub enum Subcommand {
 	/// Export the genesis wasm of the parachain.
 	ExportGenesisWasm(cumulus_client_cli::ExportGenesisWasmCommand),
 
-	/// Db meta columns information.
-	FrontierDb(fc_cli::FrontierDbCmd),
-
 	/// Sub-commands concerned with benchmarking.
 	/// The pallet benchmarking moved to the `pallet` sub-command.
 	#[cfg(feature = "runtime-benchmarks")]
@@ -131,6 +128,16 @@ impl RelayChainCli {
 	}
 }
 
+/// Available frontier backend types.
+#[derive(Debug, Copy, Clone, Default, clap::ValueEnum)]
+pub enum FrontierBackendType {
+	/// Either RocksDb or ParityDb as per inherited from the global backend settings.
+	#[default]
+	KeyValue,
+	/// Sql database with custom log indexing.
+	Sql,
+}
+
 #[derive(Debug, clap::Parser)]
 pub struct EthArgs {
 	/// Enable EVM tracing functionalities.
@@ -172,6 +179,27 @@ pub struct EthArgs {
 	/// Maximum fee history cache size.
 	#[arg(long, default_value = "2048")]
 	pub fee_history_limit: u64,
+
+	/// Sets the frontier backend type (KeyValue or Sql)
+	#[arg(long, value_enum, ignore_case = true, default_value_t = FrontierBackendType::default())]
+	pub frontier_backend_type: FrontierBackendType,
+
+	// Sets the SQL backend's pool size.
+	#[arg(long, default_value = "100")]
+	pub frontier_sql_backend_pool_size: u32,
+
+	/// Sets the SQL backend's query timeout in number of VM ops.
+	#[arg(long, default_value = "10000000")]
+	pub frontier_sql_backend_num_ops_timeout: u32,
+
+	/// Sets the SQL backend's auxiliary thread limit.
+	#[arg(long, default_value = "4")]
+	pub frontier_sql_backend_thread_count: u32,
+
+	/// Sets the SQL backend's query timeout in number of VM ops.
+	/// Default value is 200MB.
+	#[arg(long, default_value = "209715200")]
+	pub frontier_sql_backend_cache_size: u64,
 }
 impl EthArgs {
 	pub fn build_eth_rpc_config(&self) -> EthRpcConfig {
@@ -185,6 +213,11 @@ impl EthArgs {
 			eth_log_block_cache: self.eth_log_block_cache,
 			max_past_logs: self.max_past_logs,
 			fee_history_limit: self.fee_history_limit,
+			frontier_backend_type: self.frontier_backend_type,
+			frontier_sql_backend_pool_size: self.frontier_sql_backend_pool_size,
+			frontier_sql_backend_num_ops_timeout: self.frontier_sql_backend_num_ops_timeout,
+			frontier_sql_backend_thread_count: self.frontier_sql_backend_thread_count,
+			frontier_sql_backend_cache_size: self.frontier_sql_backend_cache_size,
 		}
 	}
 }
@@ -217,4 +250,9 @@ pub struct EthRpcConfig {
 	pub eth_statuses_cache: usize,
 	pub fee_history_limit: u64,
 	pub max_past_logs: u32,
+	pub frontier_backend_type: FrontierBackendType,
+	pub frontier_sql_backend_pool_size: u32,
+	pub frontier_sql_backend_num_ops_timeout: u32,
+	pub frontier_sql_backend_thread_count: u32,
+	pub frontier_sql_backend_cache_size: u64,
 }
