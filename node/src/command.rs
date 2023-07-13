@@ -37,7 +37,7 @@ use sc_cli::{
 };
 use sc_service::{
 	config::{BasePath, PrometheusConfig},
-	ChainSpec, DatabaseSource, PartialComponents,
+	ChainSpec, DatabaseSource,
 };
 use sp_core::{
 	crypto::{self, Ss58AddressFormatRegistry},
