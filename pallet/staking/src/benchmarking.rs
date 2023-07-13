@@ -21,7 +21,7 @@ use crate::*;
 use darwinia_deposit::SimpleAsset;
 use dc_types::UNIT;
 // substrate
-use frame_benchmarking::v2::{self, Linear};
+use frame_benchmarking::v2;
 use frame_system::RawOrigin;
 use sp_std::prelude::*;
 

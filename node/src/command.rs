@@ -516,22 +516,22 @@ pub fn run() -> Result<()> {
 
 							#[cfg(feature = "crab-native")]
 							if chain_spec.is_crab() {
-								return cmd.run::<Block>(config);
+								return cmd.run::<Block, CrabRuntimeExecutor>(config);
 							}
 
 							#[cfg(feature = "darwinia-native")]
 							if chain_spec.is_darwinia() {
-								return cmd.run::<Block>(config);
+								return cmd.run::<Block, DarwiniaRuntimeExecutor>(config);
 							}
 
 							#[cfg(feature = "pangolin-native")]
 							if chain_spec.is_pangolin() {
-								return cmd.run::<Block>(config);
+								return cmd.run::<Block, PangolinRuntimeExecutor>(config);
 							}
 
 							#[cfg(feature = "pangoro-native")]
 							if chain_spec.is_pangoro() {
-								return cmd.run::<Block>(config);
+								return cmd.run::<Block, PangoroRuntimeExecutor>(config);
 							}
 
 							panic!("No feature(crab-native, darwinia-native, pangolin-native, pangoro-native) is enabled!");

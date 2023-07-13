@@ -19,7 +19,7 @@
 // darwinia
 use crate::*;
 // substrate
-use frame_benchmarking::v2::{self, Linear};
+use frame_benchmarking::v2;
 use frame_system::RawOrigin;
 use pallet_identity::{IdentityInfo, Judgement};
 use sp_std::prelude::*;

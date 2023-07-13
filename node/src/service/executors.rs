@@ -19,6 +19,18 @@
 // substrate
 use sc_executor::{NativeExecutionDispatch, NativeVersion};
 
+#[cfg(all(feature = "runtime-benchmarks", feature = "evm-tracing"))]
+pub type HostFunctions = (
+	frame_benchmarking::benchmarking::HostFunctions,
+	moonbeam_primitives_ext::moonbeam_ext::HostFunctions,
+);
+#[cfg(all(feature = "runtime-benchmarks", not(feature = "evm-tracing")))]
+pub type HostFunctions = frame_benchmarking::benchmarking::HostFunctions;
+#[cfg(all(not(feature = "runtime-benchmarks"), feature = "evm-tracing"))]
+pub type HostFunctions = moonbeam_primitives_ext::moonbeam_ext::HostFunctions;
+#[cfg(not(any(feature = "evm-tracing", feature = "runtime-benchmarks")))]
+pub type HostFunctions = ();
+
 /// Darwinia native executor instance.
 #[cfg(feature = "darwinia-native")]
 pub struct DarwiniaRuntimeExecutor;
