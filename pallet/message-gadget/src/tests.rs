@@ -139,14 +139,11 @@ fn message_root_getter_should_work() {
 			array_bytes::hex2bytes_unchecked(CONTRACT_CODE),
 			U256::zero(),
 			U256::from(300_000_000).low_u64(),
-			// TODO: not sure
 			Some(<Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0),
 			None,
 			Some(U256::from(1)),
 			vec![],
-			// TODO: not sure
 			true,
-			// TODO: not sure
 			false,
 			None,
 			None,
