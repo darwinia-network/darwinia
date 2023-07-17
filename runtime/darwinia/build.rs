@@ -16,13 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-// crates.io
-#[cfg(feature = "std")]
-use substrate_wasm_builder::WasmBuilder;
-
 #[cfg(feature = "std")]
 fn main() {
-	WasmBuilder::new().with_current_project().export_heap_base().import_memory().build()
+	substrate_wasm_builder::WasmBuilder::new()
+		.with_current_project()
+		.export_heap_base()
+		.import_memory()
+		.build()
 }
 
 #[cfg(not(feature = "std"))]

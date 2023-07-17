@@ -35,7 +35,6 @@ pub use pangoro_runtime::RuntimeApi as PangoroRuntimeApi;
 // std
 use std::{
 	collections::BTreeMap,
-	path::Path,
 	sync::{Arc, Mutex},
 	time::Duration,
 };
@@ -47,8 +46,6 @@ use sc_network::NetworkBlock;
 
 /// Full client backend type.
 type FullBackend = sc_service::TFullBackend<Block>;
-/// Frontier backend type.
-type FrontierBackend = fc_db::Backend<Block>;
 /// Full client type.
 type FullClient<RuntimeApi, Executor> =
 	sc_service::TFullClient<Block, RuntimeApi, sc_executor::NativeElseWasmExecutor<Executor>>;
@@ -216,34 +213,8 @@ where
 		&task_manager,
 	)?;
 	// Frontier stuffs.
-	let overrides = fc_storage::overrides_handle(client.clone());
-	let db_config_dir = crate::frontier_service::db_config_dir(config);
-	let frontier_backend = match eth_rpc_config.frontier_backend_type {
-		crate::cli::FrontierBackendType::KeyValue => FrontierBackend::KeyValue(
-			fc_db::kv::Backend::open(Arc::clone(&client), &config.database, &db_config_dir)?,
-		),
-		crate::cli::FrontierBackendType::Sql => {
-			let db_path = db_config_dir.join("sql");
-			std::fs::create_dir_all(&db_path).expect("failed creating sql db directory");
-			let backend = futures::executor::block_on(fc_db::sql::Backend::new(
-				fc_db::sql::BackendConfig::Sqlite(fc_db::sql::SqliteBackendConfig {
-					path: Path::new("sqlite:///")
-						.join(db_path)
-						.join("frontier.db3")
-						.to_str()
-						.unwrap(),
-					create_if_missing: true,
-					thread_count: eth_rpc_config.frontier_sql_backend_thread_count,
-					cache_size: eth_rpc_config.frontier_sql_backend_cache_size,
-				}),
-				eth_rpc_config.frontier_sql_backend_pool_size,
-				std::num::NonZeroU32::new(eth_rpc_config.frontier_sql_backend_num_ops_timeout),
-				overrides,
-			))
-			.unwrap_or_else(|err| panic!("failed creating sql backend: {:?}", err));
-			FrontierBackend::Sql(backend)
-		},
-	};
+	let frontier_backend =
+		crate::frontier_service::frontier_backend(client.clone(), config, eth_rpc_config.clone())?;
 	let filter_pool = Some(Arc::new(Mutex::new(BTreeMap::new())));
 	let fee_history_cache = Arc::new(Mutex::new(BTreeMap::new()));
 	let fee_history_cache_limit = eth_rpc_config.fee_history_limit;

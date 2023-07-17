@@ -43,10 +43,9 @@ describe("Test EVM tracing", () => {
 
 	step("RPC debug_traceTransaction should work", async function () {
 		let trace_result = await customRequest(web3, "debug_traceTransaction", [transact_hash]);
-
-		expect(trace_result.result.stepLogs.length).to.be.equal(198);
-		expect(trace_result.result.stepLogs[0].depth).to.be.equal(1);
-		expect(trace_result.result.stepLogs[0].pc).to.be.equal(0);
+		expect(trace_result.result.structLogs.length).to.be.equal(198);
+		expect(trace_result.result.structLogs[0].depth).to.be.equal(1);
+		expect(trace_result.result.structLogs[0].pc).to.be.equal(0);
 	}).timeout(60000);
 
 	step("RPC debug_traceBlockByNumber should work", async function () {

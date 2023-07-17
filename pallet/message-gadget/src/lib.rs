@@ -95,7 +95,6 @@ where
 			Vec::new(),
 			false,
 			false,
-			// TODO: FIX ME
 			None,
 			None,
 			<T as pallet_evm::Config>::config(),
