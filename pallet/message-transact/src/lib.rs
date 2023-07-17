@@ -148,6 +148,16 @@ pub mod pallet {
 			};
 
 			let transaction_data: TransactionData = (&*transaction).into();
+			let (weight_limit, proof_size_base_cost) =
+				match <T as pallet_evm::Config>::GasWeightMapping::gas_to_weight(
+					transaction_data.gas_limit.unique_saturated_into(),
+					true,
+				) {
+					weight_limit if weight_limit.proof_size() > 0 =>
+						(Some(weight_limit), Some(proof_size_base_cost(&transaction))),
+					_ => (None, None),
+				};
+
 			let _ = CheckEvmTransaction::<EvmTxErrorWrapper>::new(
 				CheckEvmTransactionConfig {
 					evm_config: T::config(),
@@ -157,9 +167,8 @@ pub mod pallet {
 					is_transactional: true,
 				},
 				transaction_data.into(),
-				// TODO: FIX ME
-				None,
-				None,
+				weight_limit,
+				proof_size_base_cost,
 			)
 			.validate_in_block_for(&who)
 			.and_then(|v| v.with_chain_id())
@@ -212,4 +221,15 @@ pub fn total_payment<T: pallet_evm::Config>(tx_data: TransactionData) -> U256 {
 	let fee = base_fee.saturating_mul(tx_data.gas_limit);
 
 	tx_data.value.saturating_add(fee)
+}
+
+// TODO: Reuse the frontier implementation
+fn proof_size_base_cost(transaction: &Transaction) -> u64 {
+	transaction
+		.encode()
+		.len()
+		// pallet index
+		.saturating_add(1)
+		// call index
+		.saturating_add(1) as u64
 }
