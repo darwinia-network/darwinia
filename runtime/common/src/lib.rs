@@ -100,7 +100,7 @@ impl WeightToFeePolynomial for ProofSizeToFee {
 	type Balance = Balance;
 
 	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-		// Map 1MB proof to 1 UNIT.
+		// Map 10MB proof to 1 UNIT.
 		let p = UNIT;
 		let q = 10_000_000;
 
