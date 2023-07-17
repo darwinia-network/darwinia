@@ -215,13 +215,13 @@ pub(crate) fn frontier_backend<B, BE, C>(
 	eth_rpc_config: EthRpcConfig,
 ) -> Result<fc_db::Backend<B>, String>
 where
+	B: 'static + sp_runtime::traits::Block<Hash = Hash>,
+	BE: 'static + sc_client_api::backend::Backend<B>,
 	C: 'static
 		+ sp_api::ProvideRuntimeApi<B>
 		+ sp_blockchain::HeaderBackend<B>
 		+ sc_client_api::backend::StorageProvider<B, BE>,
 	C::Api: fp_rpc::EthereumRuntimeRPCApi<B>,
-	B: 'static + sp_runtime::traits::Block<Hash = Hash>,
-	BE: 'static + sc_client_api::backend::Backend<B>,
 {
 	let db_config_dir = db_config_dir(config);
 	let overrides = fc_storage::overrides_handle(client.clone());
