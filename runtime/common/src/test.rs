@@ -639,7 +639,7 @@ macro_rules! impl_fee_tests {
 						sim(Perbill::from_percent(100), 1),
 						U256::from(165_00_690_541_159u128),
 					);
-		
+
 					// 1 "real" hour (at 12-second blocks)
 					assert_eq!(
 						sim(Perbill::from_percent(0), 300),
@@ -657,7 +657,7 @@ macro_rules! impl_fee_tests {
 						sim(Perbill::from_percent(100), 300),
 						U256::from(16_781_502_380_018u128),
 					);
-		
+
 					// 1 "real" day (at 12-second blocks)
 					assert_eq!(
 						sim(Perbill::from_percent(0), 7200),
@@ -675,7 +675,7 @@ macro_rules! impl_fee_tests {
 						sim(Perbill::from_percent(100), 7200),
 						U256::from(25_160_548_467_697u128),
 					);
-		
+
 					// 7 "real" day (at 12-second blocks)
 					assert_eq!(
 						sim(Perbill::from_percent(0), 50400),
