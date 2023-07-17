@@ -306,74 +306,73 @@ macro_rules! impl_account_migration_tests {
 				});
 			}
 
-			// TODO: FIX ME
-			// #[test]
-			// fn staking_should_work() {
-			// 	let (from, from_pk) = alice();
-			// 	let init = H160::from_low_u64_be(254).into();
-			// 	let to = H160::from_low_u64_be(255).into();
+			#[test]
+			fn staking_should_work() {
+				let (from, from_pk) = alice();
+				let init = H160::from_low_u64_be(254).into();
+				let to = H160::from_low_u64_be(255).into();
 
-			// 	ExtBuilder::default()
-			// 		.with_assets_accounts(vec![(KTON_ID, init, KTON_AMOUNT)])
-			// 		.build()
-			// 		.execute_with(|| {
-			// 			preset_state_of(&from);
+				ExtBuilder::default()
+					.with_assets_accounts(vec![(KTON_ID, init, KTON_AMOUNT)])
+					.build()
+					.execute_with(|| {
+						preset_state_of(&from);
 
-			// 			<darwinia_account_migration::Deposits<Runtime>>::insert(
-			// 				&from_pk,
-			// 				vec![
-			// 					DepositS {
-			// 						id: 1,
-			// 						value: 10,
-			// 						start_time: 1000,
-			// 						expired_time: 2000,
-			// 						in_use: true,
-			// 					},
-			// 					DepositS {
-			// 						id: 2,
-			// 						value: 10,
-			// 						start_time: 1000,
-			// 						expired_time: 2000,
-			// 						in_use: true,
-			// 					},
-			// 				],
-			// 			);
-			// 			<darwinia_account_migration::Ledgers<Runtime>>::insert(
-			// 				&from_pk,
-			// 				Ledger {
-			// 					staked_ring: 20,
-			// 					staked_kton: 20,
-			// 					staked_deposits: Default::default(),
-			// 					unstaking_ring: Default::default(),
-			// 					unstaking_kton: Default::default(),
-			// 					unstaking_deposits: Default::default(),
-			// 				},
-			// 			);
+						<darwinia_account_migration::Deposits<Runtime>>::insert(
+							&from_pk,
+							vec![
+								DepositS {
+									id: 1,
+									value: 10,
+									start_time: 1000,
+									expired_time: 2000,
+									in_use: true,
+								},
+								DepositS {
+									id: 2,
+									value: 10,
+									start_time: 1000,
+									expired_time: 2000,
+									in_use: true,
+								},
+							],
+						);
+						<darwinia_account_migration::Ledgers<Runtime>>::insert(
+							&from_pk,
+							Ledger {
+								staked_ring: 20,
+								staked_kton: 20,
+								staked_deposits: Default::default(),
+								unstaking_ring: Default::default(),
+								unstaking_kton: Default::default(),
+								unstaking_deposits: Default::default(),
+							},
+						);
 
-			// 			assert_ok!(migrate(from, to));
-			// 			assert_eq!(Balances::free_balance(to), 60);
-			// 			assert_eq!(
-			// 				Balances::free_balance(&darwinia_deposit::account_id::<AccountId>()),
-			// 				20
-			// 			);
-			// 			assert_eq!(
-			// 				Balances::free_balance(&darwinia_staking::account_id::<AccountId>()),
-			// 				20
-			// 			);
-			// 			assert_eq!(Deposit::deposit_of(to).unwrap().len(), 2);
-			// 			assert_eq!(Assets::maybe_balance(KTON_ID, to).unwrap(), 80);
-			// 			assert_eq!(
-			// 				Assets::maybe_balance(
-			// 					KTON_ID,
-			// 					darwinia_staking::account_id::<AccountId>()
-			// 				)
-			// 				.unwrap(),
-			// 				20
-			// 			);
-			// 			assert_eq!(DarwiniaStaking::ledger_of(to).unwrap().staked_ring, 20);
-			// 			assert_eq!(DarwiniaStaking::ledger_of(to).unwrap().staked_kton, 20);
-			// 		});
-			// }
+						assert_ok!(migrate(from, to));
+						assert_eq!(Balances::free_balance(to), 60);
+						assert_eq!(
+							Balances::free_balance(&darwinia_deposit::account_id::<AccountId>()),
+							20
+						);
+						assert_eq!(
+							Balances::free_balance(&darwinia_staking::account_id::<AccountId>()),
+							20
+						);
+						assert_eq!(Deposit::deposit_of(to).unwrap().len(), 2);
+						assert_eq!(Assets::maybe_balance(KTON_ID, to).unwrap(), 80);
+						assert_eq!(
+							Assets::maybe_balance(
+								KTON_ID,
+								darwinia_staking::account_id::<AccountId>()
+							)
+							.unwrap(),
+							20
+						);
+						assert_eq!(DarwiniaStaking::ledger_of(to).unwrap().staked_ring, 20);
+						assert_eq!(DarwiniaStaking::ledger_of(to).unwrap().staked_kton, 20);
+					});
+			}
 
 			#[test]
 			fn identities_should_work() {
