@@ -19,7 +19,7 @@
 // crates.io
 use codec::{Decode, Encode, MaxEncodedLen};
 // frontier
-use fp_evm::{Precompile, PrecompileSet};
+use fp_evm::{IsPrecompileResult, Precompile, PrecompileSet};
 // parity
 use sp_core::{H160, H256, U256};
 use sp_std::{marker::PhantomData, prelude::*};
@@ -91,6 +91,10 @@ impl pallet_balances::Config for TestRuntime {
 	type Balance = Balance;
 	type DustRemoval = ();
 	type ExistentialDeposit = frame_support::traits::ConstU128<0>;
+	type FreezeIdentifier = ();
+	type HoldIdentifier = ();
+	type MaxFreezes = ();
+	type MaxHolds = ();
 	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
@@ -131,8 +135,11 @@ where
 		}
 	}
 
-	fn is_precompile(&self, address: H160) -> bool {
-		Self::used_addresses().contains(&address)
+	fn is_precompile(&self, address: H160, _gas: u64) -> IsPrecompileResult {
+		IsPrecompileResult::Answer {
+			is_precompile: Self::used_addresses().contains(&address),
+			extra_cost: 0,
+		}
 	}
 }
 fn addr(a: u64) -> H160 {
@@ -161,6 +168,7 @@ impl pallet_evm::Config for TestRuntime {
 	type Currency = Balances;
 	type FeeCalculator = ();
 	type FindAuthor = ();
+	type GasLimitPovSizeRatio = ();
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = ();
 	type OnCreate = ();

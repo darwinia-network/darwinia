@@ -1,11 +1,11 @@
 import Web3 from "web3";
 import { describe } from "mocha";
 import { expect } from "chai";
-import { HOST_HTTP_URL, FAITH, FAITH_P, BLOCK_GAS_LIMIT } from "../config";
+import { HOST_WS_URL, FAITH, FAITH_P, BLOCK_GAS_LIMIT } from "../config";
 import { AbiItem, hexToBytes } from "web3-utils";
 import { blsInfo } from "./contracts/contracts_info";
 
-const web3 = new Web3(HOST_HTTP_URL);
+const web3 = new Web3(HOST_WS_URL);
 const pub_keys = [
 	"0xb4bf4717ad2d3fce3a11a84dee1b38469be9e783b298b200cc533be97e474bf94d6c7c591d3102992f908820bc63ac72",
 	"0x969b4bcd84cabd5ba5f31705de51e2c4096402f832fdf543d88eb41ebb55f03a8715c1ceea92335d24febbea17a3bdd7",

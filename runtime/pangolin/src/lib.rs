@@ -257,6 +257,14 @@ sp_api::impl_runtime_apis! {
 		fn metadata() -> sp_core::OpaqueMetadata {
 			sp_core::OpaqueMetadata::new(Runtime::metadata().into())
 		}
+
+		fn metadata_at_version(version: u32) -> Option<sp_core::OpaqueMetadata> {
+			Runtime::metadata_at_version(version)
+		}
+
+		fn metadata_versions() -> sp_std::vec::Vec<u32> {
+			Runtime::metadata_versions()
+		}
 	}
 
 	impl sp_block_builder::BlockBuilder<Block> for Runtime {
@@ -441,6 +449,9 @@ sp_api::impl_runtime_apis! {
 				access_list.unwrap_or_default(),
 				is_transactional,
 				validate,
+				// TODO: FIX ME https://github.com/paritytech/frontier/pull/1101
+				None,
+				None,
 				evm_config,
 			).map_err(|err| err.error.into())
 		}
@@ -484,6 +495,9 @@ sp_api::impl_runtime_apis! {
 				access_list.unwrap_or_default(),
 				is_transactional,
 				validate,
+				// TODO: FIX ME https://github.com/paritytech/frontier/pull/1101
+				None,
+				None,
 				evm_config,
 			).map_err(|err| err.error.into())
 		}
@@ -529,6 +543,24 @@ sp_api::impl_runtime_apis! {
 
 		fn gas_limit_multiplier_support() {
 		}
+
+		fn pending_block(
+			xts: Vec<<Block as sp_runtime::traits::Block>::Extrinsic>,
+		) -> (Option<pallet_ethereum::Block>, Option<Vec<fp_rpc::TransactionStatus>>) {
+			// substrate
+			use frame_support::traits::OnFinalize;
+
+			for ext in xts.into_iter() {
+				let _ = Executive::apply_extrinsic(ext);
+			}
+
+			Ethereum::on_finalize(System::block_number() + 1);
+
+			(
+				pallet_ethereum::CurrentBlock::<Runtime>::get(),
+				pallet_ethereum::CurrentTransactionStatuses::<Runtime>::get()
+			)
+		}
 	}
 
 	impl fp_rpc::ConvertTransactionRuntimeApi<Block> for Runtime {
@@ -538,33 +570,6 @@ sp_api::impl_runtime_apis! {
 			UncheckedExtrinsic::new_unsigned(
 				pallet_ethereum::Call::<Runtime>::transact { transaction }.into(),
 			)
-		}
-	}
-
-	impl moonbeam_rpc_primitives_txpool::TxPoolRuntimeApi<Block> for Runtime {
-		fn extrinsic_filter(
-			xts_ready: Vec<<Block as sp_runtime::traits::Block>::Extrinsic>,
-			xts_future: Vec<<Block as sp_runtime::traits::Block>::Extrinsic>,
-		) -> moonbeam_rpc_primitives_txpool::TxPoolResponse {
-			// frontier
-			use pallet_ethereum::Call::transact;
-
-			moonbeam_rpc_primitives_txpool::TxPoolResponse {
-				ready: xts_ready
-					.into_iter()
-					.filter_map(|xt| match xt.0.function {
-						RuntimeCall::Ethereum(transact { transaction }) => Some(transaction),
-						_ => None,
-					})
-					.collect(),
-				future: xts_future
-					.into_iter()
-					.filter_map(|xt| match xt.0.function {
-						RuntimeCall::Ethereum(transact { transaction }) => Some(transaction),
-						_ => None,
-					})
-					.collect(),
-			}
 		}
 	}
 

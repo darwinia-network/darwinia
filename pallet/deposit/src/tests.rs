@@ -24,6 +24,7 @@ use crate::{
 use darwinia_staking_traits::Stake;
 // substrate
 use frame_support::{assert_noop, assert_ok};
+use sp_runtime::TokenError;
 
 #[test]
 fn lock_should_work() {
@@ -262,7 +263,7 @@ fn lock_should_fail() {
 
 		assert_noop!(
 			Deposit::lock(RuntimeOrigin::signed(2), 2_001 * UNIT, 1),
-			<pallet_balances::Error<Runtime>>::InsufficientBalance
+			TokenError::FundsUnavailable
 		);
 	});
 }

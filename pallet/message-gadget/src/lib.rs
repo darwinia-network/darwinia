@@ -62,7 +62,7 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::call_index(0)]
-		#[pallet::weight(0)]
+		#[pallet::weight({0})]
 		pub fn set_commitment_contract(
 			origin: OriginFor<T>,
 			commitment_contract: H160,
@@ -95,6 +95,8 @@ where
 			Vec::new(),
 			false,
 			false,
+			None,
+			None,
 			<T as pallet_evm::Config>::config(),
 		) {
 			let raw_message_root = info.value;

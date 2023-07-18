@@ -2,11 +2,11 @@ import Web3 from "web3";
 import { describe } from "mocha";
 import { step } from "mocha-steps";
 import { expect } from "chai";
-import { HOST_HTTP_URL, FAITH, FAITH_P, DEFAULT_GAS, customRequest } from "../config";
+import { HOST_WS_URL, FAITH, FAITH_P, DEFAULT_GAS, customRequest } from "../config";
 import { incrementerInfo } from "./contracts/contracts_info";
 import { AbiItem } from "web3-utils";
 
-const web3 = new Web3(HOST_HTTP_URL);
+const web3 = new Web3(HOST_WS_URL);
 describe("Test EVM tracing", () => {
 	web3.eth.accounts.wallet.add(FAITH_P);
 	const inc = new web3.eth.Contract(incrementerInfo.abi as AbiItem[]);
@@ -43,10 +43,9 @@ describe("Test EVM tracing", () => {
 
 	step("RPC debug_traceTransaction should work", async function () {
 		let trace_result = await customRequest(web3, "debug_traceTransaction", [transact_hash]);
-
-		expect(trace_result.result.stepLogs.length).to.be.equal(198);
-		expect(trace_result.result.stepLogs[0].depth).to.be.equal(1);
-		expect(trace_result.result.stepLogs[0].pc).to.be.equal(0);
+		expect(trace_result.result.structLogs.length).to.be.equal(198);
+		expect(trace_result.result.structLogs[0].depth).to.be.equal(1);
+		expect(trace_result.result.structLogs[0].pc).to.be.equal(0);
 	}).timeout(60000);
 
 	step("RPC debug_traceBlockByNumber should work", async function () {

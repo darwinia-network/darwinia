@@ -7,7 +7,8 @@ readme            = "README.md"
 version.workspace = true
 
 [build-dependencies]
-substrate-wasm-builder = { workspace = true }
+# substrate optional
+substrate-wasm-builder = { workspace = true, optional = true }
 
 [dependencies]
 # crates.io
@@ -31,13 +32,13 @@ parachain-info                  = { workspace = true }
 cumulus-pallet-session-benchmarking = { workspace = true, optional = true }
 
 # darwinia
-darwinia-account-migration = { workspace = true }
-darwinia-common-runtime    = { workspace = true }
-darwinia-deposit           = { workspace = true }
-darwinia-ecdsa-authority   = { workspace = true }
-darwinia-message-gadget    = { workspace = true }
-darwinia-message-transact  = { workspace = true }
-darwinia-precompile-assets = { workspace = true }
+darwinia-account-migration        = { workspace = true }
+darwinia-common-runtime           = { workspace = true }
+darwinia-deposit                  = { workspace = true }
+darwinia-ecdsa-authority          = { workspace = true }
+darwinia-message-gadget           = { workspace = true }
+darwinia-message-transact         = { workspace = true }
+darwinia-precompile-assets        = { workspace = true }
 darwinia-precompile-bls12-381     = { workspace = true }
 darwinia-precompile-deposit       = { workspace = true }
 darwinia-precompile-staking       = { workspace = true }
@@ -70,12 +71,11 @@ pallet-evm-precompile-modexp   = { workspace = true }
 pallet-evm-precompile-simple   = { workspace = true }
 
 # moonbeam
-moonbeam-evm-tracer            = { workspace = true, optional = true }
-moonbeam-rpc-primitives-debug  = { workspace = true }
-moonbeam-rpc-primitives-txpool = { workspace = true }
-pallet-ethereum-xcm            = { workspace = true }
-precompile-utils               = { workspace = true }
-xcm-primitives                 = { workspace = true }
+moonbeam-evm-tracer           = { workspace = true, optional = true }
+moonbeam-rpc-primitives-debug = { workspace = true }
+pallet-ethereum-xcm           = { workspace = true }
+precompile-utils              = { workspace = true }
+xcm-primitives                = { workspace = true }
 
 # polkadot
 pallet-xcm              = { workspace = true }
@@ -166,8 +166,8 @@ std = [
 	"darwinia-message-transact/std",
 	"darwinia-precompile-assets/std",
 	"darwinia-precompile-bls12-381/std",
-	"darwinia-precompile-staking/std",
 	"darwinia-precompile-deposit/std",
+	"darwinia-precompile-staking/std",
 	"darwinia-precompile-state-storage/std",
 	"darwinia-staking/std",
 	"dc-primitives/std",
@@ -175,8 +175,8 @@ std = [
 	# darwinia-messages-substrate
 	"bp-message-dispatch/std",
 	"bp-messages/std",
-	"bp-runtime/std",
 	"bp-polkadot-core/std",
+	"bp-runtime/std",
 	"bridge-runtime-common/std",
 	"pallet-bridge-dispatch/std",
 	"pallet-bridge-grandpa/std",
@@ -189,17 +189,16 @@ std = [
 	"fp-rpc/std",
 	"fp-self-contained/std",
 	"pallet-ethereum/std",
-	"pallet-evm/std",
 	"pallet-evm-precompile-blake2/std",
 	"pallet-evm-precompile-bn128/std",
 	"pallet-evm-precompile-dispatch/std",
 	"pallet-evm-precompile-modexp/std",
 	"pallet-evm-precompile-simple/std",
+	"pallet-evm/std",
 
 	# moonbeam
 	"moonbeam-evm-tracer/std",
 	"moonbeam-rpc-primitives-debug/std",
-	"moonbeam-rpc-primitives-txpool/std",
 	"pallet-ethereum-xcm/std",
 	"precompile-utils/std",
 	"xcm-primitives/std",
@@ -208,15 +207,15 @@ std = [
 	"pallet-xcm/std",
 	"polkadot-parachain/std",
 	"polkadot-runtime-common/std",
-	"xcm/std",
 	"xcm-builder/std",
 	"xcm-executor/std",
+	"xcm/std",
 
 	# substrate
 	"frame-executive/std",
 	"frame-support/std",
-	"frame-system/std",
 	"frame-system-rpc-runtime-api/std",
+	"frame-system/std",
 	"pallet-assets/std",
 	"pallet-aura/std",
 	"pallet-authorship/std",
@@ -224,8 +223,8 @@ std = [
 	"pallet-collective/std",
 	"pallet-democracy/std",
 	"pallet-elections-phragmen/std",
-	"pallet-membership/std",
 	"pallet-identity/std",
+	"pallet-membership/std",
 	"pallet-preimage/std",
 	"pallet-proxy/std",
 	"pallet-scheduler/std",
@@ -252,11 +251,12 @@ std = [
 	"frame-benchmarking?/std",
 	"frame-system-benchmarking?/std",
 	"frame-try-runtime?/std",
+	"substrate-wasm-builder",
 ]
 
 evm-tracing = [
 	# moonbeam
-	"moonbeam-evm-tracer"
+	"moonbeam-evm-tracer",
 ]
 
 fast-runtime = []
@@ -317,8 +317,8 @@ runtime-benchmarks = [
 	"pallet-collective/runtime-benchmarks",
 	"pallet-democracy/runtime-benchmarks",
 	"pallet-elections-phragmen/runtime-benchmarks",
-	"pallet-membership/runtime-benchmarks",
 	"pallet-identity/runtime-benchmarks",
+	"pallet-membership/runtime-benchmarks",
 	"pallet-preimage/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",
 	"pallet-scheduler/runtime-benchmarks",
@@ -380,8 +380,8 @@ try-runtime = [
 	"pallet-collective/try-runtime",
 	"pallet-democracy/try-runtime",
 	"pallet-elections-phragmen/try-runtime",
-	"pallet-membership/try-runtime",
 	"pallet-identity/try-runtime",
+	"pallet-membership/try-runtime",
 	"pallet-preimage/try-runtime",
 	"pallet-proxy/try-runtime",
 	"pallet-scheduler/try-runtime",

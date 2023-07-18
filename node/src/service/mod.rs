@@ -39,18 +39,17 @@ use std::{
 	time::Duration,
 };
 // darwinia
-use crate::{cli::TracingApi, frontier_service};
 use dc_primitives::*;
-use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 // substrate
 use sc_consensus::ImportQueue;
 use sc_network::NetworkBlock;
-use sp_core::Pair;
-use sp_runtime::app_crypto::AppKey;
 
+/// Full client backend type.
 type FullBackend = sc_service::TFullBackend<Block>;
+/// Full client type.
 type FullClient<RuntimeApi, Executor> =
 	sc_service::TFullClient<Block, RuntimeApi, sc_executor::NativeElseWasmExecutor<Executor>>;
+/// Parachain specific block import.
 type ParachainBlockImport<RuntimeApi, Executor> =
 	cumulus_client_consensus_common::ParachainBlockImport<
 		Block,
@@ -100,12 +99,11 @@ pub trait RuntimeApiCollection:
 	+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 	+ fp_rpc::EthereumRuntimeRPCApi<Block>
 	+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
-	+ moonbeam_rpc_primitives_txpool::TxPoolRuntimeApi<Block>
 	+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 	+ sp_api::ApiExt<Block, StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>
 	+ sp_api::Metadata<Block>
 	+ sp_block_builder::BlockBuilder<Block>
-	+ sp_consensus_aura::AuraApi<Block, <<AuraId as AppKey>::Pair as Pair>::Public>
+	+ sp_consensus_aura::AuraApi<Block, <<sp_consensus_aura::sr25519::AuthorityId as sp_runtime::app_crypto::AppCrypto>::Pair as sp_core::Pair>::Public>
 	+ sp_offchain::OffchainWorkerApi<Block>
 	+ sp_session::SessionKeys<Block>
 	+ sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
@@ -117,12 +115,11 @@ impl<Api> RuntimeApiCollection for Api where
 		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
 		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
-		+ moonbeam_rpc_primitives_txpool::TxPoolRuntimeApi<Block>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ sp_api::ApiExt<Block, StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>
 		+ sp_api::Metadata<Block>
 		+ sp_block_builder::BlockBuilder<Block>
-		+ sp_consensus_aura::AuraApi<Block, <<AuraId as AppKey>::Pair as Pair>::Public>
+		+ sp_consensus_aura::AuraApi<Block, <<sp_consensus_aura::sr25519::AuthorityId as sp_runtime::app_crypto::AppCrypto>::Pair as sp_core::Pair>::Public>
 		+ sp_offchain::OffchainWorkerApi<Block>
 		+ sp_session::SessionKeys<Block>
 		+ sp_transaction_pool::runtime_api::TaggedTransactionQueue<Block>
@@ -146,7 +143,7 @@ pub fn new_partial<RuntimeApi, Executor>(
 		sc_consensus::DefaultImportQueue<Block, FullClient<RuntimeApi, Executor>>,
 		sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>,
 		(
-			Arc<fc_db::Backend<Block>>,
+			fc_db::Backend<Block>,
 			Option<fc_rpc_core::types::FilterPool>,
 			fc_rpc_core::types::FeeHistoryCache,
 			fc_rpc_core::types::FeeHistoryCacheLimit,
@@ -175,12 +172,19 @@ where
 			Ok((worker, telemetry))
 		})
 		.transpose()?;
-	let executor = sc_executor::NativeElseWasmExecutor::<Executor>::new(
-		config.wasm_method,
-		config.default_heap_pages,
-		config.max_runtime_instances,
-		config.runtime_cache_size,
-	);
+	let heap_pages =
+		config.default_heap_pages.map_or(sc_executor::DEFAULT_HEAP_ALLOC_STRATEGY, |h| {
+			sc_executor::HeapAllocStrategy::Static { extra_pages: h as _ }
+		});
+	let wasm_executor = sc_executor::WasmExecutor::builder()
+		.with_execution_method(config.wasm_method)
+		.with_max_runtime_instances(config.max_runtime_instances)
+		.with_runtime_cache_size(config.runtime_cache_size)
+		.with_onchain_heap_alloc_strategy(heap_pages)
+		.with_offchain_heap_alloc_strategy(heap_pages)
+		.build();
+	let executor =
+		<sc_executor::NativeElseWasmExecutor<Executor>>::new_with_wasm_executor(wasm_executor);
 	let (client, backend, keystore_container, task_manager) =
 		sc_service::new_full_parts::<Block, RuntimeApi, _>(
 			config,
@@ -200,9 +204,7 @@ where
 		task_manager.spawn_essential_handle(),
 		client.clone(),
 	);
-
 	let block_import = ParachainBlockImport::new(client.clone(), backend.clone());
-
 	let import_queue = parachain_build_import_queue(
 		client.clone(),
 		block_import.clone(),
@@ -211,11 +213,8 @@ where
 		&task_manager,
 	)?;
 	// Frontier stuffs.
-	let frontier_backend = Arc::new(fc_db::Backend::open(
-		Arc::clone(&client),
-		&config.database,
-		&frontier_service::db_config_dir(config),
-	)?);
+	let frontier_backend =
+		crate::frontier_service::frontier_backend(client.clone(), config, eth_rpc_config.clone())?;
 	let filter_pool = Some(Arc::new(Mutex::new(BTreeMap::new())));
 	let fee_history_cache = Arc::new(Mutex::new(BTreeMap::new()));
 	let fee_history_cache_limit = eth_rpc_config.fee_history_limit;
@@ -261,10 +260,9 @@ where
 		+ Sync
 		+ sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
-	sc_client_api::StateBackendFor<FullBackend, Block>: sp_api::StateBackend<Hashing>,
 	Executor: 'static + sc_executor::NativeExecutionDispatch,
 	RB: Fn(
-		Arc<sc_service::TFullClient<Block, RuntimeApi, Executor>>,
+		Arc<FullClient<RuntimeApi, Executor>>,
 	) -> Result<jsonrpsee::RpcModule<()>, sc_service::Error>,
 	BIC: FnOnce(
 		Arc<FullClient<RuntimeApi, Executor>>,
@@ -275,12 +273,13 @@ where
 		Arc<dyn cumulus_relay_chain_interface::RelayChainInterface>,
 		Arc<sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>>,
 		Arc<sc_network_sync::SyncingService<Block>>,
-		sp_keystore::SyncCryptoStorePtr,
+		sp_keystore::KeystorePtr,
 		bool,
 	) -> Result<
 		Box<dyn cumulus_client_consensus_common::ParachainConsensus<Block>>,
 		sc_service::Error,
 	>,
+	sc_client_api::StateBackendFor<FullBackend, Block>: sp_api::StateBackend<Hashing>,
 {
 	let mut parachain_config = cumulus_client_service::prepare_node_config(parachain_config);
 	let sc_service::PartialComponents {
@@ -319,10 +318,12 @@ where
 	let validator = parachain_config.role.is_authority();
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let import_queue_service = import_queue.service();
+	let net_config = sc_network::config::FullNetworkConfiguration::new(&parachain_config.network);
 
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		cumulus_client_service::build_network(cumulus_client_service::BuildNetworkParams {
 			parachain_config: &parachain_config,
+			net_config,
 			client: client.clone(),
 			transaction_pool: transaction_pool.clone(),
 			para_id,
@@ -355,7 +356,7 @@ where
 	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
 	// for ethereum-compatibility rpc.
 	parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
-	let tracing_requesters = frontier_service::spawn_frontier_tasks(
+	let tracing_requesters = crate::frontier_service::spawn_frontier_tasks(
 		&task_manager,
 		client.clone(),
 		backend.clone(),
@@ -391,7 +392,10 @@ where
 				network: network.clone(),
 				sync: sync_service.clone(),
 				filter_pool: filter_pool.clone(),
-				backend: frontier_backend.clone(),
+				frontier_backend: match frontier_backend.clone() {
+					fc_db::Backend::KeyValue(bd) => Arc::new(bd),
+					fc_db::Backend::Sql(bd) => Arc::new(bd),
+				},
 				max_past_logs,
 				fee_history_cache: fee_history_cache.clone(),
 				fee_history_cache_limit,
@@ -400,8 +404,8 @@ where
 				forced_parent_hashes: None,
 			};
 
-			if eth_rpc_config.tracing_api.contains(&TracingApi::Debug)
-				|| eth_rpc_config.tracing_api.contains(&TracingApi::Trace)
+			if eth_rpc_config.tracing_api.contains(&crate::cli::TracingApi::Debug)
+				|| eth_rpc_config.tracing_api.contains(&crate::cli::TracingApi::Trace)
 			{
 				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>>(
 					deps,
@@ -431,7 +435,7 @@ where
 		transaction_pool: transaction_pool.clone(),
 		task_manager: &mut task_manager,
 		config: parachain_config,
-		keystore: keystore_container.sync_keystore(),
+		keystore: keystore_container.keystore(),
 		backend: backend.clone(),
 		network: network.clone(),
 		sync_service: sync_service.clone(),
@@ -483,8 +487,8 @@ where
 			&task_manager,
 			relay_chain_interface.clone(),
 			transaction_pool,
-			sync_service,
-			keystore_container.sync_keystore(),
+			sync_service.clone(),
+			keystore_container.keystore(),
 			force_authoring,
 		)?;
 
@@ -502,6 +506,7 @@ where
 			collator_key: collator_key.expect("Command line arguments do not allow this. qed"),
 			relay_chain_slot_duration,
 			recovery_handle: Box::new(overseer_handle),
+			sync_service,
 		};
 
 		cumulus_client_service::start_collator(params).await?;
@@ -515,6 +520,7 @@ where
 			relay_chain_slot_duration,
 			import_queue: import_queue_service,
 			recovery_handle: Box::new(overseer_handle),
+			sync_service,
 		};
 
 		cumulus_client_service::start_full_node(params)?;
@@ -582,10 +588,7 @@ pub async fn start_parachain_node<RuntimeApi, Executor>(
 	para_id: cumulus_primitives_core::ParaId,
 	hwbench: Option<sc_sysinfo::HwBench>,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
-) -> sc_service::error::Result<(
-	sc_service::TaskManager,
-	Arc<sc_service::TFullClient<Block, RuntimeApi, sc_executor::NativeElseWasmExecutor<Executor>>>,
-)>
+) -> sc_service::error::Result<(sc_service::TaskManager, Arc<FullClient<RuntimeApi, Executor>>)>
 where
 	RuntimeApi: sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>
 		+ Send
@@ -593,7 +596,8 @@ where
 		+ 'static,
 	RuntimeApi::RuntimeApi:
 		RuntimeApiCollection<StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>,
-	RuntimeApi::RuntimeApi: sp_consensus_aura::AuraApi<Block, AuraId>,
+	RuntimeApi::RuntimeApi:
+		sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>,
 	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
 	start_node_impl::<RuntimeApi, Executor, _, _>(
@@ -695,7 +699,8 @@ where
 		+ 'static,
 	RuntimeApi::RuntimeApi:
 		RuntimeApiCollection<StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>,
-	RuntimeApi::RuntimeApi: sp_consensus_aura::AuraApi<Block, AuraId>,
+	RuntimeApi::RuntimeApi:
+		sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>,
 	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
 	// substrate
@@ -720,10 +725,12 @@ where
 				_telemetry_worker_handle,
 			),
 	} = new_partial::<RuntimeApi, Executor>(&config, eth_rpc_config)?;
+	let net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
 
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		sc_service::build_network(sc_service::BuildNetworkParams {
 			config: &config,
+			net_config,
 			client: client.clone(),
 			transaction_pool: transaction_pool.clone(),
 			spawn_handle: task_manager.spawn_handle(),
@@ -820,7 +827,7 @@ where
 			},
 			force_authoring,
 			backoff_authoring_blocks,
-			keystore: keystore_container.sync_keystore(),
+			keystore: keystore_container.keystore(),
 			sync_oracle: sync_service.clone(),
 			justification_sync_link: sync_service.clone(),
 			// We got around 500ms for proposing
@@ -857,7 +864,7 @@ where
 	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
 	// for ethereum-compatibility rpc.
 	config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
-	let tracing_requesters = frontier_service::spawn_frontier_tasks(
+	let tracing_requesters = crate::frontier_service::spawn_frontier_tasks(
 		&task_manager,
 		client.clone(),
 		backend.clone(),
@@ -893,7 +900,10 @@ where
 				network: network.clone(),
 				sync: sync_service.clone(),
 				filter_pool: filter_pool.clone(),
-				backend: frontier_backend.clone(),
+				frontier_backend: match frontier_backend.clone() {
+					fc_db::Backend::KeyValue(bd) => Arc::new(bd),
+					fc_db::Backend::Sql(bd) => Arc::new(bd),
+				},
 				max_past_logs,
 				fee_history_cache: fee_history_cache.clone(),
 				fee_history_cache_limit,
@@ -902,8 +912,8 @@ where
 				forced_parent_hashes: None,
 			};
 
-			if eth_rpc_config.tracing_api.contains(&TracingApi::Debug)
-				|| eth_rpc_config.tracing_api.contains(&TracingApi::Trace)
+			if eth_rpc_config.tracing_api.contains(&crate::cli::TracingApi::Debug)
+				|| eth_rpc_config.tracing_api.contains(&crate::cli::TracingApi::Trace)
 			{
 				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>>(
 					deps,
@@ -933,7 +943,7 @@ where
 		transaction_pool,
 		task_manager: &mut task_manager,
 		config,
-		keystore: keystore_container.sync_keystore(),
+		keystore: keystore_container.keystore(),
 		backend,
 		network,
 		sync_service,

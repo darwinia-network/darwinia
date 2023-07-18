@@ -68,7 +68,7 @@ macro_rules! impl_account_migration_tests {
 			struct AssetAccount {
 				balance: u128,
 				is_frozen: bool,
-				reason: ExistenceReason<u128>,
+				reason: ExistenceReason<u128, AccountId>,
 				extra: (),
 			}
 			// This struct is private in `pallet-assets`.
@@ -119,13 +119,14 @@ macro_rules! impl_account_migration_tests {
 				let asset_account = AssetAccount {
 					balance: KTON_AMOUNT,
 					is_frozen: false,
-					reason: ExistenceReason::<u128>::Sufficient,
+					reason: ExistenceReason::<u128, AccountId>::Sufficient,
 					extra: (),
 				};
 
 				assert!(AccountMigration::account_of(&account_id_32).is_none());
 				assert!(AccountMigration::kton_account_of(&account_id_32).is_none());
 
+				<pallet_balances::TotalIssuance<Runtime, _>>::put(RING_AMOUNT);
 				<darwinia_account_migration::Accounts<Runtime>>::insert(
 					&account_id_32,
 					AccountInfo {
@@ -603,7 +604,8 @@ macro_rules! impl_fee_tests {
 					assert_eq!(TransactionPayment::next_fee_multiplier(), Multiplier::from(1u128));
 					assert_eq!(
 						TransactionPaymentGasPrice::min_gas_price().0,
-						U256::from(18_780_048_076_923u128)
+						// U256::from(18_780_048_076_923u128)
+						U256::from(16_499_762_403_421u128)
 					);
 				})
 			}
@@ -624,73 +626,73 @@ macro_rules! impl_fee_tests {
 
 					assert_eq!(
 						sim(Perbill::from_percent(0), 1),
-						U256::from(18_779_695_954_322u128),
+						U256::from(16_499_453_035_776u128),
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(25), 1),
-						U256::from(18_779_695_954_322u128),
+						U256::from(16_499_453_035_776u128),
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(50), 1),
-						U256::from(18_780_048_076_923u128),
+						U256::from(16_499_762_403_421u128),
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(100), 1),
-						U256::from(18_781_104_484_337u128),
+						U256::from(165_00_690_541_159u128),
 					);
 
 					// 1 "real" hour (at 12-second blocks)
 					assert_eq!(
 						sim(Perbill::from_percent(0), 300),
-						U256::from(18_675_757_338_238u128)
+						U256::from(16_408_134_714_177u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(25), 300),
-						U256::from(18_675_757_338_238u128),
+						U256::from(16_408_134_714_177u128),
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(50), 300),
-						U256::from(18_781_104_484_337u128),
+						U256::from(16_500_690_541_159u128),
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(100), 300),
-						U256::from(19_100_724_834_341u128),
+						U256::from(16_781_502_380_018u128),
 					);
 
 					// 1 "real" day (at 12-second blocks)
 					assert_eq!(
 						sim(Perbill::from_percent(0), 7200),
-						U256::from(16_688_607_212_670u128),
+						U256::from(14_662_265_651_569u128),
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(25), 7200),
-						U256::from(16_688_607_212_670u128),
+						U256::from(14_662_265_651_569u128),
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(50), 7200),
-						U256::from(19_100_724_834_341u128)
+						U256::from(16_781_502_380_018u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(100), 7200),
-						U256::from(28_637_764_490_907u128),
+						U256::from(25_160_548_467_697u128),
 					);
 
 					// 7 "real" day (at 12-second blocks)
 					assert_eq!(
 						sim(Perbill::from_percent(0), 50400),
-						U256::from(11_130_914_014_528u128),
+						U256::from(9_779_391_182_619u128),
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(25), 50400),
-						U256::from(11_130_914_014_528u128),
+						U256::from(9_779_391_182_619u128),
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(50), 50400),
-						U256::from(28_637_764_490_907u128)
+						U256::from(25_160_548_467_697u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(100), 50400),
-						U256::from(487_712_592_259_520u128),
+						U256::from(428_494_211_541_821u128),
 					);
 				})
 			}

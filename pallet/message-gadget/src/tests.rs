@@ -67,6 +67,10 @@ impl pallet_balances::Config for Runtime {
 	type Balance = u128;
 	type DustRemoval = ();
 	type ExistentialDeposit = frame_support::traits::ConstU128<0>;
+	type FreezeIdentifier = ();
+	type HoldIdentifier = ();
+	type MaxFreezes = ();
+	type MaxHolds = ();
 	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
@@ -83,6 +87,7 @@ impl pallet_evm::Config for Runtime {
 	type Currency = Balances;
 	type FeeCalculator = ();
 	type FindAuthor = ();
+	type GasLimitPovSizeRatio = ();
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = ();
 	type OnCreate = ();
@@ -134,15 +139,14 @@ fn message_root_getter_should_work() {
 			array_bytes::hex2bytes_unchecked(CONTRACT_CODE),
 			U256::zero(),
 			U256::from(300_000_000).low_u64(),
-			// TODO: not sure
 			Some(<Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0),
 			None,
 			Some(U256::from(1)),
 			vec![],
-			// TODO: not sure
 			true,
-			// TODO: not sure
 			false,
+			None,
+			None,
 			<Runtime as pallet_evm::Config>::config(),
 		);
 		let contract_address = res.unwrap().value;

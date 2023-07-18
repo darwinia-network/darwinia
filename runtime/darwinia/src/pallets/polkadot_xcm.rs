@@ -81,8 +81,11 @@ pub type Barrier = darwinia_common_runtime::xcm_configs::DenyThenTry<
 		xcm_builder::TakeWeightCredit,
 		xcm_builder::WithComputedOrigin<
 			(
+				// If the message is one that immediately attemps to pay for execution, then allow
+				// it.
 				xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
-				// Parent and its exec plurality get free execution
+				// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality get
+				// free execution.
 				xcm_builder::AllowUnpaidExecutionFrom<
 					darwinia_common_runtime::xcm_configs::ParentOrParentsExecutivePlurality,
 				>,
@@ -107,8 +110,11 @@ frame_support::parameter_types! {
 		X1(PalletInstance(<Balances as frame_support::traits::PalletInfoAccess>::index() as u8))
 	);
 	pub UniversalLocation: InteriorMultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
-	// One XCM operation is 1_000_000_000 weight - almost certainly a conservative estimate.
-	pub UnitWeightCost: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 64 * 1024);
+	/// The amount of weight an XCM operation takes. This is a safe overestimate.
+	pub BaseXcmWeight: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 1024);
+	/// A temporary weight value for each XCM instruction.
+	/// NOTE: This should be removed after we account for PoV weights.
+	pub const TempFixedXcmWeight: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 0);
 }
 
 pub struct ToTreasury;
@@ -125,8 +131,6 @@ impl xcm_builder::TakeRevenue for ToTreasury {
 		}
 	}
 }
-
-pub type XcmWeigher = xcm_builder::FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
 
 pub struct XcmCallDispatcher;
 impl xcm_executor::traits::CallDispatcher<RuntimeCall> for XcmCallDispatcher {
@@ -191,7 +195,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type UniversalAliases = frame_support::traits::Nothing;
 	// Teleporting is disabled.
 	type UniversalLocation = UniversalLocation;
-	type Weigher = XcmWeigher;
+	type Weigher = xcm_builder::FixedWeightBounds<TempFixedXcmWeight, RuntimeCall, MaxInstructions>;
 	type XcmSender = XcmRouter;
 }
 
@@ -213,14 +217,17 @@ frame_support::parameter_types! {
 }
 
 impl pallet_xcm::Config for Runtime {
+	type AdminOrigin = Root;
 	// ^ Override for AdvertisedXcmVersion default
 	type AdvertisedXcmVersion = pallet_xcm::CurrentXcmVersion;
 	type Currency = Balances;
 	type CurrencyMatcher = ();
 	type ExecuteXcmOrigin = xcm_builder::EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
 	type MaxLockers = ConstU32<8>;
+	type MaxRemoteLockConsumers = ();
 	#[cfg(feature = "runtime-benchmarks")]
 	type ReachableDest = ReachableDest;
+	type RemoteLockConsumerIdentifier = ();
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
@@ -228,7 +235,7 @@ impl pallet_xcm::Config for Runtime {
 	type SovereignAccountOf = LocationToAccountId;
 	type TrustedLockers = ();
 	type UniversalLocation = UniversalLocation;
-	type Weigher = XcmWeigher;
+	type Weigher = xcm_builder::FixedWeightBounds<BaseXcmWeight, RuntimeCall, MaxInstructions>;
 	type WeightInfo = pallet_xcm::TestWeightInfo;
 	type XcmExecuteFilter = frame_support::traits::Everything;
 	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;

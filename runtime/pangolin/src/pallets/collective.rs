@@ -28,9 +28,14 @@ pub const COLLECTIVE_MAX_PROPOSALS: u32 = 100;
 // Make sure that there are no more than `COLLECTIVE_MAX_MEMBERS` members elected via phragmen.
 static_assertions::const_assert!(COLLECTIVE_DESIRED_MEMBERS <= COLLECTIVE_MAX_MEMBERS);
 
+frame_support::parameter_types! {
+	pub MaxProposalWeight: frame_support::weights::Weight = sp_runtime::Perbill::from_percent(50) * RuntimeBlockWeights::get().max_block;
+}
+
 impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
 	type MaxMembers = ConstU32<COLLECTIVE_MAX_MEMBERS>;
+	type MaxProposalWeight = MaxProposalWeight;
 	type MaxProposals = ConstU32<100>;
 	type MotionDuration = ConstU32<{ 3 * DAYS }>;
 	type Proposal = RuntimeCall;
@@ -42,6 +47,7 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 impl pallet_collective::Config<TechnicalCollective> for Runtime {
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
 	type MaxMembers = ConstU32<COLLECTIVE_MAX_MEMBERS>;
+	type MaxProposalWeight = MaxProposalWeight;
 	type MaxProposals = ConstU32<100>;
 	type MotionDuration = ConstU32<{ 3 * DAYS }>;
 	type Proposal = RuntimeCall;
