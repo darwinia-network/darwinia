@@ -126,6 +126,7 @@ macro_rules! impl_account_migration_tests {
 				assert!(AccountMigration::account_of(&account_id_32).is_none());
 				assert!(AccountMigration::kton_account_of(&account_id_32).is_none());
 
+				<pallet_balances::TotalIssuance<Runtime, _>>::put(RING_AMOUNT);
 				<darwinia_account_migration::Accounts<Runtime>>::insert(
 					&account_id_32,
 					AccountInfo {
