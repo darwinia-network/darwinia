@@ -48,11 +48,11 @@ jobs:
           haskell: true
           large-packages: true
           docker-images: true
-          swap-storage: false
+          swap-storage: true
       - name: Set swap space
         uses: pierotofy/set-swap-space@master
         with:
-          swap-size-gb: 12
+          swap-size-gb: 8
       - name: Setup build environment
         run: |
           sudo apt install -y clang llvm protobuf-compiler
