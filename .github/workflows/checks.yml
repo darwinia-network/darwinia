@@ -45,7 +45,8 @@ jobs:
           rustup toolchain install nightly-2023-05-22 --profile minimal
       - name: Fetch latest code
         uses: actions/checkout@v3
-      - uses: Swatinem/rust-cache@v2
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
         with:
           prefix-key: ${{ env.CACHE_VERSION }}
       - name: Action ${{ matrix.action }}
