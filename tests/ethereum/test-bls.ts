@@ -566,7 +566,7 @@ describe("Test Bls precompile", () => {
 	}).timeout(60000);
 
 	it("Return OutOfGas if insufficient gas", async () => {
-		bls.options.gas = 100_000;
+		bls.options.gas = 300_000;
 		await bls.methods
 			.fast_aggregate_verify(pub_keys_bytes, hexToBytes(message), hexToBytes(signature))
 			.call()
