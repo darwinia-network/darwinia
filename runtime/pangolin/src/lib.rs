@@ -420,8 +420,10 @@ sp_api::impl_runtime_apis! {
 			estimate: bool,
 			access_list: Option<Vec<(sp_core::H160, Vec<sp_core::H256>)>>,
 		) -> Result<pallet_evm::CallInfo, sp_runtime::DispatchError> {
+			// crates.io
+			use codec::Encode;
 			// frontier
-			use pallet_evm::Runner;
+			use pallet_evm::{Runner, GasWeightMapping};
 			// substrate
 			use sp_runtime::traits::UniqueSaturatedInto;
 
@@ -437,6 +439,40 @@ sp_api::impl_runtime_apis! {
 			let validate = true;
 			#[allow(clippy::or_fun_call)]
 			let evm_config = config.as_ref().unwrap_or(<Runtime as pallet_evm::Config>::config());
+
+			let mut estimated_transaction_len = data.len() +
+				20 + // to
+				20 + // from
+				32 + // value
+				32 + // gas_limit
+				32 + // nonce
+				1 + // TransactionAction
+				8 + // chain id
+				65; // signature
+
+			if max_fee_per_gas.is_some() {
+				estimated_transaction_len += 32;
+			}
+			if max_priority_fee_per_gas.is_some() {
+				estimated_transaction_len += 32;
+			}
+			if access_list.is_some() {
+				estimated_transaction_len += access_list.encoded_size();
+			}
+
+			let gas_limit = gas_limit.min(u64::MAX.into()).low_u64();
+			let without_base_extrinsic_weight = true;
+
+			let (weight_limit, proof_size_base_cost) =
+				match <Runtime as pallet_evm::Config>::GasWeightMapping::gas_to_weight(
+					gas_limit,
+					without_base_extrinsic_weight
+				) {
+					weight_limit if weight_limit.proof_size() > 0 => {
+						(Some(weight_limit), Some(estimated_transaction_len as u64))
+					}
+					_ => (None, None),
+				};
 			<Runtime as pallet_evm::Config>::Runner::call(
 				from,
 				to,
@@ -449,9 +485,8 @@ sp_api::impl_runtime_apis! {
 				access_list.unwrap_or_default(),
 				is_transactional,
 				validate,
-				// TODO: FIX ME https://github.com/paritytech/frontier/pull/1101
-				None,
-				None,
+				weight_limit,
+				proof_size_base_cost,
 				evm_config,
 			).map_err(|err| err.error.into())
 		}
@@ -467,8 +502,10 @@ sp_api::impl_runtime_apis! {
 			estimate: bool,
 			access_list: Option<Vec<(sp_core::H160, Vec<sp_core::H256>)>>,
 		) -> Result<pallet_evm::CreateInfo, sp_runtime::DispatchError> {
+			// crates.io
+			use codec::Encode;
 			// frontier
-			use pallet_evm::Runner;
+			use pallet_evm::{Runner, GasWeightMapping};
 			// substrate
 			use sp_runtime::traits::UniqueSaturatedInto;
 
@@ -484,6 +521,43 @@ sp_api::impl_runtime_apis! {
 			let validate = true;
 			#[allow(clippy::or_fun_call)]
 			let evm_config = config.as_ref().unwrap_or(<Runtime as pallet_evm::Config>::config());
+
+			let mut estimated_transaction_len = data.len() +
+				20 + // from
+				32 + // value
+				32 + // gas_limit
+				32 + // nonce
+				1 + // TransactionAction
+				8 + // chain id
+				65; // signature
+
+			if max_fee_per_gas.is_some() {
+				estimated_transaction_len += 32;
+			}
+			if max_priority_fee_per_gas.is_some() {
+				estimated_transaction_len += 32;
+			}
+			if access_list.is_some() {
+				estimated_transaction_len += access_list.encoded_size();
+			}
+
+			let gas_limit = if gas_limit > sp_core::U256::from(u64::MAX) {
+				u64::MAX
+			} else {
+				gas_limit.low_u64()
+			};
+			let without_base_extrinsic_weight = true;
+
+			let (weight_limit, proof_size_base_cost) =
+				match <Runtime as pallet_evm::Config>::GasWeightMapping::gas_to_weight(
+					gas_limit,
+					without_base_extrinsic_weight
+				) {
+					weight_limit if weight_limit.proof_size() > 0 => {
+						(Some(weight_limit), Some(estimated_transaction_len as u64))
+					}
+					_ => (None, None),
+				};
 			<Runtime as pallet_evm::Config>::Runner::create(
 				from,
 				data,
@@ -495,12 +569,12 @@ sp_api::impl_runtime_apis! {
 				access_list.unwrap_or_default(),
 				is_transactional,
 				validate,
-				// TODO: FIX ME https://github.com/paritytech/frontier/pull/1101
-				None,
-				None,
+				weight_limit,
+				proof_size_base_cost,
 				evm_config,
 			).map_err(|err| err.error.into())
 		}
+
 
 		fn current_transaction_statuses() -> Option<Vec<fp_rpc::TransactionStatus>> {
 			pallet_ethereum::CurrentTransactionStatuses::<Runtime>::get()
