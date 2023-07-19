@@ -575,7 +575,6 @@ sp_api::impl_runtime_apis! {
 			).map_err(|err| err.error.into())
 		}
 
-
 		fn current_transaction_statuses() -> Option<Vec<fp_rpc::TransactionStatus>> {
 			pallet_ethereum::CurrentTransactionStatuses::<Runtime>::get()
 		}

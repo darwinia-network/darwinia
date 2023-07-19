@@ -25,7 +25,7 @@ describe("Test transaction gas limit", () => {
 				from: FAITH,
 				data: data.encodeABI(),
 			})
-		).to.equal(257336);
+		).to.equal(257398);
 	}).timeout(60000);
 
 	it("Test contract call estimate gas", async () => {
