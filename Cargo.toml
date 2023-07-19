@@ -248,5 +248,5 @@ incremental = false
 inherits    = "dev"
 
 [profile.ci-release]
-incremental = false
-inherits    = "release"
+inherits = "release"
+lto      = true
