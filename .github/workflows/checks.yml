@@ -158,7 +158,7 @@ jobs:
           chmod u+x darwinia
           sudo mv darwinia /usr/bin
       - name: Launch darwinia
-        run: darwinia --chain pangolin-dev --tmp --alice --tracing-api debug,trace &
+        run: darwinia --chain pangolin-dev --tmp --alice --tracing-api debug,trace --frontier-backend-type sql &
       - name: Install Node 19
         uses: actions/setup-node@v2
         with:
