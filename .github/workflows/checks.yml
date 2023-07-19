@@ -48,7 +48,7 @@ jobs:
           haskell: true
           large-packages: true
           docker-images: true
-          swap-storage: true
+          swap-storage: false
       - name: Set swap space
         uses: pierotofy/set-swap-space@master
         with:
