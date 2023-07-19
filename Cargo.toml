@@ -244,8 +244,12 @@ yamux                  = { opt-level = 3 }
 zeroize                = { opt-level = 3 }
 
 [profile.ci-dev]
-incremental = false
-inherits    = "dev"
+debug            = false
+debug-assertions = false
+incremental      = false
+inherits         = "dev"
+opt-level        = "z"
+overflow-checks  = false
 
 [profile.ci-release]
 inherits = "release"
