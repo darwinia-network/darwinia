@@ -51,7 +51,7 @@ jobs:
           swap-storage: false
       - name: Setup build environment
         run: |
-          sudo apt install -y protobuf-compiler
+          sudo apt install -y clang llvm protobuf-compiler
           rustup toolchain install nightly-2023-05-22 --profile minimal
       - name: Fetch latest code
         uses: actions/checkout@v3
