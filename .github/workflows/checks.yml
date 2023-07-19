@@ -42,13 +42,13 @@ jobs:
       - name: Free disk space
         uses: jlumbroso/free-disk-space@main
         with:
-          tool-cache: false
+          tool-cache: true
           android: true
           dotnet: true
           haskell: true
           large-packages: true
           docker-images: true
-          swap-storage: true
+          swap-storage: false
       - name: Setup build environment
         run: |
           sudo apt install -y protobuf-compiler
