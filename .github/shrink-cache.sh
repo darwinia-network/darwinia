@@ -1,29 +1,19 @@
 #!/bin/sh
 
-cargo clean --release -p darwinia 2> /dev/null || true
+for p in darwinia
+# for p in darwinia polkadot-cli librocksdb-sys wasm-opt-sys
+do
+  cargo clean -p ${p} --profile ci-dev 2> /dev/null || true
+done
 
-cargo clean --release -p crab-runtime 2> /dev/null || true
-cargo clean --release -p darwinia-runtime 2> /dev/null || true
-cargo clean --release -p pangolin-runtime 2> /dev/null || true
-cargo clean --release -p pangoro-runtime 2> /dev/null || true
+# ---
 
-cargo clean --release -p kusama-runtime 2> /dev/null || true
-cargo clean --release -p polkadot-runtime 2> /dev/null || true
-cargo clean --release -p rococo-runtime 2> /dev/null || true
-cargo clean --release -p westend-runtime 2> /dev/null || true
+for r in darwinia crab pangoro pangolin
+do
+  rm -rf target/ci-dev/wbuild/${r}-runtime 2> /dev/null || true
+done
 
-rm -rf target/release/wbuild 2> /dev/null || true
-
-cargo clean -p darwinia 2> /dev/null || true
-
-cargo clean -p crab-runtime 2> /dev/null || true
-cargo clean -p darwinia-runtime 2> /dev/null || true
-cargo clean -p pangolin-runtime 2> /dev/null || true
-cargo clean -p pangoro-runtime 2> /dev/null || true
-
-cargo clean -p kusama-runtime 2> /dev/null || true
-cargo clean -p polkadot-runtime 2> /dev/null || true
-cargo clean -p rococo-runtime 2> /dev/null || true
-cargo clean -p westend-runtime 2> /dev/null || true
-
-rm -rf target/debug/wbuild 2> /dev/null || true
+for r in polkadot kusama westend rococo
+do
+  rm -rf target/ci-dev/wbuild/${r}-runtime/target/release 2> /dev/null || true
+done

@@ -22,10 +22,10 @@ on:
       - "**.yml"
 
 env:
-  CARGO_INCREMENTAL: 1
-  CARGO_TERM_COLOR: always
+  CACHE_VERSION: 0
 
-  GITHUB_CACHE_VERSION: 2
+  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+  CARGO_TERM_COLOR: always
 
   RUST_BACKTRACE: full
 
@@ -39,36 +39,45 @@ jobs:
       matrix:
         action: [build, test]
     steps:
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
+      - name: Set swap space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 8
       - name: Setup build environment
-        run: sudo apt install -y protobuf-compiler
+        run: |
+          sudo apt install -y clang llvm protobuf-compiler
+          rustup show
       - name: Fetch latest code
         uses: actions/checkout@v3
       - name: Cache cargo
-        uses: actions/cache@v2
+        uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: cargo-${{ matrix.action }}-${{ env.GITHUB_CACHE_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: cargo-${{ matrix.action }}-${{ env.GITHUB_CACHE_VERSION }}-
+          prefix-key: ${{ env.CACHE_VERSION }}
       - name: Action ${{ matrix.action }}
         if: matrix.action != 'test'
-        run: cargo ${{ matrix.action }} --release --locked -p darwinia --all-features
+        run: cargo ${{ matrix.action }} --locked -p darwinia --features evm-tracing,all-natives --profile ci-dev
       - name: Action ${{ matrix.action }}
         if: matrix.action == 'test'
-        run: SKIP_WASM_BUILD=1 cargo ${{ matrix.action }} --release --locked --features all-natives
+        run: SKIP_WASM_BUILD=1 cargo ${{ matrix.action }} --locked --features all-natives --profile ci-dev
       - name: Change path
         if: matrix.action != 'test'
-        run: mv target/release/darwinia .
+        run: mv target/ci-dev/darwinia .
       - name: Upload
         if: matrix.action != 'test'
         uses: actions/upload-artifact@v2
         with:
           name: darwinia
           path: darwinia
-      - name: Shrink cache
-        run: .github/shrink-cache.sh
 
   format-checks:
     name: Task check format
@@ -149,7 +158,7 @@ jobs:
           chmod u+x darwinia
           sudo mv darwinia /usr/bin
       - name: Launch darwinia
-        run: darwinia --chain pangolin-dev --tmp --alice --tracing-api debug,trace &
+        run: darwinia --chain pangolin-dev --tmp --alice --tracing-api debug,trace --frontier-backend-type sql &
       - name: Install Node 19
         uses: actions/setup-node@v2
         with:
