@@ -63,6 +63,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           prefix-key: ${{ env.CACHE_VERSION }}
+          cache-directories: target/ci-dev
       - name: Action ${{ matrix.action }}
         if: matrix.action != 'test'
         run: cargo ${{ matrix.action }} --locked -p darwinia --features evm-tracing,all-natives --profile ci-dev
