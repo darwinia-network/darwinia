@@ -66,6 +66,7 @@ mod benchmarks {
 				extra: Default::default(),
 			},
 		);
+		#[cfg(not(feature = "no-vesting"))]
 		<Vestings<T>>::insert(
 			from,
 			vec![

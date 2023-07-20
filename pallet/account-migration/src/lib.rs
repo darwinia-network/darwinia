@@ -60,10 +60,12 @@ use darwinia_deposit::Deposit;
 use darwinia_staking::Ledger;
 use dc_primitives::{AccountId as AccountId20, AssetId, Balance, BlockNumber, Index};
 // substrate
+#[cfg(not(feature = "no-vesting"))]
+use frame_support::traits::{LockableCurrency, WithdrawReasons};
 use frame_support::{
 	migration,
 	pallet_prelude::*,
-	traits::{Currency, ExistenceRequirement::AllowDeath, LockableCurrency, WithdrawReasons},
+	traits::{Currency, ExistenceRequirement::AllowDeath},
 	StorageHasher,
 };
 use frame_system::{pallet_prelude::*, AccountInfo, RawOrigin};
@@ -101,6 +103,16 @@ pub mod pallet {
 	#[pallet::pallet]
 	pub struct Pallet<T>(PhantomData<T>);
 
+	/// Enable vesting for account migration.
+	#[cfg(not(feature = "no-vesting"))]
+	pub trait OptionalVesting:
+		pallet_vesting::Config<Currency = pallet_balances::Pallet<Self>>
+	{
+	}
+	/// Disable vesting for account migration.
+	#[cfg(feature = "no-vesting")]
+	pub trait OptionalVesting {}
+
 	#[pallet::config]
 	pub trait Config:
 		frame_system::Config<
@@ -111,10 +123,10 @@ pub mod pallet {
 			Lookup = IdentityLookup<AccountId20>,
 		> + pallet_assets::Config<Balance = Balance, AssetId = AssetId>
 		+ pallet_balances::Config<Balance = Balance>
-		+ pallet_vesting::Config<Currency = pallet_balances::Pallet<Self>>
 		+ pallet_identity::Config<Currency = pallet_balances::Pallet<Self>>
 		+ darwinia_deposit::Config
 		+ darwinia_staking::Config
+		+ OptionalVesting
 	{
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
@@ -448,6 +460,7 @@ pub mod pallet {
 					);
 				}
 			}
+			#[cfg(not(feature = "no-vesting"))]
 			if let Some(v) = <Vestings<T>>::take(from) {
 				let locked = v.iter().map(|v| v.locked()).sum();
 

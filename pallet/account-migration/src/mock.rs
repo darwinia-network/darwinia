@@ -211,6 +211,7 @@ impl pallet_identity::Config for Runtime {
 	type WeightInfo = ();
 }
 
+impl darwinia_account_migration::OptionalVesting for Runtime {}
 impl darwinia_account_migration::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
