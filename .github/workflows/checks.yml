@@ -53,12 +53,12 @@ jobs:
         uses: pierotofy/set-swap-space@master
         with:
           swap-size-gb: 8
+      - name: Fetch latest code
+        uses: actions/checkout@v3
       - name: Setup build environment
         run: |
           sudo apt install -y clang llvm protobuf-compiler
           rustup show
-      - name: Fetch latest code
-        uses: actions/checkout@v3
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
         with:
