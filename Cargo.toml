@@ -215,7 +215,7 @@ futures                = { opt-level = 3 }
 futures-channel        = { opt-level = 3 }
 futures-core           = { opt-level = 3 }
 futures-executor       = { opt-level = 3 }
-futures-instrusive     = { opt-level = 3 }
+futures-intrusive      = { opt-level = 3 }
 futures-io             = { opt-level = 3 }
 futures-lite           = { opt-level = 3 }
 futures-rustls         = { opt-level = 3 }
