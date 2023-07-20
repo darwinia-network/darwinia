@@ -22,7 +22,7 @@ on:
       - "**.yml"
 
 env:
-  CACHE_VERSION: 0
+  CACHE_VERSION: 1
 
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
   CARGO_TERM_COLOR: always
