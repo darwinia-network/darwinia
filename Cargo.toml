@@ -23,7 +23,7 @@ version    = "6.3.4"
 # crates.io
 array-bytes       = { version = "6.1" }
 codec             = { package = "parity-scale-codec", version = "3.6", default-features = false }
-libsecp256k1      = { version = "0.7" }
+libsecp256k1      = { version = "0.7", default-features = false }
 scale-info        = { version = "2.9", default-features = false }
 sha3              = { version = "0.10" }
 static_assertions = { version = "1.1" }

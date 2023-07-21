@@ -505,8 +505,12 @@ pub mod pallet {
 				return None;
 			}
 
-			let new_message_root = T::MessageRoot::get()?;
-
+			let new_message_root = if cfg!(all(feature = "runtime-benchmarks", not(test))) {
+				Default::default()
+			} else {
+				T::MessageRoot::get()?
+			};
+			
 			if force {
 				return Some(new_message_root);
 			}

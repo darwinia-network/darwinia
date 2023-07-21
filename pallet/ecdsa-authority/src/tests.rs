@@ -371,9 +371,6 @@ fn submit_authorities_change_signature_should_work() {
 			vec![Event::CollectingAuthoritiesChangeSignatures { message }]
 		);
 
-		// Case 2.
-		// https://github.com/paritytech/libsecp256k1/issues/134
-		#[cfg(not(feature = "runtime-benchmarks"))]
 		assert_noop!(
 			EcdsaAuthority::submit_authorities_change_signature(
 				RuntimeOrigin::signed(a_1),
@@ -463,9 +460,6 @@ fn submit_new_message_root_signature_should_work() {
 			vec![Event::CollectingNewMessageRootSignatures { message }]
 		);
 
-		// Case 2.
-		// https://github.com/paritytech/libsecp256k1/issues/134
-		#[cfg(not(feature = "runtime-benchmarks"))]
 		assert_noop!(
 			EcdsaAuthority::submit_new_message_root_signature(
 				RuntimeOrigin::signed(a_1),

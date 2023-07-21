@@ -30,6 +30,9 @@ frame_support::parameter_types! {
 
 impl pallet_assets::Config for Runtime {
 	type ApprovalDeposit = ConstU128<0>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type AssetAccountDeposit = ConstU128<1>;
+	#[cfg(not(feature = "runtime-benchmarks"))]
 	type AssetAccountDeposit = ConstU128<0>;
 	type AssetDeposit = ConstU128<0>;
 	type AssetId = AssetId;

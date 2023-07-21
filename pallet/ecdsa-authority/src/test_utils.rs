@@ -1,16 +1,10 @@
 // core
-// https://github.com/paritytech/libsecp256k1/issues/134
-#[cfg(test)]
 use core::iter;
 // crates.io
-// https://github.com/paritytech/libsecp256k1/issues/134
-#[cfg(test)]
 use libsecp256k1::{Message, PublicKey, SecretKey};
 // darwinia
 use crate::*;
 // substrate
-// https://github.com/paritytech/libsecp256k1/issues/134
-#[cfg(test)]
 use sp_io::hashing;
 
 impl<T> Pallet<T>
@@ -25,8 +19,6 @@ where
 	}
 }
 
-// https://github.com/paritytech/libsecp256k1/issues/134
-#[cfg(test)]
 pub(crate) fn gen_pair(byte: u8) -> (SecretKey, AccountId) {
 	let seed = iter::repeat(byte).take(32).collect::<Vec<_>>();
 	let secret_key = SecretKey::parse_slice(&seed).unwrap();
@@ -37,8 +29,6 @@ pub(crate) fn gen_pair(byte: u8) -> (SecretKey, AccountId) {
 	(secret_key, address)
 }
 
-// https://github.com/paritytech/libsecp256k1/issues/134
-#[cfg(test)]
 pub(crate) fn sign(secret_key: &SecretKey, message: &[u8; 32]) -> Signature {
 	let (sig, recovery_id) = libsecp256k1::sign(&Message::parse(message), secret_key);
 	let mut signature = [0u8; 65];

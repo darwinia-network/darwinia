@@ -184,6 +184,8 @@ frame_support::construct_runtime! {
 
 #[cfg(feature = "runtime-benchmarks")]
 frame_benchmarking::define_benchmarks! {
+	// cumulus
+	[cumulus_pallet_xcmp_queue, XcmpQueue]
 	// darwinia
 	[darwinia_account_migration, AccountMigration]
 	[darwinia_deposit, Deposit]
@@ -195,8 +197,8 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_bridge_messages, MessagesBench::<Runtime, WithPangoroMessages>]
 	[pallet_fee_market, PangoroFeeMarket]
 	// substrate
-	[cumulus_pallet_xcmp_queue, XcmpQueue]
-	[frame_system, SystemBench::<Runtime>]
+	// https://substrate.stackexchange.com/questions/9360/how-to-benchmark-frame-system-on-parachain
+	// [frame_system, SystemBench::<Runtime>]
 	[pallet_assets, Assets]
 	[pallet_balances, Balances]
 	[pallet_collective, Council]
