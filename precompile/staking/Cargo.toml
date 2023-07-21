@@ -63,5 +63,6 @@ std = [
 ]
 
 runtime-benchmarks = [
+	# darwinia
 	"darwinia-staking/runtime-benchmarks",
 ]
