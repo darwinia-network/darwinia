@@ -19,7 +19,7 @@
 // darwinia
 use crate::*;
 
-const ENACTMENT_PERIOD: u32 = 28 * DAYS;
+const ENACTMENT_PERIOD: u32 = 10 * MINUTES;
 
 impl pallet_democracy::Config for Runtime {
 	type BlacklistOrigin = Root;
@@ -28,7 +28,7 @@ impl pallet_democracy::Config for Runtime {
 	type CancelProposalOrigin = RootOrAll<TechnicalCollective>;
 	// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
 	type CancellationOrigin = RootOrAtLeastTwoThird<CouncilCollective>;
-	type CooloffPeriod = ConstU32<{ 7 * DAYS }>;
+	type CooloffPeriod = ConstU32<{ 5 * MINUTES }>;
 	type Currency = Balances;
 	type EnactmentPeriod = ConstU32<ENACTMENT_PERIOD>;
 	/// A unanimous council can have the next scheduled referendum be a straight default-carries
@@ -41,10 +41,10 @@ impl pallet_democracy::Config for Runtime {
 	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
 	/// be tabled immediately and with a shorter voting/enactment period.
 	type FastTrackOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
-	type FastTrackVotingPeriod = ConstU32<{ 3 * HOURS }>;
+	type FastTrackVotingPeriod = ConstU32<{ MINUTES }>;
 	type InstantAllowed = ConstBool<true>;
 	type InstantOrigin = RootOrAll<TechnicalCollective>;
-	type LaunchPeriod = ConstU32<{ 28 * DAYS }>;
+	type LaunchPeriod = ConstU32<{ 10 * MINUTES }>;
 	type MaxBlacklisted = ConstU32<100>;
 	type MaxDeposits = ConstU32<100>;
 	type MaxProposals = ConstU32<100>;
@@ -60,6 +60,6 @@ impl pallet_democracy::Config for Runtime {
 	// only do it once and it lasts only for the cool-off period.
 	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
 	type VoteLockingPeriod = ConstU32<ENACTMENT_PERIOD>;
-	type VotingPeriod = ConstU32<{ 28 * DAYS }>;
+	type VotingPeriod = ConstU32<{ 10 * MINUTES }>;
 	type WeightInfo = weights::pallet_democracy::WeightInfo<Self>;
 }

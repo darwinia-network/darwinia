@@ -37,7 +37,7 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type MaxMembers = ConstU32<COLLECTIVE_MAX_MEMBERS>;
 	type MaxProposalWeight = MaxProposalWeight;
 	type MaxProposals = ConstU32<100>;
-	type MotionDuration = ConstU32<{ 3 * DAYS }>;
+	type MotionDuration = ConstU32<{ 10 * MINUTES }>;
 	type Proposal = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
@@ -49,7 +49,7 @@ impl pallet_collective::Config<TechnicalCollective> for Runtime {
 	type MaxMembers = ConstU32<COLLECTIVE_MAX_MEMBERS>;
 	type MaxProposalWeight = MaxProposalWeight;
 	type MaxProposals = ConstU32<100>;
-	type MotionDuration = ConstU32<{ 3 * DAYS }>;
+	type MotionDuration = ConstU32<{ 10 * MINUTES }>;
 	type Proposal = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
