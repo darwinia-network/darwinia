@@ -131,7 +131,7 @@ frame_support::construct_runtime! {
 		Balances: pallet_balances = 5,
 		TransactionPayment: pallet_transaction_payment = 6,
 		Assets: pallet_assets = 7,
-		Vesting: pallet_vesting = 8,
+		// Vesting: pallet_vesting = 8,
 		Deposit: darwinia_deposit = 9,
 		AccountMigration: darwinia_account_migration = 10,
 
@@ -211,7 +211,6 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_tips, Tips]
 	[pallet_treasury, Treasury]
 	[pallet_utility, Utility]
-	[pallet_vesting, Vesting]
 	[pallet_session, SessionBench::<Runtime>]
 	[pallet_timestamp, Timestamp]
 }

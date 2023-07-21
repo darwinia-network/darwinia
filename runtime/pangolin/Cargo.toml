@@ -110,7 +110,6 @@ pallet-transaction-payment                 = { workspace = true }
 pallet-transaction-payment-rpc-runtime-api = { workspace = true }
 pallet-treasury                            = { workspace = true }
 pallet-utility                             = { workspace = true }
-pallet-vesting                             = { workspace = true }
 sp-api                                     = { workspace = true }
 sp-block-builder                           = { workspace = true }
 sp-consensus-aura                          = { workspace = true }
@@ -237,7 +236,6 @@ std = [
 	"pallet-transaction-payment/std",
 	"pallet-treasury/std",
 	"pallet-utility/std",
-	"pallet-vesting/std",
 	"sp-api/std",
 	"sp-block-builder/std",
 	"sp-consensus-aura/std",
@@ -329,7 +327,6 @@ runtime-benchmarks = [
 	"pallet-tips/runtime-benchmarks",
 	"pallet-treasury/runtime-benchmarks",
 	"pallet-utility/runtime-benchmarks",
-	"pallet-vesting/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	# substrate optional
 	"frame-benchmarking/runtime-benchmarks",
@@ -395,7 +392,6 @@ try-runtime = [
 	"pallet-transaction-payment/try-runtime",
 	"pallet-treasury/try-runtime",
 	"pallet-utility/try-runtime",
-	"pallet-vesting/try-runtime",
 	"sp-runtime/try-runtime",
 	# substrate optional
 	"frame-try-runtime/try-runtime",

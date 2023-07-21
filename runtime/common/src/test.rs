@@ -95,14 +95,6 @@ macro_rules! impl_account_migration_tests {
 				Destroying,
 			}
 
-			// This struct is private in `pallet-vesting`.
-			#[derive(Encode)]
-			struct VestingInfo {
-				locked: u128,
-				per_block: u128,
-				starting_block: u32,
-			}
-
 			fn alice() -> (Pair, AccountId32) {
 				let pair = Keyring::Alice.pair();
 				let public_key = AccountId32::new(pair.public().0);
@@ -278,32 +270,6 @@ macro_rules! impl_account_migration_tests {
 					)
 					.count();
 					assert_eq!(actual_accounts as u32, asset_details.accounts);
-				});
-			}
-
-			#[test]
-			fn vesting_should_work() {
-				let (from, from_pk) = alice();
-				let to = H160::from_low_u64_be(255).into();
-
-				ExtBuilder::default().build().execute_with(|| {
-					preset_state_of(&from);
-
-					migration::put_storage_value(
-						b"AccountMigration",
-						b"Vestings",
-						&Blake2_128Concat::hash(from_pk.as_ref()),
-						vec![
-							VestingInfo { locked: 100, per_block: 5, starting_block: 0 },
-							VestingInfo { locked: 100, per_block: 5, starting_block: 0 },
-						],
-					);
-					assert!(Vesting::vesting(to).is_none());
-					assert!(Balances::locks(to).is_empty());
-
-					assert_ok!(migrate(from, to));
-					assert_eq!(Vesting::vesting(to).unwrap().len(), 2);
-					assert_eq!(Balances::locks(to).len(), 1);
 				});
 			}
 

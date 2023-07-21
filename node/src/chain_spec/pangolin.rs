@@ -166,7 +166,6 @@ pub fn genesis_config() -> ChainSpec {
 					)],
 					..Default::default()
 				},
-				vesting: Default::default(),
 
 				// Consensus stuff.
 				darwinia_staking: DarwiniaStakingConfig {
@@ -294,7 +293,6 @@ fn testnet_genesis(
 			)],
 			..Default::default()
 		},
-		vesting: Default::default(),
 
 		// Consensus stuff.
 		darwinia_staking: DarwiniaStakingConfig {
