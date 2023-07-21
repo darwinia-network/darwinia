@@ -14,7 +14,7 @@ scale-info = { workspace = true }
 # frontier
 pallet-evm = { workspace = true }
 
-# paritytech
+# substrate
 frame-support = { workspace = true }
 frame-system  = { workspace = true }
 sp-core       = { workspace = true }
@@ -41,7 +41,7 @@ std = [
 	# frontier
 	"pallet-evm/std",
 
-	# paritytech
+	# substrate
 	"frame-support/std",
 	"frame-system/std",
 	"sp-core/std",

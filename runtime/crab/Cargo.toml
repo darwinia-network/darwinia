@@ -283,6 +283,8 @@ runtime-benchmarks = [
 	"darwinia-deposit/runtime-benchmarks",
 	"darwinia-ecdsa-authority/runtime-benchmarks",
 	"darwinia-message-transact/runtime-benchmarks",
+	"darwinia-precompile-assets/runtime-benchmarks",
+	"darwinia-precompile-staking/runtime-benchmarks",
 	"darwinia-staking/runtime-benchmarks",
 
 	# darwinia-messages-substrate

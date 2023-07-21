@@ -19,12 +19,6 @@
 // darwinia
 use crate::*;
 
-// TODO: https://github.com/paritytech/substrate/pull/13655
-#[cfg(feature = "runtime-benchmarks")]
-frame_support::parameter_types! {
-	pub const ExistentialDeposit:Balance = 1;
-}
-#[cfg(not(feature = "runtime-benchmarks"))]
 frame_support::parameter_types! {
 	pub const ExistentialDeposit:Balance = 0;
 }

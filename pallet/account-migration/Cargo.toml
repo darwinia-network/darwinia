@@ -67,6 +67,7 @@ runtime-benchmarks = [
 
 	# substrate
 	"frame-benchmarking/runtime-benchmarks",
+	"pallet-assets/runtime-benchmarks",
 ]
 
 try-runtime = [
