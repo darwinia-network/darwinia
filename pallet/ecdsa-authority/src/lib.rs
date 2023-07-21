@@ -510,7 +510,7 @@ pub mod pallet {
 			} else {
 				T::MessageRoot::get()?
 			};
-			
+
 			if force {
 				return Some(new_message_root);
 			}
