@@ -244,6 +244,7 @@ impl darwinia_staking::Config for TestRuntime {
 	type UnixTime = Timestamp;
 	type WeightInfo = ();
 }
+#[cfg(not(feature = "runtime-benchmarks"))]
 impl darwinia_staking::DepositConfig for TestRuntime {}
 
 frame_support::construct_runtime! {

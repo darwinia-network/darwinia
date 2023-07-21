@@ -76,10 +76,6 @@ impl Sign {
 		if let Ok(public_key) = crypto::secp256k1_ecdsa_recover(signature, message) {
 			&Self::hash(&public_key)[12..] == address
 		} else {
-			// https://github.com/paritytech/libsecp256k1/issues/134
-			#[cfg(feature = "runtime-benchmarks")]
-			return true;
-			#[cfg(not(feature = "runtime-benchmarks"))]
 			return false;
 		}
 	}

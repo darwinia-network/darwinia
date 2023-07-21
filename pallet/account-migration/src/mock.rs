@@ -53,7 +53,6 @@ impl frame_support::traits::UnixTime for Dummy {
 	}
 }
 
-#[cfg(not(feature = "runtime-benchmarks"))]
 #[sp_version::runtime_version]
 pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia2"),
@@ -65,19 +64,6 @@ pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	transaction_version: 0,
 	state_version: 0,
 };
-#[cfg(feature = "runtime-benchmarks")]
-#[sp_version::runtime_version]
-pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
-	spec_name: sp_runtime::create_runtime_str!("Benchmark"),
-	impl_name: sp_runtime::create_runtime_str!("Benchmark"),
-	authoring_version: 0,
-	spec_version: 0,
-	impl_version: 0,
-	apis: RUNTIME_API_VERSIONS,
-	transaction_version: 0,
-	state_version: 0,
-};
-
 frame_support::parameter_types! {
 	pub const Version: sp_version::RuntimeVersion = VERSION;
 }
@@ -131,6 +117,14 @@ impl pallet_balances::Config for Runtime {
 	type WeightInfo = ();
 }
 
+#[cfg(feature = "runtime-benchmarks")]
+pub enum BenchmarkHelper {}
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_assets::BenchmarkHelper<codec::Compact<AssetId>> for BenchmarkHelper {
+	fn create_asset_id_parameter(id: u32) -> codec::Compact<AssetId> {
+		(id as u64).into()
+	}
+}
 impl pallet_assets::Config for Runtime {
 	type ApprovalDeposit = ();
 	type AssetAccountDeposit = ();
@@ -138,6 +132,8 @@ impl pallet_assets::Config for Runtime {
 	type AssetId = AssetId;
 	type AssetIdParameter = codec::Compact<AssetId>;
 	type Balance = Balance;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = BenchmarkHelper;
 	type CallbackHandle = ();
 	type CreateOrigin =
 		frame_support::traits::AsEnsureOriginWithArg<frame_system::EnsureSigned<AccountId>>;

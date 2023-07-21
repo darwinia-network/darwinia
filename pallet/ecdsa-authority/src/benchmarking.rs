@@ -94,9 +94,7 @@ mod benchmarks {
 
 	#[benchmark]
 	fn submit_authorities_change_signature() {
-		// https://github.com/paritytech/libsecp256k1/issues/134
-		// let (sk, pk) = gen_pair(1);
-		let pk = frame_benchmarking::account("", 777, 777);
+		let (sk, pk) = test_utils::gen_pair(1);
 		let a = frame_benchmarking::account("", 0, 0);
 		let data = AuthoritiesChangeSigned {
 			operation: Operation::AddMember { new: a },
@@ -104,8 +102,7 @@ mod benchmarks {
 			message: Default::default(),
 			signatures: Default::default(),
 		};
-		// let sig = sign(&sk, &data.2 .0);
-		let sig = Default::default();
+		let sig = test_utils::sign(&sk, &data.message.0);
 
 		<Pallet<T>>::add_authority(RawOrigin::Root.into(), pk).unwrap();
 		<Pallet<T>>::presume_authority_change_succeed();
@@ -121,9 +118,7 @@ mod benchmarks {
 
 	#[benchmark]
 	fn submit_new_message_root_signature() {
-		// https://github.com/paritytech/libsecp256k1/issues/134
-		// let (sk, pk) = gen_pair(1);
-		let pk = frame_benchmarking::account("", 777, 777);
+		let (sk, pk) = test_utils::gen_pair(1);
 		let data = MessageRootSigned {
 			commitment: Commitment {
 				block_number: Default::default(),
@@ -134,8 +129,7 @@ mod benchmarks {
 			signatures: Default::default(),
 			authorized: Default::default(),
 		};
-		// let sig = sign(&sk, &data.1 .0);
-		let sig = Default::default();
+		let sig = test_utils::sign(&sk, &data.message.0);
 
 		<Pallet<T>>::add_authority(RawOrigin::Root.into(), pk).unwrap();
 		<Pallet<T>>::presume_authority_change_succeed();

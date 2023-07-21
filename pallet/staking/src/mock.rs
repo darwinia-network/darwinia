@@ -77,6 +77,14 @@ impl pallet_balances::Config for Runtime {
 	type WeightInfo = ();
 }
 
+#[cfg(feature = "runtime-benchmarks")]
+pub enum BenchmarkHelper {}
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_assets::BenchmarkHelper<codec::Compact<AssetId>> for BenchmarkHelper {
+	fn create_asset_id_parameter(id: u32) -> codec::Compact<AssetId> {
+		(id as u64).into()
+	}
+}
 impl pallet_assets::Config for Runtime {
 	type ApprovalDeposit = ();
 	type AssetAccountDeposit = ();
@@ -84,6 +92,8 @@ impl pallet_assets::Config for Runtime {
 	type AssetId = AssetId;
 	type AssetIdParameter = codec::Compact<AssetId>;
 	type Balance = Balance;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = BenchmarkHelper;
 	type CallbackHandle = ();
 	type CreateOrigin = frame_support::traits::AsEnsureOriginWithArg<
 		frame_system::EnsureSignedBy<frame_support::traits::IsInVec<()>, u32>,
