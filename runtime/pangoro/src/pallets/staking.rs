@@ -19,8 +19,6 @@
 // darwinia
 use crate::*;
 
-fast_runtime_or_not!(MinStakingDuration, ConstU32<{ 5 * MINUTES }>, ConstU32<{ 14 * DAYS }>);
-
 pub enum RingStaking {}
 impl darwinia_staking::Stake for RingStaking {
 	type AccountId = AccountId;
@@ -77,7 +75,7 @@ impl darwinia_staking::Config for Runtime {
 	type Kton = KtonStaking;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = ConstU32<16>;
-	type MinStakingDuration = MinStakingDuration;
+	type MinStakingDuration = ConstU32<{ 10 * MINUTES }>;
 	type PayoutFraction = PayoutFraction;
 	type RewardRemainder = Treasury;
 	type Ring = RingStaking;
