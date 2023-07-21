@@ -283,7 +283,7 @@ fn try_update_message_root_should_work() {
 			vec![Event::CollectingNewMessageRootSignatures { message }]
 		);
 
-		// Update the message root every 10 blocks, if the previous message get authorized
+		// Update the message root every 10 blocks if the previous message get authorized
 		// quickly(within 10 blocks).
 		//
 		// Ensure we are in a new 10-blocks range(sync interval).

@@ -33,14 +33,18 @@ mod benchmarks {
 	where
 		T: Config,
 	{
+		const AMOUNT: Balance = 1_024;
+
 		let encoded_kton_id = KTON_ID.encode();
+
+		<pallet_balances::TotalIssuance<T>>::put(AMOUNT);
 
 		if let Some(mut asset_details) = migration::take_storage_value::<AssetDetails>(
 			b"Assets",
 			b"Asset",
 			&Blake2_128Concat::hash(&encoded_kton_id),
 		) {
-			asset_details.supply = 1_024;
+			asset_details.supply = AMOUNT;
 
 			migration::put_storage_value(
 				b"Assets",
@@ -53,14 +57,14 @@ mod benchmarks {
 		<Accounts<T>>::insert(
 			from,
 			AccountInfo {
-				data: AccountData { free: 1_024, ..Default::default() },
+				data: AccountData { free: AMOUNT, ..Default::default() },
 				..Default::default()
 			},
 		);
 		<KtonAccounts<T>>::insert(
 			from,
 			AssetAccount {
-				balance: 1_024,
+				balance: AMOUNT,
 				is_frozen: Default::default(),
 				reason: ExistenceReason::Sufficient,
 				extra: Default::default(),
