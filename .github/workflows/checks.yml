@@ -22,7 +22,7 @@ on:
       - "**.yml"
 
 env:
-  CACHE_VERSION: 0
+  CACHE_VERSION: 1
 
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
   CARGO_TERM_COLOR: always
@@ -53,16 +53,17 @@ jobs:
         uses: pierotofy/set-swap-space@master
         with:
           swap-size-gb: 8
+      - name: Fetch latest code
+        uses: actions/checkout@v3
       - name: Setup build environment
         run: |
           sudo apt install -y clang llvm protobuf-compiler
           rustup show
-      - name: Fetch latest code
-        uses: actions/checkout@v3
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
         with:
           prefix-key: ${{ env.CACHE_VERSION }}
+          key: ${{ matrix.action }}
       - name: Action ${{ matrix.action }}
         if: matrix.action != 'test'
         run: cargo ${{ matrix.action }} --locked -p darwinia --features evm-tracing,all-natives --profile ci-dev
