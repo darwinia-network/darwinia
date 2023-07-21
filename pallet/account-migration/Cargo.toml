@@ -23,7 +23,6 @@ frame-system    = { workspace = true }
 pallet-assets   = { workspace = true }
 pallet-balances = { workspace = true }
 pallet-identity = { workspace = true }
-pallet-vesting  = { workspace = true }
 sp-core         = { workspace = true }
 sp-io           = { workspace = true }
 sp-runtime      = { workspace = true }
@@ -54,7 +53,6 @@ std = [
 	"pallet-assets/std",
 	"pallet-balances/std",
 	"pallet-identity/std",
-	"pallet-vesting/std",
 	"sp-core/std",
 	"sp-io/std",
 	"sp-runtime/std",
@@ -75,5 +73,3 @@ try-runtime = [
 	# substrate
 	"frame-support/try-runtime",
 ]
-
-no-vesting = []

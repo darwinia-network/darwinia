@@ -32,7 +32,7 @@ parachain-info                  = { workspace = true }
 cumulus-pallet-session-benchmarking = { workspace = true, optional = true }
 
 # darwinia
-darwinia-account-migration        = { workspace = true, features = ["no-vesting"] }
+darwinia-account-migration        = { workspace = true }
 darwinia-common-runtime           = { workspace = true }
 darwinia-deposit                  = { workspace = true }
 darwinia-ecdsa-authority          = { workspace = true }

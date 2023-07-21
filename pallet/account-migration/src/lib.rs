@@ -60,8 +60,6 @@ use darwinia_deposit::Deposit;
 use darwinia_staking::Ledger;
 use dc_primitives::{AccountId as AccountId20, AssetId, Balance, BlockNumber, Index};
 // substrate
-#[cfg(not(feature = "no-vesting"))]
-use frame_support::traits::{LockableCurrency, WithdrawReasons};
 use frame_support::{
 	migration,
 	pallet_prelude::*,
@@ -71,7 +69,6 @@ use frame_support::{
 use frame_system::{pallet_prelude::*, AccountInfo, RawOrigin};
 use pallet_balances::AccountData;
 use pallet_identity::{Judgement, Registration};
-use pallet_vesting::VestingInfo;
 use sp_core::{
 	ed25519::{Public as Ep, Signature as Es},
 	sr25519::{Public as Sp, Signature as Ss},
@@ -103,16 +100,6 @@ pub mod pallet {
 	#[pallet::pallet]
 	pub struct Pallet<T>(PhantomData<T>);
 
-	/// Enable vesting for account migration.
-	#[cfg(not(feature = "no-vesting"))]
-	pub trait OptionalVesting:
-		pallet_vesting::Config<Currency = pallet_balances::Pallet<Self>>
-	{
-	}
-	/// Disable vesting for account migration.
-	#[cfg(feature = "no-vesting")]
-	pub trait OptionalVesting {}
-
 	#[pallet::config]
 	pub trait Config:
 		frame_system::Config<
@@ -126,7 +113,6 @@ pub mod pallet {
 		+ pallet_identity::Config<Currency = pallet_balances::Pallet<Self>>
 		+ darwinia_deposit::Config
 		+ darwinia_staking::Config
-		+ OptionalVesting
 	{
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
@@ -171,15 +157,6 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn kton_account_of)]
 	pub type KtonAccounts<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, AssetAccount>;
-
-	/// [`pallet_vesting::Vesting`] data.
-	///
-	/// <https://github.dev/paritytech/substrate/blob/19162e43be45817b44c7d48e50d03f074f60fbf4/frame/vesting/src/lib.rs#L188>
-	#[pallet::storage]
-	#[pallet::unbounded]
-	#[pallet::getter(fn vesting_of)]
-	pub type Vestings<T: Config> =
-		StorageMap<_, Blake2_128Concat, AccountId32, Vec<VestingInfo<Balance, BlockNumber>>>;
 
 	/// [`darwinia_deposit::Deposits`] data.
 	#[pallet::storage]
@@ -459,21 +436,6 @@ pub mod pallet {
 						asset_details,
 					);
 				}
-			}
-			#[cfg(not(feature = "no-vesting"))]
-			if let Some(v) = <Vestings<T>>::take(from) {
-				let locked = v.iter().map(|v| v.locked()).sum();
-
-				<pallet_vesting::Vesting<T>>::insert(
-					to,
-					BoundedVec::try_from(v).map_err(|_| <Error<T>>::ExceedMaxVestings)?,
-				);
-
-				// https://github.dev/paritytech/substrate/blob/19162e43be45817b44c7d48e50d03f074f60fbf4/frame/vesting/src/lib.rs#L248
-				let reasons = WithdrawReasons::TRANSFER | WithdrawReasons::RESERVE;
-
-				// https://github.dev/paritytech/substrate/blob/19162e43be45817b44c7d48e50d03f074f60fbf4/frame/vesting/src/lib.rs#L86
-				<pallet_balances::Pallet<T>>::set_lock(*b"vesting ", to, locked, reasons);
 			}
 			if let Some(mut i) = <Identities<T>>::take(from) {
 				i.deposit = 0;
