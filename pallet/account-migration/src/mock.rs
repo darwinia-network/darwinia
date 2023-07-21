@@ -159,16 +159,6 @@ frame_support::parameter_types! {
 			frame_support::traits::WithdrawReasons::TRANSFER | frame_support::traits::WithdrawReasons::RESERVE
 		);
 }
-impl pallet_vesting::Config for Runtime {
-	type BlockNumberToBalance = sp_runtime::traits::ConvertInto;
-	type Currency = Balances;
-	type MinVestedTransfer = ();
-	type RuntimeEvent = RuntimeEvent;
-	type UnvestedFundsAllowedWithdrawReasons = UnvestedFundsAllowedWithdrawReasons;
-	type WeightInfo = ();
-
-	const MAX_VESTING_SCHEDULES: u32 = 1;
-}
 
 impl darwinia_deposit::Config for Runtime {
 	type Kton = Dummy;
@@ -226,7 +216,6 @@ frame_support::construct_runtime! {
 		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
 		Assets: pallet_assets,
-		Vesting: pallet_vesting,
 		Deposit: darwinia_deposit,
 		Staking: darwinia_staking,
 		Identity: pallet_identity,

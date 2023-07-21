@@ -66,13 +66,6 @@ mod benchmarks {
 				extra: Default::default(),
 			},
 		);
-		<Vestings<T>>::insert(
-			from,
-			vec![
-				VestingInfo::new(1, Default::default(), Default::default());
-				<T as pallet_vesting::Config>::MAX_VESTING_SCHEDULES as usize
-			],
-		);
 		<Identities<T>>::insert(
 			from,
 			Registration {

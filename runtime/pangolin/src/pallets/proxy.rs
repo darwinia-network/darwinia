@@ -55,7 +55,6 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 				c,
 				RuntimeCall::Balances(..)
 					| RuntimeCall::Assets(..)
-					| RuntimeCall::Vesting(pallet_vesting::Call::vested_transfer { .. })
 					| RuntimeCall::Deposit(..)
 					| RuntimeCall::DarwiniaStaking(..)
 					// Might contains transfer {
