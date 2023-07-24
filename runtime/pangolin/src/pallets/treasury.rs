@@ -27,7 +27,7 @@ frame_support::parameter_types! {
 // In order to use `Tips`, which bounded by `pallet_treasury::Config` rather
 // `pallet_treasury::Config<I>` Still use `DefaultInstance` here instead `Instance1`
 impl pallet_treasury::Config for Runtime {
-	type ApproveOrigin = RootOrAtLeastThreeFifth<CouncilCollective>;
+	type ApproveOrigin = Root;
 	type Burn = ();
 	type BurnDestination = ();
 	type Currency = Balances;
@@ -37,7 +37,7 @@ impl pallet_treasury::Config for Runtime {
 	type ProposalBond = ProposalBond;
 	type ProposalBondMaximum = ();
 	type ProposalBondMinimum = ConstU128<DARWINIA_PROPOSAL_REQUIREMENT>;
-	type RejectOrigin = RootOrMoreThanHalf<CouncilCollective>;
+	type RejectOrigin = RootOrAll<CouncilCollective>;
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
 	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
