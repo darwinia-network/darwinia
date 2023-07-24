@@ -22,7 +22,7 @@ on:
       - "**.yml"
 
 env:
-  CACHE_VERSION: 1
+  CACHE_VERSION: 2
 
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
   CARGO_TERM_COLOR: always
@@ -64,6 +64,7 @@ jobs:
         with:
           prefix-key: ${{ env.CACHE_VERSION }}
           key: ${{ matrix.action }}
+          cache-all-crates: true
       - name: Action ${{ matrix.action }}
         if: matrix.action != 'test'
         run: cargo ${{ matrix.action }} --locked -p darwinia --features all-natives,evm-tracing --profile ci-dev
