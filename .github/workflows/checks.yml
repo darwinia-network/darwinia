@@ -22,7 +22,7 @@ on:
       - "**.yml"
 
 env:
-  CACHE_VERSION: 2
+  CACHE_VERSION: 3
 
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
   CARGO_TERM_COLOR: always
@@ -66,16 +66,18 @@ jobs:
           key: ${{ matrix.action }}
           cache-all-crates: true
       - name: Action ${{ matrix.action }}
-        if: matrix.action != 'test'
-        run: cargo ${{ matrix.action }} --locked -p darwinia --features all-natives,evm-tracing --profile ci-dev
+        if: matrix.action == 'build'
+        run: cargo build --locked -p darwinia --features all-natives,evm-tracing --profile ci-dev
       - name: Action ${{ matrix.action }}
         if: matrix.action == 'test'
-        run: SKIP_WASM_BUILD=1 cargo ${{ matrix.action }} --locked --features all-natives,runtime-benchmarks --profile ci-dev
-      - name: Change path
-        if: matrix.action != 'test'
-        run: mv target/ci-dev/darwinia .
+        run: SKIP_WASM_BUILD=1 cargo test --locked --features all-natives,runtime-benchmarks --profile ci-dev
+      - name: Configure artifacts
+        if: matrix.action == 'build'
+        run: |
+          mv target/ci-dev/darwinia .
+          .github/shrink-cache.sh
       - name: Upload
-        if: matrix.action != 'test'
+        if: matrix.action == 'build'
         uses: actions/upload-artifact@v2
         with:
           name: darwinia
