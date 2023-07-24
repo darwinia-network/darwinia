@@ -22,7 +22,7 @@ on:
       - "**.yml"
 
 env:
-  CACHE_VERSION: 1
+  CACHE_VERSION: 0
 
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
   CARGO_TERM_COLOR: always
@@ -60,21 +60,28 @@ jobs:
           sudo apt install -y clang llvm protobuf-compiler
           rustup show
       - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
+        uses: actions/cache@v3
         with:
-          prefix-key: ${{ env.CACHE_VERSION }}
-          key: ${{ matrix.action }}
+          path: |
+            ./target
+            ~/.cargo
+          key: ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-
+            ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-
       - name: Action ${{ matrix.action }}
-        if: matrix.action != 'test'
-        run: cargo ${{ matrix.action }} --locked -p darwinia --features all-natives,evm-tracing --profile ci-dev
+        if: matrix.action == 'build'
+        run: cargo build --locked -p darwinia --features all-natives,evm-tracing --profile ci-dev
       - name: Action ${{ matrix.action }}
         if: matrix.action == 'test'
-        run: SKIP_WASM_BUILD=1 cargo ${{ matrix.action }} --locked --features all-natives,runtime-benchmarks --profile ci-dev
-      - name: Change path
-        if: matrix.action != 'test'
-        run: mv target/ci-dev/darwinia .
+        run: SKIP_WASM_BUILD=1 cargo test --locked --features all-natives,runtime-benchmarks --profile ci-dev
+      - name: Configure artifacts
+        if: matrix.action == 'build'
+        run: |
+          mv target/ci-dev/darwinia .
+          .github/shrink-cache.sh
       - name: Upload
-        if: matrix.action != 'test'
+        if: matrix.action == 'build'
         uses: actions/upload-artifact@v2
         with:
           name: darwinia
