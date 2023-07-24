@@ -22,7 +22,7 @@ on:
       - "**.yml"
 
 env:
-  CACHE_VERSION: 3
+  CACHE_VERSION: 0
 
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
   CARGO_TERM_COLOR: always
@@ -60,11 +60,15 @@ jobs:
           sudo apt install -y clang llvm protobuf-compiler
           rustup show
       - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
+        uses: actions/cache@v3
         with:
-          prefix-key: ${{ env.CACHE_VERSION }}
-          key: ${{ matrix.action }}
-          cache-all-crates: true
+          path: |
+            ./target
+            ~/.cargo
+          key: ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-
+            ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-
       - name: Action ${{ matrix.action }}
         if: matrix.action == 'build'
         run: cargo build --locked -p darwinia --features all-natives,evm-tracing --profile ci-dev
