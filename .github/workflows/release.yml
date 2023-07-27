@@ -43,6 +43,10 @@ jobs:
             suffix: tracing
             enable_tar_bz2: false
     steps:
+      - name: Install sudo for `free-disk-space`
+        run: |
+          apt update -y
+          apt install --no-install-recommends -y sudo
       - name: Free disk space
         uses: jlumbroso/free-disk-space@main
         with:
@@ -51,7 +55,7 @@ jobs:
           dotnet: true
           haskell: true
           large-packages: false
-          docker-images: true
+          docker-images: false
           swap-storage: false
       - name: Set swap space
         uses: pierotofy/set-swap-space@master
