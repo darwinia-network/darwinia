@@ -47,6 +47,7 @@ jobs:
         with:
           package: darwinia
           features: all-natives
+          cache_prefix: ${{ matrix.action }}-${{ env.CACHE_VERSION }}
           enable_tar_bz2: true
 
       - name: Upload

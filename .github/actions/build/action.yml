@@ -23,10 +23,14 @@ inputs:
     description: "enable cache"
     required: false
     default: "true"
-  script_shrink_cache:
+  cache_shrink_script:
     description: "shrink cache script file path"
     required: false
     default: ".github/shrink-cache.sh"
+  cache_prefix:
+    description: "cache key prefix"
+    required: false
+    default: "darwinia"
   enable_tar_bz2:
     description: "enable package tar.bz2"
     required: false
@@ -60,10 +64,10 @@ runs:
       with:
         path: |
           ./target
-        key: ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-${{ hashFiles('Cargo.lock') }}
+        key: ${{ inputs.cache_prefix }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-${{ hashFiles('Cargo.lock') }}
         restore-keys: |
-          ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-
-          ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-
+          ${{ inputs.cache_prefix }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-
+          ${{ inputs.cache_prefix }}-${{ runner.os }}-
 
     - name: Build
       shell: bash
@@ -110,5 +114,5 @@ runs:
           --name=build-darwinia \
           -v=$(pwd):/build \
           darwinia-network/build-tool:latest \
-          ${{ inputs.script_shrink_cache }} release
+          ${{ inputs.cache_shrink_script }} release
 

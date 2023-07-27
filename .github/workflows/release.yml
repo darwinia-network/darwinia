@@ -73,6 +73,7 @@ jobs:
           package: darwinia
           features: ${{ matrix.artifact.features }}
           suffix: ${{ matrix.artifact.suffix }}
+          enable_cache: false
           enable_tar_bz2: ${{ matrix.artifact.enable_tar_bz2 }}
       - name: Build mainnets
         id: build-mainnets
@@ -82,6 +83,7 @@ jobs:
           package: darwinia
           features: ${{ matrix.artifact.features }}
           suffix: ${{ matrix.artifact.suffix }}
+          enable_cache: false
       - name: Upload shared
         uses: actions/upload-artifact@v3
         with:
