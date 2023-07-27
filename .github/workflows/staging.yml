@@ -50,6 +50,7 @@ jobs:
 #          pip3 install --upgrade pip
 #          pip3 install cmake --upgrade
 #          rustup show
+
       - name: Cache cargo
         uses: actions/cache@v3
         with:
@@ -60,18 +61,35 @@ jobs:
             ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-
             ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-
 
+      - name: Build image for compile
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: .maintain/docker/build.Dockerfile
+          tags: darwinia-network/build-tool:latest
+
+      - name: Build
+        run: |
+          docker run -it --rm \
+            --name=build-darwinia \
+            -v=$(pwn):/build \
+            cargo build --release --locked -p=darwinia --features=al-natives
+
+
+
 #      - name: Build
 #        run: cargo build --release --locked -p darwinia --features all-natives
 
-      - name: Configure artifacts
-        run: |
-          mkdir -p shared
-          tar cjSf \
-            shared/darwinia2-x86_64-linux-gnu.tar.bz2 \
-            -C \
-            target/release \
-            darwinia
-          .github/shrink-cache.sh
+#      - name: Configure artifacts
+#        run: |
+#          mkdir -p shared
+#          tar cjSf \
+#            shared/darwinia2-x86_64-linux-gnu.tar.bz2 \
+#            -C \
+#            target/release \
+#            darwinia
+#          .github/shrink-cache.sh
+
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
