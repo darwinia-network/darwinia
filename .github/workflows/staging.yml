@@ -72,7 +72,7 @@ jobs:
         run: |
           docker run -it --rm \
             --name=build-darwinia \
-            -v=$(pwn):/build \
+            -v=$(pwd):/build \
             cargo build --release --locked -p=darwinia --features=al-natives
 
 
