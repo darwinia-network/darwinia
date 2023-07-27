@@ -15,12 +15,26 @@ inputs:
     description: "output file suffix"
     required: false
     default: ""
+  build_dockerfile:
+    description: "build dockerfile path"
+    required: true
+    default: ".maintain/docker/build.Dockerfile"
+  enable_cache:
+    description: "enable cache"
+    required: false
+    default: "true"
+  script_shrink_cache:
+    description: "shrink cache script file path"
+    required: false
+    default: ".github/shrink-cache.sh"
   enable_tar_bz2:
-    description: "Enalbe package tar.bz2"
-    default: true
+    description: "enable package tar.bz2"
+    required: false
+    default: "true"
   enable_tar_zst:
-    description: "Enable package tar.zst"
-    default: true
+    description: "enable package tar.zst"
+    required: false
+    default: "true"
 
 outputs:
   PACKAGE_BINARY_BZ2:
@@ -33,16 +47,24 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup build environment
-      shell: bash
-      run: |
-        apt update -y
-        apt install --no-install-recommends -y \
-          ca-certificates curl git python3-pip zstd \
-          clang make gcc g++ libssl-dev pkg-config protobuf-compiler
-        pip3 install --upgrade pip
-        pip3 install cmake --upgrade
-        rustup show
+    - name: Build image for compile
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ${{ inputs.build_dockerfile }}
+        tags: darwinia-network/build-tool:latest
+
+    - name: Cache cargo
+      uses: actions/cache@v3
+      if: inputs.enable_cache == "true"
+      with:
+        path: |
+          ./target
+        key: ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-${{ hashFiles('Cargo.lock') }}
+        restore-keys: |
+          ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-
+          ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-
+
     - name: Build
       shell: bash
       id: cargo_build
@@ -53,9 +75,13 @@ runs:
         ENABLE_TAR_BZ2=${{ inputs.enable_tar_bz2 }}
         ENABLE_TAR_ZST=${{ inputs.enable_tar_zst }}
 
-        cargo build --release --locked \
-          ${PACKAGE:+--package=$PACKAGE} \
-          ${FEATURES:+--features=$FEATURES}
+        docker run -it --rm \
+          --name=build-darwinia \
+          -v=$(pwd):/build \
+          darwinia-network/build-tool:latest \
+            cargo build --release --locked \
+              ${PACKAGE:+--package=$PACKAGE} \
+              ${FEATURES:+--features=$FEATURES}
 
         if [ -z "${PACKAGE}" ]; then
           exit 0
@@ -75,3 +101,14 @@ runs:
           tar cf ${PACKAGE_BINARY_ZST} -C target/release ${PACKAGE} -I zstd
           echo "PACKAGE_BINARY_ZST=$PACKAGE_BINARY_ZST" >> $GITHUB_OUTPUT
         fi
+
+    - name: Shrink Cache
+      shell: bash
+      if: inputs.enable_cache == "true"
+      run: |
+        docker run -it --rm \
+          --name=build-darwinia \
+          -v=$(pwd):/build \
+          darwinia-network/build-tool:latest \
+          ${{ inputs.script_shrink_cache }} release
+

@@ -41,10 +41,6 @@ jobs:
             suffix: tracing
             enable_tar_bz2: false
     steps:
-      - name: Install sudo for `free-disk-space`
-        run: |
-          apt update -y
-          apt install --no-install-recommends -y sudo
       - name: Free disk space
         uses: jlumbroso/free-disk-space@main
         with:
@@ -61,13 +57,20 @@ jobs:
           swap-size-gb: 8
       - name: Fetch latest code
         uses: actions/checkout@v3
+
+      - name: Build image for compile
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: .maintain/docker/build.Dockerfile
+          tags: darwinia-network/build-tool:latest
+
       - name: Build testnets
         id: build-testnets
         if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.artifact.type == 'testnets') }}
         uses: ./.github/actions/build
         with:
           package: darwinia
-          rust_toolchain: ${{ env.RUST_TOOLCHAIN }}
           features: ${{ matrix.artifact.features }}
           suffix: ${{ matrix.artifact.suffix }}
           enable_tar_bz2: ${{ matrix.artifact.enable_tar_bz2 }}
