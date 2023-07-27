@@ -23,8 +23,6 @@ jobs:
   build-package:
     name: Build package
     runs-on: ubuntu-latest
-    container:
-      image: ubuntu:20.04
     strategy:
       matrix:
         artifact:
