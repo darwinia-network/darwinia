@@ -6,9 +6,14 @@ on:
   workflow_dispatch:
 
 env:
+  CACHE_VERSION: 0
+
+  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
   CARGO_TERM_COLOR: always
 
   DOCKER_REGISTRY: ghcr.io
+
+  RUST_BACKTRACE: full
 
 jobs:
   build-package:
@@ -17,28 +22,44 @@ jobs:
     container:
       image: ubuntu:20.04
     steps:
-      - name: Install dependencies
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          docker-images: true
+          swap-storage: false
+      - name: Set swap space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 8
+      - name: Fetch latest code
+        uses: actions/checkout@v3
+      - name: Setup build environment
         run: |
           apt update -y
           apt install --no-install-recommends -y \
-            ca-certificates curl git python3-pip \
+            ca-certificates curl git python3-pip zstd \
             clang make gcc g++ libssl-dev pkg-config protobuf-compiler
           pip3 install --upgrade pip
           pip3 install cmake --upgrade
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
+          rustup show
+      - name: Cache cargo
+        uses: actions/cache@v3
         with:
-          toolchain: nightly
-      - name: Fetch latest code
-        uses: actions/checkout@v3
-      - name: Cache target
-        uses: actions/cache@v2
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          path: |
+            ./target
+            ~/.cargo
+          key: ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-
+            ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-
       - name: Build
         run: cargo build --release --locked -p darwinia --features all-natives
-      - name: Collect shared
+      - name: Configure artifacts
         run: |
           mkdir -p shared
           tar cjSf \
@@ -46,9 +67,8 @@ jobs:
             -C \
             target/release \
             darwinia
-      - name: Optimize cache
-        run: .github/shrink-cache.sh || exit 0
-      - name: Upload shared
+          .github/shrink-cache.sh
+      - name: Upload
         uses: actions/upload-artifact@v2
         with:
           name: darwinia-artifact

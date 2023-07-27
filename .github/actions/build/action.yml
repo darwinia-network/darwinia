@@ -1,0 +1,77 @@
+name: "Build"
+
+description: "Darwinia artifacts building action."
+
+inputs:
+  package:
+    description: "cargo build package"
+    required: false
+    default: "darwinia"
+  features:
+    description: "build features"
+    required: false
+    default: ""
+  suffix:
+    description: "output file suffix"
+    required: false
+    default: ""
+  enable_tar_bz2:
+    description: "Enalbe package tar.bz2"
+    default: true
+  enable_tar_zst:
+    description: "Enable package tar.zst"
+    default: true
+
+outputs:
+  PACKAGE_BINARY_BZ2:
+    description: "Build package binary path (tar bz2)"
+    value: ${{ steps.cargo_build.outputs.PACKAGE_BINARY_BZ2 }}
+  PACKAGE_BINARY_ZST:
+    description: "Build package binary path (tar zst)"
+    value: ${{ steps.cargo_build.outputs.PACKAGE_BINARY_ZST }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup build environment
+      shell: bash
+      run: |
+        apt update -y
+        apt install --no-install-recommends -y \
+          ca-certificates curl git python3-pip zstd \
+          clang make gcc g++ libssl-dev pkg-config protobuf-compiler
+        pip3 install --upgrade pip
+        pip3 install cmake --upgrade
+        rustup show
+    - name: Build
+      shell: bash
+      id: cargo_build
+      run: |
+        PACKAGE=${{ inputs.package }}
+        FEATURES=${{ inputs.features }}
+        SUFFIX=${{ inputs.suffix }}
+        ENABLE_TAR_BZ2=${{ inputs.enable_tar_bz2 }}
+        ENABLE_TAR_ZST=${{ inputs.enable_tar_zst }}
+
+        cargo build --release --locked \
+          ${PACKAGE:+--package=$PACKAGE} \
+          ${FEATURES:+--features=$FEATURES}
+
+        if [ -z "${PACKAGE}" ]; then
+          exit 0
+        fi
+
+        DIST_PATH=build
+        mkdir -p ${DIST_PATH}
+
+        if [ "${ENABLE_TAR_BZ2}" == "true" ]; then
+          PACKAGE_BINARY_BZ2=${DIST_PATH}/${PACKAGE}${SUFFIX:+-$SUFFIX}-x86_64-linux-gnu.tar.bz2
+          tar cjSf ${PACKAGE_BINARY_BZ2} -C target/release ${PACKAGE}
+          echo "PACKAGE_BINARY_BZ2=$PACKAGE_BINARY_BZ2" >> $GITHUB_OUTPUT
+        fi
+
+        if [ "${ENABLE_TAR_ZST}" == "true" ]; then
+          PACKAGE_BINARY_ZST=${DIST_PATH}/${PACKAGE}${SUFFIX:+-$SUFFIX}-x86_64-linux-gnu.tar.zst
+          tar cf ${PACKAGE_BINARY_ZST} -C target/release ${PACKAGE} -I zstd
+          echo "PACKAGE_BINARY_ZST=$PACKAGE_BINARY_ZST" >> $GITHUB_OUTPUT
+        fi
