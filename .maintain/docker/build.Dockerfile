@@ -10,8 +10,8 @@ RUN apt-get update \
     && pip3 install --upgrade pip \
     && pip3 install cmake --upgrade \
     && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
-    && cargo default $RUST_TOOLCHAIN \
-    && source "$HOME/.cargo/env"
+    && . "$HOME/.cargo/env" \
+    && rustup default $RUST_TOOLCHAIN
 
 WORKDIR /build
 
