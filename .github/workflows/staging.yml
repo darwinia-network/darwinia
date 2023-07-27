@@ -56,7 +56,6 @@ jobs:
         with:
           path: |
             ./target
-            ~/.cargo
           key: ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-${{ hashFiles('Cargo.lock') }}
           restore-keys: |
             ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-
