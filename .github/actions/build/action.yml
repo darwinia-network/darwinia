@@ -22,7 +22,7 @@ inputs:
   enable_cache:
     description: "enable cache"
     required: false
-    default: true
+    default: 'true'
   cache_shrink_script:
     description: "shrink cache script file path"
     required: false
@@ -34,11 +34,11 @@ inputs:
   enable_tar_bz2:
     description: "enable package tar.bz2"
     required: false
-    default: true
+    default: 'true'
   enable_tar_zst:
     description: "enable package tar.zst"
     required: false
-    default: true
+    default: 'true'
 
 outputs:
   PACKAGE_BINARY_BZ2:
@@ -60,7 +60,7 @@ runs:
 
     - name: Cache cargo
       uses: actions/cache@v3
-      if: ${{ inputs.enable_cache == "true" }}
+      if: ${{ inputs.enable_cache == 'true' }}
       with:
         path: |
           ./target
@@ -108,7 +108,7 @@ runs:
 
     - name: Shrink Cache
       shell: bash
-      if: ${{ inputs.enable_cache == "true" }}
+      if: ${{ inputs.enable_cache == 'true' }}
       run: |
         docker run -it --rm \
           --name=build-darwinia \
