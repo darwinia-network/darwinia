@@ -75,7 +75,7 @@ runs:
         ENABLE_TAR_BZ2=${{ inputs.enable_tar_bz2 }}
         ENABLE_TAR_ZST=${{ inputs.enable_tar_zst }}
 
-        docker run -it --rm \
+        docker run --rm \
           --name=build-darwinia \
           -v=$(pwd):/build \
           darwinia-network/build-tool:latest \
