@@ -5,6 +5,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
+  # TODO: just for test
+  pull_request:
+    branches:
+      - main
+
 env:
   CACHE_VERSION: 0
 
