@@ -60,7 +60,7 @@ runs:
 
     - name: Cache cargo
       uses: actions/cache@v3
-      if: inputs.enable_cache == "true"
+      if: ${{ inputs.enable_cache == "true" }}
       with:
         path: |
           ./target
@@ -108,7 +108,7 @@ runs:
 
     - name: Shrink Cache
       shell: bash
-      if: inputs.enable_cache == "true"
+      if: ${{ inputs.enable_cache == "true" }}
       run: |
         docker run -it --rm \
           --name=build-darwinia \
