@@ -62,7 +62,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: .maintain/docker/build.Dockerfile
+          file: .maintain/docker/ubuntu:20.04.Dockerfile
           tags: darwinia-network/build-tool:latest
 
       - name: Build testnets

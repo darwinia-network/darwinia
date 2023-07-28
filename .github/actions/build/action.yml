@@ -18,7 +18,7 @@ inputs:
   build_dockerfile:
     description: "build dockerfile path"
     required: true
-    default: ".maintain/docker/build.Dockerfile"
+    default: ".maintain/docker/ubuntu:20.04.Dockerfile"
   enable_cache:
     description: "enable cache"
     required: false
