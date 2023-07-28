@@ -79,11 +79,9 @@ runs:
         ENABLE_TAR_BZ2=${{ inputs.enable_tar_bz2 }}
         ENABLE_TAR_ZST=${{ inputs.enable_tar_zst }}
 
-        SOURCE_PATH=$(pwd)
-
         docker run -i --rm \
           --name=build-darwinia \
-          -v=${SOURCE_PATH}:/build \
+          -v=$(pwd):/build \
           darwinia-network/build-tool:latest \
             cargo build --release --locked \
               ${PACKAGE:+--package=$PACKAGE} \

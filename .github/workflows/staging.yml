@@ -42,7 +42,6 @@ jobs:
         with:
           package: darwinia
           features: all-natives
-          enable_cache: false
           cache_prefix: staging-${{ env.CACHE_VERSION }}
           enable_tar_bz2: true
 
