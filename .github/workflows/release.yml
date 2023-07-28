@@ -49,7 +49,7 @@ jobs:
           dotnet: true
           haskell: true
           large-packages: true
-          docker-images: false
+          docker-images: true
           swap-storage: false
       - name: Set swap space
         uses: pierotofy/set-swap-space@master
