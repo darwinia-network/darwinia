@@ -79,13 +79,19 @@ runs:
         ENABLE_TAR_BZ2=${{ inputs.enable_tar_bz2 }}
         ENABLE_TAR_ZST=${{ inputs.enable_tar_zst }}
 
+        # docker run -i --rm \
+        #   --name=build-darwinia \
+        #   -v=$(pwd):/build \
+        #   darwinia-network/build-tool:latest \
+        #     cargo build --release --locked \
+        #       ${PACKAGE:+--package=$PACKAGE} \
+        #       ${FEATURES:+--features=$FEATURES}
+
         docker run -i --rm \
           --name=build-darwinia \
           -v=$(pwd):/build \
           darwinia-network/build-tool:latest \
-            cargo build --release --locked \
-              ${PACKAGE:+--package=$PACKAGE} \
-              ${FEATURES:+--features=$FEATURES}
+            git rev-parse --short=11 HEAD
 
         if [ -z "${PACKAGE}" ]; then
           exit 0
