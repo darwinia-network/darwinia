@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PROFILE=${$1:-ci-dev}
+PROFILE=${1:-ci-dev}
 
 for p in darwinia
 do
