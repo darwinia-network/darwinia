@@ -7,19 +7,22 @@ on:
       - "pango*"
 
 env:
+  CACHE_VERSION: 0
+
+  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
   CARGO_TERM_COLOR: always
 
   DOCKER_REGISTRY: ghcr.io
 
-  # WARNING: If you upgrade this version, you need also provide a new srtool image tag same with this.
+  RUST_BACKTRACE: full
+  # If you upgrade to this version,
+  # you also need to provide a new `srtool` image tag that matches it.
   RUST_TOOLCHAIN: nightly-2023-05-22
 
 jobs:
   build-package:
     name: Build package
     runs-on: ubuntu-latest
-    container:
-      image: ubuntu:20.04
     strategy:
       matrix:
         artifact:
@@ -38,40 +41,46 @@ jobs:
             suffix: tracing
             enable_tar_bz2: false
     steps:
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: false
+      - name: Set swap space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 8
       - name: Fetch latest code
         uses: actions/checkout@v3
-
-      - uses: actions/checkout@v3
-        with:
-          repository: darwinia-network/devops
-          path: .github/actions
-
-      - uses: ./.github/actions/actions/fast-substrate
-        name: Build testnets
+      - name: Build testnets
         id: build-testnets
         if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.artifact.type == 'testnets') }}
+        uses: ./.github/actions/build
         with:
           package: darwinia
-          rust_toolchain: ${{ env.RUST_TOOLCHAIN }}
           features: ${{ matrix.artifact.features }}
           suffix: ${{ matrix.artifact.suffix }}
+          enable_cache: false
           enable_tar_bz2: ${{ matrix.artifact.enable_tar_bz2 }}
-
-      - uses: ./.github/actions/actions/fast-substrate
-        name: Build mainnets
+      - name: Build mainnets
         id: build-mainnets
         if: ${{ startsWith(github.ref, 'refs/tags/v') && (matrix.artifact.type == 'mainnets') }}
+        uses: ./.github/actions/build
         with:
           package: darwinia
           features: ${{ matrix.artifact.features }}
           suffix: ${{ matrix.artifact.suffix }}
-
+          enable_cache: false
       - name: Upload shared
         uses: actions/upload-artifact@v3
         with:
           name: darwinia-artifact
           path: build
-
       - name: Fail fast
         uses: vishnudxb/cancel-workflow@v1.2
         if: failure()
@@ -93,7 +102,6 @@ jobs:
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v3
-
       - name: Install deps
         env:
           GOMPLATE_VERSION: v3.11.4
@@ -104,7 +112,6 @@ jobs:
           curl -L -o ${BIN_PATH}/gomplate \
             https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64
           chmod +x ${BIN_PATH}/gomplate
-
       - name: Build ${{ matrix.runtime }} runtime
         id: srtool_build
         uses: chevdor/srtool-actions@v0.7.0
@@ -115,7 +122,6 @@ jobs:
           image: ghcr.io/darwinia-network/devops/srtool
           tag: ${{ env.RUST_TOOLCHAIN }}
           chain: ${{ matrix.runtime }}
-
       - name: Prepare artifact
         run: |
           mkdir -p build
@@ -126,13 +132,11 @@ jobs:
           cat .github/template-runtime.md \
             | gomplate -d srtool=build/${{ matrix.runtime }}-srtool.json \
             > build/release-template-${{ matrix.runtime }}.md
-
       - name: Upload ${{ matrix.runtime }} wasm
         uses: actions/upload-artifact@v3
         with:
           name: darwinia-artifact
           path: build
-
       - name: Fail fast
         uses: vishnudxb/cancel-workflow@v1.2
         if: failure()
@@ -195,7 +199,6 @@ jobs:
         with:
           name: darwinia-artifact
           path: build
-
       - name: Install deps
         env:
           GOMPLATE_VERSION: v3.11.4
@@ -206,25 +209,21 @@ jobs:
           curl -L -o ${BIN_PATH}/gomplate \
             https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64
           chmod +x ${BIN_PATH}/gomplate
-
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
       - name: Sha
         uses: benjlevesque/short-sha@v1.2
-
       - name: Prepare artifacts
         run: |
           mkdir -p deploy
           mv build/*.tar.bz2 deploy/
           mv build/*.tar.zst deploy/
-
       - name: Prepare release template
         run: |
           export RELEASE_SCHEMA='{"tag": "'$GIT_TAG_NAME'", "sha": "'$SHA'"}'
           cat .github/template-release.md \
             | gomplate -d schema='env:/RELEASE_SCHEMA?type=application/json' \
             > template-release.tmp.md
-
       - name: Fill mainnets release
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
@@ -233,7 +232,6 @@ jobs:
           cat build/release-template-darwinia.md >> template-release.md
           cat build/release-template-crab.md >> template-release.md
           cat template-release.tmp.md >> template-release.md
-
       - name: Fill testnets release
         if: startsWith(github.ref, 'refs/tags/pango')
         run: |
@@ -242,17 +240,14 @@ jobs:
           cat build/release-template-pangolin.md >> template-release.md
           cat build/release-template-pangoro.md >> template-release.md
           cat template-release.tmp.md >> template-release.md
-
       - name: Hash file
         run: cd deploy && sha256sum * | tee sha256sums.txt
-
       #      - name: Verify
       #        run: |
       #          set -xe
       #          cat template-release.md
       #          ls -la deploy/
       #          cat build/*.md
-
       - name: Publish github release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
@@ -262,7 +257,6 @@ jobs:
             deploy/*
           generate_release_notes: true
           token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Publish github release
         if: startsWith(github.ref, 'refs/tags/pango')
         uses: softprops/action-gh-release@v1
@@ -281,10 +275,8 @@ jobs:
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v3
-
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
-
       - name: Deploy testnets tracing node
         if: startsWith(github.ref, 'refs/tags/pango')
         env:
