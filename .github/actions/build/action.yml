@@ -110,7 +110,7 @@ runs:
       shell: bash
       if: ${{ inputs.enable_cache == 'true' }}
       run: |
-        docker run -it --rm \
+        docker run --rm \
           --name=build-darwinia \
           -v=$(pwd):/build \
           darwinia-network/build-tool:latest \
