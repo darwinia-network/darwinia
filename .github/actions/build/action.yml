@@ -81,19 +81,13 @@ runs:
 
         SOURCE_PATH=$(pwd)
 
-        # docker run -i --rm \
-        #   --name=build-darwinia \
-        #   -v=${SOURCE_PATH}:/build \
-        #   darwinia-network/build-tool:latest \
-        #     cargo build --release --locked \
-        #       ${PACKAGE:+--package=$PACKAGE} \
-        #       ${FEATURES:+--features=$FEATURES}
-
         docker run -i --rm \
           --name=build-darwinia \
           -v=${SOURCE_PATH}:/build \
           darwinia-network/build-tool:latest \
-            git rev-parse --short=11 HEAD
+            cargo build --release --locked \
+              ${PACKAGE:+--package=$PACKAGE} \
+              ${FEATURES:+--features=$FEATURES}
 
         if [ -z "${PACKAGE}" ]; then
           exit 0
