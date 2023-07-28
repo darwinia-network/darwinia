@@ -21,20 +21,20 @@ jobs:
     name: Build package [linux]
     runs-on: ubuntu-latest
     steps:
-      - name: Free disk space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: true
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: false
-      - name: Set swap space
-        uses: pierotofy/set-swap-space@master
-        with:
-          swap-size-gb: 8
+#      - name: Free disk space
+#        uses: jlumbroso/free-disk-space@main
+#        with:
+#          tool-cache: true
+#          android: true
+#          dotnet: true
+#          haskell: true
+#          large-packages: true
+#          docker-images: true
+#          swap-storage: false
+#      - name: Set swap space
+#        uses: pierotofy/set-swap-space@master
+#        with:
+#          swap-size-gb: 8
       - name: Fetch latest code
         uses: actions/checkout@v3
 
