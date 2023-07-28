@@ -49,7 +49,7 @@ jobs:
           dotnet: true
           haskell: true
           large-packages: true
-          docker-images: false
+          docker-images: true
           swap-storage: false
       - name: Set swap space
         uses: pierotofy/set-swap-space@master
@@ -62,7 +62,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: .maintain/docker/build.Dockerfile
+          file: .maintain/docker/ubuntu:20.04.Dockerfile
           tags: darwinia-network/build-tool:latest
 
       - name: Build testnets
