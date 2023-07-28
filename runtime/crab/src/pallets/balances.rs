@@ -20,7 +20,7 @@
 use crate::*;
 
 frame_support::parameter_types! {
-	pub const ExistentialDeposit:Balance = 0;
+	pub const ExistentialDeposit: Balance = EXISTENTIAL_DEPOSIT;
 }
 
 impl pallet_balances::Config for Runtime {
