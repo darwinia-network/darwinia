@@ -6,53 +6,50 @@ on:
   workflow_dispatch:
 
 env:
+  CACHE_VERSION: 0
+
+  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
   CARGO_TERM_COLOR: always
 
   DOCKER_REGISTRY: ghcr.io
+
+  RUST_BACKTRACE: full
 
 jobs:
   build-package:
     name: Build package [linux]
     runs-on: ubuntu-latest
-    container:
-      image: ubuntu:20.04
     steps:
-      - name: Install dependencies
-        run: |
-          apt update -y
-          apt install --no-install-recommends -y \
-            ca-certificates curl git python3-pip \
-            clang make gcc g++ libssl-dev pkg-config protobuf-compiler
-          pip3 install --upgrade pip
-          pip3 install cmake --upgrade
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
         with:
-          toolchain: nightly
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: false
+      - name: Set swap space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 8
       - name: Fetch latest code
         uses: actions/checkout@v3
-      - name: Cache target
-        uses: actions/cache@v2
+
+      - name: Build package
+        uses: ./.github/actions/build
         with:
-          path: target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: Build
-        run: cargo build --release --locked -p darwinia --features all-natives
-      - name: Collect shared
-        run: |
-          mkdir -p shared
-          tar cjSf \
-            shared/darwinia2-x86_64-linux-gnu.tar.bz2 \
-            -C \
-            target/release \
-            darwinia
-      - name: Optimize cache
-        run: .github/shrink-cache.sh || exit 0
-      - name: Upload shared
+          package: darwinia
+          features: all-natives
+          cache_prefix: staging-${{ env.CACHE_VERSION }}
+          enable_tar_bz2: true
+
+      - name: Upload
         uses: actions/upload-artifact@v2
         with:
           name: darwinia-artifact
-          path: shared
+          path: build
 
   build-docker-image:
     name: Build image
@@ -73,11 +70,11 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: darwinia-artifact
-          path: shared
+          path: build
       - name: Extract shared
         run: |
           mkdir -p dist
-          tar -xvf shared/darwinia2-x86_64-linux-gnu.tar.bz2 -C dist/
+          tar -xvf build/darwinia-x86_64-linux-gnu.tar.bz2 -C dist/
       - name: Publish docker image
         uses: docker/build-push-action@v3
         with:

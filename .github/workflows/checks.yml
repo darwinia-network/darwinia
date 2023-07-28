@@ -46,7 +46,7 @@ jobs:
           android: true
           dotnet: true
           haskell: true
-          large-packages: false
+          large-packages: true
           docker-images: true
           swap-storage: false
       - name: Set swap space
@@ -56,15 +56,12 @@ jobs:
       - name: Fetch latest code
         uses: actions/checkout@v3
       - name: Setup build environment
-        run: |
-          sudo apt install -y clang llvm protobuf-compiler
-          rustup show
+        run: sudo apt install -y clang llvm protobuf-compiler
       - name: Cache cargo
         uses: actions/cache@v3
         with:
           path: |
             ./target
-            ~/.cargo
           key: ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-${{ hashFiles('Cargo.lock') }}
           restore-keys: |
             ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-
