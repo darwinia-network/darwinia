@@ -80,7 +80,6 @@ runs:
         ENABLE_TAR_ZST=${{ inputs.enable_tar_zst }}
 
         SOURCE_PATH=$(pwd)
-        git config --global --add safe.directory ${SOURCE_PATH}
 
         # docker run -i --rm \
         #   --name=build-darwinia \
@@ -94,7 +93,8 @@ runs:
           --name=build-darwinia \
           -v=${SOURCE_PATH}:/build \
           darwinia-network/build-tool:latest \
-            git rev-parse --short=11 HEAD
+            git config --global --add safe.directory /build \
+            && git rev-parse --short=11 HEAD
 
         if [ -z "${PACKAGE}" ]; then
           exit 0
