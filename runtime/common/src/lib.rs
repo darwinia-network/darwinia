@@ -53,6 +53,11 @@ macro_rules! fast_runtime_or_not {
 	};
 }
 
+#[cfg(not(feature = "runtime-benchmarks"))]
+pub const EXISTENTIAL_DEPOSIT: Balance = 0;
+#[cfg(feature = "runtime-benchmarks")]
+pub const EXISTENTIAL_DEPOSIT: Balance = 1;
+
 /// Handles converting a weight scalar to a fee value, based on the scale and granularity of the
 /// node's balance type.
 ///
