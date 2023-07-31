@@ -171,6 +171,7 @@ pub mod pallet {
 	pub type MessageRootToSign<T: Config> =
 		StorageValue<_, MessageRootSigned<T::MaxAuthorities>, OptionQuery>;
 
+	#[derive(frame_support::DefaultNoBound)]
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T>
 	where
@@ -179,15 +180,7 @@ pub mod pallet {
 		/// The genesis authorities.
 		pub authorities: Vec<T::AccountId>,
 	}
-	#[cfg(feature = "std")]
-	impl<T> Default for GenesisConfig<T>
-	where
-		T: Config,
-	{
-		fn default() -> Self {
-			GenesisConfig { authorities: Vec::new() }
-		}
-	}
+
 	#[pallet::genesis_build]
 	impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
 		fn build(&self) {

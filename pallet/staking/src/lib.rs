@@ -233,6 +233,7 @@ pub mod pallet {
 	#[pallet::getter(fn elapsed_time)]
 	pub type ElapsedTime<T: Config> = StorageValue<_, Moment, ValueQuery>;
 
+	#[derive(frame_support::DefaultNoBound)]
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
 		/// Current timestamp.
@@ -244,15 +245,7 @@ pub mod pallet {
 		/// Genesis collator preferences.
 		pub collators: Vec<(T::AccountId, Balance)>,
 	}
-	#[cfg(feature = "std")]
-	impl<T> Default for GenesisConfig<T>
-	where
-		T: Config,
-	{
-		fn default() -> Self {
-			GenesisConfig { now: 0, elapsed_time: 0, collator_count: 0, collators: Vec::new() }
-		}
-	}
+
 	#[pallet::genesis_build]
 	impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
 		fn build(&self) {
