@@ -9,7 +9,7 @@ version.workspace = true
 [dependencies]
 # crates.io
 codec      = { workspace = true, package = "parity-scale-codec" }
-ethabi     = { version = "17.0", default-features = false }
+ethabi     = { version = "18.0", default-features = false }
 scale-info = { workspace = true }
 # crates.io optional
 array-bytes  = { workspace = true, optional = true }
