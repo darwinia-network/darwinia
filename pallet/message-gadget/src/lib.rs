@@ -45,7 +45,7 @@ pub mod pallet {
 	#[pallet::getter(fn commitment_contract)]
 	pub type CommitmentContract<T> = StorageValue<_, H160, ValueQuery>;
 
-	#[cfg_attr(feature = "std", derive(Default))]
+	#[derive(Default)]
 	#[pallet::genesis_config]
 	pub struct GenesisConfig {
 		pub commitment_contract: H160,
