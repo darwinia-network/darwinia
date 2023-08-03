@@ -63,14 +63,29 @@ std = [
 
 runtime-benchmarks = [
 	# darwinia
+	"darwinia-deposit/runtime-benchmarks",
 	"darwinia-staking/runtime-benchmarks",
 
 	# substrate
 	"frame-benchmarking/runtime-benchmarks",
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
 	"pallet-assets/runtime-benchmarks",
+	"pallet-balances/runtime-benchmarks",
+	"pallet-identity/runtime-benchmarks",
+	"sp-runtime/runtime-benchmarks",
 ]
 
 try-runtime = [
+	# darwinia
+	"darwinia-deposit/try-runtime",
+	"darwinia-staking/try-runtime",
+	
 	# substrate
 	"frame-support/try-runtime",
+	"frame-system/try-runtime",
+	"pallet-assets/try-runtime",
+	"pallet-balances/try-runtime",
+	"pallet-identity/try-runtime",
+	"sp-runtime/try-runtime",
 ]

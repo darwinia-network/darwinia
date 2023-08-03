@@ -52,8 +52,8 @@ std = [
 	"scale-info/std",
 
 	# darwinia
-	"dc-inflation/std",
 	"darwinia-staking-traits/std",
+	"dc-inflation/std",
 	# darwinia optional
 	"darwinia-deposit?/std",
 
@@ -76,10 +76,15 @@ runtime-benchmarks = [
 
 	# substrate
 	"frame-benchmarking/runtime-benchmarks",
+	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
+	"sp-runtime/runtime-benchmarks",
 ]
 
 try-runtime = [
 	# substrate
 	"frame-support/try-runtime",
+	"frame-system/try-runtime",
+	"pallet-authorship/try-runtime",
+	"sp-runtime/try-runtime",
 ]
