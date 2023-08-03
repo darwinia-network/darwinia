@@ -7,13 +7,11 @@ WASM_BUILD_WORKSPACE_HINT = "${CARGO_MAKE_WORKING_DIRECTORY}"
 [tasks.check]
 args         = ["check"]
 command      = "cargo"
-dependencies = ["format"]
 env          = { "SKIP_WASM_BUILD" = "1" }
 
 [tasks.clippy]
 args         = ["clippy"]
 command      = "cargo"
-dependencies = ["format"]
 env          = { "SKIP_WASM_BUILD" = "1" }
 
 [tasks.common-build]
