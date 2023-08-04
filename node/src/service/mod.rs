@@ -21,6 +21,8 @@
 pub mod executors;
 pub use executors::*;
 
+pub mod frontier;
+
 mod instant_finalize;
 
 #[cfg(feature = "crab-native")]
@@ -213,8 +215,7 @@ where
 		&task_manager,
 	)?;
 	// Frontier stuffs.
-	let frontier_backend =
-		crate::frontier_service::frontier_backend(client.clone(), config, eth_rpc_config.clone())?;
+	let frontier_backend = frontier::backend(client.clone(), config, eth_rpc_config.clone())?;
 	let filter_pool = Some(Arc::new(Mutex::new(BTreeMap::new())));
 	let fee_history_cache = Arc::new(Mutex::new(BTreeMap::new()));
 	let fee_history_cache_limit = eth_rpc_config.fee_history_limit;
@@ -356,7 +357,7 @@ where
 	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
 	// for ethereum-compatibility rpc.
 	parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
-	let tracing_requesters = crate::frontier_service::spawn_frontier_tasks(
+	let tracing_requesters = frontier::spawn_tasks(
 		&task_manager,
 		client.clone(),
 		backend.clone(),
@@ -368,6 +369,7 @@ where
 		sync_service.clone(),
 		pubsub_notification_sinks.clone(),
 		eth_rpc_config.clone(),
+		prometheus_registry.clone(),
 	);
 	let rpc_builder = {
 		let client = client.clone();
@@ -856,7 +858,7 @@ where
 		overrides.clone(),
 		eth_rpc_config.eth_log_block_cache,
 		eth_rpc_config.eth_statuses_cache,
-		prometheus_registry,
+		prometheus_registry.clone(),
 	));
 	let pubsub_notification_sinks: fc_mapping_sync::EthereumBlockNotificationSinks<
 		fc_mapping_sync::EthereumBlockNotification<Block>,
@@ -864,7 +866,7 @@ where
 	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
 	// for ethereum-compatibility rpc.
 	config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
-	let tracing_requesters = crate::frontier_service::spawn_frontier_tasks(
+	let tracing_requesters = frontier::spawn_tasks(
 		&task_manager,
 		client.clone(),
 		backend.clone(),
@@ -876,6 +878,7 @@ where
 		sync_service.clone(),
 		pubsub_notification_sinks.clone(),
 		eth_rpc_config.clone(),
+		prometheus_registry,
 	);
 	let rpc_extensions_builder = {
 		let client = client.clone();

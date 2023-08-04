@@ -47,12 +47,12 @@ fn lock_and_claim() {
 		precompiles()
 			.prepare_test(alice, Precompile, PCall::lock { amount: 200.into(), months: 1 })
 			.execute_returns(true);
-		assert!(Deposit::deposit_of(&alice).is_some());
+		assert!(Deposit::deposit_of(alice).is_some());
 
 		// claim
 		efflux(MILLISECS_PER_MONTH);
 		precompiles().prepare_test(alice, Precompile, PCall::claim {}).execute_returns(true);
-		assert!(Deposit::deposit_of(&alice).is_none());
+		assert!(Deposit::deposit_of(alice).is_none());
 	});
 }
 
@@ -64,12 +64,12 @@ fn claim_with_penalty() {
 		precompiles()
 			.prepare_test(alice, Precompile, PCall::lock { amount: 200.into(), months: 1 })
 			.execute_returns(true);
-		assert!(Deposit::deposit_of(&alice).is_some());
+		assert!(Deposit::deposit_of(alice).is_some());
 
 		// claim with penalty
 		precompiles()
 			.prepare_test(alice, Precompile, PCall::claim_with_penalty { id: 0 })
 			.execute_returns(true);
-		assert!(Deposit::deposit_of(&alice).is_none());
+		assert!(Deposit::deposit_of(alice).is_none());
 	});
 }

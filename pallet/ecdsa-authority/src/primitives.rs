@@ -76,7 +76,7 @@ impl Sign {
 		if let Ok(public_key) = crypto::secp256k1_ecdsa_recover(signature, message) {
 			&Self::hash(&public_key)[12..] == address
 		} else {
-			return false;
+			false
 		}
 	}
 }

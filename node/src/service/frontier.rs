@@ -40,6 +40,7 @@ use moonbeam_rpc_trace::{CacheRequester as TraceFilterCacheRequester, CacheTask}
 // substrate
 use sc_network_sync::SyncingService;
 use sc_service::{Configuration, TaskManager};
+use substrate_prometheus_endpoint::Registry as PrometheusRegistry;
 
 #[derive(Clone)]
 pub struct RpcRequesters {
@@ -48,7 +49,7 @@ pub struct RpcRequesters {
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn spawn_frontier_tasks<B, BE, C>(
+pub fn spawn_tasks<B, BE, C>(
 	task_manager: &TaskManager,
 	client: Arc<C>,
 	backend: Arc<BE>,
@@ -60,6 +61,7 @@ pub fn spawn_frontier_tasks<B, BE, C>(
 	sync: Arc<SyncingService<B>>,
 	pubsub_notification_sinks: Arc<EthereumBlockNotificationSinks<EthereumBlockNotification<B>>>,
 	eth_rpc_config: EthRpcConfig,
+	prometheus: Option<PrometheusRegistry>,
 ) -> RpcRequesters
 where
 	C: 'static
@@ -154,6 +156,7 @@ where
 					Duration::from_secs(eth_rpc_config.tracing_cache_duration),
 					Arc::clone(&permit_pool),
 					Arc::clone(&overrides),
+					prometheus,
 				);
 				(Some(trace_filter_task), Some(trace_filter_requester))
 			} else {
@@ -209,7 +212,7 @@ pub(crate) fn db_config_dir(config: &Configuration) -> PathBuf {
 }
 
 /// Create a Frontier backend.
-pub(crate) fn frontier_backend<B, BE, C>(
+pub(crate) fn backend<B, BE, C>(
 	client: Arc<C>,
 	config: &sc_service::Configuration,
 	eth_rpc_config: EthRpcConfig,
