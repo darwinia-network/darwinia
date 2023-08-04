@@ -52,9 +52,9 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"sp-core/std",
+	"sp-io/std",
 	"sp-runtime/std",
 	"sp-std/std",
-	"sp-io/std",
 	# substrate optional
 	"frame-benchmarking?/std",
 ]
@@ -66,9 +66,14 @@ runtime-benchmarks = [
 
 	# substrate
 	"frame-benchmarking/runtime-benchmarks",
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
+	"sp-runtime/runtime-benchmarks",
 ]
 
 try-runtime = [
 	# substrate
 	"frame-support/try-runtime",
+	"frame-system/try-runtime",
+	"sp-runtime/try-runtime",
 ]

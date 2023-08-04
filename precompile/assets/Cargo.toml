@@ -59,5 +59,8 @@ std = [
 
 runtime-benchmarks = [
 	# substrate
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
 	"pallet-assets/runtime-benchmarks",
+	"pallet-evm/runtime-benchmarks",
 ]
