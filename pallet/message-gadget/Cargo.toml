@@ -46,9 +46,12 @@ std = [
 	"frame-system/std",
 	"sp-core/std",
 	"sp-io/std",
+	"sp-std/std",
 ]
 
 try-runtime = [
 	# substrate
 	"frame-support/try-runtime",
+	"frame-system/try-runtime",
+	"pallet-evm/try-runtime",
 ]

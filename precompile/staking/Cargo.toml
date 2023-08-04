@@ -65,4 +65,7 @@ std = [
 runtime-benchmarks = [
 	# darwinia
 	"darwinia-staking/runtime-benchmarks",
+	"frame-support/runtime-benchmarks",
+	"pallet-evm/runtime-benchmarks",
+	"sp-runtime/runtime-benchmarks",
 ]
