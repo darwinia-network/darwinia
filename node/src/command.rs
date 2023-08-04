@@ -26,7 +26,6 @@ use cumulus_primitives_core::ParaId;
 use crate::{
 	chain_spec::*,
 	cli::{Cli, FrontierBackendType, RelayChainCli, Subcommand},
-	frontier_service,
 	service::{self, *},
 };
 use dc_primitives::Block;
@@ -422,7 +421,7 @@ pub fn run() -> Result<()> {
 			set_default_ss58_version(chain_spec);
 			runner.sync_run(|config| {
 				// Remove Frontier off-chain db
-				let db_config_dir = frontier_service::db_config_dir(&config);
+				let db_config_dir = frontier::db_config_dir(&config);
 				match cli.eth_args.frontier_backend_type {
 					FrontierBackendType::KeyValue => {
 						let frontier_database_config = match config.database {

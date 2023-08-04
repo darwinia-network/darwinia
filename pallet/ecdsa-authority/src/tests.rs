@@ -525,7 +525,7 @@ fn pays_no_should_work() {
 	ExtBuilder::default().authorities(vec![a_1, a_2]).build().execute_with(|| {
 		let sync_interval = <<Runtime as Config>::SyncInterval as Get<BlockNumber>>::get();
 
-		(2..sync_interval).for_each(|n| run_to_block(n));
+		(2..sync_interval).for_each(run_to_block);
 		run_to_block(sync_interval);
 		let message = array_bytes::hex_n_into_unchecked(
 			"0xbf3b7c14b026416d17284cd7e43eef88b5b527fbb5d987c490429765c31dbaab",

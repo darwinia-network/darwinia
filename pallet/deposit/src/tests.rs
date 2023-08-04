@@ -29,13 +29,13 @@ use sp_runtime::TokenError;
 #[test]
 fn lock_should_work() {
 	new_test_ext().execute_with(|| {
-		assert_eq!(System::account(&1).consumers, 0);
-		assert_eq!(Balances::free_balance(&darwinia_deposit::account_id()), 0);
-		assert_eq!(Balances::free_balance(&1), 1_000 * UNIT);
+		assert_eq!(System::account(1).consumers, 0);
+		assert_eq!(Balances::free_balance(darwinia_deposit::account_id::<u32>()), 0);
+		assert_eq!(Balances::free_balance(1), 1_000 * UNIT);
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 10 * UNIT, 1));
-		assert_eq!(System::account(&1).consumers, 1);
-		assert_eq!(Balances::free_balance(&darwinia_deposit::account_id()), 10 * UNIT);
-		assert_eq!(Balances::free_balance(&1), 990 * UNIT);
+		assert_eq!(System::account(1).consumers, 1);
+		assert_eq!(Balances::free_balance(darwinia_deposit::account_id::<u32>()), 10 * UNIT);
+		assert_eq!(Balances::free_balance(1), 990 * UNIT);
 	});
 }
 
@@ -55,14 +55,14 @@ fn deposit_interest_should_work() {
 #[test]
 fn unique_identity_should_work() {
 	new_test_ext().execute_with(|| {
-		assert!(Deposit::deposit_of(&1).is_none());
+		assert!(Deposit::deposit_of(1).is_none());
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 2 * UNIT, 2));
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 3 * UNIT, 1));
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 4 * UNIT, 2));
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 5 * UNIT, 1));
 		assert_eq!(
-			Deposit::deposit_of(&1).unwrap().as_slice(),
+			Deposit::deposit_of(1).unwrap().as_slice(),
 			&[
 				DepositS {
 					id: 0,
@@ -107,7 +107,7 @@ fn unique_identity_should_work() {
 
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 6 * UNIT, 1));
 		assert_eq!(
-			Deposit::deposit_of(&1).unwrap().as_slice(),
+			Deposit::deposit_of(1).unwrap().as_slice(),
 			&[
 				DepositS {
 					id: 0,
@@ -135,7 +135,7 @@ fn unique_identity_should_work() {
 
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 7 * UNIT, 1));
 		assert_eq!(
-			Deposit::deposit_of(&1).unwrap().as_slice(),
+			Deposit::deposit_of(1).unwrap().as_slice(),
 			&[
 				DepositS {
 					id: 0,
@@ -170,7 +170,7 @@ fn unique_identity_should_work() {
 
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 8 * UNIT, 1));
 		assert_eq!(
-			Deposit::deposit_of(&1).unwrap().as_slice(),
+			Deposit::deposit_of(1).unwrap().as_slice(),
 			&[
 				DepositS {
 					id: 0,
@@ -220,7 +220,7 @@ fn expire_time_should_work() {
 			efflux(MILLISECS_PER_MONTH);
 		});
 		assert_eq!(
-			Deposit::deposit_of(&1).unwrap().as_slice(),
+			Deposit::deposit_of(1).unwrap().as_slice(),
 			(1..=8)
 				.map(|i| DepositS {
 					id: i - 1,
@@ -271,47 +271,47 @@ fn lock_should_fail() {
 #[test]
 fn claim_should_work() {
 	new_test_ext().execute_with(|| {
-		assert!(Deposit::deposit_of(&1).is_none());
+		assert!(Deposit::deposit_of(1).is_none());
 		assert_ok!(Deposit::claim(RuntimeOrigin::signed(1)));
-		assert!(Deposit::deposit_of(&1).is_none());
+		assert!(Deposit::deposit_of(1).is_none());
 
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
-		assert!(Deposit::deposit_of(&1).is_some());
+		assert!(Deposit::deposit_of(1).is_some());
 
 		efflux(MILLISECS_PER_MONTH - 1);
-		assert_eq!(System::account(&1).consumers, 1);
+		assert_eq!(System::account(1).consumers, 1);
 		assert_ok!(Deposit::claim(RuntimeOrigin::signed(1)));
-		assert_eq!(System::account(&1).consumers, 1);
-		assert!(Deposit::deposit_of(&1).is_some());
+		assert_eq!(System::account(1).consumers, 1);
+		assert!(Deposit::deposit_of(1).is_some());
 
 		efflux(MILLISECS_PER_MONTH);
-		assert_eq!(System::account(&1).consumers, 1);
+		assert_eq!(System::account(1).consumers, 1);
 		assert_ok!(Deposit::claim(RuntimeOrigin::signed(1)));
-		assert_eq!(System::account(&1).consumers, 0);
-		assert!(Deposit::deposit_of(&1).is_none());
+		assert_eq!(System::account(1).consumers, 0);
+		assert!(Deposit::deposit_of(1).is_none());
 
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
 		assert_ok!(Deposit::stake(&1, 0));
 		efflux(2 * MILLISECS_PER_MONTH);
-		assert_eq!(System::account(&1).consumers, 1);
+		assert_eq!(System::account(1).consumers, 1);
 		assert_ok!(Deposit::claim(RuntimeOrigin::signed(1)));
-		assert_eq!(System::account(&1).consumers, 1);
-		assert!(Deposit::deposit_of(&1).is_some());
+		assert_eq!(System::account(1).consumers, 1);
+		assert!(Deposit::deposit_of(1).is_some());
 
 		assert_ok!(Deposit::unstake(&1, 0));
-		assert_eq!(System::account(&1).consumers, 1);
+		assert_eq!(System::account(1).consumers, 1);
 		assert_ok!(Deposit::claim(RuntimeOrigin::signed(1)));
-		assert_eq!(System::account(&1).consumers, 0);
-		assert!(Deposit::deposit_of(&1).is_none());
+		assert_eq!(System::account(1).consumers, 0);
+		assert!(Deposit::deposit_of(1).is_none());
 	});
 }
 
 #[test]
 fn claim_with_penalty_should_work() {
 	new_test_ext().execute_with(|| {
-		assert!(Deposit::deposit_of(&1).is_none());
+		assert!(Deposit::deposit_of(1).is_none());
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
-		assert!(Deposit::deposit_of(&1).is_some());
+		assert!(Deposit::deposit_of(1).is_some());
 
 		assert_noop!(
 			Deposit::claim_with_penalty(RuntimeOrigin::signed(1), 0),
@@ -321,11 +321,11 @@ fn claim_with_penalty_should_work() {
 		assert_ok!(KtonMinting::mint(&1, UNIT));
 		assert_ok!(Deposit::claim_with_penalty(RuntimeOrigin::signed(1), 0));
 		assert_eq!(Assets::balance(0, 1), 999_984_771_573_604_062);
-		assert!(Deposit::deposit_of(&1).is_none());
+		assert!(Deposit::deposit_of(1).is_none());
 
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
 		efflux(MILLISECS_PER_MONTH);
-		assert!(Deposit::deposit_of(&1).is_some());
+		assert!(Deposit::deposit_of(1).is_some());
 
 		assert_noop!(
 			Deposit::claim_with_penalty(RuntimeOrigin::signed(1), 0),

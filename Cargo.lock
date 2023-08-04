@@ -3642,7 +3642,7 @@ dependencies = [
 [[package]]
 name = "evm-tracing-events"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.43#71592d863e0d6d1bade77570291529d90324c008"
 dependencies = [
  "environmental",
  "ethereum",
@@ -6598,7 +6598,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-client-evm-tracing"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.43#71592d863e0d6d1bade77570291529d90324c008"
 dependencies = [
  "ethereum-types",
  "evm-tracing-events",
@@ -6613,7 +6613,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-evm-tracer"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.43#71592d863e0d6d1bade77570291529d90324c008"
 dependencies = [
  "ethereum-types",
  "evm",
@@ -6633,7 +6633,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-primitives-ext"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.43#71592d863e0d6d1bade77570291529d90324c008"
 dependencies = [
  "ethereum-types",
  "evm-tracing-events",
@@ -6646,7 +6646,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-debug"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.43#71592d863e0d6d1bade77570291529d90324c008"
 dependencies = [
  "ethereum-types",
  "futures 0.3.28",
@@ -6661,7 +6661,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-trace"
 version = "0.6.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.43#71592d863e0d6d1bade77570291529d90324c008"
 dependencies = [
  "ethereum-types",
  "futures 0.3.28",
@@ -6675,7 +6675,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-types"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.43#71592d863e0d6d1bade77570291529d90324c008"
 dependencies = [
  "ethereum-types",
  "serde",
@@ -6685,7 +6685,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-debug"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.43#71592d863e0d6d1bade77570291529d90324c008"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -6715,7 +6715,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-primitives-debug"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.43#71592d863e0d6d1bade77570291529d90324c008"
 dependencies = [
  "environmental",
  "ethereum",
@@ -6733,7 +6733,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-trace"
 version = "0.6.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.43#71592d863e0d6d1bade77570291529d90324c008"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -6744,6 +6744,7 @@ dependencies = [
  "fp-rpc",
  "futures 0.3.28",
  "jsonrpsee",
+ "log",
  "moonbeam-client-evm-tracing",
  "moonbeam-rpc-core-trace",
  "moonbeam-rpc-core-types",
@@ -6760,6 +6761,7 @@ dependencies = [
  "sp-runtime",
  "sp-std",
  "sp-transaction-pool",
+ "substrate-prometheus-endpoint",
  "tokio",
  "tracing",
 ]
@@ -7859,7 +7861,7 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum-xcm"
 version = "1.0.0-dev"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.43#71592d863e0d6d1bade77570291529d90324c008"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -10434,7 +10436,7 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 [[package]]
 name = "precompile-utils"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.43#71592d863e0d6d1bade77570291529d90324c008"
 dependencies = [
  "affix",
  "derive_more",
@@ -10458,13 +10460,14 @@ dependencies = [
  "similar-asserts",
  "sp-core",
  "sp-io",
+ "sp-runtime",
  "sp-std",
 ]
 
 [[package]]
 name = "precompile-utils-macro"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.43#71592d863e0d6d1bade77570291529d90324c008"
 dependencies = [
  "case",
  "num_enum 0.5.11",
@@ -16542,7 +16545,7 @@ dependencies = [
 [[package]]
 name = "xcm-primitives"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=dev#a094f4ac179de3b62120ab33490d47762cb13b17"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.43#71592d863e0d6d1bade77570291529d90324c008"
 dependencies = [
  "cumulus-primitives-core",
  "ethereum",

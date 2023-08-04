@@ -70,7 +70,7 @@ pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi> {
 
 /// EVM tracing rpc server config
 pub struct TracingConfig {
-	pub tracing_requesters: crate::frontier_service::RpcRequesters,
+	pub tracing_requesters: crate::service::frontier::RpcRequesters,
 	pub trace_filter_max_count: u32,
 }
 
