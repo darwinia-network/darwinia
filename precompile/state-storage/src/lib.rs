@@ -58,7 +58,9 @@ where
 		}
 
 		let output = frame_support::storage::unhashed::get_raw(bytes).unwrap_or_default();
+		// Record proof_size cost for the db content
 		handle.record_db_read::<Runtime>(output.len())?;
+
 		Ok(output.as_slice().into())
 	}
 }

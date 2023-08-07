@@ -292,7 +292,7 @@ where
 		// Record proof_size cost for the asset metadata
 		handle.record_db_read::<Runtime>(pallet_assets::AssetMetadata::<
 			BalanceOf<Runtime>,
-			[u8; 50],
+			[u8; 50], // 50 refers to the StringLimit of the pallet_assets
 		>::max_encoded_len())?;
 
 		let asset_id = Self::asset_id(handle)?;
@@ -305,7 +305,7 @@ where
 		// Record proof_size cost for the asset metadata
 		handle.record_db_read::<Runtime>(pallet_assets::AssetMetadata::<
 			BalanceOf<Runtime>,
-			[u8; 50],
+			[u8; 50], // 50 refers to the StringLimit of the pallet_assets
 		>::max_encoded_len())?;
 
 		let asset_id = Self::asset_id(handle)?;
@@ -318,7 +318,7 @@ where
 		// Record proof_size cost for the asset metadata
 		handle.record_db_read::<Runtime>(pallet_assets::AssetMetadata::<
 			BalanceOf<Runtime>,
-			[u8; 50],
+			[u8; 50], // 50 refers to the StringLimit of the pallet_assets
 		>::max_encoded_len())?;
 
 		let asset_id = Self::asset_id(handle)?;
