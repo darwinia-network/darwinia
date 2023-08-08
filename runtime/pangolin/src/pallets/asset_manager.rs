@@ -21,8 +21,7 @@ use crate::*;
 // polkadot
 use xcm::latest::prelude::*;
 // substrate
-use frame_support::pallet_prelude::*;
-use frame_support::dispatch::GetDispatchInfo;
+use frame_support::{dispatch::GetDispatchInfo, pallet_prelude::*};
 use sp_runtime::traits::Hash;
 use sp_std::prelude::*;
 
@@ -65,10 +64,11 @@ impl From<AssetType> for crate::AssetId {
 		match asset {
 			AssetType::Xcm(id) => {
 				let mut result: [u8; 8] = [0u8; 8];
-				let hash: sp_core::H256 = id.using_encoded(<Runtime as frame_system::Config>::Hashing::hash);
+				let hash: sp_core::H256 =
+					id.using_encoded(<Runtime as frame_system::Config>::Hashing::hash);
 				result.copy_from_slice(&hash.as_fixed_bytes()[0..8]);
 				u64::from_le_bytes(result)
-			}
+			},
 		}
 	}
 }
@@ -120,12 +120,12 @@ impl pallet_asset_manager::AssetRegistrar<Runtime> for AssetRegistrar {
 		Assets::start_destroy(RuntimeOrigin::root(), asset.into())?;
 
 		// TODO Check this
-		/* 
-		// We remove the EVM revert code
-		// This does not panick even if there is no code in the address
-		// let precompile_address: sp_core::H160 =
-		// 	Runtime::asset_id_to_account(FOREIGN_ASSET_PRECOMPILE_ADDRESS_PREFIX, asset).into();
-		// pallet_evm::AccountCodes::<Runtime>::remove(precompile_address);*/
+		/*
+		 * We remove the EVM revert code
+		 * This does not panick even if there is no code in the address
+		 * let precompile_address: sp_core::H160 =
+		 * 	Runtime::asset_id_to_account(FOREIGN_ASSET_PRECOMPILE_ADDRESS_PREFIX, asset).into();
+		 * pallet_evm::AccountCodes::<Runtime>::remove(precompile_address);*/ */
 		Ok(())
 	}
 
@@ -138,13 +138,10 @@ impl pallet_asset_manager::AssetRegistrar<Runtime> for AssetRegistrar {
 		// EVM
 
 		// This is the dispatch info of destroy
-		let call_weight = RuntimeCall::Assets(
-			pallet_assets::Call::<Runtime>::start_destroy {
-				id: asset.into(),
-			},
-		)
-		.get_dispatch_info()
-		.weight;
+		let call_weight =
+			RuntimeCall::Assets(pallet_assets::Call::<Runtime>::start_destroy { id: asset.into() })
+				.get_dispatch_info()
+				.weight;
 
 		// This is the db write
 		call_weight.saturating_add(<Runtime as frame_system::Config>::DbWeight::get().writes(1))
@@ -154,23 +151,22 @@ impl pallet_asset_manager::AssetRegistrar<Runtime> for AssetRegistrar {
 pub struct LocalAssetIdCreator;
 impl pallet_asset_manager::LocalAssetIdCreator<Runtime> for LocalAssetIdCreator {
 	fn create_asset_id_from_metadata(_local_asset_counter: u128) -> crate::AssetId {
-        // We don't need to create local asset.
+		// We don't need to create local asset.
 		unimplemented!()
 	}
 }
 
-
 impl pallet_asset_manager::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type Balance = Balance;
 	type AssetId = crate::AssetId;
-	type AssetRegistrarMetadata = AssetRegistrarMetadata;
-	type ForeignAssetType = AssetType;
 	type AssetRegistrar = AssetRegistrar;
-	type ForeignAssetModifierOrigin = Root;
-	type LocalAssetModifierOrigin = Root;
-	type LocalAssetIdCreator = LocalAssetIdCreator;
+	type AssetRegistrarMetadata = AssetRegistrarMetadata;
+	type Balance = Balance;
 	type Currency = Balances;
+	type ForeignAssetModifierOrigin = Root;
+	type ForeignAssetType = AssetType;
 	type LocalAssetDeposit = ConstU128<0>;
+	type LocalAssetIdCreator = LocalAssetIdCreator;
+	type LocalAssetModifierOrigin = Root;
+	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = pallet_asset_manager::weights::SubstrateWeight<Runtime>;
 }

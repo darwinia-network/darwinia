@@ -21,8 +21,7 @@ use crate::*;
 // polkadot
 use xcm::latest::prelude::*;
 // substrate
-use frame_support::pallet_prelude::*;
-use frame_support::traits::*;
+use frame_support::{pallet_prelude::*, traits::*};
 use sp_std::prelude::*;
 
 // Our currencyId. We distinguish for now between SelfReserve, and Others, defined by their Id.
@@ -77,10 +76,10 @@ where
 			CurrencyId::SelfReserve => {
 				let multi: MultiLocation = pallets::polkadot_xcm::AnchoringSelfReserve::get();
 				Some(multi)
-			}
+			},
 			CurrencyId::ForeignAsset(asset) => AssetXConverter::reverse_ref(asset).ok(),
-			// No transactor matches this yet, so even if we have this enum variant the transfer will fail
-			// CurrencyId::LocalAssetReserve(asset) => {
+			// No transactor matches this yet, so even if we have this enum variant the transfer
+			// will fail CurrencyId::LocalAssetReserve(asset) => {
 			// 	let mut location = LocalAssetsPalletLocation::get();
 			// 	location.push_interior(Junction::GeneralIndex(asset)).ok();
 			// 	Some(location)
@@ -100,12 +99,12 @@ where
 }
 
 frame_support::parameter_types! {
-    pub const MaxAssetsForTransfer: usize = 2;
+	pub const MaxAssetsForTransfer: usize = 2;
 
 	// This is how we are going to detect whether the asset is a Reserve asset
 	// This however is the chain part only
 	pub SelfLocation: MultiLocation = MultiLocation::here();
-    // We need this to be able to catch when someone is trying to execute a non-
+	// We need this to be able to catch when someone is trying to execute a non-
 	// cross-chain transfer in xtokens through the absolute path way
 	pub SelfLocationAbsolute: MultiLocation = MultiLocation {
 		parents:1,
@@ -116,20 +115,25 @@ frame_support::parameter_types! {
 }
 
 impl orml_xtokens::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type Balance = Balance;
-	type CurrencyId = CurrencyId;
 	type AccountIdToMultiLocation = xcm_primitives::AccountIdToMultiLocation<AccountId>;
-	type CurrencyIdConvert =
-		CurrencyIdtoMultiLocation<xcm_primitives::AsAssetType<crate::AssetId, pallets::asset_manager::AssetType, super::super::AssetManager>>;
-	type XcmExecutor = xcm_executor::XcmExecutor<pallets::polkadot_xcm::XcmExecutorConfig>;
-	type SelfLocation = SelfLocation;
-	type Weigher = pallets::polkadot_xcm::XcmWeigher;
+	type Balance = Balance;
 	type BaseXcmWeight = BaseXcmWeight;
-	type UniversalLocation = UniversalLocation;
+	type CurrencyId = CurrencyId;
+	type CurrencyIdConvert = CurrencyIdtoMultiLocation<
+		xcm_primitives::AsAssetType<
+			crate::AssetId,
+			pallets::asset_manager::AssetType,
+			super::super::AssetManager,
+		>,
+	>;
 	type MaxAssetsForTransfer = MaxAssetsForTransfer;
-    // We don't have this case: fee_reserve != non_fee_reserve
+	// We don't have this case: fee_reserve != non_fee_reserve
 	type MinXcmFee = orml_xcm_support::DisabledParachainFee;
 	type MultiLocationsFilter = Everything;
 	type ReserveProvider = xcm_primitives::AbsoluteAndRelativeReserve<SelfLocationAbsolute>;
+	type RuntimeEvent = RuntimeEvent;
+	type SelfLocation = SelfLocation;
+	type UniversalLocation = UniversalLocation;
+	type Weigher = pallets::polkadot_xcm::XcmWeigher;
+	type XcmExecutor = xcm_executor::XcmExecutor<pallets::polkadot_xcm::XcmExecutorConfig>;
 }
