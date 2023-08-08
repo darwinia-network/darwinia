@@ -102,6 +102,10 @@ mod ethereum_xcm;
 
 mod dmp_queue;
 
+mod asset_manager;
+
+mod orml_xtokens;
+
 // EVM stuff.
 mod ethereum;
 
