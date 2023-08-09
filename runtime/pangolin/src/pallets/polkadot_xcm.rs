@@ -173,7 +173,9 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type Barrier = Barrier;
 	type CallDispatcher = XcmCallDispatcher;
 	type FeeManager = ();
-	type IsReserve = xcm_builder::NativeAsset;
+	type IsReserve = orml_xcm_support::MultiNativeAsset<
+		xcm_primitives::AbsoluteAndRelativeReserve<pallets::orml_xtokens::SelfLocationAbsolute>,
+	>;
 	type IsTeleporter = ();
 	type MaxAssetsIntoHolding = MaxAssetsIntoHolding;
 	type MessageExporter = ();

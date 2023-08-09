@@ -125,7 +125,7 @@ impl pallet_asset_manager::AssetRegistrar<Runtime> for AssetRegistrar {
 		 * This does not panick even if there is no code in the address
 		 * let precompile_address: sp_core::H160 =
 		 * 	Runtime::asset_id_to_account(FOREIGN_ASSET_PRECOMPILE_ADDRESS_PREFIX, asset).into();
-		 * pallet_evm::AccountCodes::<Runtime>::remove(precompile_address);*/
+		 * pallet_evm::AccountCodes::<Runtime>::remove(precompile_address); */
 		Ok(())
 	}
 
