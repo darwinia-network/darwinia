@@ -87,8 +87,9 @@ impl WeightToFeePolynomial for RefTimeToFee {
 	type Balance = Balance;
 
 	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
+		// Map base extrinsic weight to 1/100 UNIT.
 		let p = UNIT;
-		let q = 10 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
+		let q = 100 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
 
 		smallvec::smallvec![WeightToFeeCoefficient {
 			degree: 1,
@@ -105,9 +106,9 @@ impl WeightToFeePolynomial for ProofSizeToFee {
 	type Balance = Balance;
 
 	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-		// Map 10MB proof to 1 UNIT.
+		// Map 10kb proof to 1 UNIT.
 		let p = UNIT;
-		let q = 10_000_000;
+		let q = 10_000;
 
 		smallvec::smallvec![WeightToFeeCoefficient {
 			degree: 1,
