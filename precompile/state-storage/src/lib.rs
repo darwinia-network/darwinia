@@ -52,15 +52,16 @@ where
 		handle: &mut impl PrecompileHandle,
 		key: UnboundedBytes,
 	) -> EvmResult<UnboundedBytes> {
-		handle.record_cost(RuntimeHelper::<Runtime>::db_read_gas_cost())?;
-
 		let bytes = key.as_bytes();
 		if bytes.len() < PALLET_PREFIX_LENGTH || !Filter::allow(&bytes[0..PALLET_PREFIX_LENGTH]) {
 			return Err(revert("Read restriction"));
 		}
 
-		let output = frame_support::storage::unhashed::get_raw(bytes);
-		Ok(output.unwrap_or_default().as_slice().into())
+		let output = frame_support::storage::unhashed::get_raw(bytes).unwrap_or_default();
+		// Record proof_size cost for the db content
+		handle.record_db_read::<Runtime>(output.len())?;
+
+		Ok(output.as_slice().into())
 	}
 }
 
