@@ -519,6 +519,77 @@ macro_rules! impl_evm_tests {
 }
 
 #[macro_export]
+macro_rules! impl_weight_tests {
+	() => {
+		mod weight {
+			// darwinia
+			use super::mock::*;
+			// substrate
+			use frame_support::{
+				dispatch::DispatchClass,
+				weights::{Weight, WeightToFee as WeightToFeeT},
+			};
+			use sp_runtime::traits::Zero;
+
+			// We can fit at least 1000 transfers in a block.
+			#[test]
+			fn sane_block_weight() {
+				// substrate
+				use pallet_balances::WeightInfo;
+
+				let block = RuntimeBlockWeights::get().max_block;
+				let base = RuntimeBlockWeights::get().get(DispatchClass::Normal).base_extrinsic;
+				let transfer =
+					base + weights::pallet_balances::WeightInfo::<Runtime>::transfer_allow_death();
+				let fit = block.checked_div_per_component(&transfer).unwrap_or_default();
+
+				assert!(fit >= 1000, "{} should be at least 1000", fit);
+			}
+
+			// The fee for one transfer is at most 1 UNIT.
+			#[test]
+			fn sane_transfer_fee() {
+				// substrate
+				use pallet_balances::WeightInfo;
+
+				let base = RuntimeBlockWeights::get().get(DispatchClass::Normal).base_extrinsic;
+				let transfer =
+					base + weights::pallet_balances::WeightInfo::<Runtime>::transfer_allow_death();
+				let fee = WeightToFee::weight_to_fee(&transfer);
+
+				assert!(fee <= UNIT, "{} MILLIUNIT should be at most 1000", fee / MILLIUNIT);
+			}
+
+			// Weight is being charged for both dimensions.
+			#[test]
+			fn weight_charged_for_both_components() {
+				let fee = WeightToFee::weight_to_fee(&Weight::from_parts(10_000, 0));
+				assert!(!fee.is_zero(), "Charges for ref time");
+
+				let fee = WeightToFee::weight_to_fee(&Weight::from_parts(0, 10_000));
+				assert_eq!(fee, UNIT, "10kb maps to UNIT");
+			}
+
+			// Filling up a block by proof size is at most 30 times more expensive than ref time.
+			//
+			// This is just a sanity check.
+			#[test]
+			fn full_block_fee_ratio() {
+				let block = RuntimeBlockWeights::get().max_block;
+				let time_fee = WeightToFee::weight_to_fee(&Weight::from_parts(block.ref_time(), 0));
+				let proof_fee =
+					WeightToFee::weight_to_fee(&Weight::from_parts(0, block.proof_size()));
+
+				let proof_o_time = proof_fee.checked_div(time_fee).unwrap_or_default();
+				assert!(proof_o_time <= 30, "{} should be at most 30", proof_o_time);
+				let time_o_proof = time_fee.checked_div(proof_fee).unwrap_or_default();
+				assert!(time_o_proof <= 30, "{} should be at most 30", time_o_proof);
+			}
+		}
+	};
+}
+
+#[macro_export]
 macro_rules! impl_fee_tests {
 	() => {
 		mod transaction_fee {
@@ -570,8 +641,7 @@ macro_rules! impl_fee_tests {
 					assert_eq!(TransactionPayment::next_fee_multiplier(), Multiplier::from(1u128));
 					assert_eq!(
 						TransactionPaymentGasPrice::min_gas_price().0,
-						// U256::from(18_780_048_076_923u128)
-						U256::from(16_499_762_403_421u128)
+						U256::from(1_649_976_240_342_u128)
 					);
 				})
 			}
@@ -592,73 +662,73 @@ macro_rules! impl_fee_tests {
 
 					assert_eq!(
 						sim(Perbill::from_percent(0), 1),
-						U256::from(16_499_453_035_776u128),
+						U256::from(1_649_945_303_577_u128),
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(25), 1),
-						U256::from(16_499_453_035_776u128),
+						U256::from(1_649_945_303_577_u128),
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(50), 1),
-						U256::from(16_499_762_403_421u128),
+						U256::from(1_649_976_240_342_u128),
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(100), 1),
-						U256::from(165_00_690_541_159u128),
+						U256::from(1_650_069_054_115_u128),
 					);
 
 					// 1 "real" hour (at 12-second blocks)
 					assert_eq!(
 						sim(Perbill::from_percent(0), 300),
-						U256::from(16_408_134_714_177u128)
+						U256::from(1_640_813_471_417_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(25), 300),
-						U256::from(16_408_134_714_177u128),
+						U256::from(1_640_813_471_417_u128),
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(50), 300),
-						U256::from(16_500_690_541_159u128),
+						U256::from(1_650_069_054_115_u128),
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(100), 300),
-						U256::from(16_781_502_380_018u128),
+						U256::from(1_678_150_238_001_u128),
 					);
 
 					// 1 "real" day (at 12-second blocks)
 					assert_eq!(
 						sim(Perbill::from_percent(0), 7200),
-						U256::from(14_662_265_651_569u128),
+						U256::from(1_466_226_565_156_u128),
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(25), 7200),
-						U256::from(14_662_265_651_569u128),
+						U256::from(1_466_226_565_156_u128),
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(50), 7200),
-						U256::from(16_781_502_380_018u128)
+						U256::from(1_678_150_238_001_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(100), 7200),
-						U256::from(25_160_548_467_697u128),
+						U256::from(2_516_054_846_769_u128),
 					);
 
 					// 7 "real" day (at 12-second blocks)
 					assert_eq!(
 						sim(Perbill::from_percent(0), 50400),
-						U256::from(9_779_391_182_619u128),
+						U256::from(977_939_118_261_u128),
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(25), 50400),
-						U256::from(9_779_391_182_619u128),
+						U256::from(977_939_118_261_u128),
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(50), 50400),
-						U256::from(25_160_548_467_697u128)
+						U256::from(2_516_054_846_769_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(100), 50400),
-						U256::from(428_494_211_541_821u128),
+						U256::from(42_849_421_154_179_u128),
 					);
 				})
 			}
