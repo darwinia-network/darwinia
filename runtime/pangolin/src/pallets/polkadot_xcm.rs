@@ -37,6 +37,40 @@ pub type LocalAssetTransactor = xcm_builder::CurrencyAdapter<
 	(),
 >;
 
+// The non-reserve fungible transactor type
+// It will use pallet-assets, and the Id will be matched against AsAssetType
+pub type ForeignFungiblesTransactor = xcm_builder::FungiblesAdapter<
+	// Use this fungibles implementation:
+	Assets,
+	// Use this currency when it is a fungible asset matching the given location or name:
+	(
+		xcm_builder::ConvertedConcreteId<
+			crate::AssetId,
+			Balance,
+			xcm_primitives::AsAssetType<
+				crate::AssetId,
+				pallets::asset_manager::AssetType,
+				AssetManager,
+			>,
+			xcm_executor::traits::JustTry,
+		>,
+	),
+	// Do a simple punn to convert an AccountId20 MultiLocation into a native chain account ID:
+	LocationToAccountId,
+	// Our chain's account ID type (we can't get away without mentioning it explicitly):
+	AccountId,
+	// We dont allow teleports.
+	xcm_builder::NoChecking,
+	// We dont track any teleports
+	(),
+>;
+
+pub type AssetTransactors = (
+	// The transactor for our native asset.
+	LocalAssetTransactor,
+	ForeignFungiblesTransactor,
+);
+
 frame_support::parameter_types! {
 	pub const RelayNetwork: NetworkId = NetworkId::Rococo;
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
@@ -168,7 +202,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type AssetExchanger = ();
 	type AssetLocker = ();
 	// How to withdraw and deposit an asset.
-	type AssetTransactor = LocalAssetTransactor;
+	type AssetTransactor = AssetTransactors;
 	type AssetTrap = PolkadotXcm;
 	type Barrier = Barrier;
 	type CallDispatcher = XcmCallDispatcher;
