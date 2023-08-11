@@ -1,0 +1,44 @@
+[package]
+authors.workspace = true
+description       = "Darwinia asset limit implementation."
+edition.workspace = true
+name              = "darwinia-asset-limit"
+readme            = "README.md"
+version.workspace = true
+
+[dependencies]
+# crates.io
+codec      = { workspace = true, package = "parity-scale-codec" }
+scale-info = { workspace = true }
+
+# darwinia
+dc-types = { workspace = true }
+
+# moonbeam
+pallet-asset-manager = { workspace = true }
+
+# substrate
+frame-support = { workspace = true }
+frame-system  = { workspace = true }
+
+[features]
+default = ["std"]
+
+std = [
+    # crates.io
+    "codec/std",
+    "scale-info/std",
+    # moonbeam
+    "pallet-asset-manager/std",
+    # substrate
+    "frame-support/std",
+    "frame-system/std",
+]
+
+try-runtime = [
+    # moonbeam
+    "pallet-asset-manager/try-runtime",
+    # substrate
+    "frame-support/try-runtime",
+    "frame-system/try-runtime",
+]

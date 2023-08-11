@@ -2602,6 +2602,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-asset-limit"
+version = "6.3.4"
+dependencies = [
+ "dc-types",
+ "frame-support",
+ "frame-system",
+ "pallet-asset-manager",
+ "parity-scale-codec",
+ "scale-info",
+]
+
+[[package]]
 name = "darwinia-common-runtime"
 version = "6.3.4"
 dependencies = [
