@@ -33,6 +33,7 @@ cumulus-pallet-session-benchmarking = { workspace = true, optional = true }
 
 # darwinia
 darwinia-account-migration        = { workspace = true }
+darwinia-asset-limit              = { workspace = true }
 darwinia-common-runtime           = { workspace = true }
 darwinia-deposit                  = { workspace = true }
 darwinia-ecdsa-authority          = { workspace = true }
@@ -164,6 +165,7 @@ std = [
 
 	# darwinia
 	"darwinia-account-migration/std",
+	"darwinia-asset-limit/std",
 	"darwinia-common-runtime/std",
 	"darwinia-deposit/std",
 	"darwinia-ecdsa-authority/std",
@@ -360,6 +362,7 @@ try-runtime = [
 
 	# darwinia
 	"darwinia-account-migration/try-runtime",
+	"darwinia-asset-limit/try-runtime",
 	"darwinia-deposit/try-runtime",
 	"darwinia-ecdsa-authority/try-runtime",
 	"darwinia-message-gadget/try-runtime",

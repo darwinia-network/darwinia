@@ -106,6 +106,8 @@ mod asset_manager;
 
 mod orml_xtokens;
 
+mod asset_limit;
+
 // EVM stuff.
 mod ethereum;
 

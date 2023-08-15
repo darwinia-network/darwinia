@@ -50,6 +50,7 @@ parachain-info                        = { git = "https://github.com/paritytech/c
 # darwinia
 crab-runtime                      = { path = "runtime/crab" }
 darwinia-account-migration        = { path = "pallet/account-migration", default-features = false }
+darwinia-asset-limit              = { path = "pallet/asset-limit", default-features = false}
 darwinia-common-runtime           = { path = "runtime/common", default-features = false }
 darwinia-deposit                  = { path = "pallet/deposit", default-features = false }
 darwinia-ecdsa-authority          = { path = "pallet/ecdsa-authority", default-features = false }

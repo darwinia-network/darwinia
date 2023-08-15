@@ -169,6 +169,7 @@ frame_support::construct_runtime! {
 		DmpQueue: cumulus_pallet_dmp_queue = 35,
 		AssetManager: pallet_asset_manager = 45,
 		XTokens: orml_xtokens = 46,
+		AssetLimit: darwinia_asset_limit = 47,
 
 		// EVM stuff.
 		Ethereum: pallet_ethereum = 36,

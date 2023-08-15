@@ -50,6 +50,7 @@ pub mod pallet {
 		AssetLimitChanged { asset_location: T::ForeignAssetType, limit: dc_types::Balance },
 	}
 
+	#[allow(missing_docs)]
 	#[pallet::error]
 	pub enum Error<T> {
         AssetDoesNotExist
@@ -75,7 +76,7 @@ pub mod pallet {
 			T::LimitModifierOrigin::ensure_origin(origin)?;
 
             ensure!(
-				pallet_asset_manager::AssetTypeId::<T>::get(&asset_location).is_some();
+				pallet_asset_manager::AssetTypeId::<T>::get(&asset_location).is_some(),
 				Error::<T>::AssetDoesNotExist
 			);
 
