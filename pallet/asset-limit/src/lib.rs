@@ -18,6 +18,8 @@
 
 //! # Darwinia asset limit pallet
 //! Please note that this pallet is only for foreign assets.
+//! This pallet only stores the asset limit and does not actually prevent asset deposits.
+//! Currently, we use the app to limit excessive amounts of deposits.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
@@ -49,7 +51,7 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// New limit is set or old limit is updated.
-		AssetLimitChanged { asset_location: T::ForeignAssetType, limit: dc_types::Balance },
+		AssetLimitChanged { asset_location: T::ForeignAssetType, units_limit: u128 },
 	}
 
 	#[allow(missing_docs)]
@@ -62,7 +64,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn foreign_asset_limit)]
 	pub type ForeignAssetLimit<T: Config> =
-		StorageMap<_, Blake2_128Concat, T::ForeignAssetType, dc_types::Balance>;
+		StorageMap<_, Blake2_128Concat, T::ForeignAssetType, u128>;
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -72,7 +74,7 @@ pub mod pallet {
 		pub fn set_foreign_asset_limit(
 			origin: OriginFor<T>,
 			asset_location: T::ForeignAssetType,
-			limit: dc_types::Balance,
+			units_limit: u128,
 		) -> DispatchResult {
 			T::LimitModifierOrigin::ensure_origin(origin)?;
 
@@ -81,9 +83,9 @@ pub mod pallet {
 				Error::<T>::AssetDoesNotExist
 			);
 
-			ForeignAssetLimit::<T>::insert(&asset_location, &limit);
+			ForeignAssetLimit::<T>::insert(&asset_location, &units_limit);
 
-			Self::deposit_event(Event::AssetLimitChanged { asset_location, limit });
+			Self::deposit_event(Event::AssetLimitChanged { asset_location, units_limit });
 			Ok(())
 		}
 	}

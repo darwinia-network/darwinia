@@ -18,60 +18,8 @@
 
 // darwinia
 use crate::*;
-// polkadot
-use xcm::latest::prelude::*;
 // substrate
 use frame_support::{dispatch::GetDispatchInfo, pallet_prelude::*};
-use sp_runtime::traits::Hash;
-use sp_std::prelude::*;
-
-#[derive(Clone, Default, Eq, Debug, PartialEq, Ord, PartialOrd, Encode, Decode, TypeInfo)]
-pub struct AssetRegistrarMetadata {
-	pub name: Vec<u8>,
-	pub symbol: Vec<u8>,
-	pub decimals: u8,
-	pub is_frozen: bool,
-}
-
-// Our AssetType. For now we only handle Xcm Assets
-#[derive(Clone, Eq, Debug, PartialEq, Ord, PartialOrd, Encode, Decode, TypeInfo)]
-pub enum AssetType {
-	Xcm(MultiLocation),
-}
-impl Default for AssetType {
-	fn default() -> Self {
-		Self::Xcm(MultiLocation::here())
-	}
-}
-
-impl From<MultiLocation> for AssetType {
-	fn from(location: MultiLocation) -> Self {
-		Self::Xcm(location)
-	}
-}
-impl Into<Option<MultiLocation>> for AssetType {
-	fn into(self) -> Option<MultiLocation> {
-		match self {
-			Self::Xcm(location) => Some(location),
-		}
-	}
-}
-
-// Implementation on how to retrieve the AssetId from an AssetType
-// We simply hash the AssetType and take the lowest 128 bits
-impl From<AssetType> for crate::AssetId {
-	fn from(asset: AssetType) -> crate::AssetId {
-		match asset {
-			AssetType::Xcm(id) => {
-				let mut result: [u8; 8] = [0u8; 8];
-				let hash: sp_core::H256 =
-					id.using_encoded(<Runtime as frame_system::Config>::Hashing::hash);
-				result.copy_from_slice(&hash.as_fixed_bytes()[0..8]);
-				u64::from_le_bytes(result)
-			},
-		}
-	}
-}
 
 // We instruct how to register the Assets
 // In this case, we tell it to Create an Asset in pallet-assets
@@ -83,7 +31,7 @@ impl pallet_asset_manager::AssetRegistrar<Runtime> for AssetRegistrar {
 	fn create_foreign_asset(
 		asset: crate::AssetId,
 		min_balance: Balance,
-		metadata: AssetRegistrarMetadata,
+		metadata: xcm_configs::AssetRegistrarMetadata,
 		is_sufficient: bool,
 	) -> DispatchResult {
 		Assets::force_create(
@@ -93,15 +41,6 @@ impl pallet_asset_manager::AssetRegistrar<Runtime> for AssetRegistrar {
 			is_sufficient,
 			min_balance,
 		)?;
-
-		// TODO uncomment when we feel comfortable
-		/*
-		// The asset has been created. Let's put the revert code in the precompile address
-		let precompile_address = Runtime::asset_id_to_account(ASSET_PRECOMPILE_ADDRESS_PREFIX, asset);
-		pallet_evm::AccountCodes::<Runtime>::insert(
-			precompile_address,
-			vec![0x60, 0x00, 0x60, 0x00, 0xfd],
-		);*/
 
 		// Lastly, the metadata
 		Assets::force_set_metadata(
@@ -118,14 +57,6 @@ impl pallet_asset_manager::AssetRegistrar<Runtime> for AssetRegistrar {
 	fn destroy_foreign_asset(asset: crate::AssetId) -> DispatchResult {
 		// Mark the asset as destroying
 		Assets::start_destroy(RuntimeOrigin::root(), asset.into())?;
-
-		// TODO Check this
-		/*
-		 * We remove the EVM revert code
-		 * This does not panick even if there is no code in the address
-		 * let precompile_address: sp_core::H160 =
-		 * 	Runtime::asset_id_to_account(FOREIGN_ASSET_PRECOMPILE_ADDRESS_PREFIX, asset).into();
-		 * pallet_evm::AccountCodes::<Runtime>::remove(precompile_address); */
 		Ok(())
 	}
 
@@ -159,11 +90,11 @@ impl pallet_asset_manager::LocalAssetIdCreator<Runtime> for LocalAssetIdCreator 
 impl pallet_asset_manager::Config for Runtime {
 	type AssetId = crate::AssetId;
 	type AssetRegistrar = AssetRegistrar;
-	type AssetRegistrarMetadata = AssetRegistrarMetadata;
+	type AssetRegistrarMetadata = xcm_configs::AssetRegistrarMetadata;
 	type Balance = Balance;
 	type Currency = Balances;
 	type ForeignAssetModifierOrigin = Root;
-	type ForeignAssetType = AssetType;
+	type ForeignAssetType = xcm_configs::AssetType;
 	type LocalAssetDeposit = ConstU128<0>;
 	type LocalAssetIdCreator = LocalAssetIdCreator;
 	type LocalAssetModifierOrigin = Root;

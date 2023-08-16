@@ -11,9 +11,6 @@ version.workspace = true
 codec      = { workspace = true, package = "parity-scale-codec" }
 scale-info = { workspace = true }
 
-# darwinia
-dc-types = { workspace = true }
-
 # moonbeam
 pallet-asset-manager = { workspace = true }
 

@@ -206,104 +206,52 @@ impl<
 	}
 }
 
-/// We use this adapter to make a limit for non-reserve assets.
-/// Refer to https://github.com/paritytech/polkadot/blob/release-v0.9.43/xcm/xcm-builder/src/fungibles_adapter.rs#L312
-pub struct LimitFungiblesAdapter<
-	Assets,
-	Matcher,
-	AccountIdConverter,
-	AccountId,
-	CheckAsset,
-	CheckingAccount,
->(PhantomData<(Assets, Matcher, AccountIdConverter, AccountId, CheckAsset, CheckingAccount)>);
-impl<
-		Assets: frame_support::traits::fungibles::Mutate<AccountId>,
-		Matcher: xcm_executor::traits::MatchesFungibles<Assets::AssetId, Assets::Balance>,
-		AccountIdConverter: Convert<MultiLocation, AccountId>,
-		AccountId: Clone, // can't get away without it since Currency is generic over it.
-		CheckAsset: xcm_builder::AssetChecking<Assets::AssetId>,
-		CheckingAccount: Get<AccountId>,
-	> xcm_executor::traits::TransactAsset
-	for LimitFungiblesAdapter<Assets, Matcher, AccountIdConverter, AccountId, CheckAsset, CheckingAccount>
-{
-	fn can_check_in(origin: &MultiLocation, what: &MultiAsset, context: &XcmContext) -> XcmResult {
-		xcm_builder::FungiblesMutateAdapter::<
-			Assets,
-			Matcher,
-			AccountIdConverter,
-			AccountId,
-			CheckAsset,
-			CheckingAccount,
-		>::can_check_in(origin, what, context)
-	}
+use frame_support::pallet_prelude::*;
+use sp_std::prelude::*;
+#[derive(Clone, Default, Eq, Debug, PartialEq, Ord, PartialOrd, Encode, Decode, TypeInfo)]
+pub struct AssetRegistrarMetadata {
+	pub name: Vec<u8>,
+	pub symbol: Vec<u8>,
+	pub decimals: u8,
+	pub is_frozen: bool,
+}
 
-	fn check_in(origin: &MultiLocation, what: &MultiAsset, context: &XcmContext) {
-		xcm_builder::FungiblesMutateAdapter::<
-			Assets,
-			Matcher,
-			AccountIdConverter,
-			AccountId,
-			CheckAsset,
-			CheckingAccount,
-		>::check_in(origin, what, context)
+// Our AssetType. For now we only handle Xcm Assets
+#[derive(Clone, Eq, Debug, PartialEq, Ord, PartialOrd, Encode, Decode, TypeInfo)]
+pub enum AssetType {
+	Xcm(MultiLocation),
+}
+impl Default for AssetType {
+	fn default() -> Self {
+		Self::Xcm(MultiLocation::here())
 	}
+}
 
-	fn can_check_out(dest: &MultiLocation, what: &MultiAsset, context: &XcmContext) -> XcmResult {
-		xcm_builder::FungiblesMutateAdapter::<
-			Assets,
-			Matcher,
-			AccountIdConverter,
-			AccountId,
-			CheckAsset,
-			CheckingAccount,
-		>::can_check_out(dest, what, context)
+impl From<MultiLocation> for AssetType {
+	fn from(location: MultiLocation) -> Self {
+		Self::Xcm(location)
 	}
-
-	fn check_out(dest: &MultiLocation, what: &MultiAsset, context: &XcmContext) {
-		xcm_builder::FungiblesMutateAdapter::<
-			Assets,
-			Matcher,
-			AccountIdConverter,
-			AccountId,
-			CheckAsset,
-			CheckingAccount,
-		>::check_out(dest, what, context)
+}
+impl Into<Option<MultiLocation>> for AssetType {
+	fn into(self) -> Option<MultiLocation> {
+		match self {
+			Self::Xcm(location) => Some(location),
+		}
 	}
+}
 
-	fn deposit_asset(what: &MultiAsset, who: &MultiLocation, context: &XcmContext) -> XcmResult {
-		xcm_builder::FungiblesMutateAdapter::<
-			Assets,
-			Matcher,
-			AccountIdConverter,
-			AccountId,
-			CheckAsset,
-			CheckingAccount,
-		>::deposit_asset(what, who, context)
-	}
-
-	fn withdraw_asset(
-		what: &MultiAsset,
-		who: &MultiLocation,
-		maybe_context: Option<&XcmContext>,
-	) -> sp_std::result::Result<xcm_executor::Assets, XcmError> {
-		xcm_builder::FungiblesMutateAdapter::<
-			Assets,
-			Matcher,
-			AccountIdConverter,
-			AccountId,
-			CheckAsset,
-			CheckingAccount,
-		>::withdraw_asset(what, who, maybe_context)
-	}
-
-	fn internal_transfer_asset(
-		what: &MultiAsset,
-		from: &MultiLocation,
-		to: &MultiLocation,
-		context: &XcmContext,
-	) -> sp_std::result::Result<xcm_executor::Assets, XcmError> {
-		xcm_builder::FungiblesTransferAdapter::<Assets, Matcher, AccountIdConverter, AccountId>::internal_transfer_asset(
-			what, from, to, context
-		)
+use sp_runtime::traits::Hash;
+// Implementation on how to retrieve the AssetId from an AssetType
+// We simply hash the AssetType and take the lowest 128 bits
+impl From<AssetType> for crate::AssetId {
+	fn from(asset: AssetType) -> crate::AssetId {
+		match asset {
+			AssetType::Xcm(id) => {
+				let mut result: [u8; 8] = [0u8; 8];
+				let hash: sp_core::H256 = id.using_encoded(dc_primitives::Hashing::hash);
+				result.copy_from_slice(&hash.as_fixed_bytes()[0..8]);
+				u64::from_le_bytes(result)
+			},
+		}
 	}
 }

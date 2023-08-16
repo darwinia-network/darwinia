@@ -2605,7 +2605,6 @@ dependencies = [
 name = "darwinia-asset-limit"
 version = "6.3.4"
 dependencies = [
- "dc-types",
  "frame-support",
  "frame-system",
  "pallet-asset-manager",
@@ -2629,6 +2628,7 @@ dependencies = [
  "pallet-evm",
  "pallet-treasury",
  "parity-scale-codec",
+ "scale-info",
  "smallvec",
  "sp-core",
  "sp-io",
