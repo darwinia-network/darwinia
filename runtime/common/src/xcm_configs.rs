@@ -205,3 +205,105 @@ impl<
 		OnUnbalanced::on_unbalanced(Currency::issue(self.1));
 	}
 }
+
+/// We use this adapter to make a limit for non-reserve assets.
+/// Refer to https://github.com/paritytech/polkadot/blob/release-v0.9.43/xcm/xcm-builder/src/fungibles_adapter.rs#L312
+pub struct LimitFungiblesAdapter<
+	Assets,
+	Matcher,
+	AccountIdConverter,
+	AccountId,
+	CheckAsset,
+	CheckingAccount,
+>(PhantomData<(Assets, Matcher, AccountIdConverter, AccountId, CheckAsset, CheckingAccount)>);
+impl<
+		Assets: frame_support::traits::fungibles::Mutate<AccountId>,
+		Matcher: xcm_executor::traits::MatchesFungibles<Assets::AssetId, Assets::Balance>,
+		AccountIdConverter: Convert<MultiLocation, AccountId>,
+		AccountId: Clone, // can't get away without it since Currency is generic over it.
+		CheckAsset: xcm_builder::AssetChecking<Assets::AssetId>,
+		CheckingAccount: Get<AccountId>,
+	> xcm_executor::traits::TransactAsset
+	for LimitFungiblesAdapter<Assets, Matcher, AccountIdConverter, AccountId, CheckAsset, CheckingAccount>
+{
+	fn can_check_in(origin: &MultiLocation, what: &MultiAsset, context: &XcmContext) -> XcmResult {
+		xcm_builder::FungiblesMutateAdapter::<
+			Assets,
+			Matcher,
+			AccountIdConverter,
+			AccountId,
+			CheckAsset,
+			CheckingAccount,
+		>::can_check_in(origin, what, context)
+	}
+
+	fn check_in(origin: &MultiLocation, what: &MultiAsset, context: &XcmContext) {
+		xcm_builder::FungiblesMutateAdapter::<
+			Assets,
+			Matcher,
+			AccountIdConverter,
+			AccountId,
+			CheckAsset,
+			CheckingAccount,
+		>::check_in(origin, what, context)
+	}
+
+	fn can_check_out(dest: &MultiLocation, what: &MultiAsset, context: &XcmContext) -> XcmResult {
+		xcm_builder::FungiblesMutateAdapter::<
+			Assets,
+			Matcher,
+			AccountIdConverter,
+			AccountId,
+			CheckAsset,
+			CheckingAccount,
+		>::can_check_out(dest, what, context)
+	}
+
+	fn check_out(dest: &MultiLocation, what: &MultiAsset, context: &XcmContext) {
+		xcm_builder::FungiblesMutateAdapter::<
+			Assets,
+			Matcher,
+			AccountIdConverter,
+			AccountId,
+			CheckAsset,
+			CheckingAccount,
+		>::check_out(dest, what, context)
+	}
+
+	fn deposit_asset(what: &MultiAsset, who: &MultiLocation, context: &XcmContext) -> XcmResult {
+		xcm_builder::FungiblesMutateAdapter::<
+			Assets,
+			Matcher,
+			AccountIdConverter,
+			AccountId,
+			CheckAsset,
+			CheckingAccount,
+		>::deposit_asset(what, who, context)
+	}
+
+	fn withdraw_asset(
+		what: &MultiAsset,
+		who: &MultiLocation,
+		maybe_context: Option<&XcmContext>,
+	) -> sp_std::result::Result<xcm_executor::Assets, XcmError> {
+		xcm_builder::FungiblesMutateAdapter::<
+			Assets,
+			Matcher,
+			AccountIdConverter,
+			AccountId,
+			CheckAsset,
+			CheckingAccount,
+		>::withdraw_asset(what, who, maybe_context)
+	}
+
+	fn internal_transfer_asset(
+		what: &MultiAsset,
+		from: &MultiLocation,
+		to: &MultiLocation,
+		context: &XcmContext,
+	) -> sp_std::result::Result<xcm_executor::Assets, XcmError> {
+		xcm_builder::FungiblesTransferAdapter::<Assets, Matcher, AccountIdConverter, AccountId>::internal_transfer_asset(
+			what, from, to, context
+		)
+	}
+}

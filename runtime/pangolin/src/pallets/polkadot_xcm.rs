@@ -39,7 +39,7 @@ pub type LocalAssetTransactor = xcm_builder::CurrencyAdapter<
 
 // The non-reserve fungible transactor type
 // It will use pallet-assets, and the Id will be matched against AsAssetType
-pub type ForeignFungiblesTransactor = xcm_builder::FungiblesAdapter<
+pub type ForeignFungiblesTransactor = xcm_configs::LimitFungiblesAdapter<
 	// Use this fungibles implementation:
 	Assets,
 	// Use this currency when it is a fungible asset matching the given location or name:
