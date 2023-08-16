@@ -123,7 +123,7 @@ impl orml_xtokens::Config for Runtime {
 		xcm_primitives::AsAssetType<
 			crate::AssetId,
 			pallets::asset_manager::AssetType,
-			super::super::AssetManager,
+			AssetManager,
 		>,
 	>;
 	type MaxAssetsForTransfer = MaxAssetsForTransfer;

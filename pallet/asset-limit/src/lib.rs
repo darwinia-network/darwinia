@@ -23,6 +23,8 @@
 #![deny(missing_docs)]
 #![deny(unused_crate_dependencies)]
 
+pub use pallet::*;
+
 #[frame_support::pallet]
 pub mod pallet {
 	// substrate
@@ -30,8 +32,8 @@ pub mod pallet {
 	use frame_system::pallet_prelude::*;
 
 	#[pallet::pallet]
-    #[pallet::without_storage_info]
-	pub struct Pallet<T>(_);
+	#[pallet::without_storage_info]
+	pub struct Pallet<T>(PhantomData<T>);
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config + pallet_asset_manager::Config {
@@ -42,30 +44,29 @@ pub mod pallet {
 		type LimitModifierOrigin: EnsureOrigin<Self::RuntimeOrigin>;
 	}
 
-    #[allow(missing_docs)]
+	#[allow(missing_docs)]
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-        /// New limit is set or old limit is updated.
+		/// New limit is set or old limit is updated.
 		AssetLimitChanged { asset_location: T::ForeignAssetType, limit: dc_types::Balance },
 	}
 
 	#[allow(missing_docs)]
 	#[pallet::error]
 	pub enum Error<T> {
-        AssetDoesNotExist
-    }
+		AssetDoesNotExist,
+	}
 
-    /// Stores the asset limit for foreign assets.
+	/// Stores the asset limit for foreign assets.
 	#[pallet::storage]
 	#[pallet::getter(fn foreign_asset_limit)]
 	pub type ForeignAssetLimit<T: Config> =
 		StorageMap<_, Blake2_128Concat, T::ForeignAssetType, dc_types::Balance>;
 
-    
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-        /// Change the asset limit for a given asset location.
+		/// Change the asset limit for a given asset location.
 		#[pallet::call_index(0)]
 		#[pallet::weight(T::DbWeight::get().reads_writes(1, 1))]
 		pub fn set_foreign_asset_limit(
@@ -75,7 +76,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			T::LimitModifierOrigin::ensure_origin(origin)?;
 
-            ensure!(
+			ensure!(
 				pallet_asset_manager::AssetTypeId::<T>::get(&asset_location).is_some(),
 				Error::<T>::AssetDoesNotExist
 			);
