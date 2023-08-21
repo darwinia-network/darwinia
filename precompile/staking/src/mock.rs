@@ -230,9 +230,13 @@ impl darwinia_staking::Stake for KtonStaking {
 	}
 }
 
+frame_support::parameter_types! {
+	pub const MaxCommission: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(99);
+}
 impl darwinia_staking::Config for TestRuntime {
 	type Deposit = Deposit;
 	type Kton = KtonStaking;
+	type MaxCommission = MaxCommission;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = frame_support::traits::ConstU32<16>;
 	type MinStakingDuration = frame_support::traits::ConstU64<3>;
