@@ -357,12 +357,17 @@ fn collect_should_work() {
 		assert!(Staking::collator_of(1).is_none());
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), UNIT, 0, Vec::new()));
 
-		(0..=100).for_each(|c| {
+		(0..=99).for_each(|c| {
 			let c = Perbill::from_percent(c);
 
 			assert_ok!(Staking::collect(RuntimeOrigin::signed(1), c));
 			assert_eq!(Staking::collator_of(1).unwrap(), c);
 		});
+
+		assert_noop!(
+			Staking::collect(RuntimeOrigin::signed(1), Perbill::from_percent(100)),
+			<Error<Runtime>>::CommissionTooHigh
+		);
 	});
 }
 
