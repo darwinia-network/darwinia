@@ -20,6 +20,5 @@
 use crate::*;
 
 impl darwinia_asset_limit::Config for Runtime {
-	type LimitModifierOrigin = Root;
 	type RuntimeEvent = RuntimeEvent;
 }

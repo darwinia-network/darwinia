@@ -41,9 +41,6 @@ pub mod pallet {
 	pub trait Config: frame_system::Config + pallet_asset_manager::Config {
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-
-		/// Origin that is allowed to create and modify asset information for local assets
-		type LimitModifierOrigin: EnsureOrigin<Self::RuntimeOrigin>;
 	}
 
 	#[allow(missing_docs)]
@@ -57,18 +54,18 @@ pub mod pallet {
 	#[allow(missing_docs)]
 	#[pallet::error]
 	pub enum Error<T> {
+		/// Asset does not exist.
 		AssetDoesNotExist,
 	}
 
 	/// Stores the asset limit for foreign assets.
 	#[pallet::storage]
 	#[pallet::getter(fn foreign_asset_limit)]
-	pub type ForeignAssetLimit<T: Config> =
-		StorageMap<_, Blake2_128Concat, T::ForeignAssetType, u128>;
+	pub type ForeignAssetLimit<T: Config> = StorageMap<_, Twox128, T::ForeignAssetType, u128>;
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Change the asset limit for a given asset location.
+		/// Change the asset limit for a given foreign asset location.
 		#[pallet::call_index(0)]
 		#[pallet::weight(T::DbWeight::get().reads_writes(1, 1))]
 		pub fn set_foreign_asset_limit(
@@ -76,7 +73,7 @@ pub mod pallet {
 			asset_location: T::ForeignAssetType,
 			units_limit: u128,
 		) -> DispatchResult {
-			T::LimitModifierOrigin::ensure_origin(origin)?;
+			T::ForeignAssetModifierOrigin::ensure_origin(origin)?;
 
 			ensure!(
 				pallet_asset_manager::AssetTypeId::<T>::get(&asset_location).is_some(),

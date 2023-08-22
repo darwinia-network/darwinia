@@ -19,12 +19,11 @@
 // darwinia
 use crate::*;
 // substrate
-use frame_support::{dispatch::GetDispatchInfo, pallet_prelude::*};
+use frame_support::{dispatch::GetDispatchInfo, pallet_prelude::*, transactional};
 
 // We instruct how to register the Assets
 // In this case, we tell it to Create an Asset in pallet-assets
 pub struct AssetRegistrar;
-use frame_support::{pallet_prelude::DispatchResult, transactional};
 
 impl pallet_asset_manager::AssetRegistrar<Runtime> for AssetRegistrar {
 	#[transactional]
@@ -83,7 +82,7 @@ pub struct LocalAssetIdCreator;
 impl pallet_asset_manager::LocalAssetIdCreator<Runtime> for LocalAssetIdCreator {
 	fn create_asset_id_from_metadata(_local_asset_counter: u128) -> crate::AssetId {
 		// We don't need to create local asset.
-		unimplemented!()
+		0
 	}
 }
 

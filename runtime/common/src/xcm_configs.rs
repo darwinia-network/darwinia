@@ -32,6 +32,7 @@ use xcm_executor::{
 // substrate
 use frame_support::{
 	log,
+	pallet_prelude::*,
 	traits::{
 		tokens::currency::Currency as CurrencyT, ConstU128, OnUnbalanced as OnUnbalancedT,
 		ProcessMessageError,
@@ -40,8 +41,8 @@ use frame_support::{
 };
 use sp_core::Get;
 use sp_io::hashing::blake2_256;
-use sp_runtime::traits::{SaturatedConversion, Saturating, Zero};
-use sp_std::{borrow::Borrow, result::Result};
+use sp_runtime::traits::{Hash, SaturatedConversion, Saturating, Zero};
+use sp_std::{borrow::Borrow, prelude::*, result::Result};
 
 /// Base balance required for the XCM unit weight.
 pub type XcmBaseWeightFee = ConstU128<GWEI>;
@@ -206,8 +207,6 @@ impl<
 	}
 }
 
-use frame_support::pallet_prelude::*;
-use sp_std::prelude::*;
 #[derive(Clone, Default, Eq, Debug, PartialEq, Ord, PartialOrd, Encode, Decode, TypeInfo)]
 pub struct AssetRegistrarMetadata {
 	pub name: Vec<u8>,
@@ -241,13 +240,16 @@ impl Into<Option<MultiLocation>> for AssetType {
 }
 
 frame_support::parameter_types! {
+	/// 1000 is AssetHub paraId.
+	/// 50 is pallet-assets index on AssetHub.
+	/// 1984 is the id of Tether USD on AssetHub.
+	/// Refer to
 	pub UsdtLocation: MultiLocation = MultiLocation::new(
 		1,
 		X3(Parachain(1000), PalletInstance(50), GeneralIndex(1984))
 	);
 }
 
-use sp_runtime::traits::Hash;
 // Implementation on how to retrieve the AssetId from an AssetType
 // We simply hash the AssetType and take the lowest 128 bits
 impl From<AssetType> for crate::AssetId {
