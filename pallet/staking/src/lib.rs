@@ -110,6 +110,10 @@ pub mod pallet {
 		/// Deposit [`StakeExt`] interface.
 		type Deposit: StakeExt<AccountId = Self::AccountId, Amount = Balance>;
 
+		/// Maximum commission rate.
+		#[pallet::constant]
+		type MaxCommission: Get<Perbill>;
+
 		/// Minimum time to stake at least.
 		#[pallet::constant]
 		type MinStakingDuration: Get<Self::BlockNumber>;
@@ -147,14 +151,25 @@ pub mod pallet {
 			kton_amount: Balance,
 			deposits: Vec<DepositId<T>>,
 		},
+		CommissionUpdated {
+			who: T::AccountId,
+			commission: Perbill,
+		},
 		/// A payout has been made for the staker.
-		Payout { staker: T::AccountId, ring_amount: Balance },
+		Payout {
+			staker: T::AccountId,
+			ring_amount: Balance,
+		},
 		/// A new collator set has been elected.
-		Elected { collators: Vec<T::AccountId> },
+		Elected {
+			collators: Vec<T::AccountId>,
+		},
 	}
 
 	#[pallet::error]
 	pub enum Error<T> {
+		/// Commission rate must be less than maximum commission rate.
+		CommissionTooHigh,
 		/// Exceed maximum deposit count.
 		ExceedMaxDeposits,
 		/// Exceed maximum unstaking/unbonding count.
@@ -449,9 +464,13 @@ pub mod pallet {
 		pub fn collect(origin: OriginFor<T>, commission: Perbill) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
+			if commission > T::MaxCommission::get() {
+				Err(<Error<T>>::CommissionTooHigh)?;
+			}
+
 			<Collators<T>>::mutate(&who, |c| *c = Some(commission));
 
-			// TODO: event?
+			Self::deposit_event(Event::CommissionUpdated { who, commission });
 
 			Ok(())
 		}

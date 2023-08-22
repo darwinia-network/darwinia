@@ -37,7 +37,7 @@ use frame_support::{
 		OriginTrait,
 	},
 };
-use sp_core::{H160, U256};
+use sp_core::{MaxEncodedLen, H160, U256};
 use sp_runtime::traits::Bounded;
 use sp_std::convert::{TryFrom, TryInto};
 // moonbeam
@@ -83,18 +83,29 @@ where
 	#[precompile::public("totalSupply()")]
 	#[precompile::view]
 	fn total_supply(handle: &mut impl PrecompileHandle) -> EvmResult<U256> {
-		handle.record_cost(RuntimeHelper::<Runtime>::db_read_gas_cost())?;
-		let asset_id = Self::asset_id(handle)?;
+		// Record proof_size cost for total_issuance
+		handle.record_db_read::<Runtime>(pallet_assets::AssetDetails::<
+			BalanceOf<Runtime>,
+			AccountIdOf<Runtime>,
+			BalanceOf<Runtime>,
+		>::max_encoded_len())?;
 
+		let asset_id = Self::asset_id(handle)?;
 		Ok(pallet_assets::Pallet::<Runtime>::total_issuance(asset_id).into())
 	}
 
 	#[precompile::public("balanceOf(address)")]
 	#[precompile::view]
 	fn balance_of(handle: &mut impl PrecompileHandle, who: Address) -> EvmResult<U256> {
-		handle.record_cost(RuntimeHelper::<Runtime>::db_read_gas_cost())?;
-		let asset_id = Self::asset_id(handle)?;
+		// Record proof_size cost for the balance
+		handle.record_db_read::<Runtime>(pallet_assets::AssetAccount::<
+			BalanceOf<Runtime>,
+			AccountIdOf<Runtime>,
+			(),
+			BalanceOf<Runtime>,
+		>::max_encoded_len())?;
 
+		let asset_id = Self::asset_id(handle)?;
 		let who: H160 = who.into();
 		let amount: U256 = {
 			let who: AccountIdOf<Runtime> = who.into();
@@ -111,11 +122,15 @@ where
 		owner: Address,
 		spender: Address,
 	) -> EvmResult<U256> {
-		handle.record_cost(RuntimeHelper::<Runtime>::db_read_gas_cost())?;
-		let asset_id = Self::asset_id(handle)?;
+		// Record proof_size cost for the allowance
+		handle.record_db_read::<Runtime>(pallet_assets::Approval::<
+			BalanceOf<Runtime>,
+			BalanceOf<Runtime>,
+		>::max_encoded_len())?;
 
 		let owner: H160 = owner.into();
 		let spender: H160 = spender.into();
+		let asset_id = Self::asset_id(handle)?;
 		let amount: U256 = {
 			let owner: AccountIdOf<Runtime> = owner.into();
 			let spender: AccountIdOf<Runtime> = spender.into();
@@ -131,11 +146,15 @@ where
 		spender: Address,
 		value: U256,
 	) -> EvmResult<bool> {
-		handle.record_cost(RuntimeHelper::<Runtime>::db_read_gas_cost())?;
+		// Record proof_size cost for the allowance
+		handle.record_db_read::<Runtime>(pallet_assets::Approval::<
+			BalanceOf<Runtime>,
+			BalanceOf<Runtime>,
+		>::max_encoded_len())?;
 		handle.record_log_costs_manual(3, 32)?;
-		let asset_id = Self::asset_id(handle)?;
 
 		let spender: H160 = spender.into();
+		let asset_id = Self::asset_id(handle)?;
 		{
 			let owner: AccountIdOf<Runtime> = handle.context().caller.into();
 			let spender: AccountIdOf<Runtime> = spender.into();
@@ -270,27 +289,39 @@ where
 	#[precompile::public("name()")]
 	#[precompile::view]
 	fn name(handle: &mut impl PrecompileHandle) -> EvmResult<UnboundedBytes> {
-		handle.record_cost(RuntimeHelper::<Runtime>::db_read_gas_cost())?;
-		let asset_id = Self::asset_id(handle)?;
+		// Record proof_size cost for the asset metadata
+		handle.record_db_read::<Runtime>(pallet_assets::AssetMetadata::<
+			BalanceOf<Runtime>,
+			[u8; 50], // 50 refers to the StringLimit of the pallet_assets
+		>::max_encoded_len())?;
 
+		let asset_id = Self::asset_id(handle)?;
 		Ok(pallet_assets::Pallet::<Runtime>::name(asset_id).as_slice().into())
 	}
 
 	#[precompile::public("symbol()")]
 	#[precompile::view]
 	fn symbol(handle: &mut impl PrecompileHandle) -> EvmResult<UnboundedBytes> {
-		handle.record_cost(RuntimeHelper::<Runtime>::db_read_gas_cost())?;
-		let asset_id = Self::asset_id(handle)?;
+		// Record proof_size cost for the asset metadata
+		handle.record_db_read::<Runtime>(pallet_assets::AssetMetadata::<
+			BalanceOf<Runtime>,
+			[u8; 50], // 50 refers to the StringLimit of the pallet_assets
+		>::max_encoded_len())?;
 
+		let asset_id = Self::asset_id(handle)?;
 		Ok(pallet_assets::Pallet::<Runtime>::symbol(asset_id).as_slice().into())
 	}
 
 	#[precompile::public("decimals()")]
 	#[precompile::view]
 	fn decimals(handle: &mut impl PrecompileHandle) -> EvmResult<u8> {
-		handle.record_cost(RuntimeHelper::<Runtime>::db_read_gas_cost())?;
-		let asset_id = Self::asset_id(handle)?;
+		// Record proof_size cost for the asset metadata
+		handle.record_db_read::<Runtime>(pallet_assets::AssetMetadata::<
+			BalanceOf<Runtime>,
+			[u8; 50], // 50 refers to the StringLimit of the pallet_assets
+		>::max_encoded_len())?;
 
+		let asset_id = Self::asset_id(handle)?;
 		Ok(pallet_assets::Pallet::<Runtime>::decimals(asset_id))
 	}
 
@@ -429,8 +460,14 @@ where
 	}
 
 	fn asset_id(handle: &mut impl PrecompileHandle) -> EvmResult<AssetIdOf<Runtime>> {
-		let asset_id = AssetIdConverter::account_to_asset_id(handle.code_address().into());
+		// Record proof_size cost for the maybe_total_supply
+		handle.record_db_read::<Runtime>(pallet_assets::AssetDetails::<
+			BalanceOf<Runtime>,
+			AccountIdOf<Runtime>,
+			BalanceOf<Runtime>,
+		>::max_encoded_len())?;
 
+		let asset_id = AssetIdConverter::account_to_asset_id(handle.code_address().into());
 		if pallet_assets::Pallet::<Runtime>::maybe_total_supply(asset_id.clone()).is_some() {
 			return Ok(asset_id);
 		}
