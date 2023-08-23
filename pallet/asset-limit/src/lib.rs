@@ -48,7 +48,7 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// New limit is set or old limit is updated.
-		AssetLimitChanged { asset_location: T::ForeignAssetType, units_limit: u128 },
+		AssetLimitChanged { asset_type: T::ForeignAssetType, units_limit: u128 },
 	}
 
 	#[allow(missing_docs)]
@@ -65,24 +65,24 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Change the asset limit for a given foreign asset location.
+		/// Change the asset limit for a given foreign asset type.
 		#[pallet::call_index(0)]
 		#[pallet::weight(T::DbWeight::get().reads_writes(1, 1))]
 		pub fn set_foreign_asset_limit(
 			origin: OriginFor<T>,
-			asset_location: T::ForeignAssetType,
+			asset_type: T::ForeignAssetType,
 			units_limit: u128,
 		) -> DispatchResult {
 			T::ForeignAssetModifierOrigin::ensure_origin(origin)?;
 
 			ensure!(
-				pallet_asset_manager::AssetTypeId::<T>::get(&asset_location).is_some(),
+				pallet_asset_manager::AssetTypeId::<T>::get(&asset_type).is_some(),
 				Error::<T>::AssetDoesNotExist
 			);
 
-			ForeignAssetLimit::<T>::insert(&asset_location, &units_limit);
+			ForeignAssetLimit::<T>::insert(&asset_type, &units_limit);
 
-			Self::deposit_event(Event::AssetLimitChanged { asset_location, units_limit });
+			Self::deposit_event(Event::AssetLimitChanged { asset_type, units_limit });
 			Ok(())
 		}
 	}

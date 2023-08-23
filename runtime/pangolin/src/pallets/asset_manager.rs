@@ -20,9 +20,10 @@
 use crate::*;
 // substrate
 use frame_support::{dispatch::GetDispatchInfo, pallet_prelude::*, transactional};
+use frame_system::EnsureNever;
 
 // We instruct how to register the Assets
-// In this case, we tell it to Create an Asset in pallet-assets
+// In this case, we tell it to create an Asset in pallet-assets
 pub struct AssetRegistrar;
 
 impl pallet_asset_manager::AssetRegistrar<Runtime> for AssetRegistrar {
@@ -60,12 +61,9 @@ impl pallet_asset_manager::AssetRegistrar<Runtime> for AssetRegistrar {
 	}
 
 	fn destroy_asset_dispatch_info_weight(asset: crate::AssetId) -> Weight {
-		// For us both of them (Foreign and Local) have the same annotated weight for a given
-		// witness
+		// For us both of them (Foreign and Local) have the same annotated weight for a given witness
 		// We need to take the dispatch info from the destroy call, which is already annotated in
 		// the assets pallet
-		// Additionally, we need to add a DB write for removing the precompile revert code in the
-		// EVM
 
 		// This is the dispatch info of destroy
 		let call_weight =
@@ -96,7 +94,7 @@ impl pallet_asset_manager::Config for Runtime {
 	type ForeignAssetType = xcm_configs::AssetType;
 	type LocalAssetDeposit = ConstU128<0>;
 	type LocalAssetIdCreator = LocalAssetIdCreator;
-	type LocalAssetModifierOrigin = Root;
+	type LocalAssetModifierOrigin = EnsureNever<AccountId>;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = pallet_asset_manager::weights::SubstrateWeight<Runtime>;
 }

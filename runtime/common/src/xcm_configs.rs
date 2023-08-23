@@ -225,7 +225,6 @@ impl Default for AssetType {
 		Self::Xcm(MultiLocation::here())
 	}
 }
-
 impl From<MultiLocation> for AssetType {
 	fn from(location: MultiLocation) -> Self {
 		Self::Xcm(location)
