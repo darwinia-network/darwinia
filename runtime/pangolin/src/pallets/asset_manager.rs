@@ -61,17 +61,13 @@ impl pallet_asset_manager::AssetRegistrar<Runtime> for AssetRegistrar {
 	}
 
 	fn destroy_asset_dispatch_info_weight(asset: crate::AssetId) -> Weight {
-		// For us both of them (Foreign and Local) have the same annotated weight for a given
-		// witness We need to take the dispatch info from the destroy call, which is already
-		// annotated in the assets pallet
-
-		// This is the dispatch info of destroy
+		// The dispatch info of destroy
 		let call_weight =
 			RuntimeCall::Assets(pallet_assets::Call::<Runtime>::start_destroy { id: asset.into() })
 				.get_dispatch_info()
 				.weight;
 
-		// This is the db write
+		// The db write for removing the precompile revert code in the EVM.
 		call_weight.saturating_add(<Runtime as frame_system::Config>::DbWeight::get().writes(1))
 	}
 }
