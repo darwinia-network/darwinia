@@ -86,8 +86,7 @@ impl pallet_asset_manager::LocalAssetIdCreator<Runtime> for LocalAssetIdCreator 
 frame_support::parameter_types! {
 	/// 1000 is AssetHub paraId.
 	/// 50 is pallet-assets index on AssetHub.
-	/// 1984 is the id of Tether USD on AssetHub.
-	/// 7777 is the id of Test USD on AssetHub(Rococo).
+	/// 7777 is the id of Test USDT on AssetHub(Rococo).
 	pub UsdtLocation: MultiLocation = MultiLocation::new(
 		1,
 		X3(Parachain(1000), PalletInstance(50), GeneralIndex(7777))
