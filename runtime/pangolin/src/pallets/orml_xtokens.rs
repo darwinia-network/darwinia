@@ -73,7 +73,11 @@ impl orml_xtokens::Config for Runtime {
 	type BaseXcmWeight = BaseXcmWeight;
 	type CurrencyId = CurrencyId;
 	type CurrencyIdConvert = CurrencyIdtoMultiLocation<
-		xcm_primitives::AsAssetType<crate::AssetId, xcm_configs::AssetType, AssetManager>,
+		xcm_primitives::AsAssetType<
+			crate::AssetId,
+			pallets::asset_manager::AssetType,
+			AssetManager,
+		>,
 	>;
 	type MaxAssetsForTransfer = MaxAssetsForTransfer;
 	// We don't have this case: fee_reserve != non_fee_reserve

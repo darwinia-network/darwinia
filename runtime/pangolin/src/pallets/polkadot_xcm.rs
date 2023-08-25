@@ -47,7 +47,11 @@ pub type ForeignFungiblesTransactor = xcm_builder::FungiblesAdapter<
 		xcm_builder::ConvertedConcreteId<
 			crate::AssetId,
 			Balance,
-			xcm_primitives::AsAssetType<crate::AssetId, xcm_configs::AssetType, AssetManager>,
+			xcm_primitives::AsAssetType<
+				crate::AssetId,
+				pallets::asset_manager::AssetType,
+				AssetManager,
+			>,
 			xcm_executor::traits::JustTry,
 		>,
 	),
@@ -201,7 +205,11 @@ pub type XcmFeesToAccount = xcm_primitives::XcmFeesToAccount<
 		xcm_builder::ConvertedConcreteId<
 			crate::AssetId,
 			Balance,
-			xcm_primitives::AsAssetType<crate::AssetId, xcm_configs::AssetType, AssetManager>,
+			xcm_primitives::AsAssetType<
+				crate::AssetId,
+				pallets::asset_manager::AssetType,
+				AssetManager,
+			>,
 			xcm_executor::traits::JustTry,
 		>,
 	),
@@ -246,7 +254,11 @@ impl xcm_executor::Config for XcmExecutorConfig {
 			DealWithFees<Runtime>,
 			ToTreasury,
 		>,
-		xcm_primitives::FirstAssetTrader<xcm_configs::AssetType, AssetManager, XcmFeesToAccount>,
+		xcm_primitives::FirstAssetTrader<
+			pallets::asset_manager::AssetType,
+			AssetManager,
+			XcmFeesToAccount,
+		>,
 	);
 	type UniversalAliases = frame_support::traits::Nothing;
 	// Teleporting is disabled.
