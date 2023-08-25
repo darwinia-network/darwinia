@@ -237,32 +237,3 @@ impl Into<Option<MultiLocation>> for AssetType {
 		}
 	}
 }
-
-frame_support::parameter_types! {
-	/// 1000 is AssetHub paraId.
-	/// 50 is pallet-assets index on AssetHub.
-	/// 1984 is the id of Tether USD on AssetHub.
-	/// Refer to
-	pub UsdtLocation: MultiLocation = MultiLocation::new(
-		1,
-		X3(Parachain(1000), PalletInstance(50), GeneralIndex(1984))
-	);
-}
-
-// Implementation on how to retrieve the AssetId from an AssetType
-// We simply hash the AssetType and take the lowest 128 bits
-impl From<AssetType> for crate::AssetId {
-	fn from(asset: AssetType) -> crate::AssetId {
-		match asset {
-			AssetType::Xcm(id) =>
-				if id == UsdtLocation::get() {
-					1027
-				} else {
-					let mut result: [u8; 8] = [0u8; 8];
-					let hash: sp_core::H256 = id.using_encoded(dc_primitives::Hashing::hash);
-					result.copy_from_slice(&hash.as_fixed_bytes()[0..8]);
-					u64::from_le_bytes(result)
-				},
-		}
-	}
-}
