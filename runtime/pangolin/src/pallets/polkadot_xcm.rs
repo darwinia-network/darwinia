@@ -45,7 +45,7 @@ pub type ForeignFungiblesTransactor = xcm_builder::FungiblesAdapter<
 	// Use this currency when it is a fungible asset matching the given location or name:
 	(
 		xcm_builder::ConvertedConcreteId<
-			AssetId,
+			crate::AssetId,
 			Balance,
 			xcm_primitives::AsAssetType<
 				crate::AssetId,
@@ -203,7 +203,7 @@ pub type XcmFeesToAccount = xcm_primitives::XcmFeesToAccount<
 	Assets,
 	(
 		xcm_builder::ConvertedConcreteId<
-			AssetId,
+			crate::AssetId,
 			Balance,
 			xcm_primitives::AsAssetType<
 				crate::AssetId,
