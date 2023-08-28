@@ -82,16 +82,6 @@ impl pallet_asset_manager::LocalAssetIdCreator<Runtime> for LocalAssetIdCreator 
 	}
 }
 
-frame_support::parameter_types! {
-	/// 1000 is AssetHub paraId.
-	/// 50 is pallet-assets index on AssetHub.
-	/// 7777 is the id of Test USDT on AssetHub(Rococo).
-	pub UsdtLocation: MultiLocation = MultiLocation::new(
-		1,
-		X3(Parachain(1000), PalletInstance(50), GeneralIndex(7777))
-	);
-}
-
 // Our AssetType. For now we only handle Xcm Assets
 #[derive(Clone, Eq, Debug, PartialEq, Ord, PartialOrd, Encode, Decode, TypeInfo)]
 pub enum AssetType {
@@ -114,9 +104,8 @@ impl Into<Option<MultiLocation>> for AssetType {
 		}
 	}
 }
-
-// Implementation on how to retrieve the AssetId from an AssetType
-// We simply hash the AssetType and take the lowest 128 bits
+// Implementation on how to retrieve the AssetId from an `AssetType`.
+// We simply hash the `AssetType` and take the lowest 128 bits.
 impl From<AssetType> for crate::AssetId {
 	fn from(asset: AssetType) -> crate::AssetId {
 		match asset {
@@ -131,6 +120,16 @@ impl From<AssetType> for crate::AssetId {
 				},
 		}
 	}
+}
+
+frame_support::parameter_types! {
+	/// 1000 is AssetHub paraId.
+	/// 50 is pallet-assets index on AssetHub.
+	/// 7777 is the id of Test USDT on AssetHub(Rococo).
+	pub UsdtLocation: MultiLocation = MultiLocation::new(
+		1,
+		X3(Parachain(1000), PalletInstance(50), GeneralIndex(7777))
+	);
 }
 
 impl pallet_asset_manager::Config for Runtime {
