@@ -50,6 +50,7 @@ parachain-info                        = { git = "https://github.com/paritytech/c
 # darwinia
 crab-runtime                      = { path = "runtime/crab" }
 darwinia-account-migration        = { path = "pallet/account-migration", default-features = false }
+darwinia-asset-limit              = { path = "pallet/asset-limit", default-features = false}
 darwinia-common-runtime           = { path = "runtime/common", default-features = false }
 darwinia-deposit                  = { path = "pallet/deposit", default-features = false }
 darwinia-ecdsa-authority          = { path = "pallet/ecdsa-authority", default-features = false }
@@ -108,9 +109,14 @@ moonbeam-primitives-ext       = { git = "https://github.com/darwinia-network/moo
 moonbeam-rpc-debug            = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.43" }
 moonbeam-rpc-primitives-debug = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.43", default-features = false }
 moonbeam-rpc-trace            = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.43" }
+pallet-asset-manager          = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.43", default-features = false }
 pallet-ethereum-xcm           = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.43", default-features = false }
 precompile-utils              = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.43", default-features = false }
 xcm-primitives                = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v0.9.43", default-features = false }
+
+# open-web3-stack
+orml-xcm-support = { git = "https://github.com/open-web3-stack/open-runtime-module-library", branch = "polkadot-v0.9.43", default-features = false }
+orml-xtokens     = { git = "https://github.com/open-web3-stack/open-runtime-module-library", branch = "polkadot-v0.9.43", default-features = false }
 
 # polkadot
 pallet-xcm              = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.43", default-features = false }

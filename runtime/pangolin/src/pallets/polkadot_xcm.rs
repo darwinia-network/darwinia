@@ -37,6 +37,40 @@ pub type LocalAssetTransactor = xcm_builder::CurrencyAdapter<
 	(),
 >;
 
+// The non-reserve fungible transactor type
+// It will use pallet-assets, and the Id will be matched against AsAssetType
+pub type ForeignFungiblesTransactor = xcm_builder::FungiblesAdapter<
+	// Use this fungibles implementation:
+	Assets,
+	// Use this currency when it is a fungible asset matching the given location or name:
+	(
+		xcm_builder::ConvertedConcreteId<
+			AssetId,
+			Balance,
+			xcm_primitives::AsAssetType<
+				crate::AssetId,
+				pallets::asset_manager::AssetType,
+				AssetManager,
+			>,
+			xcm_executor::traits::JustTry,
+		>,
+	),
+	// Do a simple punn to convert an AccountId20 MultiLocation into a native chain account ID:
+	LocationToAccountId,
+	// Our chain's account ID type (we can't get away without mentioning it explicitly):
+	AccountId,
+	// We dont allow teleports.
+	xcm_builder::NoChecking,
+	// We dont track any teleports
+	(),
+>;
+
+pub type AssetTransactors = (
+	// The transactor for our native asset.
+	LocalAssetTransactor,
+	ForeignFungiblesTransactor,
+);
+
 frame_support::parameter_types! {
 	pub const RelayNetwork: NetworkId = NetworkId::Rococo;
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
@@ -112,6 +146,8 @@ frame_support::parameter_types! {
 	pub UniversalLocation: InteriorMultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
 	/// The amount of weight an XCM operation takes. This is a safe overestimate.
 	pub BaseXcmWeight: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 1024);
+	/// Xcm fees will go to the treasury account
+	pub XcmFeesAccount: AccountId = Treasury::account_id();
 	/// A temporary weight value for each XCM instruction.
 	/// NOTE: This should be removed after we account for PoV weights.
 	pub const TempFixedXcmWeight: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 0);
@@ -160,18 +196,43 @@ impl xcm_executor::traits::CallDispatcher<RuntimeCall> for XcmCallDispatcher {
 	}
 }
 
+/// This is the struct that will handle the revenue from xcm fees
+/// We do not burn anything because we want to mimic exactly what
+/// the sovereign account has
+pub type XcmFeesToAccount = xcm_primitives::XcmFeesToAccount<
+	Assets,
+	(
+		xcm_builder::ConvertedConcreteId<
+			AssetId,
+			Balance,
+			xcm_primitives::AsAssetType<
+				crate::AssetId,
+				pallets::asset_manager::AssetType,
+				AssetManager,
+			>,
+			xcm_executor::traits::JustTry,
+		>,
+	),
+	AccountId,
+	XcmFeesAccount,
+>;
+
+pub type XcmWeigher = xcm_builder::FixedWeightBounds<BaseXcmWeight, RuntimeCall, MaxInstructions>;
+
 pub struct XcmExecutorConfig;
 impl xcm_executor::Config for XcmExecutorConfig {
 	type AssetClaims = PolkadotXcm;
 	type AssetExchanger = ();
 	type AssetLocker = ();
 	// How to withdraw and deposit an asset.
-	type AssetTransactor = LocalAssetTransactor;
+	type AssetTransactor = AssetTransactors;
 	type AssetTrap = PolkadotXcm;
 	type Barrier = Barrier;
 	type CallDispatcher = XcmCallDispatcher;
 	type FeeManager = ();
-	type IsReserve = xcm_builder::NativeAsset;
+	type IsReserve = orml_xcm_support::MultiNativeAsset<
+		xcm_primitives::AbsoluteAndRelativeReserve<pallets::orml_xtokens::SelfLocationAbsolute>,
+	>;
 	type IsTeleporter = ();
 	type MaxAssetsIntoHolding = MaxAssetsIntoHolding;
 	type MessageExporter = ();
@@ -181,17 +242,24 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type RuntimeCall = RuntimeCall;
 	type SafeCallFilter = frame_support::traits::Everything;
 	type SubscriptionService = PolkadotXcm;
-	type Trader = xcm_configs::LocalAssetTrader<
-		frame_support::weights::ConstantMultiplier<
-			Balance,
-			darwinia_common_runtime::xcm_configs::XcmBaseWeightFee,
+	type Trader = (
+		xcm_configs::LocalAssetTrader<
+			frame_support::weights::ConstantMultiplier<
+				Balance,
+				darwinia_common_runtime::xcm_configs::XcmBaseWeightFee,
+			>,
+			AnchoringSelfReserve,
+			AccountId,
+			Balances,
+			DealWithFees<Runtime>,
+			ToTreasury,
 		>,
-		AnchoringSelfReserve,
-		AccountId,
-		Balances,
-		DealWithFees<Runtime>,
-		ToTreasury,
-	>;
+		xcm_primitives::FirstAssetTrader<
+			pallets::asset_manager::AssetType,
+			AssetManager,
+			XcmFeesToAccount,
+		>,
+	);
 	type UniversalAliases = frame_support::traits::Nothing;
 	// Teleporting is disabled.
 	type UniversalLocation = UniversalLocation;
@@ -235,7 +303,7 @@ impl pallet_xcm::Config for Runtime {
 	type SovereignAccountOf = LocationToAccountId;
 	type TrustedLockers = ();
 	type UniversalLocation = UniversalLocation;
-	type Weigher = xcm_builder::FixedWeightBounds<BaseXcmWeight, RuntimeCall, MaxInstructions>;
+	type Weigher = XcmWeigher;
 	type WeightInfo = pallet_xcm::TestWeightInfo;
 	type XcmExecuteFilter = frame_support::traits::Everything;
 	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;

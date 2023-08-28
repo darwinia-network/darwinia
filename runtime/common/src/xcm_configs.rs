@@ -32,6 +32,7 @@ use xcm_executor::{
 // substrate
 use frame_support::{
 	log,
+	pallet_prelude::*,
 	traits::{
 		tokens::currency::Currency as CurrencyT, ConstU128, OnUnbalanced as OnUnbalancedT,
 		ProcessMessageError,
@@ -41,7 +42,7 @@ use frame_support::{
 use sp_core::Get;
 use sp_io::hashing::blake2_256;
 use sp_runtime::traits::{SaturatedConversion, Saturating, Zero};
-use sp_std::{borrow::Borrow, result::Result};
+use sp_std::{borrow::Borrow, prelude::*, result::Result};
 
 /// Base balance required for the XCM unit weight.
 pub type XcmBaseWeightFee = ConstU128<GWEI>;
@@ -204,4 +205,13 @@ impl<
 	fn drop(&mut self) {
 		OnUnbalanced::on_unbalanced(Currency::issue(self.1));
 	}
+}
+
+// TODO: move to other place.
+#[derive(Clone, Default, Eq, Debug, PartialEq, Ord, PartialOrd, Encode, Decode, TypeInfo)]
+pub struct AssetRegistrarMetadata {
+	pub name: Vec<u8>,
+	pub symbol: Vec<u8>,
+	pub decimals: u8,
+	pub is_frozen: bool,
 }

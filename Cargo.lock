@@ -2602,6 +2602,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-asset-limit"
+version = "6.3.4"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-asset-manager",
+ "parity-scale-codec",
+ "scale-info",
+]
+
+[[package]]
 name = "darwinia-common-runtime"
 version = "6.3.4"
 dependencies = [
@@ -2617,6 +2628,7 @@ dependencies = [
  "pallet-evm",
  "pallet-treasury",
  "parity-scale-codec",
+ "scale-info",
  "smallvec",
  "sp-core",
  "sp-io",
@@ -7391,6 +7403,7 @@ dependencies = [
  "orml-utilities",
  "parity-scale-codec",
  "scale-info",
+ "serde",
  "sp-core",
  "sp-io",
  "sp-runtime",
@@ -7406,9 +7419,45 @@ dependencies = [
  "frame-support",
  "parity-scale-codec",
  "scale-info",
+ "serde",
  "sp-io",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "orml-xcm-support"
+version = "0.4.1-dev"
+source = "git+https://github.com/open-web3-stack/open-runtime-module-library?branch=polkadot-v0.9.43#28a2e6f0df9540d91db4018c7ecebb8bfc217a2a"
+dependencies = [
+ "frame-support",
+ "orml-traits",
+ "parity-scale-codec",
+ "sp-runtime",
+ "sp-std",
+ "xcm",
+ "xcm-executor",
+]
+
+[[package]]
+name = "orml-xtokens"
+version = "0.4.1-dev"
+source = "git+https://github.com/open-web3-stack/open-runtime-module-library?branch=polkadot-v0.9.43#28a2e6f0df9540d91db4018c7ecebb8bfc217a2a"
+dependencies = [
+ "cumulus-primitives-core",
+ "frame-support",
+ "frame-system",
+ "orml-traits",
+ "orml-xcm-support",
+ "pallet-xcm",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "xcm",
+ "xcm-executor",
 ]
 
 [[package]]
@@ -7447,6 +7496,25 @@ checksum = "a1914cd452d8fccd6f9db48147b29fd4ae05bea9dc5d9ad578509f72415de282"
 dependencies = [
  "cfg-if",
  "libm 0.1.4",
+]
+
+[[package]]
+name = "pallet-asset-manager"
+version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.43#71592d863e0d6d1bade77570291529d90324c008"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "xcm",
+ "xcm-primitives",
 ]
 
 [[package]]
@@ -8684,6 +8752,7 @@ dependencies = [
  "cumulus-primitives-timestamp",
  "cumulus-primitives-utility",
  "darwinia-account-migration",
+ "darwinia-asset-limit",
  "darwinia-common-runtime",
  "darwinia-deposit",
  "darwinia-ecdsa-authority",
@@ -8708,6 +8777,9 @@ dependencies = [
  "frame-try-runtime",
  "moonbeam-evm-tracer",
  "moonbeam-rpc-primitives-debug",
+ "orml-xcm-support",
+ "orml-xtokens",
+ "pallet-asset-manager",
  "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
