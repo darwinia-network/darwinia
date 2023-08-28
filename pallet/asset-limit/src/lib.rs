@@ -25,8 +25,6 @@
 #![deny(missing_docs)]
 #![deny(unused_crate_dependencies)]
 
-pub use pallet::*;
-
 #[frame_support::pallet]
 pub mod pallet {
 	// substrate
@@ -87,3 +85,4 @@ pub mod pallet {
 		}
 	}
 }
+pub use pallet::*;

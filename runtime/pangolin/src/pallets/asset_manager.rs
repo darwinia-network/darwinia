@@ -28,7 +28,6 @@ use xcm::latest::prelude::*;
 // We instruct how to register the Assets
 // In this case, we tell it to create an Asset in pallet-assets
 pub struct AssetRegistrar;
-
 impl pallet_asset_manager::AssetRegistrar<Runtime> for AssetRegistrar {
 	#[transactional]
 	fn create_foreign_asset(

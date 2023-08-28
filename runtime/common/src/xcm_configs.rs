@@ -207,6 +207,7 @@ impl<
 	}
 }
 
+// TODO: move to other place.
 #[derive(Clone, Default, Eq, Debug, PartialEq, Ord, PartialOrd, Encode, Decode, TypeInfo)]
 pub struct AssetRegistrarMetadata {
 	pub name: Vec<u8>,

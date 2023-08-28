@@ -25,12 +25,12 @@ use frame_support::{pallet_prelude::*, traits::*};
 use sp_std::prelude::*;
 
 // Our currencyId. We distinguish for now between SelfReserve, and Others, defined by their Id.
-#[derive(Clone, Eq, Debug, PartialEq, Ord, PartialOrd, Encode, Decode, TypeInfo)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Encode, Decode, TypeInfo)]
 pub enum CurrencyId {
 	// Our native token
 	SelfReserve,
 	// Assets representing other chains native tokens
-	ForeignAsset(crate::AssetId),
+	ForeignAsset(AssetId),
 }
 
 // How to convert from CurrencyId to MultiLocation
@@ -38,7 +38,7 @@ pub struct CurrencyIdtoMultiLocation<AssetXConverter>(sp_std::marker::PhantomDat
 impl<AssetXConverter> sp_runtime::traits::Convert<CurrencyId, Option<MultiLocation>>
 	for CurrencyIdtoMultiLocation<AssetXConverter>
 where
-	AssetXConverter: xcm_executor::traits::Convert<MultiLocation, crate::AssetId>,
+	AssetXConverter: xcm_executor::traits::Convert<MultiLocation, AssetId>,
 {
 	fn convert(currency: CurrencyId) -> Option<MultiLocation> {
 		match currency {
@@ -73,11 +73,7 @@ impl orml_xtokens::Config for Runtime {
 	type BaseXcmWeight = BaseXcmWeight;
 	type CurrencyId = CurrencyId;
 	type CurrencyIdConvert = CurrencyIdtoMultiLocation<
-		xcm_primitives::AsAssetType<
-			crate::AssetId,
-			pallets::asset_manager::AssetType,
-			AssetManager,
-		>,
+		xcm_primitives::AsAssetType<AssetId, xcm_configs::AssetType, AssetManager>,
 	>;
 	type MaxAssetsForTransfer = MaxAssetsForTransfer;
 	// We don't have this case: fee_reserve != non_fee_reserve
