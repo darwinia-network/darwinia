@@ -44,7 +44,7 @@ fn migrate() -> frame_support::weights::Weight {
 	// substrate
 	use frame_support::traits::StorageVersion;
 
-	// Some pallets ere added on chain after the migration.
+	// Some pallets are added on chain after the migration.
 	// Thus, they never required the migration and we just missed to set the correct
 	// `StorageVersion`.
 	StorageVersion::new(4).put::<Scheduler>();
