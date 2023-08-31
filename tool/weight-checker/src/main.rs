@@ -4,6 +4,9 @@ use std::{fs, path::PathBuf};
 use clap::Parser;
 use regex::Regex;
 
+const ON_CHAIN_REF_TIME: u128 = 349_900_160_000;
+const ON_CHAIN_PROOF_SIZE: u128 = 3_670_016;
+
 fn main() {
 	let Cli { paths } = Cli::parse();
 
@@ -14,26 +17,29 @@ fn main() {
 			panic!("invalid path");
 		}
 
-		let (on_chain_ref_time, on_chain_proof_size) = (349_900_160_000, 3_670_016);
-		let (mut ref_time, mut proof_size) = (0, 0);
+		println!("Max on-chain   `ref_time`: {ON_CHAIN_REF_TIME}");
+		println!("Max on-chain `proof_size`: {ON_CHAIN_PROOF_SIZE}");
+
+		let mut problems = Vec::new();
 
 		fs::read_dir(p).unwrap().for_each(|e| {
 			let e = e.unwrap();
 			let p = e.path();
-			let t = fs::read_to_string(p).unwrap();
-			let (ref_time_, proof_size_) = R::new().captures_max(&t);
+			let t = fs::read_to_string(&p).unwrap();
+			let (ref_time, proof_size) = R::new().captures_max(&t);
 
-			ref_time = ref_time.max(ref_time_);
-			proof_size = proof_size.max(proof_size_);
+			if ref_time >= ON_CHAIN_REF_TIME || proof_size >= ON_CHAIN_PROOF_SIZE {
+				problems.push((ref_time, proof_size, p.display().to_string()));
+			}
 		});
 
-		println!("Max            `ref_time`: {ref_time}");
-		println!("Max on-chain   `ref_time`: {on_chain_ref_time}");
-		println!("Max          `proof_size`: {proof_size}");
-		println!("Max on-chain `proof_size`: {on_chain_proof_size}");
-
-		if ref_time >= on_chain_ref_time || proof_size >= on_chain_proof_size {
-			panic!("exceeded on-chain limit");
+		if !problems.is_empty() {
+			panic!(
+				"{}",
+				problems.into_iter().fold(String::new(), |acc, (t, ps, p)| format!(
+					"{acc}ref_time({t}) proof_size({ps}) path({p})\n"
+				))
+			);
 		}
 	});
 }

@@ -1,4 +1,4 @@
-## {{ .Env.CHAIN | strings.Title }} {{ (ds "srtool").info.version }}
+## {{ .Env.CHAIN | strings.Title }}
 <h4 align="right">Upgrade Priority LOW :green_circle:</h4>
 
 #### Proposal Hash
