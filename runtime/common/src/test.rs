@@ -486,17 +486,15 @@ macro_rules! impl_evm_tests {
 			}
 
 			#[test]
-			fn dispatch_validator_works() {
+			fn dispatch_validator_filter_runtime_calls() {
 				ExtBuilder::default().build().execute_with(|| {
 					assert!(DarwiniaDispatchValidator::validate_before_dispatch(
-						// normal account
 						&H160::default().into(),
 						&RuntimeCall::System(frame_system::Call::remark { remark: vec![] })
 					)
 					.is_none());
 
 					assert!(DarwiniaDispatchValidator::validate_before_dispatch(
-						// normal account
 						&H160::default().into(),
 						// forbidden call
 						&RuntimeCall::EVM(pallet_evm::Call::call {
@@ -510,6 +508,32 @@ macro_rules! impl_evm_tests {
 							nonce: None,
 							access_list: vec![],
 						})
+					)
+					.is_some());
+				});
+			}
+
+			#[test]
+			fn dispatch_validator_filter_dispatch_class() {
+				ExtBuilder::default().build().execute_with(|| {
+					// Default class
+					assert!(DarwiniaDispatchValidator::validate_before_dispatch(
+						&H160::default().into(),
+						&RuntimeCall::System(frame_system::Call::remark { remark: vec![] })
+					)
+					.is_none());
+
+					// Operational class
+					assert!(DarwiniaDispatchValidator::validate_before_dispatch(
+						&H160::default().into(),
+						&RuntimeCall::System(frame_system::Call::set_heap_pages { pages: 20 })
+					)
+					.is_none());
+
+					// Mandatory class
+					assert!(DarwiniaDispatchValidator::validate_before_dispatch(
+						&H160::default().into(),
+						&RuntimeCall::Timestamp(pallet_timestamp::Call::set { now: 100 })
 					)
 					.is_some());
 				});
