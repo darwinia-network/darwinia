@@ -195,7 +195,9 @@ impl DispatchValidateT<AccountId, RuntimeCall> for DarwiniaDispatchValidator {
 				| RuntimeCall::MessageTransact(..)
 		) {
 			Some(fp_evm::PrecompileFailure::Error {
-				exit_status: ExitError::Other("These pallet's calls are forbidden".into()),
+				exit_status: ExitError::Other(
+					"These pallet's calls are not allowed to be called from precompile.".into(),
+				),
 			})
 		} else {
 			<() as DispatchValidateT<AccountId, RuntimeCall>>::validate_before_dispatch(
