@@ -18,6 +18,8 @@
 
 // darwinia
 use crate::*;
+// substrate
+use frame_support::dispatch::{DispatchClass, GetDispatchInfo, Pays};
 // frontier
 use pallet_evm::{ExitError, IsPrecompileResult, Precompile};
 use pallet_evm_precompile_dispatch::DispatchValidateT;
@@ -184,9 +186,11 @@ fn addr(a: u64) -> sp_core::H160 {
 pub struct DarwiniaDispatchValidator;
 impl DispatchValidateT<AccountId, RuntimeCall> for DarwiniaDispatchValidator {
 	fn validate_before_dispatch(
-		origin: &AccountId,
+		_origin: &AccountId,
 		call: &RuntimeCall,
 	) -> Option<fp_evm::PrecompileFailure> {
+		let info = call.get_dispatch_info();
+
 		if matches!(
 			call,
 			RuntimeCall::Assets(..)
@@ -195,12 +199,16 @@ impl DispatchValidateT<AccountId, RuntimeCall> for DarwiniaDispatchValidator {
 				| RuntimeCall::MessageTransact(..)
 		) {
 			Some(fp_evm::PrecompileFailure::Error {
-				exit_status: ExitError::Other("These pallet's calls are forbidden".into()),
+				exit_status: ExitError::Other(
+					"These pallet's calls are not allowed to be called from precompile.".into(),
+				),
+			})
+		} else if info.pays_fee == Pays::No || info.class == DispatchClass::Mandatory {
+			Some(fp_evm::PrecompileFailure::Error {
+				exit_status: ExitError::Other("Permission denied calls".into()),
 			})
 		} else {
-			<() as DispatchValidateT<AccountId, RuntimeCall>>::validate_before_dispatch(
-				origin, call,
-			)
+			None
 		}
 	}
 }
