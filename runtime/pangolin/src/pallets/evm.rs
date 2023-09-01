@@ -203,7 +203,7 @@ impl DispatchValidateT<AccountId, RuntimeCall> for DarwiniaDispatchValidator {
 					"These pallet's calls are not allowed to be called from precompile.".into(),
 				),
 			})
-		} else if info.pays_fee == Pays::Yes || info.class == DispatchClass::Mandatory {
+		} else if info.pays_fee == Pays::No || info.class == DispatchClass::Mandatory {
 			Some(fp_evm::PrecompileFailure::Error {
 				exit_status: ExitError::Other("Permission denied calls".into()),
 			})
