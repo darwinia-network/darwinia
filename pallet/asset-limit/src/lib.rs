@@ -78,7 +78,7 @@ pub mod pallet {
 				Error::<T>::AssetDoesNotExist
 			);
 
-			ForeignAssetLimit::<T>::insert(&asset_type, &units_limit);
+			ForeignAssetLimit::<T>::insert(&asset_type, units_limit);
 
 			Self::deposit_event(Event::AssetLimitChanged { asset_type, units_limit });
 			Ok(())
