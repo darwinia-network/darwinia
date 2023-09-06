@@ -16,7 +16,8 @@ codec             = { workspace = true, package = "parity-scale-codec" }
 scale-info        = { workspace = true }
 static_assertions = { workspace = true }
 # crates.io optional
-array-bytes = { workspace = true, optional = true }
+array-bytes = { workspace = true }
+# array-bytes = { workspace = true, optional = true }
 
 # cumulus
 cumulus-pallet-aura-ext         = { workspace = true }
@@ -283,7 +284,7 @@ on-chain-release-build = [
 
 runtime-benchmarks = [
 	# crates.io
-	"array-bytes",
+	# "array-bytes",
 
 	# cumulus
 	"cumulus-pallet-parachain-system/runtime-benchmarks",
