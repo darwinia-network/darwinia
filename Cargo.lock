@@ -3780,7 +3780,7 @@ dependencies = [
 [[package]]
 name = "fc-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "async-trait",
  "fp-consensus",
@@ -3796,7 +3796,7 @@ dependencies = [
 [[package]]
 name = "fc-db"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "async-trait",
  "ethereum",
@@ -3826,7 +3826,7 @@ dependencies = [
 [[package]]
 name = "fc-mapping-sync"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "fc-db",
  "fc-storage",
@@ -3849,7 +3849,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -3899,7 +3899,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc-core"
 version = "1.1.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -3912,7 +3912,7 @@ dependencies = [
 [[package]]
 name = "fc-storage"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -4091,7 +4091,7 @@ dependencies = [
 [[package]]
 name = "fp-account"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "hex",
  "impl-serde",
@@ -4110,7 +4110,7 @@ dependencies = [
 [[package]]
 name = "fp-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "ethereum",
  "parity-scale-codec",
@@ -4122,7 +4122,7 @@ dependencies = [
 [[package]]
 name = "fp-ethereum"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -4136,7 +4136,7 @@ dependencies = [
 [[package]]
 name = "fp-evm"
 version = "3.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "evm",
  "frame-support",
@@ -4151,7 +4151,7 @@ dependencies = [
 [[package]]
 name = "fp-rpc"
 version = "3.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -4168,7 +4168,7 @@ dependencies = [
 [[package]]
 name = "fp-self-contained"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -4180,7 +4180,7 @@ dependencies = [
 [[package]]
 name = "fp-storage"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "parity-scale-codec",
  "serde",
@@ -7906,7 +7906,7 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -7955,7 +7955,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm"
 version = "6.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "environmental",
  "evm",
@@ -7980,7 +7980,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-blake2"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "fp-evm",
 ]
@@ -7988,7 +7988,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-bn128"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "fp-evm",
  "sp-core",
@@ -7998,7 +7998,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-dispatch"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -8008,7 +8008,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-modexp"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "fp-evm",
  "num",
@@ -8017,7 +8017,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-simple"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v0.9.43#9fd5782120bb808a2fa5b7bf3aaa065396b17b80"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
 dependencies = [
  "fp-evm",
  "ripemd",
