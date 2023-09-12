@@ -22,6 +22,14 @@ use crate::*;
 use frame_support::dispatch::{DispatchClass, GetDispatchInfo, Pays};
 // frontier
 use pallet_evm::{ExitError, IsPrecompileResult, Precompile};
+use pallet_evm_precompile_bls12377::{
+	Bls12377G1Add, Bls12377G1Mul, Bls12377G1MultiExp, Bls12377G2Add, Bls12377G2Mul,
+	Bls12377G2MultiExp, Bls12377MapG1, Bls12377MapG2, Bls12377Pairing,
+};
+use pallet_evm_precompile_bw6761::{
+	Bw6761G1Add, Bw6761G1Mul, Bw6761G1MultiExp, Bw6761G2Add, Bw6761G2Mul, Bw6761G2MultiExp,
+	Bw6761Pairing,
+};
 use pallet_evm_precompile_dispatch::DispatchValidateT;
 
 const BLOCK_GAS_LIMIT: u64 = 20_000_000;
@@ -46,7 +54,7 @@ where
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> [sp_core::H160; 16] {
+	pub fn used_addresses() -> [sp_core::H160; 32] {
 		[
 			addr(1),
 			addr(2),
@@ -66,6 +74,24 @@ where
 			addr(1536),
 			addr(1537),
 			addr(2048),
+			// bls12377
+			addr(2049),
+			addr(2050),
+			addr(2051),
+			addr(2052),
+			addr(2053),
+			addr(2054),
+			addr(2055),
+			addr(2056),
+			addr(2057),
+			// bw6761
+			addr(2058),
+			addr(2059),
+			addr(2060),
+			addr(2061),
+			addr(2062),
+			addr(2063),
+			addr(2064),
 		]
 	}
 }
@@ -124,6 +150,24 @@ where
 			// [2048..) reserved for the experimental precompiles.
 			a if a == addr(2048) =>
 				Some(<darwinia_precompile_bls12_381::BLS12381<Runtime>>::execute(handle)),
+			// Bls12377
+			a if a == addr(2049) => Some(Bls12377G1Add::execute(handle)),
+			a if a == addr(2050) => Some(Bls12377G1Mul::execute(handle)),
+			a if a == addr(2051) => Some(Bls12377G1MultiExp::execute(handle)),
+			a if a == addr(2052) => Some(Bls12377G2Add::execute(handle)),
+			a if a == addr(2053) => Some(Bls12377G2Mul::execute(handle)),
+			a if a == addr(2054) => Some(Bls12377G2MultiExp::execute(handle)),
+			a if a == addr(2055) => Some(Bls12377Pairing::execute(handle)),
+			a if a == addr(2056) => Some(Bls12377MapG1::execute(handle)),
+			a if a == addr(2057) => Some(Bls12377MapG2::execute(handle)),
+			// bw6761
+			a if a == addr(2058) => Some(Bw6761G1Add::execute(handle)),
+			a if a == addr(2059) => Some(Bw6761G1Mul::execute(handle)),
+			a if a == addr(2060) => Some(Bw6761G1MultiExp::execute(handle)),
+			a if a == addr(2061) => Some(Bw6761G2Add::execute(handle)),
+			a if a == addr(2062) => Some(Bw6761G2Mul::execute(handle)),
+			a if a == addr(2063) => Some(Bw6761G2MultiExp::execute(handle)),
+			a if a == addr(2064) => Some(Bw6761Pairing::execute(handle)),
 			_ => None,
 		}
 	}

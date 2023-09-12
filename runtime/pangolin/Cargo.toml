@@ -71,6 +71,9 @@ pallet-evm-precompile-bn128    = { workspace = true }
 pallet-evm-precompile-dispatch = { workspace = true }
 pallet-evm-precompile-modexp   = { workspace = true }
 pallet-evm-precompile-simple   = { workspace = true }
+# test
+pallet-evm-precompile-bls12377 = { workspace = true }
+pallet-evm-precompile-bw6761   = { workspace = true }
 
 # moonbeam
 moonbeam-evm-tracer           = { workspace = true, optional = true }

@@ -295,6 +295,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bddcadddf5e9015d310179a59bb28c4d4b9920ad0f11e8e14dbadf654890c9a6"
 
 [[package]]
+name = "ark-bls12-377"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fb00293ba84f51ce3bd026bd0de55899c4e68f0a39a5728cebae3a73ffdc0a4f"
+dependencies = [
+ "ark-ec",
+ "ark-ff",
+ "ark-std",
+]
+
+[[package]]
 name = "ark-bls12-381"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -303,6 +314,18 @@ dependencies = [
  "ark-ec",
  "ark-ff",
  "ark-serialize",
+ "ark-std",
+]
+
+[[package]]
+name = "ark-bw6-761"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2e0605daf0cc5aa2034b78d008aaf159f56901d92a52ee4f6ecdfdac4f426700"
+dependencies = [
+ "ark-bls12-377",
+ "ark-ec",
+ "ark-ff",
  "ark-std",
 ]
 
@@ -7986,6 +8009,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-evm-precompile-bls12377"
+version = "1.0.0-dev"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
+dependencies = [
+ "ark-bls12-377",
+ "ark-ec",
+ "ark-ff",
+ "ark-std",
+ "fp-evm",
+]
+
+[[package]]
 name = "pallet-evm-precompile-bn128"
 version = "2.0.0-dev"
 source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
@@ -7993,6 +8028,18 @@ dependencies = [
  "fp-evm",
  "sp-core",
  "substrate-bn",
+]
+
+[[package]]
+name = "pallet-evm-precompile-bw6761"
+version = "1.0.0-dev"
+source = "git+https://github.com/darwinia-network/frontier?branch=bear-test-zk-for-echo#5d7e02c04707df491c62a4836ddcffb5b1ca2c83"
+dependencies = [
+ "ark-bw6-761",
+ "ark-ec",
+ "ark-ff",
+ "ark-std",
+ "fp-evm",
 ]
 
 [[package]]
@@ -8795,7 +8842,9 @@ dependencies = [
  "pallet-ethereum-xcm",
  "pallet-evm",
  "pallet-evm-precompile-blake2",
+ "pallet-evm-precompile-bls12377",
  "pallet-evm-precompile-bn128",
+ "pallet-evm-precompile-bw6761",
  "pallet-evm-precompile-dispatch",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-simple",
