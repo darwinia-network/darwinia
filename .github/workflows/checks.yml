@@ -182,7 +182,7 @@ jobs:
     needs: [features-checks, runtime-checks]
     steps:
       - name: Clean artifacts
-        uses: geekyeggo/delete-artifact@v1
+        uses: geekyeggo/delete-artifact@v2
         with:
           name: darwinia
     runs-on: ubuntu-latest
