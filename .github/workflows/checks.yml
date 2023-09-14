@@ -169,7 +169,7 @@ jobs:
       - name: Launch darwinia
         run: darwinia --chain pangolin-dev --tmp --alice --tracing-api debug,trace --frontier-backend-type sql &
       - name: Install Node 19
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: 19
       - name: Fetch latest code
