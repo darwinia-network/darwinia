@@ -50,7 +50,7 @@ parachain-info                        = { git = "https://github.com/paritytech/c
 # darwinia
 crab-runtime                      = { path = "runtime/crab" }
 darwinia-account-migration        = { path = "pallet/account-migration", default-features = false }
-darwinia-asset-limit              = { path = "pallet/asset-limit", default-features = false}
+darwinia-asset-limit              = { path = "pallet/asset-limit", default-features = false }
 darwinia-common-runtime           = { path = "runtime/common", default-features = false }
 darwinia-deposit                  = { path = "pallet/deposit", default-features = false }
 darwinia-ecdsa-authority          = { path = "pallet/ecdsa-authority", default-features = false }
@@ -142,12 +142,14 @@ pallet-aura                                = { git = "https://github.com/parityt
 pallet-authorship                          = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 pallet-balances                            = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false, features = ["insecure_zero_ed"] }
 pallet-collective                          = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
+pallet-conviction-voting                   = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 pallet-democracy                           = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 pallet-elections-phragmen                  = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 pallet-identity                            = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 pallet-membership                          = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 pallet-preimage                            = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 pallet-proxy                               = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
+pallet-referenda                           = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 pallet-scheduler                           = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 pallet-session                             = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 pallet-sudo                                = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
@@ -159,6 +161,7 @@ pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/parityt
 pallet-treasury                            = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 pallet-utility                             = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 pallet-vesting                             = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
+pallet-whitelist                           = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 sc-basic-authorship                        = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
 sc-chain-spec                              = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
 sc-cli                                     = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
