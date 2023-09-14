@@ -290,6 +290,6 @@ jobs:
     needs: [release]
     if: always()
     steps:
-      - uses: geekyeggo/delete-artifact@v1
+      - uses: geekyeggo/delete-artifact@v2
         with:
           name: darwinia-artifact
