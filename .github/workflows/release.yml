@@ -167,14 +167,14 @@ jobs:
           mkdir -p dist
           tar -xvf build/darwinia-x86_64-linux-gnu.tar.bz2 -C dist/
       - name: Publish docker image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           push: true
           context: .
           file: .maintain/docker/Dockerfile
           tags: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:sha-${{ env.SHA }}
       - name: Publish docker image with tag
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         if: startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/pango')
         with:
           push: true
