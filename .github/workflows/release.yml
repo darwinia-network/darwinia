@@ -155,7 +155,7 @@ jobs:
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
       - name: Sha
-        uses: benjlevesque/short-sha@v1.2
+        uses: benjlevesque/short-sha@v2.2
       - name: Docker login
         uses: docker/login-action@v1
         with:
@@ -207,7 +207,7 @@ jobs:
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
       - name: Sha
-        uses: benjlevesque/short-sha@v1.2
+        uses: benjlevesque/short-sha@v2.2
       - name: Prepare artifacts
         run: |
           mkdir -p deploy
