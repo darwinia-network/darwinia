@@ -45,8 +45,9 @@ pub const MILLISECS_PER_YEAR: Balance = (366 * 24 * 60 * 60) * 1000;
 ///
 /// Use `U94F34` here, because `2^94 > TOTAL_SUPPLY * 10^9`.
 pub fn in_period(unminted: Balance, period: Moment, elapsed: Moment) -> Option<Balance> {
-	let unminted_per_millisecs = U94F34::from_num(unminted) / MILLISECS_PER_YEAR;
-	let x = (unminted_per_millisecs * period).floor().to_num();
+	let unminted_per_millisecs = U94F34::checked_from_num(unminted)? / MILLISECS_PER_YEAR;
+	let x =
+		(unminted_per_millisecs.checked_mul(U94F34::checked_from_num(period)?)?).floor().to_num();
 	let years = (elapsed / MILLISECS_PER_YEAR + 1) as _;
 
 	inflate(x, years)
@@ -65,7 +66,7 @@ fn inflate(x: Balance, years: u8) -> Option<Balance> {
 	let ninety_nine = I95F33::from_num(99_u8) / 100_i128;
 	let pow = transcendental::pow::<I95F33, I95F33>(ninety_nine, sqrt).ok()?;
 	let ratio = I95F33::from_num(1_u8) - pow;
-	let inflation = I95F33::from_num(x) * ratio;
+	let inflation = I95F33::checked_from_num(x)? * ratio;
 
 	Some(inflation.floor().to_num())
 }
@@ -75,6 +76,20 @@ fn inflate(x: Balance, years: u8) -> Option<Balance> {
 /// Reference(s):
 /// - <https://github.com/evolutionlandorg/bank/blob/master/contracts/GringottsBank.sol#L280>
 pub fn deposit_interest(amount: Balance, months: u8) -> Balance {
+	// The result of `((quot - 1) * precision + rem * precision / d)` is `197` when months is
+	// `12`.
+	//
+	// The default interest is `1_000`.
+	// So, we directly use `1_970_000` here instead `interest * 197 * 10^7`.
+	fn f(amount: U256, precision: U256, quot: U256, rem: U256, d: U256) -> Option<Balance> {
+		Some(
+			(amount.checked_mul(
+				precision.checked_mul(quot.checked_sub(1_u8.into())?)? + precision * rem / d,
+			)? / 1_970_000_u32)
+				.as_u128(),
+		)
+	}
+
 	let amount = U256::from(amount);
 	let months = U256::from(months);
 	let n = U256::from(67_u8).pow(months);
@@ -83,9 +98,5 @@ pub fn deposit_interest(amount: Balance, months: u8) -> Balance {
 	let rem = n % d;
 	let precision = U256::from(1_000_u16);
 
-	// The result of `((quot - 1) * precision + rem * precision / d)` is `197` when months is `12`.
-	//
-	// The default interest is `1_000`.
-	// So, we directly use `1_970_000` here instead `interest * 197 * 10^7`.
-	(amount * (precision * (quot - 1_u8) + precision * rem / d) / 1_970_000_u32).as_u128()
+	f(amount, precision, quot, rem, d).unwrap_or_default()
 }
