@@ -26,6 +26,7 @@ use pallet_evm_precompile_dispatch::DispatchValidateT;
 
 const BLOCK_GAS_LIMIT: u64 = 20_000_000;
 const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
+const ETH_MAX_POV_SIZE: u64 = MAX_POV_SIZE * 3 / 4;
 frame_support::parameter_types! {
 	pub BlockGasLimit: sp_core::U256 = sp_core::U256::from(BLOCK_GAS_LIMIT);
 	pub PrecompilesValue: PangolinPrecompiles<Runtime> = PangolinPrecompiles::<_>::new();
@@ -33,7 +34,7 @@ frame_support::parameter_types! {
 		fp_evm::weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK),
 		0
 	);
-	pub const GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(MAX_POV_SIZE);
+	pub const GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(ETH_MAX_POV_SIZE) + 1;
 }
 
 pub struct PangolinPrecompiles<R>(sp_std::marker::PhantomData<R>);
