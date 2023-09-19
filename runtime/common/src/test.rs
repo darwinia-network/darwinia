@@ -611,7 +611,7 @@ macro_rules! impl_weight_tests {
 			}
 
 			#[test]
-			fn max_allowed_eth_transaction_gas_limit() {
+			fn eth_transaction_max_allowed_gas_limit() {
 				// frontier
 				use pallet_evm::GasWeightMapping;
 
