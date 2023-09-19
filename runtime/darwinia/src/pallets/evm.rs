@@ -28,7 +28,7 @@ use pallet_evm_precompile_dispatch::DispatchValidateT;
 const BLOCK_GAS_LIMIT: u64 = 20_000_000;
 frame_support::parameter_types! {
 	pub BlockGasLimit: sp_core::U256 = sp_core::U256::from(BLOCK_GAS_LIMIT);
-	// Restrict the POV size of the Ethereum transactions in the same way as Gas Limit.
+	// Restrict the POV size of the Ethereum transactions in the same way as weight limit.
 	pub BlockPovSizeLimit: u64 = NORMAL_DISPATCH_RATIO * MAX_POV_SIZE as u64;
 	pub PrecompilesValue: DarwiniaPrecompiles<Runtime> = DarwiniaPrecompiles::<_>::new();
 	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(
