@@ -609,6 +609,38 @@ macro_rules! impl_weight_tests {
 				let time_o_proof = time_fee.checked_div(proof_fee).unwrap_or_default();
 				assert!(time_o_proof <= 30, "{} should be at most 30", time_o_proof);
 			}
+
+			#[test]
+			fn max_allowed_eth_transaction_gas_limit() {
+				// frontier
+				use pallet_evm::GasWeightMapping;
+
+				let max_extrinsic_weight = <Runtime as frame_system::Config>::BlockWeights::get()
+					.get(DispatchClass::Normal)
+					.max_extrinsic
+					.expect("Failed to get max extrinsic weight");
+
+				assert!(!<Runtime as pallet_evm::Config>::GasWeightMapping::gas_to_weight(
+					12_000_000, true
+				)
+				.any_gt(max_extrinsic_weight));
+				assert!(!<Runtime as pallet_evm::Config>::GasWeightMapping::gas_to_weight(
+					14_000_000, true
+				)
+				.any_gt(max_extrinsic_weight));
+				assert!(!<Runtime as pallet_evm::Config>::GasWeightMapping::gas_to_weight(
+					16_000_000, true
+				)
+				.any_gt(max_extrinsic_weight));
+				assert!(!<Runtime as pallet_evm::Config>::GasWeightMapping::gas_to_weight(
+					18_000_000, true
+				)
+				.any_gt(max_extrinsic_weight));
+				assert!(<Runtime as pallet_evm::Config>::GasWeightMapping::gas_to_weight(
+					20_000_000, true
+				)
+				.any_gt(max_extrinsic_weight));
+			}
 		}
 	};
 }
