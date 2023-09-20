@@ -72,7 +72,6 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 					| RuntimeCall::TechnicalCommittee(..)
 					| RuntimeCall::PhragmenElection(..)
 					| RuntimeCall::Treasury(..)
-					| RuntimeCall::Tips(..)
 			),
 			ProxyType::Staking => {
 				matches!(

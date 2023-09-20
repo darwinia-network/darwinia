@@ -87,7 +87,7 @@ pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Pangolin2"),
 	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
 	authoring_version: 0,
-	spec_version: 6_4_0_1,
+	spec_version: 6_4_0_2,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 0,
@@ -151,7 +151,7 @@ frame_support::construct_runtime! {
 		PhragmenElection: pallet_elections_phragmen = 21,
 		TechnicalMembership: pallet_membership::<Instance1> = 22,
 		Treasury: pallet_treasury = 23,
-		Tips: pallet_tips = 24,
+		// Tips: pallet_tips = 24,
 
 		// Utility stuff.
 		Sudo: pallet_sudo = 25,
@@ -213,7 +213,6 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_preimage, Preimage]
 	[pallet_proxy, Proxy]
 	[pallet_scheduler, Scheduler]
-	[pallet_tips, Tips]
 	[pallet_treasury, Treasury]
 	[pallet_utility, Utility]
 	[pallet_session, SessionBench::<Runtime>]
