@@ -103,7 +103,6 @@ pallet-proxy                               = { workspace = true }
 pallet-scheduler                           = { workspace = true }
 pallet-session                             = { workspace = true }
 pallet-timestamp                           = { workspace = true }
-pallet-tips                                = { workspace = true }
 pallet-transaction-payment                 = { workspace = true }
 pallet-transaction-payment-rpc-runtime-api = { workspace = true }
 pallet-treasury                            = { workspace = true }
@@ -228,7 +227,6 @@ std = [
 	"pallet-scheduler/std",
 	"pallet-session/std",
 	"pallet-timestamp/std",
-	"pallet-tips/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
 	"pallet-treasury/std",
@@ -322,7 +320,6 @@ runtime-benchmarks = [
 	"pallet-proxy/runtime-benchmarks",
 	"pallet-scheduler/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
-	"pallet-tips/runtime-benchmarks",
 	"pallet-treasury/runtime-benchmarks",
 	"pallet-utility/runtime-benchmarks",
 	"pallet-vesting/runtime-benchmarks",
@@ -383,7 +380,6 @@ try-runtime = [
 	"pallet-scheduler/try-runtime",
 	"pallet-session/try-runtime",
 	"pallet-timestamp/try-runtime",
-	"pallet-tips/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"pallet-treasury/try-runtime",
 	"pallet-utility/try-runtime",

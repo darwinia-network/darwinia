@@ -41,7 +41,10 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	frame_support::weights::Weight::zero()
-	// RuntimeBlockWeights::get().max_block
+	migration::clear_storage_prefix(b"Tips", b"Tips", &[], None, None);
+	migration::clear_storage_prefix(b"Tips", b"Reasons", &[], None, None);
+
+	// frame_support::weights::Weight::zero()
+	RuntimeBlockWeights::get().max_block
 	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(5, 5)
 }
