@@ -41,12 +41,7 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	EVM::create_account(
-		array_bytes::hex_n_into_unchecked("0x0000000000000000000000000000000000000403"),
-		vec![0x60, 0x00, 0x60, 0x00, 0xFD],
-	);
-
-	// frame_support::weights::Weight::zero()
+	frame_support::weights::Weight::zero()
 	// RuntimeBlockWeights::get().max_block
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(5, 5)
+	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(5, 5)
 }
