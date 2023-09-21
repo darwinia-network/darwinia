@@ -206,27 +206,27 @@ substrate-wasm-builder                     = { git = "https://github.com/parityt
 try-runtime-cli                            = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
 
 [patch."https://github.com/paritytech/frontier"]
-fc-consensus                   = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
-fc-db                          = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
-fc-mapping-sync                = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
-fc-rpc                         = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
-fc-rpc-core                    = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
-fc-storage                     = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
-fp-account                     = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
-fp-ethereum                    = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
-fp-evm                         = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
-fp-rpc                         = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
-fp-self-contained              = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
-pallet-ethereum                = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
-pallet-evm                     = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
-pallet-evm-precompile-blake2   = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
-pallet-evm-precompile-bn128    = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
-pallet-evm-precompile-dispatch = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
-pallet-evm-precompile-modexp   = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
-pallet-evm-precompile-simple   = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
+fc-consensus                   = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
+fc-db                          = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
+fc-mapping-sync                = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
+fc-rpc                         = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
+fc-rpc-core                    = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
+fc-storage                     = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
+fp-account                     = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
+fp-ethereum                    = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
+fp-evm                         = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
+fp-rpc                         = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
+fp-self-contained              = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
+pallet-ethereum                = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
+pallet-evm                     = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
+pallet-evm-precompile-blake2   = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
+pallet-evm-precompile-bn128    = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
+pallet-evm-precompile-dispatch = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
+pallet-evm-precompile-modexp   = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
+pallet-evm-precompile-simple   = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
 # test
-pallet-evm-precompile-bw6761   = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
-pallet-evm-precompile-bls12377   = { git = "https://github.com/darwinia-network/frontier", branch = "bear-test-zk-for-echo" }
+pallet-evm-precompile-bw6761   = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
+pallet-evm-precompile-bls12377   = { git = "https://github.com/darwinia-network/frontier", branch = "apk-verifier" }
 
 [profile.release]
 panic = "unwind"
