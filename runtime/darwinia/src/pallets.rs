@@ -78,8 +78,6 @@ mod membership;
 
 mod treasury;
 
-mod tips;
-
 // Utility stuff.
 mod utility;
 

@@ -54,7 +54,7 @@ jobs:
         with:
           swap-size-gb: 8
       - name: Fetch latest code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build testnets
         id: build-testnets
         if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.artifact.type == 'testnets') }}
@@ -99,7 +99,7 @@ jobs:
           - pangoro
     steps:
       - name: Fetch latest code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install deps
         env:
           GOMPLATE_VERSION: v3.11.4
@@ -146,7 +146,7 @@ jobs:
     needs: [build-package]
     steps:
       - name: Fetch latest code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Download artifact
         uses: actions/download-artifact@v3
         with:
@@ -155,9 +155,9 @@ jobs:
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
       - name: Sha
-        uses: benjlevesque/short-sha@v1.2
+        uses: benjlevesque/short-sha@v2.2
       - name: Docker login
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
@@ -167,14 +167,14 @@ jobs:
           mkdir -p dist
           tar -xvf build/darwinia-x86_64-linux-gnu.tar.bz2 -C dist/
       - name: Publish docker image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           push: true
           context: .
           file: .maintain/docker/Dockerfile
           tags: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:sha-${{ env.SHA }}
       - name: Publish docker image with tag
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         if: startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/pango')
         with:
           push: true
@@ -188,9 +188,9 @@ jobs:
     needs: [build-package, build-runtimes, build-docker-image]
     steps:
       - name: Fetch latest code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Download artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: darwinia-artifact
           path: build
@@ -207,7 +207,7 @@ jobs:
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
       - name: Sha
-        uses: benjlevesque/short-sha@v1.2
+        uses: benjlevesque/short-sha@v2.2
       - name: Prepare artifacts
         run: |
           mkdir -p deploy
@@ -269,7 +269,7 @@ jobs:
     needs: [release]
     steps:
       - name: Fetch latest code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
       - name: Deploy testnets tracing node
@@ -290,6 +290,6 @@ jobs:
     needs: [release]
     if: always()
     steps:
-      - uses: geekyeggo/delete-artifact@v1
+      - uses: geekyeggo/delete-artifact@v2
         with:
           name: darwinia-artifact

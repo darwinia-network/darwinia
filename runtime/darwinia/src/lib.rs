@@ -150,7 +150,7 @@ frame_support::construct_runtime! {
 		PhragmenElection: pallet_elections_phragmen = 21,
 		TechnicalMembership: pallet_membership::<Instance1> = 22,
 		Treasury: pallet_treasury = 23,
-		Tips: pallet_tips = 24,
+		// Tips: pallet_tips = 24,
 
 		// Utility stuff.
 		// Sudo: pallet_sudo = 25,
@@ -209,7 +209,6 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_preimage, Preimage]
 	[pallet_proxy, Proxy]
 	[pallet_scheduler, Scheduler]
-	[pallet_tips, Tips]
 	[pallet_treasury, Treasury]
 	[pallet_utility, Utility]
 	[pallet_vesting, Vesting]

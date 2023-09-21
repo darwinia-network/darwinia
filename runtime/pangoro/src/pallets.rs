@@ -77,8 +77,6 @@ mod membership;
 mod treasury;
 pub use treasury::*;
 
-mod tips;
-
 // Utility stuff.
 mod sudo;
 

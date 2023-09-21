@@ -54,7 +54,7 @@ jobs:
         with:
           swap-size-gb: 8
       - name: Fetch latest code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup build environment
         run: sudo apt install -y clang llvm protobuf-compiler
       - name: Cache cargo
@@ -79,7 +79,7 @@ jobs:
           .github/shrink-cache.sh
       - name: Upload
         if: matrix.action == 'build'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: darwinia
           path: darwinia
@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch latest code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Check format
         run: cargo fmt --all -- --check
       - name: Fast fail
@@ -109,10 +109,14 @@ jobs:
           [runtime/darwinia, runtime/crab, runtime/pangoro, runtime/pangolin]
     runs-on: ubuntu-latest
     steps:
-      - name: Check ${{ matrix.runtime }}
-        uses: hack-ink/subalfred-check-features-action@v0.1.5
+      - name: Fetch latest code
+        uses: actions/checkout@v4
+      - name: Check
+        uses: hack-ink/cargo-featalign-action@v0.1.0
         with:
-          path: ${{ matrix.runtime }}
+          crate: ${{ matrix.runtime }}
+          features: std,runtime-benchmarks,try-runtime
+          default-std: true
 
   runtime-checks:
     name: Task check runtimes
@@ -142,7 +146,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check ${{ matrix.target.chain }}
-        uses: hack-ink/subalfred-check-runtime-action@v0.1.8
+        uses: hack-ink/subalfred-check-runtime-action@v0.2.0
         with:
           uploaded-artifact: darwinia
           chain: ${{ matrix.target.chain }}
@@ -155,7 +159,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download darwinia
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: darwinia
       - name: Install darwinia
@@ -165,11 +169,11 @@ jobs:
       - name: Launch darwinia
         run: darwinia --chain pangolin-dev --tmp --alice --tracing-api debug,trace --frontier-backend-type sql &
       - name: Install Node 19
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: 19
       - name: Fetch latest code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Action test
         run: |
           cd tests/ethereum
@@ -182,7 +186,7 @@ jobs:
     needs: [features-checks, runtime-checks]
     steps:
       - name: Clean artifacts
-        uses: geekyeggo/delete-artifact@v1
+        uses: geekyeggo/delete-artifact@v2
         with:
           name: darwinia
     runs-on: ubuntu-latest

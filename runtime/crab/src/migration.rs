@@ -41,16 +41,10 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	// substrate
-	use frame_support::traits::StorageVersion;
-
-	// Some pallets are added on chain after the migration.
-	// Thus, they never required the migration and we just missed to set the correct
-	// `StorageVersion`.
-	StorageVersion::new(4).put::<Scheduler>();
-	StorageVersion::new(1).put::<PolkadotXcm>();
+	migration::clear_storage_prefix(b"Tips", b"Tips", &[], None, None);
+	migration::clear_storage_prefix(b"Tips", b"Reasons", &[], None, None);
 
 	// frame_support::weights::Weight::zero()
-	// RuntimeBlockWeights::get().max_block
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 2)
+	RuntimeBlockWeights::get().max_block
+	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 2)
 }
