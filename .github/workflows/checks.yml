@@ -127,11 +127,11 @@ jobs:
           [
             {
               chain: darwinia-dev,
-              compare-with: "https://rpc.darwinia-network",
+              compare-with: "https://darwinia-rpc.darwiniacommunitydao.xyz",
             },
             {
               chain: crab-dev,
-              compare-with: "https://crab-rpc.darwinia-network",
+              compare-with: "https://crab-rpc.darwiniacommunitydao.xyz",
             },
             {
               chain: pangoro-dev,
