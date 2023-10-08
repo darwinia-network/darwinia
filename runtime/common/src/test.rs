@@ -413,15 +413,16 @@ macro_rules! impl_account_migration_tests {
 }
 
 #[macro_export]
-macro_rules! impl_evm_tests {
+macro_rules! impl_ethereum_tests {
 	() => {
-		mod evm {
+		mod ethereum {
 			// darwinia
 			use super::mock::*;
 			// frontier
+			use pallet_ethereum::PostLogContent;
 			use pallet_evm_precompile_dispatch::DispatchValidateT;
 			// substrate
-			use frame_support::assert_err;
+			use frame_support::{assert_err, traits::Get};
 			use sp_core::{H160, U256};
 			use sp_runtime::{DispatchError, ModuleError};
 
@@ -435,10 +436,22 @@ macro_rules! impl_evm_tests {
 				assert!(base_extrinsic.ref_time() <= min_ethereum_transaction_weight.ref_time());
 			}
 
+			fn ethereum_constants_are_correctly() {
+				assert_eq!(
+					<<Runtime as pallet_ethereum::Config>::ExtraDataLength as Get<u32>>::get(),
+					64
+				);
+				assert_eq!(
+					<Runtime as pallet_ethereum::Config>::PostLogContent::get() as u8,
+					PostLogContent::BlockAndTxnHashes as u8
+				);
+			}
+
 			#[test]
 			fn evm_constants_are_correctly() {
 				assert_eq!(BlockGasLimit::get(), U256::from(20_000_000));
 				assert_eq!(WeightPerGas::get().ref_time(), 18750);
+				assert_eq!(GasLimitPovSizeRatio::get(), 6);
 			}
 
 			#[test]
@@ -881,6 +894,182 @@ macro_rules! impl_messages_bridge_tests {
 				assert_eq!(
 					frame_support::weights::constants::ExtrinsicBaseWeight::get(),
 					frame_support::weights::constants::ExtrinsicBaseWeight::get(),
+				);
+			}
+		}
+	};
+}
+
+#[macro_export]
+macro_rules! impl_governance_tests {
+	() => {
+		mod governance {
+			// darwinia
+			use super::mock::*;
+			// crates.io
+			use static_assertions::assert_type_eq_all;
+			// substrate
+			use frame_support::traits::{AsEnsureOriginWithArg, Get, IsInVec};
+
+			#[test]
+			fn preimages_setting_correctly() {
+				// Origins
+				assert_type_eq_all!(<Runtime as pallet_preimage::Config>::ManagerOrigin, Root);
+				// Values
+				assert_eq!(<<Runtime as pallet_preimage::Config>::BaseDeposit as Get<u128>>::get(), 500 * UNIT);
+				assert_eq!(<<Runtime as pallet_preimage::Config>::ByteDeposit as Get<u128>>::get(), darwinia_deposit(0, 1));
+			}
+
+			#[test]
+			fn scheduler_setting_correctly() {
+				// Origins
+				assert_type_eq_all!(<Runtime as pallet_scheduler::Config>::ScheduleOrigin, Root);
+				// Values
+				assert_eq!(<<Runtime as pallet_scheduler::Config>::MaxScheduledPerBlock as Get<u32>>::get(), 50);
+			}
+
+			#[test]
+			fn democracy_setting_correctly() {
+				// Origins
+				assert_type_eq_all!(<Runtime as pallet_democracy::Config>::BlacklistOrigin, Root);
+				assert_type_eq_all!(<Runtime as pallet_democracy::Config>::CancelProposalOrigin, RootOrAll<TechnicalCollective>);
+				assert_type_eq_all!(<Runtime as pallet_democracy::Config>::CancellationOrigin, RootOrAtLeastTwoThird<CouncilCollective>);
+				assert_type_eq_all!(<Runtime as pallet_democracy::Config>::ExternalDefaultOrigin, RootOrAll<CouncilCollective>);
+				assert_type_eq_all!(<Runtime as pallet_democracy::Config>::ExternalMajorityOrigin, RootOrAtLeastHalf<CouncilCollective>);
+				assert_type_eq_all!(<Runtime as pallet_democracy::Config>::ExternalOrigin, RootOrAtLeastHalf<CouncilCollective>);
+				assert_type_eq_all!(<Runtime as pallet_democracy::Config>::FastTrackOrigin, RootOrAtLeastTwoThird<TechnicalCollective>);
+				assert_type_eq_all!(<Runtime as pallet_democracy::Config>::InstantOrigin, RootOrAll<TechnicalCollective>);
+				assert_type_eq_all!(<Runtime as pallet_democracy::Config>::VetoOrigin, pallet_collective::EnsureMember<AccountId, TechnicalCollective>);
+
+				// Values
+				assert_eq!(<<Runtime as pallet_democracy::Config>::CooloffPeriod as Get<u32>>::get(), 5 * MINUTES);
+				assert_eq!(<<Runtime as pallet_democracy::Config>::EnactmentPeriod as Get<u32>>::get(), 10 * MINUTES);
+				assert_eq!(<<Runtime as pallet_democracy::Config>::FastTrackVotingPeriod as Get<u32>>::get(), MINUTES);
+				assert_eq!(<<Runtime as pallet_democracy::Config>::InstantAllowed as Get<bool>>::get(), true);
+				assert_eq!(<<Runtime as pallet_democracy::Config>::LaunchPeriod as Get<u32>>::get(), 10 * MINUTES);
+				assert_eq!(<<Runtime as pallet_democracy::Config>::MaxBlacklisted as Get<u32>>::get(), 100);
+				assert_eq!(<<Runtime as pallet_democracy::Config>::MaxDeposits as Get<u32>>::get(), 100);
+				assert_eq!(<<Runtime as pallet_democracy::Config>::MaxProposals as Get<u32>>::get(), 100);
+				assert_eq!(<<Runtime as pallet_democracy::Config>::MaxVotes as Get<u32>>::get(), 100);
+				assert_eq!(<<Runtime as pallet_democracy::Config>::MinimumDeposit as Get<u128>>::get(), DARWINIA_PROPOSAL_REQUIREMENT);
+				assert_eq!(<<Runtime as pallet_democracy::Config>::VoteLockingPeriod as Get<u32>>::get(), 10 * MINUTES);
+				assert_eq!(<<Runtime as pallet_democracy::Config>::VotingPeriod as Get<u32>>::get(), 10 * MINUTES);
+			}
+
+			#[test]
+			fn council_setting_correctly() {
+				// Origins
+				assert_type_eq_all!(<Runtime as pallet_collective::Config<CouncilCollective>>::SetMembersOrigin, Root);
+				// Values
+				assert_eq!(<<Runtime as pallet_collective::Config<CouncilCollective>>::MaxMembers as Get<u32>>::get(), 100);
+				assert_eq!(<<Runtime as pallet_collective::Config<CouncilCollective>>::MaxProposals as Get<u32>>::get(), 100);
+				assert_eq!(<<Runtime as pallet_collective::Config<CouncilCollective>>::MotionDuration as Get<u32>>::get(), 10 * MINUTES);
+			}
+
+			#[test]
+			fn technical_setting_correctly() {
+				// Origins
+				assert_type_eq_all!(<Runtime as pallet_collective::Config<TechnicalCollective>>::SetMembersOrigin, Root);
+				// Values
+				assert_eq!(<<Runtime as pallet_collective::Config<TechnicalCollective>>::MaxMembers as Get<u32>>::get(), 100);
+				assert_eq!(<<Runtime as pallet_collective::Config<TechnicalCollective>>::MaxProposals as Get<u32>>::get(), 100);
+				assert_eq!(<<Runtime as pallet_collective::Config<TechnicalCollective>>::MotionDuration as Get<u32>>::get(), 10 * MINUTES);
+			}
+		}
+
+	}
+}
+
+#[macro_export]
+macro_rules! impl_balances_tests {
+	() => {
+		mod balances {
+			// darwinia
+			use super::mock::*;
+			// substrate
+			use frame_support::traits::Get;
+
+			#[test]
+			fn ensure_constants_correctly() {
+				assert_eq!(<Runtime as pallet_balances::Config>::ExistentialDeposit::get(), 0);
+				assert_eq!(<<Runtime as pallet_balances::Config>::MaxLocks as Get<u32>>::get(), 50);
+				assert_eq!(
+					<<Runtime as pallet_balances::Config>::MaxReserves as Get<u32>>::get(),
+					50
+				);
+			}
+		}
+	};
+}
+
+#[macro_export]
+macro_rules! impl_assets_tests {
+	() => {
+		mod assets {
+			// darwinia
+			use super::mock::*;
+			// crates.io
+			use static_assertions::assert_type_eq_all;
+			// substrate
+			use frame_support::traits::{AsEnsureOriginWithArg, Get, IsInVec};
+
+			#[test]
+			fn assets_setting_correctly() {
+				// Origins
+				assert_type_eq_all!(<Runtime as pallet_assets::Config>::ForceOrigin, Root);
+				assert_type_eq_all!(
+					<Runtime as pallet_assets::Config>::CreateOrigin,
+					AsEnsureOriginWithArg<
+						frame_system::EnsureSignedBy<IsInVec<Creators>, AccountId>,
+					>
+				);
+
+				// Values
+				assert_eq!(
+					<<Runtime as pallet_assets::Config>::AssetAccountDeposit as Get<u128>>::get(),
+					0
+				);
+				assert_eq!(
+					<<Runtime as pallet_assets::Config>::MetadataDepositPerByte as Get<u128>>::get(
+					),
+					0
+				);
+				assert_eq!(
+					<<Runtime as pallet_assets::Config>::MetadataDepositBase as Get<u128>>::get(),
+					0
+				);
+				assert_eq!(
+					<<Runtime as pallet_assets::Config>::AssetDeposit as Get<u128>>::get(),
+					0
+				);
+				assert_eq!(
+					<<Runtime as pallet_assets::Config>::RemoveItemsLimit as Get<u32>>::get(),
+					1000
+				);
+				assert_eq!(
+					<<Runtime as pallet_assets::Config>::StringLimit as Get<u32>>::get(),
+					50
+				);
+			}
+		}
+	};
+}
+
+#[macro_export]
+macro_rules! impl_message_transact_tests {
+	() => {
+		mod message_transact {
+			// darwinia
+			use super::mock::*;
+			use darwinia_message_transact::EnsureLcmpEthOrigin;
+			// crates.io
+			use static_assertions::assert_type_eq_all;
+
+			#[test]
+			fn ensure_origin_correctly() {
+				assert_type_eq_all!(
+					<Runtime as darwinia_message_transact::Config>::LcmpEthOrigin,
+					EnsureLcmpEthOrigin
 				);
 			}
 		}
