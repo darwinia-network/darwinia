@@ -53,9 +53,10 @@ fn session_keys(keys: AuraId) -> SessionKeys {
 
 pub fn development_config() -> ChainSpec {
 	ChainSpec::from_genesis(
-		"Darwinia2 Development",
-		"darwinia2-development",
-		ChainType::Development,
+		// Fulfill Polkadot.JS metadata upgrade requirements.
+		"Darwinia2 D",
+		"darwinia2-d",
+		ChainType::Live,
 		move || {
 			testnet_genesis(
 				vec![
@@ -90,9 +91,10 @@ pub fn development_config() -> ChainSpec {
 
 pub fn local_config() -> ChainSpec {
 	ChainSpec::from_genesis(
-		"Darwinia2 Local",
-		"darwinia2-local",
-		ChainType::Local,
+		// Fulfill Polkadot.JS metadata upgrade requirements.
+		"Darwinia2 L",
+		"darwinia2-l",
+		ChainType::Live,
 		move || {
 			testnet_genesis(
 				vec![

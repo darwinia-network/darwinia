@@ -53,9 +53,10 @@ fn session_keys(keys: AuraId) -> SessionKeys {
 
 pub fn development_config() -> ChainSpec {
 	ChainSpec::from_genesis(
-		"Pangolin2 Development",
-		"pangolin2-development",
-		ChainType::Development,
+		// Fulfill Polkadot.JS metadata upgrade requirements.
+		"Pangolin2 D",
+		"pangolin2-d",
+		ChainType::Live,
 		move || {
 			testnet_genesis(
 				vec![
@@ -90,9 +91,11 @@ pub fn development_config() -> ChainSpec {
 
 pub fn local_config() -> ChainSpec {
 	ChainSpec::from_genesis(
-		"Pangolin2 Local",
-		"pangolin2-local",
-		ChainType::Local,
+		// Fulfill Polkadot.JS metadata upgrade requirements.
+		"Pangolin2 L",
+		"pangolin2-l",
+		// Fulfill Polkadot.JS metadata upgrade requirements.
+		ChainType::Live,
 		move || {
 			testnet_genesis(
 				vec![
@@ -209,11 +212,8 @@ pub fn genesis_config() -> ChainSpec {
 				ecdsa_authority: Default::default(),
 
 				// Governance stuff.
-				democracy: Default::default(),
 				council: Default::default(),
 				technical_committee: Default::default(),
-				phragmen_election: Default::default(),
-				technical_membership: Default::default(),
 				treasury: Default::default(),
 
 				// Utility stuff.
@@ -319,11 +319,20 @@ fn testnet_genesis(
 		ecdsa_authority: Default::default(),
 
 		// Governance stuff.
-		democracy: Default::default(),
-		council: Default::default(),
-		technical_committee: Default::default(),
-		phragmen_election: Default::default(),
-		technical_membership: Default::default(),
+		council: CouncilConfig {
+			members: vec![
+				array_bytes::hex_n_into_unchecked(ALITH),
+				array_bytes::hex_n_into_unchecked(BALTATHAR),
+			],
+			..Default::default()
+		},
+		technical_committee: TechnicalCommitteeConfig {
+			members: vec![
+				array_bytes::hex_n_into_unchecked(ALITH),
+				array_bytes::hex_n_into_unchecked(BALTATHAR),
+			],
+			..Default::default()
+		},
 		treasury: Default::default(),
 
 		// Utility stuff.

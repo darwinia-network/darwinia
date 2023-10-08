@@ -16,26 +16,26 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+// crates.io
+use codec::{Decode, Encode};
 // darwinia
 use crate::*;
-// substrate
-use frame_support::{dispatch::GetDispatchInfo, pallet_prelude::*, transactional};
-use frame_system::EnsureNever;
-use sp_runtime::traits::Hash;
 // polkadot
-use xcm::latest::prelude::*;
+use xcm::prelude::*;
+// substrate
+use sp_runtime::traits::Hash;
 
 // We instruct how to register the Assets
 // In this case, we tell it to create an Asset in pallet-assets
 pub struct AssetRegistrar;
 impl pallet_asset_manager::AssetRegistrar<Runtime> for AssetRegistrar {
-	#[transactional]
+	#[frame_support::transactional]
 	fn create_foreign_asset(
 		asset: crate::AssetId,
 		min_balance: Balance,
 		metadata: xcm_configs::AssetRegistrarMetadata,
 		is_sufficient: bool,
-	) -> DispatchResult {
+	) -> sp_runtime::DispatchResult {
 		Assets::force_create(
 			RuntimeOrigin::root(),
 			asset.into(),
@@ -55,14 +55,17 @@ impl pallet_asset_manager::AssetRegistrar<Runtime> for AssetRegistrar {
 		)
 	}
 
-	#[transactional]
-	fn destroy_foreign_asset(asset: crate::AssetId) -> DispatchResult {
+	#[frame_support::transactional]
+	fn destroy_foreign_asset(asset: crate::AssetId) -> sp_runtime::DispatchResult {
 		// Mark the asset as destroying
 		Assets::start_destroy(RuntimeOrigin::root(), asset.into())?;
 		Ok(())
 	}
 
-	fn destroy_asset_dispatch_info_weight(asset: crate::AssetId) -> Weight {
+	fn destroy_asset_dispatch_info_weight(asset: crate::AssetId) -> frame_support::weights::Weight {
+		// substrate
+		use frame_support::dispatch::GetDispatchInfo;
+
 		// The dispatch info of destroy
 		let call_weight =
 			RuntimeCall::Assets(pallet_assets::Call::<Runtime>::start_destroy { id: asset.into() })
@@ -83,7 +86,7 @@ impl pallet_asset_manager::LocalAssetIdCreator<Runtime> for LocalAssetIdCreator 
 }
 
 // Our AssetType. For now we only handle Xcm Assets
-#[derive(Clone, Eq, Debug, PartialEq, Ord, PartialOrd, Encode, Decode, TypeInfo)]
+#[derive(Clone, Eq, Debug, PartialEq, Ord, PartialOrd, Encode, Decode, scale_info::TypeInfo)]
 pub enum AssetType {
 	Xcm(MultiLocation),
 }
@@ -97,13 +100,6 @@ impl From<MultiLocation> for AssetType {
 		Self::Xcm(location)
 	}
 }
-impl Into<Option<MultiLocation>> for AssetType {
-	fn into(self) -> Option<MultiLocation> {
-		match self {
-			Self::Xcm(location) => Some(location),
-		}
-	}
-}
 // Implementation on how to retrieve the AssetId from an `AssetType`.
 // We simply hash the `AssetType` and take the lowest 128 bits.
 impl From<AssetType> for crate::AssetId {
@@ -113,11 +109,21 @@ impl From<AssetType> for crate::AssetId {
 				if id == UsdtLocation::get() {
 					1027
 				} else {
-					let mut result: [u8; 8] = [0u8; 8];
+					let mut result: [u8; 8] = [0_u8; 8];
 					let hash: sp_core::H256 = id.using_encoded(dc_primitives::Hashing::hash);
+
 					result.copy_from_slice(&hash.as_fixed_bytes()[0..8]);
+
 					u64::from_le_bytes(result)
 				},
+		}
+	}
+}
+#[allow(clippy::from_over_into)]
+impl Into<Option<MultiLocation>> for AssetType {
+	fn into(self) -> Option<MultiLocation> {
+		match self {
+			Self::Xcm(location) => Some(location),
 		}
 	}
 }
@@ -138,11 +144,11 @@ impl pallet_asset_manager::Config for Runtime {
 	type AssetRegistrarMetadata = xcm_configs::AssetRegistrarMetadata;
 	type Balance = Balance;
 	type Currency = Balances;
-	type ForeignAssetModifierOrigin = Root;
+	type ForeignAssetModifierOrigin = RootOr<GeneralAdmin>;
 	type ForeignAssetType = AssetType;
 	type LocalAssetDeposit = ConstU128<0>;
 	type LocalAssetIdCreator = LocalAssetIdCreator;
-	type LocalAssetModifierOrigin = EnsureNever<AccountId>;
+	type LocalAssetModifierOrigin = RootOr<GeneralAdmin>;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = pallet_asset_manager::weights::SubstrateWeight<Runtime>;
 }

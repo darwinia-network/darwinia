@@ -53,9 +53,10 @@ fn session_keys(keys: AuraId) -> SessionKeys {
 
 pub fn development_config() -> ChainSpec {
 	ChainSpec::from_genesis(
-		"Pangoro2 Development",
-		"pangoro2-development",
-		ChainType::Development,
+		// Fulfill Polkadot.JS metadata upgrade requirements.
+		"Pangoro2 D",
+		"pangoro2-d",
+		ChainType::Live,
 		move || {
 			testnet_genesis(
 				vec![
@@ -90,9 +91,10 @@ pub fn development_config() -> ChainSpec {
 
 pub fn local_config() -> ChainSpec {
 	ChainSpec::from_genesis(
-		"Pangoro2 Local",
-		"pangoro2-local",
-		ChainType::Local,
+		// Fulfill Polkadot.JS metadata upgrade requirements.
+		"Pangoro2 L",
+		"pangoro2-l",
+		ChainType::Live,
 		move || {
 			testnet_genesis(
 				vec![

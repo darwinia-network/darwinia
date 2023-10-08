@@ -16,10 +16,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+mod origin;
+use origin::*;
+pub use origin::{custom_origins, GeneralAdmin};
+
+mod track;
+use track::*;
+
+mod v1;
+
 pub use pallet_collective::{Instance1 as CouncilCollective, Instance2 as TechnicalCollective};
 
-// darwinia
-use crate::*;
+pub(super) use crate::*;
 
 pub const COLLECTIVE_DESIRED_MEMBERS: u32 = 7;
 pub const COLLECTIVE_MAX_MEMBERS: u32 = 100;
@@ -37,11 +45,11 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type MaxMembers = ConstU32<COLLECTIVE_MAX_MEMBERS>;
 	type MaxProposalWeight = MaxProposalWeight;
 	type MaxProposals = ConstU32<100>;
-	type MotionDuration = ConstU32<{ 10 * MINUTES }>;
+	type MotionDuration = ConstU32<{ 2 * MINUTES }>;
 	type Proposal = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
-	type SetMembersOrigin = Root;
+	type SetMembersOrigin = RootOr<GeneralAdmin>;
 	type WeightInfo = weights::pallet_collective_council::WeightInfo<Self>;
 }
 impl pallet_collective::Config<TechnicalCollective> for Runtime {
@@ -49,10 +57,58 @@ impl pallet_collective::Config<TechnicalCollective> for Runtime {
 	type MaxMembers = ConstU32<COLLECTIVE_MAX_MEMBERS>;
 	type MaxProposalWeight = MaxProposalWeight;
 	type MaxProposals = ConstU32<100>;
-	type MotionDuration = ConstU32<{ 10 * MINUTES }>;
+	type MotionDuration = ConstU32<{ 2 * MINUTES }>;
 	type Proposal = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
-	type SetMembersOrigin = Root;
+	type SetMembersOrigin = RootOr<GeneralAdmin>;
 	type WeightInfo = weights::pallet_collective_technical_committee::WeightInfo<Self>;
+}
+
+impl pallet_conviction_voting::Config for Runtime {
+	type Currency = Balances;
+	type MaxTurnout = frame_support::traits::TotalIssuanceOf<Balances, Self::AccountId>;
+	type MaxVotes = ConstU32<512>;
+	type Polls = Referenda;
+	type RuntimeEvent = RuntimeEvent;
+	type VoteLockingPeriod = ConstU32<{ 5 * MINUTES }>;
+	// TODO: weight
+	type WeightInfo = pallet_conviction_voting::weights::SubstrateWeight<Runtime>;
+}
+
+pallet_referenda::impl_tracksinfo_get!(TracksInfo, Balance, BlockNumber);
+
+impl pallet_referenda::Config for Runtime {
+	type AlarmInterval = ConstU32<1>;
+	type CancelOrigin = RootOr<ReferendumCanceller>;
+	type Currency = Balances;
+	type KillOrigin = RootOr<ReferendumKiller>;
+	type MaxQueued = ConstU32<100>;
+	type Preimages = Preimage;
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type Scheduler = Scheduler;
+	type Slash = Treasury;
+	type SubmissionDeposit = ConstU128<{ DARWINIA_PROPOSAL_REQUIREMENT }>;
+	type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
+	type Tally = pallet_conviction_voting::TallyOf<Runtime>;
+	type Tracks = TracksInfo;
+	type UndecidingTimeout = ConstU32<{ 5 * MINUTES }>;
+	type Votes = pallet_conviction_voting::VotesOf<Runtime>;
+	// TODO: weight
+	type WeightInfo = pallet_referenda::weights::SubstrateWeight<Runtime>;
+}
+
+impl custom_origins::Config for Runtime {}
+
+// The purpose of this pallet is to queue calls to be dispatched as by root later => the Dispatch
+// origin corresponds to the Gov2 Whitelist track.
+impl pallet_whitelist::Config for Runtime {
+	type DispatchWhitelistedOrigin = RootOr<WhitelistedCaller>;
+	type Preimages = Preimage;
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	// TODO: weight
+	type WeightInfo = pallet_whitelist::weights::SubstrateWeight<Runtime>;
+	type WhitelistOrigin = RootOrDiverse<All<TechnicalCollective>>;
 }

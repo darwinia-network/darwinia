@@ -105,8 +105,6 @@ fast-runtime = [
 	# darwinia
 	"crab-runtime?/fast-runtime",
 	"darwinia-runtime?/fast-runtime",
-	"pangolin-runtime?/fast-runtime",
-	"pangoro-runtime?/fast-runtime",
 ]
 
 evm-tracing = [

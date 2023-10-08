@@ -27,7 +27,7 @@ frame_support::parameter_types! {
 // In order to use `Tips`, which bounded by `pallet_treasury::Config` rather
 // `pallet_treasury::Config<I>` Still use `DefaultInstance` here instead `Instance1`
 impl pallet_treasury::Config for Runtime {
-	type ApproveOrigin = Root;
+	type ApproveOrigin = RootOr<GeneralAdmin>;
 	type Burn = ();
 	type BurnDestination = ();
 	type Currency = Balances;
