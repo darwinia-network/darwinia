@@ -942,18 +942,12 @@ macro_rules! impl_governance_tests {
 				assert_type_eq_all!(<Runtime as pallet_democracy::Config>::VetoOrigin, pallet_collective::EnsureMember<AccountId, TechnicalCollective>);
 
 				// Values
-				assert_eq!(<<Runtime as pallet_democracy::Config>::CooloffPeriod as Get<u32>>::get(), 5 * MINUTES);
-				assert_eq!(<<Runtime as pallet_democracy::Config>::EnactmentPeriod as Get<u32>>::get(), 10 * MINUTES);
-				assert_eq!(<<Runtime as pallet_democracy::Config>::FastTrackVotingPeriod as Get<u32>>::get(), MINUTES);
 				assert_eq!(<<Runtime as pallet_democracy::Config>::InstantAllowed as Get<bool>>::get(), true);
-				assert_eq!(<<Runtime as pallet_democracy::Config>::LaunchPeriod as Get<u32>>::get(), 10 * MINUTES);
 				assert_eq!(<<Runtime as pallet_democracy::Config>::MaxBlacklisted as Get<u32>>::get(), 100);
 				assert_eq!(<<Runtime as pallet_democracy::Config>::MaxDeposits as Get<u32>>::get(), 100);
 				assert_eq!(<<Runtime as pallet_democracy::Config>::MaxProposals as Get<u32>>::get(), 100);
 				assert_eq!(<<Runtime as pallet_democracy::Config>::MaxVotes as Get<u32>>::get(), 100);
 				assert_eq!(<<Runtime as pallet_democracy::Config>::MinimumDeposit as Get<u128>>::get(), DARWINIA_PROPOSAL_REQUIREMENT);
-				assert_eq!(<<Runtime as pallet_democracy::Config>::VoteLockingPeriod as Get<u32>>::get(), 10 * MINUTES);
-				assert_eq!(<<Runtime as pallet_democracy::Config>::VotingPeriod as Get<u32>>::get(), 10 * MINUTES);
 			}
 
 			#[test]
@@ -963,7 +957,6 @@ macro_rules! impl_governance_tests {
 				// Values
 				assert_eq!(<<Runtime as pallet_collective::Config<CouncilCollective>>::MaxMembers as Get<u32>>::get(), 100);
 				assert_eq!(<<Runtime as pallet_collective::Config<CouncilCollective>>::MaxProposals as Get<u32>>::get(), 100);
-				assert_eq!(<<Runtime as pallet_collective::Config<CouncilCollective>>::MotionDuration as Get<u32>>::get(), 10 * MINUTES);
 			}
 
 			#[test]
@@ -973,7 +966,6 @@ macro_rules! impl_governance_tests {
 				// Values
 				assert_eq!(<<Runtime as pallet_collective::Config<TechnicalCollective>>::MaxMembers as Get<u32>>::get(), 100);
 				assert_eq!(<<Runtime as pallet_collective::Config<TechnicalCollective>>::MaxProposals as Get<u32>>::get(), 100);
-				assert_eq!(<<Runtime as pallet_collective::Config<TechnicalCollective>>::MotionDuration as Get<u32>>::get(), 10 * MINUTES);
 			}
 		}
 

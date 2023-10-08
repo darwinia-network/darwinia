@@ -23,3 +23,69 @@ darwinia_common_runtime::impl_fee_tests! {}
 darwinia_common_runtime::impl_ethereum_tests! {}
 darwinia_common_runtime::impl_account_migration_tests! {}
 darwinia_common_runtime::impl_messages_bridge_tests! {}
+darwinia_common_runtime::impl_governance_tests! {}
+darwinia_common_runtime::impl_balances_tests! {}
+darwinia_common_runtime::impl_assets_tests! {}
+darwinia_common_runtime::impl_message_transact_tests! {}
+
+mod specific_setting {
+	// darwinia
+	use crate::mock::*;
+	// substrate
+	use frame_support::traits::Get;
+
+	#[test]
+	fn precompile_address() {
+		assert_eq!(
+			PangoroPrecompiles::<Runtime>::used_addresses()
+				.iter()
+				.map(|a| a.to_low_u64_be())
+				.collect::<Vec<u64>>(),
+			vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 1024, 1025, 1026, 1536, 1537, 2048]
+		);
+	}
+
+	#[test]
+	fn democracy_mod() {
+		assert_eq!(
+			<<Runtime as pallet_democracy::Config>::CooloffPeriod as Get<u32>>::get(),
+			5 * MINUTES
+		);
+		assert_eq!(
+			<<Runtime as pallet_democracy::Config>::EnactmentPeriod as Get<u32>>::get(),
+			10 * MINUTES
+		);
+		assert_eq!(
+			<<Runtime as pallet_democracy::Config>::FastTrackVotingPeriod as Get<u32>>::get(),
+			MINUTES
+		);
+		assert_eq!(
+			<<Runtime as pallet_democracy::Config>::LaunchPeriod as Get<u32>>::get(),
+			10 * MINUTES
+		);
+		assert_eq!(
+			<<Runtime as pallet_democracy::Config>::VoteLockingPeriod as Get<u32>>::get(),
+			10 * MINUTES
+		);
+		assert_eq!(
+			<<Runtime as pallet_democracy::Config>::VotingPeriod as Get<u32>>::get(),
+			10 * MINUTES
+		);
+	}
+
+	#[test]
+	fn collective_mod() {
+		assert_eq!(
+			<<Runtime as pallet_collective::Config<CouncilCollective>>::MotionDuration as Get<
+				u32,
+			>>::get(),
+			10 * MINUTES
+		);
+		assert_eq!(
+			<<Runtime as pallet_collective::Config<TechnicalCollective>>::MotionDuration as Get<
+				u32,
+			>>::get(),
+			10 * MINUTES
+		);
+	}
+}
