@@ -68,6 +68,138 @@ mod balances {
 	}
 }
 
+mod assets {
+	// darwinia
+	use super::mock::*;
+	use frame_support::traits::{AsEnsureOriginWithArg, Get, IsInVec};
+	use static_assertions::assert_type_eq_all;
+
+	#[test]
+	fn ensure_constants_and_origin_correctly() {
+		assert_type_eq_all!(<Runtime as pallet_assets::Config>::ForceOrigin, Root);
+		assert_type_eq_all!(
+			<Runtime as pallet_assets::Config>::CreateOrigin,
+			AsEnsureOriginWithArg<frame_system::EnsureSignedBy<IsInVec<Creators>, AccountId>>
+		);
+
+		assert_eq!(
+			<<Runtime as pallet_assets::Config>::AssetAccountDeposit as Get<u128>>::get(),
+			0
+		);
+		assert_eq!(
+			<<Runtime as pallet_assets::Config>::MetadataDepositPerByte as Get<u128>>::get(),
+			0
+		);
+		assert_eq!(
+			<<Runtime as pallet_assets::Config>::MetadataDepositBase as Get<u128>>::get(),
+			0
+		);
+		assert_eq!(<<Runtime as pallet_assets::Config>::AssetDeposit as Get<u128>>::get(), 0);
+		assert_eq!(<<Runtime as pallet_assets::Config>::RemoveItemsLimit as Get<u32>>::get(), 1000);
+		assert_eq!(<<Runtime as pallet_assets::Config>::StringLimit as Get<u32>>::get(), 50);
+	}
+}
+
+mod governance {
+	// darwinia
+	use super::mock::*;
+	use frame_support::traits::{AsEnsureOriginWithArg, Get, IsInVec};
+	use static_assertions::assert_type_eq_all;
+
+	#[test]
+	fn preimages_setting_correctly() {
+		assert_eq!(
+			<<Runtime as pallet_preimage::Config>::BaseDeposit as Get<u128>>::get(),
+			500 * UNIT
+		);
+		assert_eq!(
+			<<Runtime as pallet_preimage::Config>::ByteDeposit as Get<u128>>::get(),
+			darwinia_deposit(0, 1)
+		);
+		assert_type_eq_all!(<Runtime as pallet_preimage::Config>::ManagerOrigin, Root);
+	}
+
+	#[test]
+	fn scheduler_setting_correctly() {
+		assert_eq!(
+			<<Runtime as pallet_scheduler::Config>::MaxScheduledPerBlock as Get<u32>>::get(),
+			50
+		);
+		assert_type_eq_all!(<Runtime as pallet_scheduler::Config>::ScheduleOrigin, Root);
+	}
+
+	#[test]
+	fn democracy_setting_correctly() {
+		assert_type_eq_all!(<Runtime as pallet_democracy::Config>::BlacklistOrigin, Root);
+		assert_type_eq_all!(
+			<Runtime as pallet_democracy::Config>::CancelProposalOrigin,
+			RootOrAll<TechnicalCollective>
+		);
+		assert_type_eq_all!(
+			<Runtime as pallet_democracy::Config>::CancellationOrigin,
+			RootOrAtLeastTwoThird<CouncilCollective>
+		);
+		assert_type_eq_all!(
+			<Runtime as pallet_democracy::Config>::ExternalDefaultOrigin,
+			RootOrAll<CouncilCollective>
+		);
+		assert_type_eq_all!(
+			<Runtime as pallet_democracy::Config>::ExternalMajorityOrigin,
+			RootOrAtLeastHalf<CouncilCollective>
+		);
+		assert_type_eq_all!(
+			<Runtime as pallet_democracy::Config>::ExternalOrigin,
+			RootOrAtLeastHalf<CouncilCollective>
+		);
+		assert_type_eq_all!(
+			<Runtime as pallet_democracy::Config>::FastTrackOrigin,
+			RootOrAtLeastTwoThird<TechnicalCollective>
+		);
+		assert_type_eq_all!(
+			<Runtime as pallet_democracy::Config>::InstantOrigin,
+			RootOrAll<TechnicalCollective>
+		);
+		assert_type_eq_all!(<Runtime as pallet_democracy::Config>::VetoOrigin, pallet_collective::EnsureMember<AccountId, TechnicalCollective>);
+
+		assert_eq!(
+			<<Runtime as pallet_democracy::Config>::CooloffPeriod as Get<u32>>::get(),
+			5 * MINUTES
+		);
+		assert_eq!(
+			<<Runtime as pallet_democracy::Config>::EnactmentPeriod as Get<u32>>::get(),
+			10 * MINUTES
+		);
+		assert_eq!(
+			<<Runtime as pallet_democracy::Config>::FastTrackVotingPeriod as Get<u32>>::get(),
+			MINUTES
+		);
+		assert_eq!(
+			<<Runtime as pallet_democracy::Config>::InstantAllowed as Get<bool>>::get(),
+			true
+		);
+		assert_eq!(
+			<<Runtime as pallet_democracy::Config>::LaunchPeriod as Get<u32>>::get(),
+			10 * MINUTES
+		);
+		assert_eq!(<<Runtime as pallet_democracy::Config>::MaxBlacklisted as Get<u32>>::get(), 100);
+		assert_eq!(<<Runtime as pallet_democracy::Config>::MaxDeposits as Get<u32>>::get(), 100);
+		assert_eq!(<<Runtime as pallet_democracy::Config>::MaxProposals as Get<u32>>::get(), 100);
+		assert_eq!(<<Runtime as pallet_democracy::Config>::MaxVotes as Get<u32>>::get(), 100);
+		assert_eq!(
+			<<Runtime as pallet_democracy::Config>::MinimumDeposit as Get<u128>>::get(),
+			DARWINIA_PROPOSAL_REQUIREMENT
+		);
+		assert_eq!(
+			<<Runtime as pallet_democracy::Config>::VoteLockingPeriod as Get<u32>>::get(),
+			10 * MINUTES
+		);
+		assert_eq!(
+			<<Runtime as pallet_democracy::Config>::VotingPeriod as Get<u32>>::get(),
+			10 * MINUTES
+		);
+	}
+}
+
 mod evm {
 	// darwinia
 	use super::mock::*;
