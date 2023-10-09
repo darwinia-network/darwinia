@@ -17,7 +17,7 @@ edition    = "2021"
 homepage   = "https://darwinia.network"
 license    = "GPL-3.0"
 repository = "https://github.com/darwinia-network/darwinia"
-version    = "6.4.0-2"
+version    = "6.4.0-3"
 
 [workspace.dependencies]
 # crates.io
@@ -200,6 +200,26 @@ substrate-prometheus-endpoint              = { git = "https://github.com/parityt
 substrate-test-utils                       = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
 substrate-wasm-builder                     = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
 try-runtime-cli                            = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
+
+[patch."https://github.com/paritytech/frontier"]
+fc-consensus                   = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.9.43" }
+fc-db                          = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.9.43" }
+fc-mapping-sync                = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.9.43" }
+fc-rpc                         = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.9.43" }
+fc-rpc-core                    = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.9.43" }
+fc-storage                     = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.9.43" }
+fp-account                     = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.9.43" }
+fp-ethereum                    = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.9.43" }
+fp-evm                         = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.9.43" }
+fp-rpc                         = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.9.43" }
+fp-self-contained              = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.9.43" }
+pallet-ethereum                = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.9.43" }
+pallet-evm                     = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.9.43" }
+pallet-evm-precompile-blake2   = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.9.43" }
+pallet-evm-precompile-bn128    = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.9.43" }
+pallet-evm-precompile-dispatch = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.9.43" }
+pallet-evm-precompile-modexp   = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.9.43" }
+pallet-evm-precompile-simple   = { git = "https://github.com/darwinia-network/frontier", branch = "darwinia-v0.9.43" }
 
 [profile.release]
 panic = "unwind"
