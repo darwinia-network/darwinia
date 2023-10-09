@@ -1006,7 +1006,8 @@ macro_rules! impl_balances_tests {
 
 			#[test]
 			fn ensure_constants_correctly() {
-				assert_eq!(<Runtime as pallet_balances::Config>::ExistentialDeposit::get(), 0);
+				// the value is 1 under runtime-benchmarks feature
+				assert_eq!(<Runtime as pallet_balances::Config>::ExistentialDeposit::get(), 1);
 				assert_eq!(<<Runtime as pallet_balances::Config>::MaxLocks as Get<u32>>::get(), 50);
 				assert_eq!(
 					<<Runtime as pallet_balances::Config>::MaxReserves as Get<u32>>::get(),
@@ -1041,13 +1042,14 @@ macro_rules! impl_assets_tests {
 
 				// Values
 				assert_eq!(
-					<<Runtime as pallet_assets::Config>::AssetAccountDeposit as Get<u128>>::get(),
-					0
-				);
-				assert_eq!(
 					<<Runtime as pallet_assets::Config>::MetadataDepositPerByte as Get<u128>>::get(
 					),
 					0
+				);
+				// the value is 1 under runtime-benchmarks feature
+				assert_eq!(
+					<<Runtime as pallet_assets::Config>::AssetAccountDeposit as Get<u128>>::get(),
+					1
 				);
 				assert_eq!(
 					<<Runtime as pallet_assets::Config>::MetadataDepositBase as Get<u128>>::get(),
