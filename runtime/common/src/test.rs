@@ -977,6 +977,20 @@ macro_rules! impl_governance_tests {
 				// Values
 				assert_eq!(<<Runtime as pallet_treasury::Config>::MaxApprovals as Get<u32>>::get(), 100);
 			}
+
+			#[test]
+			fn membership_setting_correctly() {
+				// Origins
+				assert_type_eq_all!(<Runtime as pallet_membership::Config<pallet_membership::Instance1>>::AddOrigin, Root);
+				assert_type_eq_all!(<Runtime as pallet_membership::Config<pallet_membership::Instance1>>::MembershipChanged, TechnicalCommittee);
+				assert_type_eq_all!(<Runtime as pallet_membership::Config<pallet_membership::Instance1>>::MembershipInitialized, TechnicalCommittee);
+				assert_type_eq_all!(<Runtime as pallet_membership::Config<pallet_membership::Instance1>>::PrimeOrigin, Root);
+				assert_type_eq_all!(<Runtime as pallet_membership::Config<pallet_membership::Instance1>>::RemoveOrigin, Root);
+				assert_type_eq_all!(<Runtime as pallet_membership::Config<pallet_membership::Instance1>>::ResetOrigin, Root);
+				assert_type_eq_all!(<Runtime as pallet_membership::Config<pallet_membership::Instance1>>::SwapOrigin, Root);
+				// Values
+				assert_eq!(<<Runtime as pallet_membership::Config<pallet_membership::Instance1>>::MaxMembers as Get<u32>>::get(), COLLECTIVE_MAX_MEMBERS);
+			}
 		}
 	}
 }
