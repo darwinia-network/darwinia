@@ -88,4 +88,12 @@ mod specific_setting {
 			7 * DAYS
 		);
 	}
+
+	#[test]
+	fn treasury_mod() {
+		assert_eq!(
+			<<Runtime as pallet_treasury::Config>::SpendPeriod as Get<u32>>::get(),
+			24 * DAYS
+		);
+	}
 }

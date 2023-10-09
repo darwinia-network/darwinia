@@ -909,7 +909,7 @@ macro_rules! impl_governance_tests {
 			// crates.io
 			use static_assertions::assert_type_eq_all;
 			// substrate
-			use frame_support::traits::{AsEnsureOriginWithArg, Get, IsInVec};
+			use frame_support::traits::{AsEnsureOriginWithArg, Get, IsInVec, NeverEnsureOrigin};
 
 			#[test]
 			fn preimages_setting_correctly() {
@@ -967,8 +967,17 @@ macro_rules! impl_governance_tests {
 				assert_eq!(<<Runtime as pallet_collective::Config<TechnicalCollective>>::MaxMembers as Get<u32>>::get(), 100);
 				assert_eq!(<<Runtime as pallet_collective::Config<TechnicalCollective>>::MaxProposals as Get<u32>>::get(), 100);
 			}
-		}
 
+			#[test]
+			fn treasury_setting_correctly() {
+				// Origins
+				assert_type_eq_all!(<Runtime as pallet_treasury::Config>::ApproveOrigin, Root);
+				assert_type_eq_all!(<Runtime as pallet_treasury::Config>::RejectOrigin, RootOrAll<CouncilCollective>);
+				assert_type_eq_all!(<Runtime as pallet_treasury::Config>::SpendOrigin, NeverEnsureOrigin<Balance>);
+				// Values
+				assert_eq!(<<Runtime as pallet_treasury::Config>::MaxApprovals as Get<u32>>::get(), 100);
+			}
+		}
 	}
 }
 
