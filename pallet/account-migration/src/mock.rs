@@ -168,7 +168,6 @@ impl darwinia_deposit::Config for Runtime {
 impl darwinia_staking::Config for Runtime {
 	type Deposit = Deposit;
 	type Kton = Dummy;
-	type MaxCommission = ();
 	type MaxDeposits = ();
 	type MaxUnstakings = ();
 	type MinStakingDuration = ();
