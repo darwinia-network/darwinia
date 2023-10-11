@@ -41,7 +41,15 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	frame_support::weights::Weight::zero()
-	// RuntimeBlockWeights::get().max_block
+	migration::clear_storage_prefix(b"PhragmenElection", b"Members", &[], None, None);
+	migration::clear_storage_prefix(b"PhragmenElection", b"RunnersUp", &[], None, None);
+	migration::clear_storage_prefix(b"PhragmenElection", b"Candidates", &[], None, None);
+	migration::clear_storage_prefix(b"PhragmenElection", b"ElectionRounds", &[], None, None);
+	migration::clear_storage_prefix(b"PhragmenElection", b"Voting", &[], None, None);
+	migration::clear_storage_prefix(b"TechnicalMembership", b"Members", &[], None, None);
+	migration::clear_storage_prefix(b"TechnicalMembership", b"Prime", &[], None, None);
+
+	// frame_support::weights::Weight::zero()
+	RuntimeBlockWeights::get().max_block
 	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(5, 5)
 }
