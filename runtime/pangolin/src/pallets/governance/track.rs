@@ -213,13 +213,13 @@ impl pallet_referenda::TracksInfo<Balance, BlockNumber> for TracksInfo {
 #[test]
 fn vote_locking_always_longer_than_enactment_period() {
 	for (_, track) in TRACKS_DATA {
+		let vote_locking_period = <<Runtime as pallet_conviction_voting::Config>::VoteLockingPeriod as frame_support::traits::Get<BlockNumber>>::get();
+
 		assert!(
-			<Runtime as pallet_conviction_voting::Config>::VoteLockingPeriod::get()
-				>= track.min_enactment_period,
-			"Track {} has enactment period {} < vote locking period {}",
+			vote_locking_period >= track.min_enactment_period,
+			"Track {} has enactment period {} < vote locking period {vote_locking_period}",
 			track.name,
 			track.min_enactment_period,
-			<Runtime as pallet_conviction_voting::Config>::VoteLockingPeriod::get(),
 		);
 	}
 }
