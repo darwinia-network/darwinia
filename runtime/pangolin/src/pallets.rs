@@ -68,9 +68,6 @@ mod ecdsa_authority;
 mod governance;
 pub use governance::*;
 
-mod treasury;
-pub use treasury::*;
-
 // Utility stuff.
 mod sudo;
 

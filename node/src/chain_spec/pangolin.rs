@@ -215,6 +215,7 @@ pub fn genesis_config() -> ChainSpec {
 				council: Default::default(),
 				technical_committee: Default::default(),
 				treasury: Default::default(),
+				democracy: Default::default(),
 
 				// Utility stuff.
 				sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked(SUDO)) },
@@ -334,6 +335,7 @@ fn testnet_genesis(
 			..Default::default()
 		},
 		treasury: Default::default(),
+		democracy: Default::default(),
 
 		// Utility stuff.
 		sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked(ALITH)) },

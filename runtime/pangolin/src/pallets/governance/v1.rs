@@ -23,7 +23,7 @@ const ENACTMENT_PERIOD: u32 = 2 * MINUTES;
 
 impl pallet_democracy::Config for Runtime {
 	type BlacklistOrigin = Root;
-	type CancelProposalOrigin = RootOrAll<TechnicalCollective>;
+	type CancelProposalOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
 	type CancellationOrigin = RootOrAtLeastTwoThird<CouncilCollective>;
 	type CooloffPeriod = ConstU32<{ 2 * MINUTES }>;
 	type Currency = Balances;

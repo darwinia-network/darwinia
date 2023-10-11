@@ -17,7 +17,7 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // darwinia
-use crate::*;
+use super::*;
 
 frame_support::parameter_types! {
 	pub const TreasuryPalletId: frame_support::PalletId = frame_support::PalletId(*b"da/trsry");
@@ -41,6 +41,6 @@ impl pallet_treasury::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
 	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
-	type SpendPeriod = ConstU32<{ 10 * MINUTES }>;
+	type SpendPeriod = ConstU32<{ 2 * MINUTES }>;
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Self>;
 }

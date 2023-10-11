@@ -20,6 +20,8 @@ mod origin;
 use origin::*;
 pub use origin::{custom_origins, GeneralAdmin};
 
+mod treasury;
+
 mod track;
 use track::*;
 
