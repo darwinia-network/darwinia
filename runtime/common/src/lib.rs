@@ -45,11 +45,11 @@ use frame_support::{
 
 #[macro_export]
 macro_rules! fast_runtime_or_not {
-	($name:ident, $development_type:ty, $production_type:ty) => {
+	($name:ident, $type:ty, $fast:expr, $regular:expr) => {
 		#[cfg(feature = "fast-runtime")]
-		type $name = $development_type;
+		const $name: $type = $fast;
 		#[cfg(not(feature = "fast-runtime"))]
-		type $name = $production_type;
+		const $name: $type = $regular;
 	};
 }
 

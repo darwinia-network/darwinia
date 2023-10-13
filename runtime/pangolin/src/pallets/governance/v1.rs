@@ -19,23 +19,21 @@
 // darwinia
 use super::*;
 
-const ENACTMENT_PERIOD: u32 = 2 * MINUTES;
-
 impl pallet_democracy::Config for Runtime {
 	type BlacklistOrigin = Root;
 	type CancelProposalOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
 	type CancellationOrigin = RootOrAtLeastTwoThird<CouncilCollective>;
-	type CooloffPeriod = ConstU32<{ 2 * MINUTES }>;
+	type CooloffPeriod = Time1;
 	type Currency = Balances;
-	type EnactmentPeriod = ConstU32<ENACTMENT_PERIOD>;
+	type EnactmentPeriod = Time1;
 	type ExternalDefaultOrigin = RootOrAll<CouncilCollective>;
 	type ExternalMajorityOrigin = RootOrAtLeastHalf<CouncilCollective>;
 	type ExternalOrigin = RootOrAtLeastHalf<CouncilCollective>;
 	type FastTrackOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
-	type FastTrackVotingPeriod = ConstU32<{ 2 * MINUTES }>;
+	type FastTrackVotingPeriod = Time1;
 	type InstantAllowed = ConstBool<true>;
 	type InstantOrigin = RootOrAll<TechnicalCollective>;
-	type LaunchPeriod = ConstU32<{ 2 * MINUTES }>;
+	type LaunchPeriod = Time1;
 	type MaxBlacklisted = ConstU32<100>;
 	type MaxDeposits = ConstU32<100>;
 	type MaxProposals = ConstU32<100>;
@@ -48,7 +46,7 @@ impl pallet_democracy::Config for Runtime {
 	type Slash = Treasury;
 	type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
 	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
-	type VoteLockingPeriod = ConstU32<ENACTMENT_PERIOD>;
-	type VotingPeriod = ConstU32<{ 2 * MINUTES }>;
+	type VoteLockingPeriod = Time1;
+	type VotingPeriod = Time1;
 	type WeightInfo = weights::pallet_democracy::WeightInfo<Self>;
 }

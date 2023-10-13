@@ -19,7 +19,9 @@
 // darwinia
 use crate::*;
 
-fast_runtime_or_not!(MinStakingDuration, ConstU32<{ 5 * MINUTES }>, ConstU32<{ 14 * DAYS }>);
+fast_runtime_or_not!(DURATION, BlockNumber, 5 * MINUTES, 14 * DAYS);
+
+type MinStakingDuration = ConstU32<{ DURATION }>;
 
 pub enum RingStaking {}
 impl darwinia_staking::Stake for RingStaking {
