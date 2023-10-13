@@ -16,31 +16,34 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+pub use frame_support::traits::{EitherOf, EitherOfDiverse};
+
 // darwinia
 use dc_primitives::AccountId;
 // frontier
 use fp_account::AccountId20;
 // substrate
-use frame_support::traits::EitherOfDiverse;
 use frame_system::EnsureRoot;
 use pallet_collective::{EnsureProportionAtLeast, EnsureProportionMoreThan};
 
 pub type Root = EnsureRoot<AccountId>;
+pub type RootOr<T> = EitherOf<Root, T>;
+pub type RootOrDiverse<T> = EitherOfDiverse<Root, T>;
 
-pub type RootOrAtLeastHalf<Collective> =
-	EitherOfDiverse<Root, EnsureProportionAtLeast<AccountId, Collective, 1, 2>>;
+pub type RootOrAtLeastHalf<T> = EitherOfDiverse<Root, AtLeastHalf<T>>;
+pub type AtLeastHalf<T> = EnsureProportionAtLeast<AccountId, T, 1, 2>;
 
-pub type RootOrMoreThanHalf<Collective> =
-	EitherOfDiverse<Root, EnsureProportionMoreThan<AccountId, Collective, 1, 2>>;
+pub type RootOrMoreThanHalf<T> = EitherOfDiverse<Root, MoreThanHalf<T>>;
+pub type MoreThanHalf<T> = EnsureProportionMoreThan<AccountId, T, 1, 2>;
 
-pub type RootOrAtLeastTwoThird<Collective> =
-	EitherOfDiverse<Root, EnsureProportionAtLeast<AccountId, Collective, 2, 3>>;
+pub type RootOrAtLeastTwoThird<T> = EitherOfDiverse<Root, AtLeastTwoThird<T>>;
+pub type AtLeastTwoThird<T> = EnsureProportionAtLeast<AccountId, T, 2, 3>;
 
-pub type RootOrAtLeastThreeFifth<Collective> =
-	EitherOfDiverse<Root, EnsureProportionAtLeast<AccountId, Collective, 3, 5>>;
+pub type RootOrAtLeastThreeFifth<T> = EitherOfDiverse<Root, AtLeastThreeFifth<T>>;
+pub type AtLeastThreeFifth<T> = EnsureProportionAtLeast<AccountId, T, 3, 5>;
 
-pub type RootOrAll<Collective> =
-	EitherOfDiverse<Root, EnsureProportionAtLeast<AccountId, Collective, 1, 1>>;
+pub type RootOrAll<T> = EitherOfDiverse<Root, All<T>>;
+pub type All<T> = EnsureProportionAtLeast<AccountId, T, 1, 1>;
 
 /// An [`AccountId20`] generated from b"root".
 pub const ROOT: AccountId20 =

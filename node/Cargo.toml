@@ -48,10 +48,10 @@ fp-evm          = { workspace = true, features = ["std"] }
 fp-rpc          = { workspace = true, features = ["std"] }
 
 # moonbeam
-moonbeam-primitives-ext        = { workspace = true, optional = true, features = ["std"] }
-moonbeam-rpc-debug             = { workspace = true }
-moonbeam-rpc-primitives-debug  = { workspace = true, features = ["std"] }
-moonbeam-rpc-trace             = { workspace = true }
+moonbeam-primitives-ext       = { workspace = true, optional = true, features = ["std"] }
+moonbeam-rpc-debug            = { workspace = true }
+moonbeam-rpc-primitives-debug = { workspace = true, features = ["std"] }
+moonbeam-rpc-trace            = { workspace = true }
 
 # polkadot
 polkadot-cli        = { workspace = true }
@@ -106,7 +106,6 @@ fast-runtime = [
 	"crab-runtime?/fast-runtime",
 	"darwinia-runtime?/fast-runtime",
 	"pangolin-runtime?/fast-runtime",
-	"pangoro-runtime?/fast-runtime",
 ]
 
 evm-tracing = [

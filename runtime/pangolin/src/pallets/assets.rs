@@ -46,7 +46,7 @@ impl pallet_assets::Config for Runtime {
 	>;
 	type Currency = Balances;
 	type Extra = ();
-	type ForceOrigin = Root;
+	type ForceOrigin = RootOr<GeneralAdmin>;
 	type Freezer = ();
 	type MetadataDepositBase = ConstU128<0>;
 	type MetadataDepositPerByte = ConstU128<0>;

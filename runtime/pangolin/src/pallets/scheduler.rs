@@ -58,6 +58,6 @@ impl pallet_scheduler::Config for Runtime {
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
-	type ScheduleOrigin = Root;
+	type ScheduleOrigin = RootOr<GeneralAdmin>;
 	type WeightInfo = weights::pallet_scheduler::WeightInfo<Self>;
 }

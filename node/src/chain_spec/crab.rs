@@ -53,9 +53,10 @@ fn session_keys(keys: AuraId) -> SessionKeys {
 
 pub fn development_config() -> ChainSpec {
 	ChainSpec::from_genesis(
-		"Crab2 Development",
-		"crab2-development",
-		ChainType::Development,
+		// Fulfill Polkadot.JS metadata upgrade requirements.
+		"Crab2 D",
+		"crab2-d",
+		ChainType::Live,
 		move || {
 			testnet_genesis(
 				vec![
@@ -90,9 +91,10 @@ pub fn development_config() -> ChainSpec {
 
 pub fn local_config() -> ChainSpec {
 	ChainSpec::from_genesis(
-		"Crab2 Local",
-		"crab2-local",
-		ChainType::Local,
+		// Fulfill Polkadot.JS metadata upgrade requirements.
+		"Crab2 L",
+		"crab2-l",
+		ChainType::Live,
 		move || {
 			testnet_genesis(
 				vec![

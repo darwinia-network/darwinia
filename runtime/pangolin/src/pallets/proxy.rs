@@ -65,10 +65,10 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 			),
 			ProxyType::Governance => matches!(
 				c,
-				RuntimeCall::Democracy(..)
+				RuntimeCall::Referenda(..)
+					| RuntimeCall::ConvictionVoting(..)
 					| RuntimeCall::Council(..)
 					| RuntimeCall::TechnicalCommittee(..)
-					| RuntimeCall::PhragmenElection(..)
 					| RuntimeCall::Treasury(..)
 			),
 			ProxyType::Staking => {

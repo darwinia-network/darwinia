@@ -77,7 +77,7 @@ impl darwinia_staking::Config for Runtime {
 	type MaxCommission = MaxCommission;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = ConstU32<16>;
-	type MinStakingDuration = ConstU32<{ 10 * MINUTES }>;
+	type MinStakingDuration = ConstU32<{ 2 * MINUTES }>;
 	type PayoutFraction = PayoutFraction;
 	type RewardRemainder = Treasury;
 	type Ring = RingStaking;

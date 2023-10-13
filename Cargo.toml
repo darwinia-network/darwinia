@@ -27,6 +27,7 @@ libsecp256k1      = { version = "0.7", default-features = false }
 scale-info        = { version = "2.9", default-features = false }
 sha3              = { version = "0.10" }
 static_assertions = { version = "1.1" }
+strum             = { version = "0.25", default-features = false }
 
 # cumulus
 cumulus-client-cli                    = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.43" }

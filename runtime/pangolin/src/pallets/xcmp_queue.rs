@@ -21,9 +21,9 @@ use crate::*;
 
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type ChannelInfo = ParachainSystem;
-	type ControllerOrigin = Root;
+	type ControllerOrigin = RootOr<GeneralAdmin>;
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
-	type ExecuteOverweightOrigin = Root;
+	type ExecuteOverweightOrigin = RootOr<GeneralAdmin>;
 	type PriceForSiblingDelivery = ();
 	type RuntimeEvent = RuntimeEvent;
 	type VersionWrapper = ();

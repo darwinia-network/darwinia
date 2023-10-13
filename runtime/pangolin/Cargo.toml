@@ -15,9 +15,9 @@ substrate-wasm-builder = { workspace = true, optional = true }
 codec             = { workspace = true, package = "parity-scale-codec" }
 scale-info        = { workspace = true }
 static_assertions = { workspace = true }
+strum             = { workspace = true, features = ["derive"] }
 # crates.io optional
-array-bytes = { workspace = true }
-# array-bytes = { workspace = true, optional = true }
+array-bytes = { workspace = true, optional = true }
 
 # cumulus
 cumulus-pallet-aura-ext         = { workspace = true }
@@ -102,12 +102,12 @@ pallet-aura                                = { workspace = true }
 pallet-authorship                          = { workspace = true }
 pallet-balances                            = { workspace = true }
 pallet-collective                          = { workspace = true }
+pallet-conviction-voting                   = { workspace = true }
 pallet-democracy                           = { workspace = true }
-pallet-elections-phragmen                  = { workspace = true }
 pallet-identity                            = { workspace = true }
-pallet-membership                          = { workspace = true }
 pallet-preimage                            = { workspace = true }
 pallet-proxy                               = { workspace = true }
+pallet-referenda                           = { workspace = true }
 pallet-scheduler                           = { workspace = true }
 pallet-session                             = { workspace = true }
 pallet-sudo                                = { workspace = true }
@@ -116,6 +116,7 @@ pallet-transaction-payment                 = { workspace = true }
 pallet-transaction-payment-rpc-runtime-api = { workspace = true }
 pallet-treasury                            = { workspace = true }
 pallet-utility                             = { workspace = true }
+pallet-whitelist                           = { workspace = true }
 sp-api                                     = { workspace = true }
 sp-block-builder                           = { workspace = true }
 sp-consensus-aura                          = { workspace = true }
@@ -149,6 +150,7 @@ std = [
 	# crates.io
 	"codec/std",
 	"scale-info/std",
+	"strum/std",
 
 	# cumulus
 	"cumulus-pallet-aura-ext/std",
@@ -233,12 +235,12 @@ std = [
 	"pallet-authorship/std",
 	"pallet-balances/std",
 	"pallet-collective/std",
+	"pallet-conviction-voting/std",
 	"pallet-democracy/std",
-	"pallet-elections-phragmen/std",
 	"pallet-identity/std",
-	"pallet-membership/std",
 	"pallet-preimage/std",
 	"pallet-proxy/std",
+	"pallet-referenda/std",
 	"pallet-scheduler/std",
 	"pallet-session/std",
 	"pallet-sudo/std",
@@ -247,6 +249,7 @@ std = [
 	"pallet-transaction-payment/std",
 	"pallet-treasury/std",
 	"pallet-utility/std",
+	"pallet-whitelist/std",
 	"sp-api/std",
 	"sp-block-builder/std",
 	"sp-consensus-aura/std",
@@ -265,12 +268,12 @@ std = [
 	"substrate-wasm-builder",
 ]
 
-fast-runtime = []
-
 evm-tracing = [
 	# moonbeam
 	"moonbeam-evm-tracer",
 ]
+
+fast-runtime = []
 
 # A feature that should be enabled when the runtime should be build for on-chain
 # deployment. This will disable stuff that shouldn't be part of the on-chain wasm
@@ -282,7 +285,7 @@ on-chain-release-build = [
 
 runtime-benchmarks = [
 	# crates.io
-	# "array-bytes",
+	"array-bytes",
 
 	# cumulus
 	"cumulus-pallet-parachain-system/runtime-benchmarks",
@@ -332,17 +335,18 @@ runtime-benchmarks = [
 	"pallet-assets/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
 	"pallet-collective/runtime-benchmarks",
+	"pallet-conviction-voting/runtime-benchmarks",
 	"pallet-democracy/runtime-benchmarks",
-	"pallet-elections-phragmen/runtime-benchmarks",
 	"pallet-identity/runtime-benchmarks",
-	"pallet-membership/runtime-benchmarks",
 	"pallet-preimage/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",
+	"pallet-referenda/runtime-benchmarks",
 	"pallet-scheduler/runtime-benchmarks",
 	"pallet-sudo/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-treasury/runtime-benchmarks",
 	"pallet-utility/runtime-benchmarks",
+	"pallet-whitelist/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	# substrate optional
 	"frame-benchmarking/runtime-benchmarks",
@@ -399,12 +403,12 @@ try-runtime = [
 	"pallet-authorship/try-runtime",
 	"pallet-balances/try-runtime",
 	"pallet-collective/try-runtime",
+	"pallet-conviction-voting/try-runtime",
 	"pallet-democracy/try-runtime",
-	"pallet-elections-phragmen/try-runtime",
 	"pallet-identity/try-runtime",
-	"pallet-membership/try-runtime",
 	"pallet-preimage/try-runtime",
 	"pallet-proxy/try-runtime",
+	"pallet-referenda/try-runtime",
 	"pallet-scheduler/try-runtime",
 	"pallet-session/try-runtime",
 	"pallet-sudo/try-runtime",
@@ -412,6 +416,7 @@ try-runtime = [
 	"pallet-transaction-payment/try-runtime",
 	"pallet-treasury/try-runtime",
 	"pallet-utility/try-runtime",
+	"pallet-whitelist/try-runtime",
 	"sp-runtime/try-runtime",
 	# substrate optional
 	"frame-try-runtime/try-runtime",

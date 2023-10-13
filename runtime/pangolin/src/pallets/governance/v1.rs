@@ -17,34 +17,23 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // darwinia
-use crate::*;
-
-const ENACTMENT_PERIOD: u32 = 10 * MINUTES;
+use super::*;
 
 impl pallet_democracy::Config for Runtime {
 	type BlacklistOrigin = Root;
-	// To cancel a proposal before it has been passed, the technical committee must be unanimous or
-	// Root must agree.
-	type CancelProposalOrigin = RootOrAll<TechnicalCollective>;
-	// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
+	type CancelProposalOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
 	type CancellationOrigin = RootOrAtLeastTwoThird<CouncilCollective>;
-	type CooloffPeriod = ConstU32<{ 5 * MINUTES }>;
+	type CooloffPeriod = Time1;
 	type Currency = Balances;
-	type EnactmentPeriod = ConstU32<ENACTMENT_PERIOD>;
-	/// A unanimous council can have the next scheduled referendum be a straight default-carries
-	/// (NTB) vote.
+	type EnactmentPeriod = Time1;
 	type ExternalDefaultOrigin = RootOrAll<CouncilCollective>;
-	/// A majority can have the next scheduled referendum be a straight majority-carries vote.
 	type ExternalMajorityOrigin = RootOrAtLeastHalf<CouncilCollective>;
-	/// A straight majority of the council can decide what their next motion is.
 	type ExternalOrigin = RootOrAtLeastHalf<CouncilCollective>;
-	/// Two thirds of the technical committee can have an ExternalMajority/ExternalDefault vote
-	/// be tabled immediately and with a shorter voting/enactment period.
 	type FastTrackOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
-	type FastTrackVotingPeriod = ConstU32<{ MINUTES }>;
+	type FastTrackVotingPeriod = Time1;
 	type InstantAllowed = ConstBool<true>;
 	type InstantOrigin = RootOrAll<TechnicalCollective>;
-	type LaunchPeriod = ConstU32<{ 10 * MINUTES }>;
+	type LaunchPeriod = Time1;
 	type MaxBlacklisted = ConstU32<100>;
 	type MaxDeposits = ConstU32<100>;
 	type MaxProposals = ConstU32<100>;
@@ -56,10 +45,8 @@ impl pallet_democracy::Config for Runtime {
 	type Scheduler = Scheduler;
 	type Slash = Treasury;
 	type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
-	// Any single technical committee member may veto a coming council proposal, however they can
-	// only do it once and it lasts only for the cool-off period.
 	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
-	type VoteLockingPeriod = ConstU32<ENACTMENT_PERIOD>;
-	type VotingPeriod = ConstU32<{ 10 * MINUTES }>;
+	type VoteLockingPeriod = Time1;
+	type VotingPeriod = Time1;
 	type WeightInfo = weights::pallet_democracy::WeightInfo<Self>;
 }

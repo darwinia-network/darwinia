@@ -86,7 +86,8 @@ pub trait IdentifyVariant {
 
 	/// Returns true if this configuration is for a development network.
 	fn is_dev(&self) -> bool {
-		self.id().ends_with("development")
+		// Fulfill Polkadot.JS metadata upgrade requirements.
+		self.id().ends_with("-d")
 	}
 }
 impl IdentifyVariant for Box<dyn sc_service::ChainSpec> {

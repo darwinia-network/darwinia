@@ -17,7 +17,7 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // darwinia
-use crate::*;
+use super::*;
 
 frame_support::parameter_types! {
 	pub const TreasuryPalletId: frame_support::PalletId = frame_support::PalletId(*b"da/trsry");
@@ -27,7 +27,7 @@ frame_support::parameter_types! {
 // In order to use `Tips`, which bounded by `pallet_treasury::Config` rather
 // `pallet_treasury::Config<I>` Still use `DefaultInstance` here instead `Instance1`
 impl pallet_treasury::Config for Runtime {
-	type ApproveOrigin = Root;
+	type ApproveOrigin = RootOr<GeneralAdmin>;
 	type Burn = ();
 	type BurnDestination = ();
 	type Currency = Balances;
@@ -41,6 +41,6 @@ impl pallet_treasury::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
 	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
-	type SpendPeriod = ConstU32<{ 10 * MINUTES }>;
+	type SpendPeriod = Time1;
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Self>;
 }
