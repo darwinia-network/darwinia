@@ -8049,6 +8049,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-evm-precompile-conviction-voting"
+version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v0.9.43#71592d863e0d6d1bade77570291529d90324c008"
+dependencies = [
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "log",
+ "num_enum 0.5.11",
+ "pallet-conviction-voting",
+ "pallet-evm",
+ "parity-scale-codec",
+ "precompile-utils",
+ "rustc-hex",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-evm-precompile-dispatch"
 version = "2.0.0-dev"
 source = "git+https://github.com/darwinia-network/frontier?branch=darwinia-v0.9.43#b9d2fc9d8eca7a07c7410bd73e397b5b0d94dc26"
@@ -8849,6 +8869,7 @@ dependencies = [
  "pallet-evm",
  "pallet-evm-precompile-blake2",
  "pallet-evm-precompile-bn128",
+ "pallet-evm-precompile-conviction-voting",
  "pallet-evm-precompile-dispatch",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-simple",

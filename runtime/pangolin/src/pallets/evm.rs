@@ -49,7 +49,7 @@ where
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> [sp_core::H160; 16] {
+	pub fn used_addresses() -> [sp_core::H160; 17] {
 		[
 			addr(1),
 			addr(2),
@@ -68,6 +68,7 @@ where
 			addr(1027),
 			addr(1536),
 			addr(1537),
+			addr(1538),
 			addr(2048),
 		]
 	}
@@ -124,6 +125,8 @@ where
 				Some(<darwinia_precompile_deposit::Deposit<Runtime>>::execute(handle)),
 			a if a == addr(1537) =>
 				Some(<darwinia_precompile_staking::Staking<Runtime>>::execute(handle)),
+			a if a == addr(1538) =>
+				Some(<pallet_evm_precompile_conviction_voting::ConvictionVotingPrecompile<Runtime>>::execute(handle)),
 			// [2048..) reserved for the experimental precompiles.
 			a if a == addr(2048) =>
 				Some(<darwinia_precompile_bls12_381::BLS12381<Runtime>>::execute(handle)),
