@@ -110,10 +110,6 @@ pub mod pallet {
 		/// Deposit [`StakeExt`] interface.
 		type Deposit: StakeExt<AccountId = Self::AccountId, Amount = Balance>;
 
-		/// Maximum commission rate.
-		#[pallet::constant]
-		type MaxCommission: Get<Perbill>;
-
 		/// Minimum time to stake at least.
 		#[pallet::constant]
 		type MinStakingDuration: Get<Self::BlockNumber>;
@@ -168,8 +164,6 @@ pub mod pallet {
 
 	#[pallet::error]
 	pub enum Error<T> {
-		/// Commission rate must be less than maximum commission rate.
-		CommissionTooHigh,
 		/// Exceed maximum deposit count.
 		ExceedMaxDeposits,
 		/// Exceed maximum unstaking/unbonding count.
@@ -463,10 +457,6 @@ pub mod pallet {
 		#[pallet::weight(<T as Config>::WeightInfo::collect())]
 		pub fn collect(origin: OriginFor<T>, commission: Perbill) -> DispatchResult {
 			let who = ensure_signed(origin)?;
-
-			if commission > T::MaxCommission::get() {
-				Err(<Error<T>>::CommissionTooHigh)?;
-			}
 
 			<Collators<T>>::mutate(&who, |c| *c = Some(commission));
 
@@ -859,7 +849,7 @@ pub mod pallet {
 
 				for n_exposure in c_exposure.nominators {
 					let n_payout =
-						Perbill::from_rational(n_exposure.value, c_exposure.total) * n_payout;
+						Perbill::from_rational(n_exposure.vote, c_exposure.vote) * n_payout;
 
 					if c == n_exposure.who {
 						// If the collator nominated themselves.
@@ -901,24 +891,25 @@ pub mod pallet {
 		///
 		/// This should only be called by the [`pallet_session::SessionManager::new_session`].
 		pub fn elect() -> Vec<T::AccountId> {
-			let mut collators = <Collators<T>>::iter_keys()
-				.map(|c| {
-					let mut t_power = 0;
-					let i_exposures = <Nominators<T>>::iter()
+			let mut collators = <Collators<T>>::iter()
+				.map(|(c, cm)| {
+					let scaler = (Perbill::one() - cm);
+					let mut collator_v = 0;
+					let nominators = <Nominators<T>>::iter()
 						.filter_map(|(n, c_)| {
 							if c_ == c {
-								let n_power = Self::power_of(&n);
+								let nominator_v = scaler * Self::power_of(&n);
 
-								t_power += n_power;
+								collator_v += nominator_v;
 
-								Some(IndividualExposure { who: n, value: n_power })
+								Some(IndividualExposure { who: n, vote: nominator_v })
 							} else {
 								None
 							}
 						})
 						.collect();
 
-					((c, Exposure { total: t_power, nominators: i_exposures }), t_power)
+					((c, Exposure { vote: collator_v, nominators }), collator_v)
 				})
 				.collect::<Vec<_>>();
 
@@ -940,6 +931,7 @@ pub use pallet::*;
 
 type RewardPoint = u32;
 type Power = u32;
+type Vote = u32;
 
 type DepositId<T> = <<T as Config>::Deposit as Stake>::Item;
 type NegativeImbalance<T> = <<T as Config>::RingCurrency as Currency<
@@ -997,18 +989,18 @@ pub struct Exposure<AccountId>
 where
 	AccountId: PartialEq,
 {
-	/// The total power backing this collator.
-	pub total: Power,
-	/// Nominators' stake power.
+	/// The total vote backing this collator.
+	pub vote: Vote,
+	/// Nominator staking map.
 	pub nominators: Vec<IndividualExposure<AccountId>>,
 }
 /// A snapshot of the stake backing a single collator in the system.
 #[cfg(not(feature = "try-runtime"))]
 #[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
 pub struct Exposure<AccountId> {
-	/// The total power backing this collator.
-	pub total: Power,
-	/// Nominators' stake power.
+	/// The total vote backing this collator.
+	pub vote: Vote,
+	/// Nominator staking map.
 	pub nominators: Vec<IndividualExposure<AccountId>>,
 }
 /// A snapshot of the staker's state.
@@ -1020,8 +1012,8 @@ where
 {
 	/// Nominator.
 	pub who: AccountId,
-	/// Nominator's stake power.
-	pub value: Power,
+	/// Nominator's staking vote.
+	pub vote: Vote,
 }
 /// A snapshot of the staker's state.
 #[cfg(not(feature = "try-runtime"))]
@@ -1029,8 +1021,8 @@ where
 pub struct IndividualExposure<AccountId> {
 	/// Nominator.
 	pub who: AccountId,
-	/// Nominator's stake power.
-	pub value: Power,
+	/// Nominator's staking vote.
+	pub vote: Vote,
 }
 
 // Add reward points to block authors:
