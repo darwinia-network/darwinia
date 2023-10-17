@@ -41,7 +41,20 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	frame_support::weights::Weight::zero()
+	// substrate
+	use sp_core::H160;
+	use sp_std::str::FromStr;
+
+	const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
+	const CONVICTION_VOTING_ADDRESS: &str = "0x0000000000000000000000000000000000000602";
+	EVM::create_account(
+		H160::from_str(CONVICTION_VOTING_ADDRESS)
+			.expect("CONVICTION_VOTING_ADDRESS is not a valid address"),
+		REVERT_BYTECODE.to_vec(),
+	);
+
+	// Reads: Suicided(1) + AccountCodes(1)
+	// Writes: AccountCodesMetadata(1) + AccountCodes(1)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(2, 2)
 	// RuntimeBlockWeights::get().max_block
-	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 0)
 }
