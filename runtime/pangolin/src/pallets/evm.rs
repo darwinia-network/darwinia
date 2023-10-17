@@ -62,10 +62,8 @@ where
 			addr(9),
 			addr(1024),
 			addr(1025),
-			// For KTON asset.
-			addr(1026),
-			// For Tether USDT.
-			addr(1027),
+			addr(1026), // For KTON asset.
+			addr(1027), // For Tether USDT.
 			addr(1536),
 			addr(1537),
 			addr(1538),

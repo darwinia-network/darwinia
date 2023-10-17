@@ -62,8 +62,7 @@ where
 			addr(9),
 			addr(1024),
 			addr(1025),
-			// For KTON asset.
-			addr(1026),
+			addr(1026), // For KTON asset.
 			addr(1536),
 			addr(1537),
 			addr(2048),
