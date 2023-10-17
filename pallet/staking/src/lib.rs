@@ -893,7 +893,7 @@ pub mod pallet {
 		pub fn elect() -> Vec<T::AccountId> {
 			let mut collators = <Collators<T>>::iter()
 				.map(|(c, cm)| {
-					let scaler = (Perbill::one() - cm);
+					let scaler = Perbill::one() - cm;
 					let mut collator_v = 0;
 					let nominators = <Nominators<T>>::iter()
 						.filter_map(|(n, c_)| {
