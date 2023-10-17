@@ -41,6 +41,10 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
+	// substrate
+	use sp_core::H160;
+	use sp_std::str::FromStr;
+
 	migration::clear_storage_prefix(b"PhragmenElection", b"Members", &[], None, None);
 	migration::clear_storage_prefix(b"PhragmenElection", b"RunnersUp", &[], None, None);
 	migration::clear_storage_prefix(b"PhragmenElection", b"Candidates", &[], None, None);
@@ -48,6 +52,15 @@ fn migrate() -> frame_support::weights::Weight {
 	migration::clear_storage_prefix(b"PhragmenElection", b"Voting", &[], None, None);
 	migration::clear_storage_prefix(b"TechnicalMembership", b"Members", &[], None, None);
 	migration::clear_storage_prefix(b"TechnicalMembership", b"Prime", &[], None, None);
+
+	const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
+	// CONVICTION_VOTING_ADDRESS equals to the addr(1538) in the pallet-evm runtime.
+	const CONVICTION_VOTING_ADDRESS: &str = "0x0000000000000000000000000000000000000602";
+	EVM::create_account(
+		H160::from_str(CONVICTION_VOTING_ADDRESS)
+			.expect("CONVICTION_VOTING_ADDRESS is not a valid address"),
+		REVERT_BYTECODE.to_vec(),
+	);
 
 	// frame_support::weights::Weight::zero()
 	RuntimeBlockWeights::get().max_block
