@@ -22,7 +22,7 @@ use crate::*;
 const ENACTMENT_PERIOD: u32 = 28 * DAYS;
 
 impl pallet_democracy::Config for Runtime {
-	type BlacklistOrigin = Root;
+	type BlacklistOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
 	type CancelProposalOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
 	type CancellationOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
 	type CooloffPeriod = ConstU32<{ 7 * DAYS }>;
