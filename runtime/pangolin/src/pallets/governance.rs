@@ -80,8 +80,7 @@ impl pallet_conviction_voting::Config for Runtime {
 	type Polls = Referenda;
 	type RuntimeEvent = RuntimeEvent;
 	type VoteLockingPeriod = Time2;
-	// TODO: weight
-	type WeightInfo = pallet_conviction_voting::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = weights::pallet_conviction_voting::WeightInfo<Self>;
 }
 
 pallet_referenda::impl_tracksinfo_get!(TracksInfo, Balance, BlockNumber);
@@ -99,12 +98,11 @@ impl pallet_referenda::Config for Runtime {
 	type Slash = Treasury;
 	type SubmissionDeposit = ConstU128<{ DARWINIA_PROPOSAL_REQUIREMENT }>;
 	type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
-	type Tally = pallet_conviction_voting::TallyOf<Runtime>;
+	type Tally = pallet_conviction_voting::TallyOf<Self>;
 	type Tracks = TracksInfo;
 	type UndecidingTimeout = Time2;
-	type Votes = pallet_conviction_voting::VotesOf<Runtime>;
-	// TODO: weight
-	type WeightInfo = pallet_referenda::weights::SubstrateWeight<Runtime>;
+	type Votes = pallet_conviction_voting::VotesOf<Self>;
+	type WeightInfo = weights::pallet_referenda::WeightInfo<Self>;
 }
 
 impl custom_origins::Config for Runtime {}
@@ -116,7 +114,6 @@ impl pallet_whitelist::Config for Runtime {
 	type Preimages = Preimage;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
-	// TODO: weight
-	type WeightInfo = pallet_whitelist::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = weights::pallet_whitelist::WeightInfo<Self>;
 	type WhitelistOrigin = RootOrDiverse<All<TechnicalCollective>>;
 }

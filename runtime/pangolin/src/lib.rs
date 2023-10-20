@@ -210,15 +210,18 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_balances, Balances]
 	[pallet_collective, Council]
 	[pallet_collective, TechnicalCommittee]
+	[pallet_conviction_voting, ConvictionVoting]
 	[pallet_democracy, Democracy]
 	[pallet_identity, Identity]
 	[pallet_preimage, Preimage]
 	[pallet_proxy, Proxy]
+	[pallet_referenda, Referenda]
 	[pallet_scheduler, Scheduler]
 	[pallet_treasury, Treasury]
 	[pallet_utility, Utility]
 	[pallet_session, SessionBench::<Runtime>]
 	[pallet_timestamp, Timestamp]
+	[pallet_whitelist, Whitelist]
 }
 
 impl_self_contained_call!();
@@ -740,7 +743,6 @@ sp_api::impl_runtime_apis! {
 			// substrate
 			use frame_benchmarking::*;
 			use frame_support::traits::StorageInfoTrait;
-			use frame_system_benchmarking::Pallet as SystemBench;
 			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 			// darwinia-messages-substrate
 			use pallet_bridge_parachains::benchmarking::Pallet as ParachainsBench;
@@ -783,7 +785,6 @@ sp_api::impl_runtime_apis! {
 			use frame_support::pallet_prelude::Weight;
 			use frame_support::traits::Currency;
 
-			use frame_system_benchmarking::Pallet as SystemBench;
 			impl frame_system_benchmarking::Config for Runtime {}
 
 			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
