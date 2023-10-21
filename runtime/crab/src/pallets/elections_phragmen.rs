@@ -41,7 +41,7 @@ impl pallet_elections_phragmen::Config for Runtime {
 	type PalletId = PhragmenElectionPalletId;
 	type RuntimeEvent = RuntimeEvent;
 	// Daily council elections.
-	type TermDuration = ConstU32<{ DAYS }>;
+	type TermDuration = ConstU32<{ 7 * DAYS }>;
 	// 1 storage item created, key size is 32 bytes, value size is 16+16.
 	type VotingBondBase = ConstU128<{ darwinia_deposit(1, 64) }>;
 	// Additional data per vote is 32 bytes (account id).
