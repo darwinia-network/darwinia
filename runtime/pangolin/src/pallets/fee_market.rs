@@ -28,7 +28,7 @@ impl<T: pallet_fee_market::Config<I>, I: 'static> pallet_fee_market::Slasher<T, 
 {
 	fn calc_amount(
 		locked_collateral: pallet_fee_market::BalanceOf<T, I>,
-		timeout: T::BlockNumber,
+		timeout: frame_system::pallet_prelude::BlockNumberFor<T>,
 	) -> pallet_fee_market::BalanceOf<T, I> {
 		// substrate
 		use sp_runtime::traits::UniqueSaturatedInto;

@@ -26,7 +26,7 @@ use dc_primitives::GWEI;
 use xcm::latest::{prelude::*, Weight as XcmWeight};
 use xcm_builder::TakeRevenue;
 use xcm_executor::{
-	traits::{Convert, ShouldExecute, WeightTrader},
+	traits::{ConvertLocation, Properties, ShouldExecute, WeightTrader},
 	Assets,
 };
 // substrate
@@ -75,10 +75,10 @@ where
 		origin: &MultiLocation,
 		message: &mut [Instruction<RuntimeCall>],
 		max_weight: Weight,
-		weight_credit: &mut Weight,
+		properties: &mut Properties,
 	) -> Result<(), ProcessMessageError> {
-		Deny::should_execute(origin, message, max_weight, weight_credit)?;
-		Allow::should_execute(origin, message, max_weight, weight_credit)
+		Deny::should_execute(origin, message, max_weight, properties)?;
+		Allow::should_execute(origin, message, max_weight, properties)
 	}
 }
 
@@ -89,7 +89,7 @@ impl ShouldExecute for DenyReserveTransferToRelayChain {
 		origin: &MultiLocation,
 		message: &mut [Instruction<RuntimeCall>],
 		_max_weight: Weight,
-		_weight_credit: &mut Weight,
+		_properties: &mut Properties,
 	) -> Result<(), ProcessMessageError> {
 		if message.iter().any(|inst| {
 			matches!(
@@ -125,18 +125,16 @@ impl ShouldExecute for DenyReserveTransferToRelayChain {
 /// Struct that converts a given MultiLocation into a 20 bytes account id by hashing
 /// with blake2_256 and taking the first 20 bytes
 pub struct Account20Hash<AccountId>(PhantomData<AccountId>);
-impl<AccountId: From<[u8; 20]> + Into<[u8; 20]> + Clone> Convert<MultiLocation, AccountId>
+impl<AccountId: From<[u8; 20]> + Into<[u8; 20]> + Clone> ConvertLocation<AccountId>
 	for Account20Hash<AccountId>
 {
-	fn convert_ref(location: impl Borrow<MultiLocation>) -> Result<AccountId, ()> {
+	fn convert_location(location: &MultiLocation) -> Option<AccountId> {
 		let hash: [u8; 32] = ("multiloc", location.borrow()).using_encoded(blake2_256);
 		let mut account_id = [0u8; 20];
-		account_id.copy_from_slice(&hash[0..20]);
-		Ok(account_id.into())
-	}
 
-	fn reverse_ref(_: impl Borrow<AccountId>) -> Result<MultiLocation, ()> {
-		Err(())
+		account_id.copy_from_slice(&hash[0..20]);
+
+		Some(account_id.into())
 	}
 }
 

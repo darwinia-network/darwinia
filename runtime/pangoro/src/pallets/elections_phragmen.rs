@@ -29,7 +29,7 @@ impl pallet_elections_phragmen::Config for Runtime {
 	type CandidacyBond = ConstU128<{ 100 * MILLIUNIT }>;
 	type ChangeMembers = Council;
 	type Currency = Balances;
-	type CurrencyToVote = frame_support::traits::U128CurrencyToVote;
+	type CurrencyToVote = sp_staking::currency_to_vote::U128CurrencyToVote;
 	type DesiredMembers = ConstU32<COLLECTIVE_DESIRED_MEMBERS>;
 	type DesiredRunnersUp = ConstU32<7>;
 	type InitializeMembers = Council;

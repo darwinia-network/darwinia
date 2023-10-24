@@ -38,7 +38,7 @@ use sc_telemetry::TelemetryEndpoints;
 use sp_core::{crypto::UncheckedInto, H160};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
+pub type ChainSpec = sc_service::GenericChainSpec<RuntimeGenesisConfig, Extensions>;
 
 fn properties() -> Properties {
 	super::properties("RING")
@@ -166,7 +166,7 @@ pub fn genesis_config() -> ChainSpec {
 		"darwinia2",
 		ChainType::Live,
 		move || {
-			GenesisConfig {
+			RuntimeGenesisConfig {
 				// System stuff.
 				system: SystemConfig { code: WASM_BINARY.unwrap().to_vec() },
 				parachain_system: Default::default(),
@@ -279,8 +279,8 @@ fn testnet_genesis(
 	collators: Vec<(AccountId, AuraId)>,
 	endowed_accounts: Vec<AccountId>,
 	id: ParaId,
-) -> GenesisConfig {
-	GenesisConfig {
+) -> RuntimeGenesisConfig {
+	RuntimeGenesisConfig {
 		// System stuff.
 		system: SystemConfig { code: WASM_BINARY.unwrap().to_vec() },
 		parachain_system: Default::default(),

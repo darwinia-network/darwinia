@@ -134,6 +134,7 @@ impl xcm_builder::TakeRevenue for ToTreasury {
 
 pub struct XcmExecutorConfig;
 impl xcm_executor::Config for XcmExecutorConfig {
+	type Aliasers = frame_support::traits::Nothing;
 	type AssetClaims = PolkadotXcm;
 	type AssetExchanger = ();
 	type AssetLocker = ();

@@ -70,10 +70,9 @@ impl frame_system::Config for TestRuntime {
 	type DbWeight = ();
 	type Hash = H256;
 	type Hashing = sp_runtime::traits::BlakeTwo256;
-	type Header = sp_runtime::testing::Header;
-	type Index = u64;
 	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type Nonce = u64;
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
@@ -92,13 +91,13 @@ impl pallet_balances::Config for TestRuntime {
 	type DustRemoval = ();
 	type ExistentialDeposit = frame_support::traits::ConstU128<0>;
 	type FreezeIdentifier = ();
-	type HoldIdentifier = ();
 	type MaxFreezes = ();
 	type MaxHolds = ();
 	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
 	type RuntimeEvent = RuntimeEvent;
+	type RuntimeHoldReason = ();
 	type WeightInfo = ();
 }
 
@@ -216,11 +215,7 @@ impl pallet_assets::Config for TestRuntime {
 }
 
 frame_support::construct_runtime! {
-	pub enum TestRuntime where
-	Block = frame_system::mocking::MockBlock<TestRuntime>,
-	NodeBlock = frame_system::mocking::MockBlock<TestRuntime>,
-	UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<TestRuntime>,
-	{
+	pub enum TestRuntime {
 		System: frame_system,
 		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,

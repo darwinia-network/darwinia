@@ -38,9 +38,8 @@ pub type Signature = fp_account::EthereumSignature;
 pub type AccountId = <<Signature as sp_runtime::traits::Verify>::Signer as sp_runtime::traits::IdentifyAccount>::AccountId;
 
 /// Index of a transaction in the chain.
-pub type Index = u32;
-
-/// Nonce of an account in the chain.
+/// or
+/// nonce of an account in the chain.
 pub type Nonce = u32;
 
 /// A hash of some data used by the chain.

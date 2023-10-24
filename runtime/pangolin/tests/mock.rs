@@ -19,7 +19,7 @@
 pub use pangolin_runtime::*;
 
 // substrate
-use frame_support::traits::GenesisBuild;
+use frame_support::traits::BuildGenesisConfig;
 use sp_io::TestExternalities;
 
 pub const KTON_ID: u64 = AssetIds::PKton as _;

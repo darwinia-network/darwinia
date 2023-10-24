@@ -21,7 +21,7 @@ pub use crate::{self as darwinia_ecdsa_authority};
 // darwinia
 use darwinia_ecdsa_authority::{primitives::*, *};
 // substrate
-use frame_support::traits::{GenesisBuild, OnInitialize};
+use frame_support::traits::{BuildGenesisConfig, OnInitialize};
 use sp_io::TestExternalities;
 
 frame_support::parameter_types! {
@@ -36,15 +36,13 @@ impl frame_system::Config for Runtime {
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockHashCount = ();
 	type BlockLength = ();
-	type BlockNumber = BlockNumber;
 	type BlockWeights = ();
 	type DbWeight = ();
 	type Hash = sp_core::H256;
 	type Hashing = sp_runtime::traits::BlakeTwo256;
-	type Header = sp_runtime::generic::Header<BlockNumber, Self::Hashing>;
-	type Index = u64;
 	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type Nonce = u64;
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
@@ -73,12 +71,7 @@ impl Config for Runtime {
 }
 
 frame_support::construct_runtime! {
-	pub enum Runtime
-	where
-		Block = frame_system::mocking::MockBlock<Runtime>,
-		NodeBlock = frame_system::mocking::MockBlock<Runtime>,
-		UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>,
-	{
+	pub enum Runtime {
 		System: frame_system,
 		EcdsaAuthority: darwinia_ecdsa_authority,
 	}

@@ -114,11 +114,7 @@ pub fn native_version() -> sp_version::NativeVersion {
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 frame_support::construct_runtime! {
-	pub enum Runtime where
-		Block = Block,
-		NodeBlock = dc_primitives::Block,
-		UncheckedExtrinsic = UncheckedExtrinsic,
-	{
+	pub enum Runtime {
 		// System stuff.
 		System: frame_system = 0,
 		ParachainSystem: cumulus_pallet_parachain_system = 1,
