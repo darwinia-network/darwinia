@@ -767,9 +767,11 @@ where
 				runtime_api_provider: client.clone(),
 				keystore: None,
 				offchain_db: backend.offchain_storage(),
-				transaction_pool: Some(sc_transaction_pool_api::OffchainTransactionPoolFactory::new(
-					transaction_pool.clone(),
-				)),
+				transaction_pool: Some(
+					sc_transaction_pool_api::OffchainTransactionPoolFactory::new(
+						transaction_pool.clone(),
+					),
+				),
 				network_provider: network.clone(),
 				is_validator: config.role.is_authority(),
 				enable_http_requests: false,
