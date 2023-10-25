@@ -18,8 +18,6 @@
 
 // std
 use std::{env, net::SocketAddr, path::PathBuf};
-// crates.io
-use codec::Encode;
 // cumulus
 use cumulus_primitives_core::ParaId;
 // darwinia
@@ -28,21 +26,17 @@ use crate::{
 	cli::{Cli, FrontierBackendType, RelayChainCli, Subcommand},
 	service::{self, *},
 };
-use dc_primitives::Block;
 // substrate
 use sc_cli::{
 	CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams, NetworkParams,
-	Result, RuntimeVersion, SharedParams, SubstrateCli,
+	Result, SharedParams, SubstrateCli,
 };
 use sc_service::{
 	config::{BasePath, PrometheusConfig},
 	ChainSpec, DatabaseSource,
 };
-use sp_core::{
-	crypto::{self, Ss58AddressFormatRegistry},
-	hexdisplay::HexDisplay,
-};
-use sp_runtime::traits::{AccountIdConversion, Block as BlockT};
+use sp_core::crypto::{self, Ss58AddressFormatRegistry};
+use sp_runtime::traits::AccountIdConversion;
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {

@@ -40,9 +40,12 @@ use std::{
 	sync::{Arc, Mutex},
 	time::Duration,
 };
+// crates.io
+use futures::FutureExt;
 // darwinia
 use dc_primitives::*;
 // substrate
+use sc_client_api::Backend;
 use sc_consensus::ImportQueue;
 use sc_network::NetworkBlock;
 
@@ -336,11 +339,25 @@ where
 		.await?;
 
 	if parachain_config.offchain_worker.enabled {
-		sc_service::build_offchain_workers(
-			&parachain_config,
-			task_manager.spawn_handle(),
-			client.clone(),
-			network.clone(),
+		task_manager.spawn_handle().spawn(
+			"offchain-workers-runner",
+			"offchain-work",
+			sc_offchain::OffchainWorkers::new(sc_offchain::OffchainWorkerOptions {
+				runtime_api_provider: client.clone(),
+				keystore: Some(keystore_container.keystore()),
+				offchain_db: backend.offchain_storage(),
+				transaction_pool: Some(
+					sc_transaction_pool_api::OffchainTransactionPoolFactory::new(
+						transaction_pool.clone(),
+					),
+				),
+				network_provider: network.clone(),
+				is_validator: parachain_config.role.is_authority(),
+				enable_http_requests: false,
+				custom_extensions: move |_| Vec::new(),
+			})
+			.run(client.clone(), task_manager.spawn_handle())
+			.boxed(),
 		);
 	}
 
@@ -743,22 +760,23 @@ where
 		})?;
 
 	if config.offchain_worker.enabled {
-		let offchain_workers = Arc::new(sc_offchain::OffchainWorkers::new_with_options(
-			client.clone(),
-			sc_offchain::OffchainWorkerOptions { enable_http_requests: false },
-		));
-
-		// Start the offchain workers to have
 		task_manager.spawn_handle().spawn(
-			"offchain-notifications",
-			None,
-			sc_offchain::notification_future(
-				config.role.is_authority(),
-				client.clone(),
-				offchain_workers,
-				task_manager.spawn_handle(),
-				network.clone(),
-			),
+			"offchain-workers-runner",
+			"offchain-work",
+			sc_offchain::OffchainWorkers::new(sc_offchain::OffchainWorkerOptions {
+				runtime_api_provider: client.clone(),
+				keystore: None,
+				offchain_db: backend.offchain_storage(),
+				transaction_pool: Some(sc_transaction_pool_api::OffchainTransactionPoolFactory::new(
+					transaction_pool.clone(),
+				)),
+				network_provider: network.clone(),
+				is_validator: config.role.is_authority(),
+				enable_http_requests: false,
+				custom_extensions: move |_| vec![],
+			})
+			.run(client.clone(), task_manager.spawn_handle())
+			.boxed(),
 		);
 	}
 
@@ -821,8 +839,8 @@ where
 								Default::default(),
 								Default::default(),
 							),
-							raw_downward_messages: vec![],
-							raw_horizontal_messages: vec![],
+							raw_downward_messages: Vec::new(),
+							raw_horizontal_messages: Vec::new(),
 						};
 
 					Ok((slot, timestamp, mocked_parachain))
