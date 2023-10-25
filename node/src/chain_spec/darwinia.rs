@@ -168,9 +168,9 @@ pub fn genesis_config() -> ChainSpec {
 		move || {
 			RuntimeGenesisConfig {
 				// System stuff.
-				system: SystemConfig { code: WASM_BINARY.unwrap().to_vec() },
+				system: SystemConfig { code: WASM_BINARY.unwrap().to_vec(), ..Default::default() },
 				parachain_system: Default::default(),
-				parachain_info: ParachainInfoConfig { parachain_id: 2046.into() },
+				parachain_info: ParachainInfoConfig { parachain_id: 2046.into(), ..Default::default() },
 
 				// Monetary stuff.
 				balances: BalancesConfig {
@@ -178,6 +178,7 @@ pub fn genesis_config() -> ChainSpec {
 						.iter()
 						.map(|(k, _)| (array_bytes::hex_n_into_unchecked(k), 10_000 * UNIT))
 						.collect(),
+					..Default::default()
 				},
 				transaction_payment: Default::default(),
 				assets: AssetsConfig {
@@ -201,6 +202,7 @@ pub fn genesis_config() -> ChainSpec {
 						.iter()
 						.map(|(k, _)| (array_bytes::hex_n_into_unchecked(k), 1_000 * UNIT))
 						.collect(),
+					..Default::default()
 				},
 				session: SessionConfig {
 					keys: collators
@@ -213,6 +215,7 @@ pub fn genesis_config() -> ChainSpec {
 							)
 						})
 						.collect(),
+					..Default::default()
 				},
 				aura: Default::default(),
 				aura_ext: Default::default(),
@@ -228,7 +231,7 @@ pub fn genesis_config() -> ChainSpec {
 				treasury: Default::default(),
 
 				// XCM stuff.
-				polkadot_xcm: PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION) },
+				polkadot_xcm: PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION), ..Default::default() },
 
 				// EVM stuff.
 				ethereum: Default::default(),
@@ -248,6 +251,7 @@ pub fn genesis_config() -> ChainSpec {
 							}),
 						)
 					},
+					..Default::default()
 				},
 
 				// S2S stuff.
@@ -282,13 +286,14 @@ fn testnet_genesis(
 ) -> RuntimeGenesisConfig {
 	RuntimeGenesisConfig {
 		// System stuff.
-		system: SystemConfig { code: WASM_BINARY.unwrap().to_vec() },
+		system: SystemConfig { code: WASM_BINARY.unwrap().to_vec(), ..Default::default() },
 		parachain_system: Default::default(),
-		parachain_info: ParachainInfoConfig { parachain_id: id },
+		parachain_info: ParachainInfoConfig { parachain_id: id, ..Default::default() },
 
 		// Monetary stuff.
 		balances: BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 100_000_000 * UNIT)).collect(),
+			..Default::default()
 		},
 		transaction_payment: Default::default(),
 		assets: AssetsConfig {
@@ -309,6 +314,7 @@ fn testnet_genesis(
 			elapsed_time: 0,
 			collator_count: collators.len() as _,
 			collators: collators.iter().map(|(a, _)| (a.to_owned(), UNIT)).collect(),
+			..Default::default()
 		},
 		session: SessionConfig {
 			keys: collators
@@ -321,6 +327,7 @@ fn testnet_genesis(
 					)
 				})
 				.collect(),
+			..Default::default()
 		},
 		aura: Default::default(),
 		aura_ext: Default::default(),
@@ -336,7 +343,7 @@ fn testnet_genesis(
 		treasury: Default::default(),
 
 		// XCM stuff.
-		polkadot_xcm: PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION) },
+		polkadot_xcm: PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION), ..Default::default() },
 
 		// EVM stuff.
 		ethereum: Default::default(),
@@ -370,6 +377,7 @@ fn testnet_genesis(
 						]),
 				)
 			},
+			..Default::default()
 		},
 
 		// S2S stuff.
