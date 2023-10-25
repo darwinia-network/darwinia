@@ -401,6 +401,17 @@ where
 		let collator = parachain_config.role.is_authority();
 		let eth_rpc_config = eth_rpc_config.clone();
 		let sync_service = sync_service.clone();
+		let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
+		let pending_create_inherent_data_providers = move |_, ()| async move {
+			let current = sp_timestamp::InherentDataProvider::from_system_time();
+			let next_slot = current.timestamp().as_millis() + slot_duration.as_millis();
+			let timestamp = sp_timestamp::InherentDataProvider::new(next_slot.into());
+			let slot = sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
+				*timestamp,
+				slot_duration,
+			);
+			Ok((slot, timestamp))
+		};
 
 		Box::new(move |deny_unsafe, subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {
@@ -422,12 +433,13 @@ where
 				overrides: overrides.clone(),
 				block_data_cache: block_data_cache.clone(),
 				forced_parent_hashes: None,
+				pending_create_inherent_data_providers,
 			};
 
 			if eth_rpc_config.tracing_api.contains(&crate::cli::TracingApi::Debug)
 				|| eth_rpc_config.tracing_api.contains(&crate::cli::TracingApi::Trace)
 			{
-				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>>(
+				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>, _>(
 					deps,
 					subscription_task_executor,
 					pubsub_notification_sinks.clone(),
@@ -438,7 +450,7 @@ where
 				)
 				.map_err(Into::into)
 			} else {
-				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>>(
+				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>, _>(
 					deps,
 					subscription_task_executor,
 					pubsub_notification_sinks.clone(),
@@ -913,6 +925,17 @@ where
 		let collator = config.role.is_authority();
 		let eth_rpc_config = eth_rpc_config.clone();
 		let sync_service = sync_service.clone();
+		let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
+		let pending_create_inherent_data_providers = move |_, ()| async move {
+			let current = sp_timestamp::InherentDataProvider::from_system_time();
+			let next_slot = current.timestamp().as_millis() + slot_duration.as_millis();
+			let timestamp = sp_timestamp::InherentDataProvider::new(next_slot.into());
+			let slot = sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
+				*timestamp,
+				slot_duration,
+			);
+			Ok((slot, timestamp))
+		};
 
 		Box::new(move |deny_unsafe, subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {
@@ -934,12 +957,13 @@ where
 				overrides: overrides.clone(),
 				block_data_cache: block_data_cache.clone(),
 				forced_parent_hashes: None,
+				pending_create_inherent_data_providers,
 			};
 
 			if eth_rpc_config.tracing_api.contains(&crate::cli::TracingApi::Debug)
 				|| eth_rpc_config.tracing_api.contains(&crate::cli::TracingApi::Trace)
 			{
-				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>>(
+				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>, _>(
 					deps,
 					subscription_task_executor,
 					pubsub_notification_sinks.clone(),
@@ -950,7 +974,7 @@ where
 				)
 				.map_err(Into::into)
 			} else {
-				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>>(
+				crate::rpc::create_full::<_, _, _, _, crate::rpc::DefaultEthConfig<_, _>, _>(
 					deps,
 					subscription_task_executor,
 					pubsub_notification_sinks.clone(),

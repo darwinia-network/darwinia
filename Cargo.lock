@@ -2605,6 +2605,7 @@ dependencies = [
  "sp-blockchain",
  "sp-consensus-aura",
  "sp-core",
+ "sp-inherents",
  "sp-io",
  "sp-keystore",
  "sp-offchain",
