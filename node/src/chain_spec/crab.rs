@@ -347,7 +347,10 @@ fn testnet_genesis(
 		treasury: Default::default(),
 
 		// XCM stuff.
-		polkadot_xcm: PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION), ..Default::default() },
+		polkadot_xcm: PolkadotXcmConfig {
+			safe_xcm_version: Some(SAFE_XCM_VERSION),
+			..Default::default()
+		},
 
 		// EVM stuff.
 		ethereum: Default::default(),

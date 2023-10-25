@@ -506,36 +506,9 @@ pub fn run() -> Result<()> {
 
 			set_default_ss58_version(&runner.config().chain_spec);
 
-			match &**cmd {
+			match cmd {
 				BenchmarkCmd::Pallet(cmd) =>
-					runner.sync_run(|config| {
-							let chain_spec = &config.chain_spec;
-
-							ensure_dev(chain_spec)?;
-
-							#[cfg(feature = "crab-native")]
-							if chain_spec.is_crab() {
-								return cmd.run::<Block, CrabRuntimeExecutor>(config);
-							}
-
-							#[cfg(feature = "darwinia-native")]
-							if chain_spec.is_darwinia() {
-								return cmd.run::<Block, DarwiniaRuntimeExecutor>(config);
-							}
-
-							#[cfg(feature = "pangolin-native")]
-							if chain_spec.is_pangolin() {
-								return cmd.run::<Block, PangolinRuntimeExecutor>(config);
-							}
-
-							#[cfg(feature = "pangoro-native")]
-							if chain_spec.is_pangoro() {
-								return cmd.run::<Block, PangoroRuntimeExecutor>(config);
-							}
-
-							panic!("No feature(crab-native, darwinia-native, pangolin-native, pangoro-native) is enabled!");
-						}),
-
+					runner.sync_run(|config| cmd.run::<Block, ()>(config)),
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
 					construct_benchmark_partials!(config, cli, |partials| {
 						let db = partials.backend.expose_db();
@@ -559,14 +532,15 @@ pub fn run() -> Result<()> {
 		),
 		#[cfg(feature = "try-runtime")]
 		Some(Subcommand::TryRuntime(cmd)) => {
+			// substrate
+			use frame_benchmarking::benchmarking::HostFunctions;
 			use sc_service::TaskManager;
-			use sc_executor::{sp_wasm_interface::ExtendedHostFunctions, NativeExecutionDispatch};
 			use sp_io::SubstrateHostFunctions;
 			use try_runtime_cli::block_building_info;
 
-			type HostFunctionsOf<E> = ExtendedHostFunctions<
+			type HostFunctions = ExtendedHostFunctions<
 				SubstrateHostFunctions,
-				<E as NativeExecutionDispatch>::ExtendHostFunctions,
+				HostFunctions,
 			>;
 
 			let runner = cli.create_runner(cmd)?;
@@ -581,35 +555,7 @@ pub fn run() -> Result<()> {
 				.map_err(|e| format!("Error: {:?}", e))?;
 			let info_provider = block_building_info::timestamp_with_aura_info(6000);
 
-			#[cfg(feature = "crab-native")]
-			if chain_spec.is_crab() {
-				return runner.async_run(|_| {
-					Ok((cmd.run::<Block, HostFunctionsOf<CrabRuntimeExecutor>, _>(Some(info_provider)), task_manager))
-				});
-			}
-
-			#[cfg(feature = "darwinia-native")]
-			if chain_spec.is_darwinia() {
-				return runner.async_run(|_| {
-					Ok((cmd.run::<Block, HostFunctionsOf<DarwiniaRuntimeExecutor>, _>(Some(info_provider)), task_manager))
-				});
-			}
-
-			#[cfg(feature = "pangolin-native")]
-			if chain_spec.is_pangolin() {
-				return runner.async_run(|_| {
-					Ok((cmd.run::<Block, HostFunctionsOf<PangolinRuntimeExecutor>, _>(Some(info_provider)), task_manager))
-				});
-			}
-
-			#[cfg(feature = "pangoro-native")]
-			if chain_spec.is_pangoro() {
-				return runner.async_run(|_| {
-					Ok((cmd.run::<Block, HostFunctionsOf<PangoroRuntimeExecutor>, _>(Some(info_provider)), task_manager))
-				});
-			}
-
-			panic!("No feature(crab-native, darwinia-native, pangolin-native, pangoro-native) is enabled!");
+			Ok((cmd.run::<Block, HostFunctions, _>(Some(info_provider)), task_manager))
 		},
 		#[cfg(not(feature = "try-runtime"))]
 		Some(Subcommand::TryRuntime) => Err(
