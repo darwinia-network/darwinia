@@ -26,17 +26,14 @@ use dc_primitives::GWEI;
 use xcm::latest::{prelude::*, Weight as XcmWeight};
 use xcm_builder::TakeRevenue;
 use xcm_executor::{
-	traits::{ConvertLocation, Properties, ShouldExecute, WeightTrader},
+	traits::{ConvertLocation, WeightTrader},
 	Assets,
 };
 // substrate
 use frame_support::{
 	log,
 	pallet_prelude::*,
-	traits::{
-		tokens::currency::Currency as CurrencyT, ConstU128, OnUnbalanced as OnUnbalancedT,
-		ProcessMessageError,
-	},
+	traits::{tokens::currency::Currency as CurrencyT, ConstU128, OnUnbalanced as OnUnbalancedT},
 	weights::{Weight, WeightToFee as WeightToFeeT},
 };
 use sp_core::Get;
@@ -56,70 +53,6 @@ frame_support::match_types! {
 		MultiLocation { parents: 1, interior: Here } |
 		MultiLocation { parents: 1, interior: X1(_) }
 	};
-}
-
-//TODO: move DenyThenTry to polkadot's xcm module.
-/// Deny executing the xcm message if it matches any of the Deny filter regardless of anything else.
-/// If it passes the Deny, and matches one of the Allow cases then it is let through.
-pub struct DenyThenTry<Deny, Allow>(PhantomData<Deny>, PhantomData<Allow>)
-where
-	Deny: ShouldExecute,
-	Allow: ShouldExecute;
-
-impl<Deny, Allow> ShouldExecute for DenyThenTry<Deny, Allow>
-where
-	Deny: ShouldExecute,
-	Allow: ShouldExecute,
-{
-	fn should_execute<RuntimeCall>(
-		origin: &MultiLocation,
-		message: &mut [Instruction<RuntimeCall>],
-		max_weight: Weight,
-		properties: &mut Properties,
-	) -> Result<(), ProcessMessageError> {
-		Deny::should_execute(origin, message, max_weight, properties)?;
-		Allow::should_execute(origin, message, max_weight, properties)
-	}
-}
-
-// See issue <https://github.com/paritytech/polkadot/issues/5233>
-pub struct DenyReserveTransferToRelayChain;
-impl ShouldExecute for DenyReserveTransferToRelayChain {
-	fn should_execute<RuntimeCall>(
-		origin: &MultiLocation,
-		message: &mut [Instruction<RuntimeCall>],
-		_max_weight: Weight,
-		_properties: &mut Properties,
-	) -> Result<(), ProcessMessageError> {
-		if message.iter().any(|inst| {
-			matches!(
-				inst,
-				InitiateReserveWithdraw {
-					reserve: MultiLocation { parents: 1, interior: Here },
-					..
-				} | DepositReserveAsset { dest: MultiLocation { parents: 1, interior: Here }, .. }
-					| TransferReserveAsset {
-						dest: MultiLocation { parents: 1, interior: Here },
-						..
-					}
-			)
-		}) {
-			return Err(ProcessMessageError::Unsupported); // Deny
-		}
-
-		// An unexpected reserve transfer has arrived from the Relay Chain. Generally, `IsReserve`
-		// should not allow this, but we just log it here.
-		if matches!(origin, MultiLocation { parents: 1, interior: Here })
-			&& message.iter().any(|inst| matches!(inst, ReserveAssetDeposited { .. }))
-		{
-			log::warn!(
-				target: "xcm::barriers",
-				"Unexpected ReserveAssetDeposited from the Relay Chain",
-			);
-		}
-		// Permit everything else
-		Ok(())
-	}
 }
 
 /// Struct that converts a given MultiLocation into a 20 bytes account id by hashing
