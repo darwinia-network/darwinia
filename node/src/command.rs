@@ -78,32 +78,6 @@ impl SubstrateCli for Cli {
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		load_spec(id)
 	}
-
-	fn native_runtime_version(spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-		#[cfg(feature = "crab-native")]
-		if spec.is_crab() {
-			return &crab_runtime::VERSION;
-		}
-
-		#[cfg(feature = "darwinia-native")]
-		if spec.is_darwinia() {
-			return &darwinia_runtime::VERSION;
-		}
-
-		#[cfg(feature = "pangolin-native")]
-		if spec.is_pangolin() {
-			return &pangolin_runtime::VERSION;
-		}
-
-		#[cfg(feature = "pangoro-native")]
-		if spec.is_pangoro() {
-			return &pangoro_runtime::VERSION;
-		}
-
-		panic!(
-			"No feature(crab-native, darwinia-native, pangolin-native, pangoro-native) is enabled!"
-		);
-	}
 }
 
 impl SubstrateCli for RelayChainCli {
@@ -139,10 +113,6 @@ impl SubstrateCli for RelayChainCli {
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id)
-	}
-
-	fn native_runtime_version(chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-		polkadot_cli::Cli::native_runtime_version(chain_spec)
 	}
 }
 impl DefaultConfigurationValues for RelayChainCli {
@@ -274,7 +244,7 @@ pub fn run() -> Result<()> {
 		($config:expr, $cli:ident, |$partials:ident| $code:expr) => {{
 			#[cfg(feature = "crab-native")]
 			if $config.chain_spec.is_crab() {
-				let $partials = new_partial::<CrabRuntimeApi, CrabRuntimeExecutor>(
+				let $partials = service::new_partial::<CrabRuntimeApi, CrabRuntimeExecutor>(
 					&$config,
 					&$cli.eth_args.build_eth_rpc_config(),
 				)?;
@@ -284,7 +254,7 @@ pub fn run() -> Result<()> {
 
 			#[cfg(feature = "darwinia-native")]
 			if $config.chain_spec.is_darwinia() {
-				let $partials = new_partial::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
+				let $partials = service::new_partial::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
 					&$config,
 					&$cli.eth_args.build_eth_rpc_config(),
 				)?;
@@ -294,7 +264,7 @@ pub fn run() -> Result<()> {
 
 			#[cfg(feature = "pangolin-native")]
 			if $config.chain_spec.is_pangolin() {
-				let $partials = new_partial::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
+				let $partials = service::new_partial::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
 					&$config,
 					&$cli.eth_args.build_eth_rpc_config(),
 				)?;
@@ -304,7 +274,7 @@ pub fn run() -> Result<()> {
 
 			#[cfg(feature = "pangoro-native")]
 			if $config.chain_spec.is_pangoro() {
-				let $partials = new_partial::<PangoroRuntimeApi, PangoroRuntimeExecutor>(
+				let $partials = service::new_partial::<PangoroRuntimeApi, PangoroRuntimeExecutor>(
 					&$config,
 					&$cli.eth_args.build_eth_rpc_config(),
 				)?;
@@ -476,17 +446,10 @@ pub fn run() -> Result<()> {
 				cmd.run(config, polkadot_config)
 			})
 		},
-		Some(Subcommand::ExportGenesisState(cmd)) => {
-			let runner = cli.create_runner(cmd)?;
-			let chain_spec = &runner.config().chain_spec;
-
-			set_default_ss58_version(chain_spec);
-			runner.sync_run(|_config| {
-				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
-				let state_version = Cli::native_runtime_version(&spec).state_version();
-				cmd.run::<Block>(&*spec, state_version)
-			})
-		},
+		Some(Subcommand::ExportGenesisState(cmd)) =>
+			construct_async_run!(|components, cli, cmd, config| {
+				Ok(async move { cmd.run(&*config.chain_spec, &*components.client) })
+			}),
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			let chain_spec = &runner.config().chain_spec;
@@ -585,24 +548,22 @@ pub fn run() -> Result<()> {
 				let id = ParaId::from(para_id);
 				let parachain_account =
 					AccountIdConversion::<polkadot_primitives::AccountId>::into_account_truncating(&id);
-				let state_version = Cli::native_runtime_version(&config.chain_spec).state_version();
-				let block: Block =
-					cumulus_client_cli::generate_genesis_block(&*config.chain_spec, state_version)
-						.map_err(|e| format!("{:?}", e))?;
-				let genesis_state = format!("0x{:?}", HexDisplay::from(&block.header().encode()));
 				let tokio_handle = config.tokio_handle.clone();
 				let eth_rpc_config = cli.eth_args.build_eth_rpc_config();
 
 				log::info!("Parachain id: {:?}", id);
 				log::info!("Parachain Account: {}", parachain_account);
-				log::info!("Parachain genesis state: {}", genesis_state);
 				log::info!(
 					"Is collating: {}",
 					if config.role.is_authority() { "yes" } else { "no" }
 				);
 
 				if !collator_options.relay_chain_rpc_urls.is_empty() && !cli.relay_chain_args.is_empty() {
-					log::warn!("Detected relay chain node arguments together with --relay-chain-rpc-url. This command starts a minimal Polkadot node that only uses a network-related subset of all relay chain CLI options.");
+					log::warn!(
+						"Detected relay chain node arguments together with --relay-chain-rpc-url. \
+						   This command starts a minimal Polkadot node that only uses a \
+						   network-related subset of all relay chain CLI options."
+					);
 				}
 
 				if chain_spec.is_dev() {
