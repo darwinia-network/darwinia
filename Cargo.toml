@@ -88,7 +88,7 @@ pallet-fee-market        = { git = "https://github.com/darwinia-network/darwinia
 fc-consensus                   = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0" }
 fc-db                          = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0" }
 fc-mapping-sync                = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", features = ["sql"] }
-fc-rpc                         = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", features = ["rpc-binary-search-estimate"] }
+fc-rpc                         = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", features = ["rpc-binary-search-estimate", "txpool"] }
 fc-rpc-core                    = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0" }
 fc-storage                     = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0" }
 fp-account                     = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.0.0", default-features = false, features = ["serde"] }
