@@ -401,6 +401,7 @@ where
 		let collator = parachain_config.role.is_authority();
 		let eth_rpc_config = eth_rpc_config.clone();
 		let sync_service = sync_service.clone();
+
 		let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 		let pending_create_inherent_data_providers = move |_, ()| async move {
 			let current = sp_timestamp::InherentDataProvider::from_system_time();
@@ -925,6 +926,7 @@ where
 		let collator = config.role.is_authority();
 		let eth_rpc_config = eth_rpc_config.clone();
 		let sync_service = sync_service.clone();
+
 		let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 		let pending_create_inherent_data_providers = move |_, ()| async move {
 			let current = sp_timestamp::InherentDataProvider::from_system_time();
