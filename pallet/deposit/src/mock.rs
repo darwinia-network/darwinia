@@ -20,7 +20,7 @@ pub use crate as darwinia_deposit;
 pub use dc_types::{AssetId, Balance, Moment, UNIT};
 
 // substrate
-use frame_support::traits::GenesisBuild;
+use frame_support::traits::BuildGenesisConfig;
 use sp_io::TestExternalities;
 
 impl frame_system::Config for Runtime {
@@ -35,9 +35,9 @@ impl frame_system::Config for Runtime {
 	type Hash = sp_core::H256;
 	type Hashing = sp_runtime::traits::BlakeTwo256;
 	type Header = sp_runtime::testing::Header;
-	type Index = u64;
 	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type Nonce = u64;
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
@@ -63,13 +63,13 @@ impl pallet_balances::Config for Runtime {
 	type DustRemoval = ();
 	type ExistentialDeposit = frame_support::traits::ConstU128<0>;
 	type FreezeIdentifier = ();
-	type HoldIdentifier = ();
 	type MaxFreezes = ();
 	type MaxHolds = ();
 	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
 	type RuntimeEvent = RuntimeEvent;
+	type RuntimeHoldReason = ();
 	type WeightInfo = ();
 }
 
@@ -132,11 +132,7 @@ impl darwinia_deposit::Config for Runtime {
 }
 
 frame_support::construct_runtime! {
-	pub enum Runtime where
-		Block = frame_system::mocking::MockBlock<Runtime>,
-		NodeBlock = frame_system::mocking::MockBlock<Runtime>,
-		UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>,
-	{
+	pub enum Runtime {
 		System: frame_system,
 		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,

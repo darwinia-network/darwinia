@@ -38,7 +38,7 @@ pub struct CurrencyIdtoMultiLocation<AssetXConverter>(sp_std::marker::PhantomDat
 impl<AssetXConverter> sp_runtime::traits::Convert<CurrencyId, Option<MultiLocation>>
 	for CurrencyIdtoMultiLocation<AssetXConverter>
 where
-	AssetXConverter: xcm_executor::traits::Convert<MultiLocation, crate::AssetId>,
+	AssetXConverter: sp_runtime::traits::MaybeEquivalence<MultiLocation, crate::AssetId>,
 {
 	fn convert(currency: CurrencyId) -> Option<MultiLocation> {
 		match currency {
@@ -46,7 +46,7 @@ where
 				let multi: MultiLocation = pallets::polkadot_xcm::AnchoringSelfReserve::get();
 				Some(multi)
 			},
-			CurrencyId::ForeignAsset(asset) => AssetXConverter::reverse_ref(asset).ok(),
+			CurrencyId::ForeignAsset(asset) => AssetXConverter::convert_back(&asset),
 		}
 	}
 }

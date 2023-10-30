@@ -38,7 +38,7 @@ use sc_telemetry::TelemetryEndpoints;
 use sp_core::{crypto::UncheckedInto, H160};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
+pub type ChainSpec = sc_service::GenericChainSpec<RuntimeGenesisConfig, Extensions>;
 
 fn properties() -> Properties {
 	super::properties("PRING")
@@ -144,11 +144,11 @@ pub fn genesis_config() -> ChainSpec {
 		"pangolin2",
 		ChainType::Live,
 		move || {
-			GenesisConfig {
+			RuntimeGenesisConfig {
 				// System stuff.
-				system: SystemConfig { code: WASM_BINARY.unwrap().to_vec() },
+				system: SystemConfig { code: WASM_BINARY.unwrap().to_vec(), ..Default::default() },
 				parachain_system: Default::default(),
-				parachain_info: ParachainInfoConfig { parachain_id: 2105.into() },
+				parachain_info: ParachainInfoConfig { parachain_id: 2105.into(), ..Default::default() },
 
 				// Monetary stuff.
 				balances: BalancesConfig {
@@ -157,6 +157,7 @@ pub fn genesis_config() -> ChainSpec {
 						(array_bytes::hex_n_into_unchecked(C2), 10_000 * UNIT),
 						(array_bytes::hex_n_into_unchecked(C3), 10_000 * UNIT),
 					],
+					..Default::default()
 				},
 				transaction_payment: Default::default(),
 				assets: AssetsConfig {
@@ -221,7 +222,7 @@ pub fn genesis_config() -> ChainSpec {
 				sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked(SUDO)) },
 
 				// XCM stuff.
-				polkadot_xcm: PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION) },
+				polkadot_xcm: PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION), ..Default::default() },
 
 				// EVM stuff.
 				ethereum: Default::default(),
@@ -241,6 +242,7 @@ pub fn genesis_config() -> ChainSpec {
 							}),
 						)
 					},
+					..Default::default()
 				},
 
 				// S2S stuff.
@@ -272,12 +274,12 @@ fn testnet_genesis(
 	collators: Vec<(AccountId, AuraId)>,
 	endowed_accounts: Vec<AccountId>,
 	id: ParaId,
-) -> GenesisConfig {
-	GenesisConfig {
+) -> RuntimeGenesisConfig {
+	RuntimeGenesisConfig {
 		// System stuff.
-		system: SystemConfig { code: WASM_BINARY.unwrap().to_vec() },
+		system: SystemConfig { code: WASM_BINARY.unwrap().to_vec(), ..Default::default() },
 		parachain_system: Default::default(),
-		parachain_info: ParachainInfoConfig { parachain_id: id },
+		parachain_info: ParachainInfoConfig { parachain_id: id, ..Default::default() },
 
 		// Monetary stuff.
 		balances: BalancesConfig {
@@ -341,7 +343,10 @@ fn testnet_genesis(
 		sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked(ALITH)) },
 
 		// XCM stuff.
-		polkadot_xcm: PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION) },
+		polkadot_xcm: PolkadotXcmConfig {
+			safe_xcm_version: Some(SAFE_XCM_VERSION),
+			..Default::default()
+		},
 
 		// EVM stuff.
 		ethereum: Default::default(),
@@ -375,6 +380,7 @@ fn testnet_genesis(
 						]),
 				)
 			},
+			..Default::default()
 		},
 
 		// S2S stuff.

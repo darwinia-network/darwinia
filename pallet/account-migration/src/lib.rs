@@ -58,7 +58,7 @@ pub use weights::WeightInfo;
 // darwinia
 use darwinia_deposit::Deposit;
 use darwinia_staking::Ledger;
-use dc_primitives::{AccountId as AccountId20, AssetId, Balance, BlockNumber, Index};
+use dc_primitives::{AccountId as AccountId20, AssetId, Balance, Nonce};
 // substrate
 use frame_support::{
 	migration,
@@ -103,8 +103,7 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config:
 		frame_system::Config<
-			Index = Index,
-			BlockNumber = BlockNumber,
+			Nonce = Nonce,
 			AccountId = AccountId20,
 			AccountData = AccountData<Balance>,
 			Lookup = IdentityLookup<AccountId20>,
@@ -149,7 +148,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn account_of)]
 	pub type Accounts<T: Config> =
-		StorageMap<_, Blake2_128Concat, AccountId32, AccountInfo<Index, AccountData<Balance>>>;
+		StorageMap<_, Blake2_128Concat, AccountId32, AccountInfo<Nonce, AccountData<Balance>>>;
 
 	/// [`pallet_asset::AssetAccount`] data.
 	///

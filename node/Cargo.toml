@@ -13,13 +13,12 @@ substrate-build-script-utils = { workspace = true }
 # crates.io
 array-bytes = { workspace = true }
 async-trait = { version = "0.1" }
-clap        = { version = "4.1", features = ["derive"] }
-codec       = { workspace = true, package = "parity-scale-codec" }
+clap        = { version = "4.4", features = ["derive"] }
 futures     = { version = "0.3" }
 jsonrpsee   = { version = "0.16", features = ["server"] }
 log         = { version = "0.4" }
 serde       = { version = "1.0", features = ["derive"] }
-tokio       = { version = "1.25" }
+tokio       = { version = "1.33" }
 trauma      = { version = "2.2" }
 
 # cumulus
@@ -82,6 +81,7 @@ sc-transaction-pool-api        = { workspace = true }
 sp-api                         = { workspace = true, features = ["std"] }
 sp-block-builder               = { workspace = true, features = ["std"] }
 sp-blockchain                  = { workspace = true }
+sp-inherents                   = { workspace = true, features = ["std"] }
 sp-consensus-aura              = { workspace = true, features = ["std"] }
 sp-core                        = { workspace = true, features = ["std"] }
 sp-io                          = { workspace = true, optional = true, features = ["std"] }

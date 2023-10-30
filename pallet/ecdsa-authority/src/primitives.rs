@@ -24,7 +24,7 @@ pub use sp_core::{ecdsa::Signature, H160 as Address, H256 as Hash};
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 // darwinia
-use dc_primitives::AccountId;
+use dc_primitives::{AccountId, BlockNumber};
 // substrate
 use frame_support::{BoundedVec, EqNoBound, PartialEqNoBound, RuntimeDebug, RuntimeDebugNoBound};
 use sp_core::Get;
@@ -131,7 +131,7 @@ impl<A> Operation<A> {
 /// The darwinia-ecdsa-authority commitment.
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub struct Commitment {
-	pub(crate) block_number: u32,
+	pub(crate) block_number: BlockNumber,
 	pub(crate) message_root: Hash,
 	pub(crate) nonce: u32,
 }

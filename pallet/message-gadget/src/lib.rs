@@ -24,7 +24,7 @@ use core::marker::PhantomData;
 // frontier
 use pallet_evm::Runner;
 // substrate
-use frame_support::{log, pallet_prelude::*};
+use frame_support::{log, pallet_prelude::*, DefaultNoBound};
 use frame_system::pallet_prelude::*;
 use sp_core::{Get, H160, H256};
 use sp_io::hashing;
@@ -45,13 +45,14 @@ pub mod pallet {
 	#[pallet::getter(fn commitment_contract)]
 	pub type CommitmentContract<T> = StorageValue<_, H160, ValueQuery>;
 
-	#[derive(Default)]
+	#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
-	pub struct GenesisConfig {
+	pub struct GenesisConfig<T> {
 		pub commitment_contract: H160,
+		_marker: PhantomData<T>,
 	}
 	#[pallet::genesis_build]
-	impl<T: Config> GenesisBuild<T> for GenesisConfig {
+	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
 		fn build(&self) {
 			<CommitmentContract<T>>::put(H160::default());
 		}
