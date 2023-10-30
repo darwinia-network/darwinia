@@ -178,7 +178,6 @@ pub fn genesis_config() -> ChainSpec {
 						.iter()
 						.map(|(k, _)| (array_bytes::hex_n_into_unchecked(k), 10_000 * UNIT))
 						.collect(),
-					..Default::default()
 				},
 				transaction_payment: Default::default(),
 				assets: AssetsConfig {
@@ -202,7 +201,6 @@ pub fn genesis_config() -> ChainSpec {
 						.iter()
 						.map(|(k, _)| (array_bytes::hex_n_into_unchecked(k), 1_000 * UNIT))
 						.collect(),
-					..Default::default()
 				},
 				session: SessionConfig {
 					keys: collators
@@ -215,7 +213,6 @@ pub fn genesis_config() -> ChainSpec {
 							)
 						})
 						.collect(),
-					..Default::default()
 				},
 				aura: Default::default(),
 				aura_ext: Default::default(),
@@ -293,7 +290,6 @@ fn testnet_genesis(
 		// Monetary stuff.
 		balances: BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 100_000_000 * UNIT)).collect(),
-			..Default::default()
 		},
 		transaction_payment: Default::default(),
 		assets: AssetsConfig {
@@ -314,7 +310,6 @@ fn testnet_genesis(
 			elapsed_time: 0,
 			collator_count: collators.len() as _,
 			collators: collators.iter().map(|(a, _)| (a.to_owned(), UNIT)).collect(),
-			..Default::default()
 		},
 		session: SessionConfig {
 			keys: collators
@@ -327,7 +322,6 @@ fn testnet_genesis(
 					)
 				})
 				.collect(),
-			..Default::default()
 		},
 		aura: Default::default(),
 		aura_ext: Default::default(),
