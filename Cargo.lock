@@ -1896,7 +1896,7 @@ dependencies = [
  "polkadot-parachain-primitives",
  "polkadot-primitives",
  "polkadot-runtime-common",
- "precompile-utils",
+ "precompile-utils 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
  "scale-info",
  "sp-api",
  "sp-block-builder",
@@ -3110,7 +3110,7 @@ dependencies = [
  "pallet-evm",
  "pallet-timestamp",
  "parity-scale-codec",
- "precompile-utils",
+ "precompile-utils 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
  "scale-info",
  "sha3",
  "sp-core",
@@ -3131,7 +3131,7 @@ dependencies = [
  "fp-evm",
  "frame-support",
  "pallet-evm",
- "precompile-utils",
+ "precompile-utils 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
  "rand 0.8.5",
  "sha2 0.10.8",
  "sp-std",
@@ -3149,7 +3149,7 @@ dependencies = [
  "pallet-evm",
  "pallet-timestamp",
  "parity-scale-codec",
- "precompile-utils",
+ "precompile-utils 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
  "scale-info",
  "sp-core",
  "sp-io",
@@ -3170,7 +3170,7 @@ dependencies = [
  "pallet-evm",
  "pallet-timestamp",
  "parity-scale-codec",
- "precompile-utils",
+ "precompile-utils 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
  "scale-info",
  "sp-core",
  "sp-io",
@@ -3189,7 +3189,7 @@ dependencies = [
  "pallet-evm",
  "pallet-timestamp",
  "parity-scale-codec",
- "precompile-utils",
+ "precompile-utils 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
  "scale-info",
  "sp-core",
  "sp-io",
@@ -3280,7 +3280,7 @@ dependencies = [
  "polkadot-parachain-primitives",
  "polkadot-primitives",
  "polkadot-runtime-common",
- "precompile-utils",
+ "precompile-utils 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
  "scale-info",
  "sp-api",
  "sp-block-builder",
@@ -8509,7 +8509,7 @@ dependencies = [
  "pallet-conviction-voting",
  "pallet-evm",
  "parity-scale-codec",
- "precompile-utils",
+ "precompile-utils 0.1.0 (git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0)",
  "rustc-hex",
  "sp-core",
  "sp-runtime",
@@ -9356,7 +9356,7 @@ dependencies = [
  "polkadot-parachain-primitives",
  "polkadot-primitives",
  "polkadot-runtime-common",
- "precompile-utils",
+ "precompile-utils 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
  "scale-info",
  "sp-api",
  "sp-block-builder",
@@ -9464,7 +9464,7 @@ dependencies = [
  "polkadot-parachain-primitives",
  "polkadot-primitives",
  "polkadot-runtime-common",
- "precompile-utils",
+ "precompile-utils 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
  "scale-info",
  "sp-api",
  "sp-block-builder",
@@ -11112,6 +11112,32 @@ version = "0.1.0"
 source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#8fd0988163ac1eb78631e1eea655da0c96c8c903"
 dependencies = [
  "affix",
+ "environmental",
+ "evm",
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "impl-trait-for-tuples",
+ "log",
+ "num_enum 0.5.11",
+ "pallet-evm",
+ "parity-scale-codec",
+ "paste",
+ "precompile-utils-macro 0.1.0 (git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0)",
+ "sha3",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "sp-weights",
+]
+
+[[package]]
+name = "precompile-utils"
+version = "0.1.0"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
+dependencies = [
  "derive_more",
  "environmental",
  "evm",
@@ -11119,23 +11145,20 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex",
- "hex-literal 0.3.4",
+ "hex-literal 0.4.1",
  "impl-trait-for-tuples",
  "log",
- "num_enum 0.5.11",
+ "num_enum 0.7.1",
  "pallet-evm",
  "parity-scale-codec",
- "paste",
- "precompile-utils-macro",
+ "precompile-utils-macro 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
  "scale-info",
  "serde",
- "sha3",
  "similar-asserts",
  "sp-core",
  "sp-io",
  "sp-runtime",
  "sp-std",
- "sp-weights",
 ]
 
 [[package]]
@@ -11149,6 +11172,20 @@ dependencies = [
  "proc-macro2",
  "quote",
  "sha3",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "precompile-utils-macro"
+version = "0.1.0"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
+dependencies = [
+ "case",
+ "num_enum 0.7.1",
+ "prettyplease 0.2.15",
+ "proc-macro2",
+ "quote",
+ "sp-core-hashing",
  "syn 1.0.109",
 ]
 
