@@ -54,7 +54,6 @@ use dc_inflation::TOTAL_SUPPLY;
 use dc_types::{Balance, Moment, UNIT};
 // substrate
 use frame_support::{
-	log,
 	pallet_prelude::*,
 	traits::{Currency, OnUnbalanced, UnixTime},
 	DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound,

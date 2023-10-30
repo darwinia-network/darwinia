@@ -26,9 +26,10 @@ use scale_info::TypeInfo;
 // darwinia
 use dc_primitives::{AccountId, BlockNumber};
 // substrate
-use frame_support::{BoundedVec, EqNoBound, PartialEqNoBound, RuntimeDebug, RuntimeDebugNoBound};
+use frame_support::{BoundedVec, EqNoBound, PartialEqNoBound, RuntimeDebugNoBound};
 use sp_core::Get;
 use sp_io::{crypto, hashing};
+use sp_runtime::RuntimeDebug;
 
 // address(0x1)
 pub(crate) const AUTHORITY_SENTINEL: [u8; 20] =

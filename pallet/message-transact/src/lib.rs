@@ -36,10 +36,9 @@ use fp_ethereum::{TransactionData, ValidatedTransaction};
 use fp_evm::{CheckEvmTransaction, CheckEvmTransactionConfig, InvalidEvmTransactionError};
 use pallet_evm::{FeeCalculator, GasWeightMapping};
 // substrate
-use frame_support::{
-	sp_runtime::traits::BadOrigin, traits::EnsureOrigin, PalletError, RuntimeDebug,
-};
+use frame_support::{traits::EnsureOrigin, PalletError};
 use sp_core::{H160, U256};
+use sp_runtime::{traits::BadOrigin, RuntimeDebug};
 use sp_std::boxed::Box;
 
 pub use pallet::*;

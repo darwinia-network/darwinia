@@ -24,7 +24,7 @@ use core::marker::PhantomData;
 // frontier
 use pallet_evm::Runner;
 // substrate
-use frame_support::{log, pallet_prelude::*, DefaultNoBound};
+use frame_support::{pallet_prelude::*, DefaultNoBound};
 use frame_system::pallet_prelude::*;
 use sp_core::{Get, H160, H256};
 use sp_io::hashing;
