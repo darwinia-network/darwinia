@@ -354,6 +354,7 @@ runtime-benchmarks = [
 	# substrate optional
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-system-benchmarking/runtime-benchmarks",
+	"sp-staking/runtime-benchmarks",
 ]
 
 try-runtime = [
@@ -423,4 +424,5 @@ try-runtime = [
 	"sp-runtime/try-runtime",
 	# substrate optional
 	"frame-try-runtime/try-runtime",
+	"sp-runtime/try-runtime",
 ]
