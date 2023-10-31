@@ -206,7 +206,6 @@ substrate-frame-rpc-system                 = { git = "https://github.com/parityt
 substrate-prometheus-endpoint              = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 substrate-test-utils                       = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 substrate-wasm-builder                     = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
-try-runtime-cli                            = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 
 [profile.release]
 panic = "unwind"

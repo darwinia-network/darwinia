@@ -2943,7 +2943,6 @@ dependencies = [
  "substrate-prometheus-endpoint",
  "tokio",
  "trauma",
- "try-runtime-cli",
 ]
 
 [[package]]
