@@ -106,7 +106,7 @@ pub trait RuntimeApiCollection:
 	+ fp_rpc::EthereumRuntimeRPCApi<Block>
 	+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
 	+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
-	+ sp_api::ApiExt<Block, StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>
+	+ sp_api::ApiExt<Block>
 	+ sp_api::Metadata<Block>
 	+ sp_block_builder::BlockBuilder<Block>
 	+ sp_consensus_aura::AuraApi<Block, <<sp_consensus_aura::sr25519::AuthorityId as sp_runtime::app_crypto::AppCrypto>::Pair as sp_core::Pair>::Public>
@@ -122,7 +122,7 @@ impl<Api> RuntimeApiCollection for Api where
 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
 		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
-		+ sp_api::ApiExt<Block, StateBackend = sc_client_api::StateBackendFor<FullBackend, Block>>
+		+ sp_api::ApiExt<Block>
 		+ sp_api::Metadata<Block>
 		+ sp_block_builder::BlockBuilder<Block>
 		+ sp_consensus_aura::AuraApi<Block, <<sp_consensus_aura::sr25519::AuthorityId as sp_runtime::app_crypto::AppCrypto>::Pair as sp_core::Pair>::Public>
@@ -146,7 +146,7 @@ pub fn new_partial<RuntimeApi, Executor>(
 		FullClient<RuntimeApi, Executor>,
 		FullBackend,
 		sc_consensus::LongestChain<FullBackend, Block>,
-		sc_consensus::DefaultImportQueue<Block, FullClient<RuntimeApi, Executor>>,
+		sc_consensus::DefaultImportQueue<Block>,
 		sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>,
 		(
 			fc_db::Backend<Block>,
@@ -284,7 +284,6 @@ where
 		Box<dyn cumulus_client_consensus_common::ParachainConsensus<Block>>,
 		sc_service::Error,
 	>,
-	sc_client_api::StateBackendFor<FullBackend, Block>: sp_api::StateBackend<Hashing>,
 {
 	let mut parachain_config = cumulus_client_service::prepare_node_config(parachain_config);
 	let sc_service::PartialComponents {
@@ -571,10 +570,7 @@ pub fn parachain_build_import_queue<RuntimeApi, Executor>(
 	config: &sc_service::Configuration,
 	telemetry: Option<sc_telemetry::TelemetryHandle>,
 	task_manager: &sc_service::TaskManager,
-) -> Result<
-	sc_consensus::DefaultImportQueue<Block, FullClient<RuntimeApi, Executor>>,
-	sc_service::Error,
->
+) -> Result<sc_consensus::DefaultImportQueue<Block>, sc_service::Error>
 where
 	RuntimeApi: 'static
 		+ Send
