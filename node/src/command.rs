@@ -552,14 +552,6 @@ pub fn run() -> Result<()> {
 					if config.role.is_authority() { "yes" } else { "no" }
 				);
 
-				if !collator_options.relay_chain_rpc_urls.is_empty() && !cli.relay_chain_args.is_empty() {
-					log::warn!(
-						"Detected relay chain node arguments together with --relay-chain-rpc-url. \
-						   This command starts a minimal Polkadot node that only uses a \
-						   network-related subset of all relay chain CLI options."
-					);
-				}
-
 				if chain_spec.is_dev() {
 					#[cfg(feature = "crab-native")]
 					if chain_spec.is_crab() {
