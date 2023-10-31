@@ -249,13 +249,13 @@ where
 /// This is the actual implementation that is abstract over the executor and the runtime api.
 #[allow(clippy::too_many_arguments)]
 #[sc_tracing::logging::prefix_logs_with("Parachain")]
-async fn start_node_impl<RuntimeApi, Executor, RB, BIC>(
+async fn start_node_impl<RuntimeApi, Executor, RB, SC>(
 	parachain_config: sc_service::Configuration,
 	polkadot_config: sc_service::Configuration,
 	collator_options: cumulus_client_cli::CollatorOptions,
+	sybil_resistance_level: cumulus_client_service::CollatorSybilResistance,
 	para_id: cumulus_primitives_core::ParaId,
-	_rpc_ext_builder: RB,
-	build_consensus: BIC,
+	start_consensus: SC,
 	hwbench: Option<sc_sysinfo::HwBench>,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> sc_service::error::Result<(sc_service::TaskManager, Arc<FullClient<RuntimeApi, Executor>>)>
@@ -269,7 +269,7 @@ where
 	RB: Fn(
 		Arc<FullClient<RuntimeApi, Executor>>,
 	) -> Result<jsonrpsee::RpcModule<()>, sc_service::Error>,
-	BIC: FnOnce(
+	SC: FnOnce(
 		Arc<FullClient<RuntimeApi, Executor>>,
 		ParachainBlockImport<RuntimeApi, Executor>,
 		Option<&substrate_prometheus_endpoint::Registry>,
@@ -279,11 +279,12 @@ where
 		Arc<sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>>,
 		Arc<sc_network_sync::SyncingService<Block>>,
 		sp_keystore::KeystorePtr,
-		bool,
-	) -> Result<
-		Box<dyn cumulus_client_consensus_common::ParachainConsensus<Block>>,
-		sc_service::Error,
-	>,
+		Duration,
+		cumulus_primitives_core::ParaId,
+		polkadot_primitives::CollatorPair,
+		cumulus_relay_chain_interface::OverseerHandle,
+		Arc<dyn Fn(Hash, Option<Vec<u8>>) + Send + Sync>,
+	) -> Result<(), sc_service::Error>,
 {
 	let mut parachain_config = cumulus_client_service::prepare_node_config(parachain_config);
 	let sc_service::PartialComponents {
@@ -318,7 +319,6 @@ where
 		.await
 		.map_err(|e| sc_service::Error::Application(Box::new(e) as Box<_>))?;
 
-	let force_authoring = parachain_config.force_authoring;
 	let validator = parachain_config.role.is_authority();
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let import_queue_service = import_queue.service();
@@ -334,6 +334,7 @@ where
 			spawn_handle: task_manager.spawn_handle(),
 			relay_chain_interface: relay_chain_interface.clone(),
 			import_queue,
+			sybil_resistance_level,
 		})
 		.await?;
 
@@ -503,15 +504,32 @@ where
 		let sync_service = sync_service.clone();
 		Arc::new(move |hash, data| sync_service.announce_block(hash, data))
 	};
-
 	let relay_chain_slot_duration = Duration::from_secs(6);
-
 	let overseer_handle = relay_chain_interface
 		.overseer_handle()
 		.map_err(|e| sc_service::Error::Application(Box::new(e)))?;
 
+	cumulus_client_service::start_relay_chain_tasks(
+		cumulus_client_service::StartRelayChainTasksParams {
+			client: client.clone(),
+			announce_block: announce_block.clone(),
+			para_id,
+			relay_chain_interface: relay_chain_interface.clone(),
+			task_manager: &mut task_manager,
+			da_recovery_profile: if validator {
+				cumulus_client_service::DARecoveryProfile::Collator
+			} else {
+				cumulus_client_service::DARecoveryProfile::FullNode
+			},
+			import_queue: import_queue_service,
+			relay_chain_slot_duration,
+			recovery_handle: Box::new(overseer_handle.clone()),
+			sync_service: sync_service.clone(),
+		},
+	)?;
+
 	if validator {
-		let parachain_consensus = build_consensus(
+		start_consensus(
 			client.clone(),
 			block_import,
 			prometheus_registry.as_ref(),
@@ -520,42 +538,13 @@ where
 			relay_chain_interface.clone(),
 			transaction_pool,
 			sync_service.clone(),
-			keystore_container.keystore(),
-			force_authoring,
+			params.keystore_container.keystore(),
+			relay_chain_slot_duration,
+			para_id,
+			collator_key.expect("Command line arguments do not allow this. qed"),
+			overseer_handle,
+			announce_block,
 		)?;
-
-		let spawner = task_manager.spawn_handle();
-		let params = cumulus_client_service::StartCollatorParams {
-			para_id,
-			block_status: client.clone(),
-			announce_block,
-			client: client.clone(),
-			task_manager: &mut task_manager,
-			relay_chain_interface,
-			spawner,
-			parachain_consensus,
-			import_queue: import_queue_service,
-			collator_key: collator_key.expect("Command line arguments do not allow this. qed"),
-			relay_chain_slot_duration,
-			recovery_handle: Box::new(overseer_handle),
-			sync_service,
-		};
-
-		cumulus_client_service::start_collator(params).await?;
-	} else {
-		let params = cumulus_client_service::StartFullNodeParams {
-			client: client.clone(),
-			announce_block,
-			task_manager: &mut task_manager,
-			para_id,
-			relay_chain_interface,
-			relay_chain_slot_duration,
-			import_queue: import_queue_service,
-			recovery_handle: Box::new(overseer_handle),
-			sync_service,
-		};
-
-		cumulus_client_service::start_full_node(params)?;
 	}
 
 	start_network.start_network();
@@ -633,8 +622,8 @@ where
 		parachain_config,
 		polkadot_config,
 		collator_options,
+		cumulus_client_service::CollatorSybilResistance::Resistant, // Aura
 		para_id,
-		|_| Ok(jsonrpsee::RpcModule::new(())),
 		|client,
 		 block_import,
 		 prometheus_registry,
@@ -644,9 +633,12 @@ where
 		 transaction_pool,
 		 sync_oracle,
 		 keystore,
-		 force_authoring| {
+		 relay_chain_slot_duration,
+		 para_id,
+		 collator_key,
+		 overseer_handle,
+		 announce_block| {
 			let slot_duration = cumulus_client_consensus_aura::slot_duration(&*client)?;
-
 			let proposer_factory = sc_basic_authorship::ProposerFactory::with_proof_recording(
 				task_manager.spawn_handle(),
 				client.clone(),
@@ -654,8 +646,32 @@ where
 				prometheus_registry,
 				telemetry.clone(),
 			);
-
-			Ok(cumulus_client_consensus_aura::AuraConsensus::build::<
+			let proposer = cumulus_client_consensus_proposer::Proposer::new(proposer_factory);
+			let collator_service = cumulus_client_collator::CollatorService::new(
+				client.clone(),
+				Arc::new(task_manager.spawn_handle()),
+				announce_block,
+				client.clone(),
+			);
+			let params = cumulus_client_consensus_aura::collators::basic::Params {
+				create_inherent_data_providers: move |_, ()| async move { Ok(()) },
+				block_import,
+				para_client: client,
+				relay_client: relay_chain_interface,
+				sync_oracle,
+				keystore,
+				collator_key,
+				para_id,
+				overseer_handle,
+				slot_duration,
+				relay_chain_slot_duration,
+				proposer,
+				collator_service,
+				// Very limited proposal time.
+				authoring_duration: Duration::from_millis(500),
+			};
+			let fut = cumulus_client_consensus_aura::collators::basic::run::<
+				Block,
 				sp_consensus_aura::sr25519::AuthorityPair,
 				_,
 				_,
@@ -663,51 +679,12 @@ where
 				_,
 				_,
 				_,
-			>(cumulus_client_consensus_aura::BuildAuraConsensusParams {
-				proposer_factory,
-				create_inherent_data_providers: move |_, (relay_parent, validation_data)| {
-					let relay_chain_interface = relay_chain_interface.clone();
-					async move {
-						let parachain_inherent =
-							cumulus_primitives_parachain_inherent::ParachainInherentData::create_at(
-								relay_parent,
-								&relay_chain_interface,
-								&validation_data,
-								para_id,
-							).await;
-						let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+				_,
+			>(params);
 
-						let slot =
-						sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
-							*timestamp,
-							slot_duration,
-						);
+			task_manager.spawn_essential_handle().spawn("aura", None, fut);
 
-						let parachain_inherent = parachain_inherent.ok_or_else(|| {
-							Box::<dyn std::error::Error + Send + Sync>::from(
-								"Failed to create parachain inherent",
-							)
-						})?;
-						Ok((slot, timestamp, parachain_inherent))
-					}
-				},
-				block_import,
-				para_client: client,
-				backoff_authoring_blocks: Option::<()>::None,
-				sync_oracle,
-				keystore,
-				force_authoring,
-				slot_duration,
-				// We got around 500ms for proposing.
-				block_proposal_slot_portion: cumulus_client_consensus_aura::SlotProportion::new(
-					1f32 / 24f32,
-				),
-				// And a maximum of 750ms if slots are skipped.
-				max_block_proposal_slot_portion: Some(
-					cumulus_client_consensus_aura::SlotProportion::new(1f32 / 16f32),
-				),
-				telemetry,
-			}))
+			Ok(())
 		},
 		hwbench,
 		eth_rpc_config,
