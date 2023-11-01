@@ -74,7 +74,7 @@ impl darwinia_staking::Stake for KtonStaking {
 
 pub enum OnCrabSessionEnd {}
 impl darwinia_staking::OnSessionEnd<Runtime> for OnCrabSessionEnd {
-	fn calculate_reward(_inflation: Option<Balance>) -> Balance {
+	fn calculate_reward(_maybe_inflation: Option<Balance>) -> Balance {
 		20_000 * UNIT
 	}
 

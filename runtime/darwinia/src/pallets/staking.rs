@@ -90,8 +90,8 @@ impl darwinia_staking::OnSessionEnd<Runtime> for OnDarwiniaSessionEnd {
 		dc_inflation::in_period(unminted, session_duration, elapsed_time)
 	}
 
-	fn calculate_reward(inflation: Option<Balance>) -> Balance {
-		inflation.map(|i| sp_runtime::Perbill::from_percent(40) * i).unwrap_or_default()
+	fn calculate_reward(maybe_inflation: Option<Balance>) -> Balance {
+		maybe_inflation.map(|i| sp_runtime::Perbill::from_percent(40) * i).unwrap_or_default()
 	}
 
 	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {

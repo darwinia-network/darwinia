@@ -268,11 +268,11 @@ impl darwinia_staking::OnSessionEnd<Runtime> for StatedOnSessionEnd {
 		}
 	}
 
-	fn calculate_reward(inflation: Option<Balance>) -> Balance {
+	fn calculate_reward(maybe_inflation: Option<Balance>) -> Balance {
 		if ON_SESSION_END.with(|v| *v.borrow()) == 0 {
-			OnDarwiniaSessionEnd::calculate_reward(inflation)
+			OnDarwiniaSessionEnd::calculate_reward(maybe_inflation)
 		} else {
-			OnCrabSessionEnd::calculate_reward(inflation)
+			OnCrabSessionEnd::calculate_reward(maybe_inflation)
 		}
 	}
 
@@ -310,8 +310,8 @@ impl darwinia_staking::OnSessionEnd<Runtime> for OnDarwiniaSessionEnd {
 		dc_inflation::in_period(unminted, session_duration, elapsed_time)
 	}
 
-	fn calculate_reward(inflation: Option<Balance>) -> Balance {
-		inflation.map(|i| PayoutFraction::get() * i).unwrap_or_default()
+	fn calculate_reward(maybe_inflation: Option<Balance>) -> Balance {
+		maybe_inflation.map(|i| PayoutFraction::get() * i).unwrap_or_default()
 	}
 
 	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
@@ -329,7 +329,7 @@ impl darwinia_staking::OnSessionEnd<Runtime> for OnDarwiniaSessionEnd {
 }
 pub enum OnCrabSessionEnd {}
 impl darwinia_staking::OnSessionEnd<Runtime> for OnCrabSessionEnd {
-	fn calculate_reward(_inflation: Option<Balance>) -> Balance {
+	fn calculate_reward(_maybe_inflation: Option<Balance>) -> Balance {
 		10_000 * UNIT
 	}
 

@@ -91,7 +91,7 @@ pub mod pallet {
 		/// Deposit [`StakeExt`] interface.
 		type Deposit: StakeExt<AccountId = Self::AccountId, Amount = Balance>;
 
-		///
+		/// On session end handler.
 		type OnSessionEnd: OnSessionEnd<Self>;
 
 		/// Minimum time to stake at least.
@@ -887,12 +887,14 @@ type Vote = u32;
 
 type DepositId<T> = <<T as Config>::Deposit as Stake>::Item;
 
+/// On session end handler.
 ///
+/// Currently it is only used to control the inflation.
 pub trait OnSessionEnd<T>
 where
 	T: Config,
 {
-	///
+	/// Generic session termination procedures.
 	fn on_session_end() {
 		let inflation = Self::inflate();
 		let reward = Self::calculate_reward(inflation);
@@ -901,18 +903,18 @@ where
 		Self::clean(inflation.unwrap_or(reward).saturating_sub(actual_payout));
 	}
 
-	///
+	/// Inflation settings.
 	fn inflate() -> Option<Balance> {
 		None
 	}
 
-	///
-	fn calculate_reward(inflation: Option<Balance>) -> Balance;
+	/// Calculate the reward.
+	fn calculate_reward(maybe_inflation: Option<Balance>) -> Balance;
 
-	///
+	/// The reward function.
 	fn reward(who: &T::AccountId, amount: Balance) -> DispatchResult;
 
-	///
+	/// Clean the data; currently, only the unissued reward is present.
 	fn clean(_unissued: Balance) {}
 }
 impl<T> OnSessionEnd<T> for ()
@@ -923,7 +925,7 @@ where
 		None
 	}
 
-	fn calculate_reward(_inflation: Option<Balance>) -> Balance {
+	fn calculate_reward(_maybe_inflation: Option<Balance>) -> Balance {
 		0
 	}
 
