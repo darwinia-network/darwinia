@@ -29,6 +29,8 @@ use sp_std::prelude::*;
 mod benchmarks {
 	// darwinia
 	use super::*;
+	// substrate
+	use frame_support::traits::Currency;
 
 	fn deposit_for<T>(who: &T::AccountId, count: u32) -> Vec<DepositId<T>>
 	where
@@ -53,7 +55,7 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller();
 
 		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		T::RingCurrency::make_free_balance_be(&a, 1_024 * UNIT + 1);
+		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, 1_024 * UNIT + 1);
 		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
 
 		let deposits = deposit_for::<T>(&a, x);
@@ -70,7 +72,7 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller();
 
 		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		T::RingCurrency::make_free_balance_be(&a, 1_024 * UNIT + 1);
+		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, 1_024 * UNIT + 1);
 		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
 
 		let deposits = deposit_for::<T>(&a, x);
@@ -90,7 +92,7 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller();
 
 		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		T::RingCurrency::make_free_balance_be(&a, 1_024 * UNIT + 1);
+		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, 1_024 * UNIT + 1);
 		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
 
 		let deposits = deposit_for::<T>(&a, x);
@@ -112,7 +114,7 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller();
 
 		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		T::RingCurrency::make_free_balance_be(&a, 1_024 * UNIT + 1);
+		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, 1_024 * UNIT + 1);
 		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
 
 		let deposits = deposit_for::<T>(&a, <T as Config>::MaxUnstakings::get());
@@ -154,7 +156,7 @@ mod benchmarks {
 		let a_cloned = a.clone();
 
 		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		T::RingCurrency::make_free_balance_be(&a, UNIT + 1);
+		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, UNIT + 1);
 
 		<Pallet<T>>::stake(
 			RawOrigin::Signed(a.clone()).into(),
@@ -177,7 +179,7 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
 
 		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		T::RingCurrency::make_free_balance_be(&a, UNIT + 1);
+		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, UNIT + 1);
 
 		<Pallet<T>>::stake(
 			RawOrigin::Signed(a.clone()).into(),
