@@ -2952,6 +2952,7 @@ dependencies = [
  "pallet-balances",
  "pallet-session",
  "pallet-timestamp",
+ "pallet-treasury",
  "parity-scale-codec",
  "pretty_env_logger",
  "scale-info",

@@ -556,7 +556,11 @@ fn payout_should_work() {
 		(1..=10).for_each(|i| assert_eq!(Balances::free_balance(i), 1_000 * UNIT));
 
 		let session_duration = Duration::new(6 * 60 * 60, 0).as_millis();
-		Staking::payout(session_duration, Staking::elapsed_time());
+		Timestamp::set_timestamp(session_duration);
+		dbg!(Staking::elapsed_time());
+		dbg!(Timestamp::now());
+		OnDarwiniaSessionEnd::on_session_end();
+		// Staking::payout(session_duration, Staking::elapsed_time());
 		let rewards = [
 			1_366_118_850_452_628_471_390,
 			2_550_088_490_535_282_845_143,
@@ -573,7 +577,7 @@ fn payout_should_work() {
 			.zip(rewards.iter())
 			.for_each(|(i, r)| assert_eq!(Balances::free_balance(i), 1_000 * UNIT + r));
 		assert_eq_error_rate!(
-			<Runtime as darwinia_staking::Config>::PayoutFraction::get()
+			PayoutFraction::get()
 				* dc_inflation::in_period(
 					dc_inflation::TOTAL_SUPPLY - Balances::total_issuance(),
 					session_duration,
