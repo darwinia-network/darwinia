@@ -47,11 +47,6 @@ impl darwinia_staking::Stake for Dummy {
 		Ok(())
 	}
 }
-impl frame_support::traits::UnixTime for Dummy {
-	fn now() -> core::time::Duration {
-		core::time::Duration::new(0, 0)
-	}
-}
 
 #[sp_version::runtime_version]
 pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
@@ -171,12 +166,9 @@ impl darwinia_staking::Config for Runtime {
 	type MaxDeposits = ();
 	type MaxUnstakings = ();
 	type MinStakingDuration = ();
-	type PayoutFraction = ();
-	type RewardRemainder = ();
+	type OnSessionEnd = ();
 	type Ring = Dummy;
-	type RingCurrency = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type UnixTime = Dummy;
 	type WeightInfo = ();
 }
 #[cfg(not(feature = "runtime-benchmarks"))]

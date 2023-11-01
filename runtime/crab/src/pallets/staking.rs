@@ -18,6 +18,8 @@
 
 // darwinia
 use crate::*;
+// substrate
+use frame_support::traits::Currency;
 
 fast_runtime_or_not!(DURATION, BlockNumber, 5 * MINUTES, 14 * DAYS);
 
@@ -29,7 +31,7 @@ impl darwinia_staking::Stake for RingStaking {
 	type Item = Balance;
 
 	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		<Balances as frame_support::traits::Currency<_>>::transfer(
+		<Balances as Currency<_>>::transfer(
 			who,
 			&darwinia_staking::account_id(),
 			item,
@@ -38,7 +40,7 @@ impl darwinia_staking::Stake for RingStaking {
 	}
 
 	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		<Balances as frame_support::traits::Currency<_>>::transfer(
+		<Balances as Currency<_>>::transfer(
 			&darwinia_staking::account_id(),
 			who,
 			item,
@@ -70,8 +72,25 @@ impl darwinia_staking::Stake for KtonStaking {
 	}
 }
 
-frame_support::parameter_types! {
-	pub const PayoutFraction: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(40);
+pub enum OnCrabSessionEnd {}
+impl darwinia_staking::OnSessionEnd<Runtime> for OnCrabSessionEnd {
+	fn calculate_reward(_inflation: Option<Balance>) -> Balance {
+		20_000 * UNIT
+	}
+
+	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
+		if let Err(e) = <Balances as Currency<AccountId>>::transfer(
+			&Treasury::account_id(),
+			who,
+			amount,
+			frame_support::traits::ExistenceRequirement::KeepAlive,
+		) {
+			// TODO: log
+			// log::error!("[runtime::staking] reward error: {:?}", e);
+		}
+
+		Ok(())
+	}
 }
 
 impl darwinia_staking::Config for Runtime {
@@ -80,12 +99,9 @@ impl darwinia_staking::Config for Runtime {
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = ConstU32<16>;
 	type MinStakingDuration = MinStakingDuration;
-	type PayoutFraction = PayoutFraction;
-	type RewardRemainder = Treasury;
+	type OnSessionEnd = OnCrabSessionEnd;
 	type Ring = RingStaking;
-	type RingCurrency = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type UnixTime = Timestamp;
 	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;
 }
 #[cfg(not(feature = "runtime-benchmarks"))]

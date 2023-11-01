@@ -66,8 +66,25 @@ impl darwinia_staking::Stake for KtonStaking {
 	}
 }
 
-frame_support::parameter_types! {
-	pub const PayoutFraction: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(40);
+pub enum OnPangolinSessionEnd {}
+impl darwinia_staking::OnSessionEnd<Runtime> for OnPangolinSessionEnd {
+	fn calculate_reward(_inflation: Option<Balance>) -> Balance {
+		20_000 * UNIT
+	}
+
+	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
+		if let Err(e) = <Balances as frame_support::traits::Currency<AccountId>>::transfer(
+			&Treasury::account_id(),
+			who,
+			amount,
+			frame_support::traits::ExistenceRequirement::KeepAlive,
+		) {
+			// TODO: log
+			// log::error!("[runtime::staking] reward error: {:?}", e);
+		}
+
+		Ok(())
+	}
 }
 
 impl darwinia_staking::Config for Runtime {
@@ -76,12 +93,9 @@ impl darwinia_staking::Config for Runtime {
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = ConstU32<16>;
 	type MinStakingDuration = ConstU32<{ 2 * MINUTES }>;
-	type PayoutFraction = PayoutFraction;
-	type RewardRemainder = Treasury;
+	type OnSessionEnd = OnPangolinSessionEnd;
 	type Ring = RingStaking;
-	type RingCurrency = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type UnixTime = Timestamp;
 	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;
 }
 #[cfg(not(feature = "runtime-benchmarks"))]

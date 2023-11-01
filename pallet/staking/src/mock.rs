@@ -233,6 +233,7 @@ impl pallet_treasury::Config for Runtime {
 
 frame_support::parameter_types! {
 	pub PayoutFraction: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(40);
+	pub static OnSessionEnd: u8 = 0;
 }
 pub enum KtonStaking {}
 impl darwinia_staking::Stake for KtonStaking {
@@ -257,6 +258,40 @@ impl darwinia_staking::Stake for KtonStaking {
 		)
 	}
 }
+pub enum StatedOnSessionEnd {}
+impl darwinia_staking::OnSessionEnd<Runtime> for StatedOnSessionEnd {
+	fn inflate() -> Option<Balance> {
+		if ON_SESSION_END.with(|v| *v.borrow()) == 0 {
+			OnDarwiniaSessionEnd::inflate()
+		} else {
+			OnCrabSessionEnd::inflate()
+		}
+	}
+
+	fn calculate_reward(inflation: Option<Balance>) -> Balance {
+		if ON_SESSION_END.with(|v| *v.borrow()) == 0 {
+			OnDarwiniaSessionEnd::calculate_reward(inflation)
+		} else {
+			OnCrabSessionEnd::calculate_reward(inflation)
+		}
+	}
+
+	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
+		if ON_SESSION_END.with(|v| *v.borrow()) == 0 {
+			OnDarwiniaSessionEnd::reward(who, amount)
+		} else {
+			OnCrabSessionEnd::reward(who, amount)
+		}
+	}
+
+	fn clean(unissued: Balance) {
+		if ON_SESSION_END.with(|v| *v.borrow()) == 0 {
+			OnDarwiniaSessionEnd::clean(unissued)
+		} else {
+			OnCrabSessionEnd::clean(unissued)
+		}
+	}
+}
 pub enum OnDarwiniaSessionEnd {}
 impl darwinia_staking::OnSessionEnd<Runtime> for OnDarwiniaSessionEnd {
 	fn inflate() -> Option<Balance> {
@@ -279,8 +314,37 @@ impl darwinia_staking::OnSessionEnd<Runtime> for OnDarwiniaSessionEnd {
 		inflation.map(|i| PayoutFraction::get() * i).unwrap_or_default()
 	}
 
+	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
+		if let Err(e) = Balances::deposit_into_existing(who, amount) {
+			// TODO: log
+			// log::error!("[runtime::staking] reward error: {:?}", e);
+		}
+
+		Ok(())
+	}
+
 	fn clean(unissued: Balance) {
 		Treasury::on_unbalanced(Balances::issue(unissued));
+	}
+}
+pub enum OnCrabSessionEnd {}
+impl darwinia_staking::OnSessionEnd<Runtime> for OnCrabSessionEnd {
+	fn calculate_reward(_inflation: Option<Balance>) -> Balance {
+		10_000 * UNIT
+	}
+
+	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
+		if let Err(e) = <Balances as Currency<AccountId>>::transfer(
+			&Treasury::account_id(),
+			who,
+			amount,
+			frame_support::traits::ExistenceRequirement::KeepAlive,
+		) {
+			// TODO: log
+			// log::error!("[runtime::staking] reward error: {:?}", e);
+		}
+
+		Ok(())
 	}
 }
 impl darwinia_staking::Config for Runtime {
@@ -289,9 +353,8 @@ impl darwinia_staking::Config for Runtime {
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = frame_support::traits::ConstU32<16>;
 	type MinStakingDuration = frame_support::traits::ConstU64<3>;
-	type OnSessionEnd = OnDarwiniaSessionEnd;
+	type OnSessionEnd = StatedOnSessionEnd;
 	type Ring = RingStaking;
-	type RingCurrency = Balances;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 }
@@ -349,6 +412,12 @@ pub struct ExtBuilder {
 	genesis_collator: bool,
 }
 impl ExtBuilder {
+	pub fn on_session_end_type(self, r#type: u8) -> Self {
+		ON_SESSION_END.with(|v| *v.borrow_mut() = r#type);
+
+		self
+	}
+
 	pub fn collator_count(mut self, collator_count: u32) -> Self {
 		self.collator_count = collator_count;
 
@@ -367,7 +436,10 @@ impl ExtBuilder {
 			frame_system::GenesisConfig::default().build_storage::<Runtime>().unwrap();
 
 		pallet_balances::GenesisConfig::<Runtime> {
-			balances: (1..=10).map(|i| (i, 1_000 * UNIT)).collect(),
+			balances: (1..=10)
+				.map(|i| (i, 1_000 * UNIT))
+				.chain([(Treasury::account_id(), 1_000_000 * UNIT)])
+				.collect(),
 		}
 		.assimilate_storage(&mut storage)
 		.unwrap();

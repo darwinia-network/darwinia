@@ -52,9 +52,7 @@ use codec::FullCodec;
 // darwinia
 use dc_types::{Balance, Moment};
 // substrate
-use frame_support::{
-	log, pallet_prelude::*, traits::Currency, EqNoBound, PalletId, PartialEqNoBound,
-};
+use frame_support::{log, pallet_prelude::*, EqNoBound, PalletId, PartialEqNoBound};
 use frame_system::pallet_prelude::*;
 #[cfg(feature = "std")]
 use frame_system::RawOrigin;
@@ -83,11 +81,6 @@ pub mod pallet {
 
 		/// Weight information for extrinsics in this pallet.
 		type WeightInfo: WeightInfo;
-
-		/// RING [`Currency`] interface.
-		///
-		/// Only use for inflation.
-		type RingCurrency: Currency<Self::AccountId, Balance = Balance>;
 
 		/// RING [`Stake`] interface.
 		type Ring: Stake<AccountId = Self::AccountId, Item = Balance>;
@@ -816,9 +809,7 @@ pub mod pallet {
 						// If the collator nominated themselves.
 
 						c_payout += n_payout;
-					} else if T::RingCurrency::deposit_into_existing(&n_exposure.who, n_payout)
-						.is_ok()
-					{
+					} else if T::OnSessionEnd::reward(&n_exposure.who, n_payout).is_ok() {
 						actual_payout += n_payout;
 
 						Self::deposit_event(Event::Payout {
@@ -828,7 +819,7 @@ pub mod pallet {
 					}
 				}
 
-				if T::RingCurrency::deposit_into_existing(&c, c_payout).is_ok() {
+				if T::OnSessionEnd::reward(&c, c_payout).is_ok() {
 					actual_payout += c_payout;
 
 					Self::deposit_event(Event::Payout { staker: c, ring_amount: c_payout });
@@ -911,13 +902,36 @@ where
 	}
 
 	///
-	fn inflate() -> Option<Balance>;
+	fn inflate() -> Option<Balance> {
+		None
+	}
 
 	///
 	fn calculate_reward(inflation: Option<Balance>) -> Balance;
 
 	///
-	fn clean(unissued: Balance);
+	fn reward(who: &T::AccountId, amount: Balance) -> DispatchResult;
+
+	///
+	fn clean(_unissued: Balance) {}
+}
+impl<T> OnSessionEnd<T> for ()
+where
+	T: Config,
+{
+	fn inflate() -> Option<Balance> {
+		None
+	}
+
+	fn calculate_reward(_inflation: Option<Balance>) -> Balance {
+		0
+	}
+
+	fn reward(_who: &T::AccountId, _amount: Balance) -> DispatchResult {
+		Ok(())
+	}
+
+	fn clean(_unissued: Balance) {}
 }
 
 /// A convertor from collators id. Since this pallet does not have stash/controller, this is
