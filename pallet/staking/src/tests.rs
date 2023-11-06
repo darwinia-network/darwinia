@@ -639,6 +639,31 @@ fn payout_should_work() {
 			Balances::free_balance(&Treasury::account_id()),
 			1_000_000 * UNIT - rewards.iter().sum::<Balance>()
 		);
+
+		dbg!(Balances::free_balance(&Treasury::account_id()));
+		assert_ok!(Balances::transfer_all(
+			RuntimeOrigin::signed(Treasury::account_id()),
+			Default::default(),
+			false
+		));
+		dbg!(Balances::free_balance(&Treasury::account_id()));
+		Staking::reward_by_ids(&[(1, 20)]);
+		System::reset_events();
+		new_session();
+
+		assert_eq!(
+			System::events()
+				.into_iter()
+				.filter_map(|e| match e.event {
+					RuntimeEvent::Staking(e @ Event::Unpaied { .. }) => Some(e),
+					_ => None,
+				})
+				.collect::<Vec<_>>(),
+			vec![
+				Event::Unpaied { staker: 6, amount: 7499999997000000000000 },
+				Event::Unpaied { staker: 1, amount: 2499999994000000000000 }
+			]
+		);
 	});
 }
 

@@ -315,10 +315,7 @@ impl darwinia_staking::OnSessionEnd<Runtime> for OnDarwiniaSessionEnd {
 	}
 
 	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		if let Err(e) = Balances::deposit_into_existing(who, amount) {
-			// TODO: log
-			// log::error!("[runtime::staking] reward error: {:?}", e);
-		}
+		let _ = Balances::deposit_into_existing(who, amount);
 
 		Ok(())
 	}
@@ -334,17 +331,12 @@ impl darwinia_staking::OnSessionEnd<Runtime> for OnCrabSessionEnd {
 	}
 
 	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		if let Err(e) = <Balances as Currency<AccountId>>::transfer(
+		<Balances as Currency<AccountId>>::transfer(
 			&Treasury::account_id(),
 			who,
 			amount,
 			frame_support::traits::ExistenceRequirement::KeepAlive,
-		) {
-			// TODO: log
-			// log::error!("[runtime::staking] reward error: {:?}", e);
-		}
-
-		Ok(())
+		)
 	}
 }
 impl darwinia_staking::Config for Runtime {
