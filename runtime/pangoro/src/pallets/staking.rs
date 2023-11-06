@@ -91,10 +91,7 @@ impl darwinia_staking::OnSessionEnd<Runtime> for OnPangoroSessionEnd {
 	}
 
 	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		if let Err(e) = Balances::deposit_into_existing(who, amount) {
-			// TODO: log
-			// log::error!("[runtime::staking] reward error: {:?}", e);
-		}
+		let _ = Balances::deposit_into_existing(who, amount)?;
 
 		Ok(())
 	}

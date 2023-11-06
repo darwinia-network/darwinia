@@ -73,17 +73,12 @@ impl darwinia_staking::OnSessionEnd<Runtime> for OnPangolinSessionEnd {
 	}
 
 	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		if let Err(e) = <Balances as frame_support::traits::Currency<AccountId>>::transfer(
+		<Balances as frame_support::traits::Currency<AccountId>>::transfer(
 			&Treasury::account_id(),
 			who,
 			amount,
 			frame_support::traits::ExistenceRequirement::KeepAlive,
-		) {
-			// TODO: log
-			// log::error!("[runtime::staking] reward error: {:?}", e);
-		}
-
-		Ok(())
+		)
 	}
 }
 

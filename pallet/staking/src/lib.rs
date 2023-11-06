@@ -132,7 +132,12 @@ pub mod pallet {
 		/// A payout has been made for the staker.
 		Payout {
 			staker: T::AccountId,
-			ring_amount: Balance,
+			amount: Balance,
+		},
+		/// Unable to pay the staker's reward.
+		Unpaied {
+			staker: T::AccountId,
+			amount: Balance,
 		},
 		/// A new collator set has been elected.
 		Elected {
@@ -814,7 +819,12 @@ pub mod pallet {
 
 						Self::deposit_event(Event::Payout {
 							staker: n_exposure.who,
-							ring_amount: n_payout,
+							amount: n_payout,
+						});
+					} else {
+						Self::deposit_event(Event::Unpaied {
+							staker: n_exposure.who,
+							amount: n_payout,
 						});
 					}
 				}
@@ -822,7 +832,9 @@ pub mod pallet {
 				if T::OnSessionEnd::reward(&c, c_payout).is_ok() {
 					actual_payout += c_payout;
 
-					Self::deposit_event(Event::Payout { staker: c, ring_amount: c_payout });
+					Self::deposit_event(Event::Payout { staker: c, amount: c_payout });
+				} else {
+					Self::deposit_event(Event::Unpaied { staker: c, amount: c_payout });
 				}
 			}
 
