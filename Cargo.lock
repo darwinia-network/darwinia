@@ -4079,6 +4079,7 @@ dependencies = [
 [[package]]
 name = "evm-tracing-events"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=bear-try-fix-compile#78beb7d9627c07372f077024bbc377a1dc5bdcfb"
 dependencies = [
  "environmental",
  "ethereum",
@@ -4191,6 +4192,7 @@ dependencies = [
 [[package]]
 name = "fc-api"
 version = "1.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "async-trait",
  "fp-storage",
@@ -4202,6 +4204,7 @@ dependencies = [
 [[package]]
 name = "fc-consensus"
 version = "2.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "async-trait",
  "fp-consensus",
@@ -4217,6 +4220,7 @@ dependencies = [
 [[package]]
 name = "fc-db"
 version = "2.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "async-trait",
  "ethereum",
@@ -4247,6 +4251,7 @@ dependencies = [
 [[package]]
 name = "fc-mapping-sync"
 version = "2.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "fc-db",
  "fc-storage",
@@ -4269,6 +4274,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc"
 version = "2.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -4322,6 +4328,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc-core"
 version = "1.1.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -4334,6 +4341,7 @@ dependencies = [
 [[package]]
 name = "fc-storage"
 version = "1.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -4524,6 +4532,7 @@ dependencies = [
 [[package]]
 name = "fp-account"
 version = "1.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "hex",
  "impl-serde",
@@ -4542,6 +4551,7 @@ dependencies = [
 [[package]]
 name = "fp-consensus"
 version = "2.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "ethereum",
  "parity-scale-codec",
@@ -4553,6 +4563,7 @@ dependencies = [
 [[package]]
 name = "fp-ethereum"
 version = "1.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -4565,6 +4576,7 @@ dependencies = [
 [[package]]
 name = "fp-evm"
 version = "3.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "evm",
  "frame-support",
@@ -4580,6 +4592,7 @@ dependencies = [
 [[package]]
 name = "fp-rpc"
 version = "3.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -4596,6 +4609,7 @@ dependencies = [
 [[package]]
 name = "fp-self-contained"
 version = "1.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -4607,6 +4621,7 @@ dependencies = [
 [[package]]
 name = "fp-storage"
 version = "2.0.0"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "parity-scale-codec",
  "serde",
@@ -7056,6 +7071,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-client-evm-tracing"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=bear-try-fix-compile#78beb7d9627c07372f077024bbc377a1dc5bdcfb"
 dependencies = [
  "ethereum-types",
  "evm-tracing-events",
@@ -7070,6 +7086,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-evm-tracer"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=bear-try-fix-compile#78beb7d9627c07372f077024bbc377a1dc5bdcfb"
 dependencies = [
  "ethereum-types",
  "evm",
@@ -7089,6 +7106,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-primitives-ext"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=bear-try-fix-compile#78beb7d9627c07372f077024bbc377a1dc5bdcfb"
 dependencies = [
  "ethereum-types",
  "evm-tracing-events",
@@ -7101,6 +7119,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-debug"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=bear-try-fix-compile#78beb7d9627c07372f077024bbc377a1dc5bdcfb"
 dependencies = [
  "ethereum-types",
  "futures 0.3.29",
@@ -7115,6 +7134,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-trace"
 version = "0.6.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=bear-try-fix-compile#78beb7d9627c07372f077024bbc377a1dc5bdcfb"
 dependencies = [
  "ethereum-types",
  "futures 0.3.29",
@@ -7128,6 +7148,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-types"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=bear-try-fix-compile#78beb7d9627c07372f077024bbc377a1dc5bdcfb"
 dependencies = [
  "ethereum-types",
  "serde",
@@ -7137,6 +7158,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-debug"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=bear-try-fix-compile#78beb7d9627c07372f077024bbc377a1dc5bdcfb"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -7167,6 +7189,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-primitives-debug"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=bear-try-fix-compile#78beb7d9627c07372f077024bbc377a1dc5bdcfb"
 dependencies = [
  "environmental",
  "ethereum",
@@ -7184,6 +7207,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-trace"
 version = "0.6.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=bear-try-fix-compile#78beb7d9627c07372f077024bbc377a1dc5bdcfb"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -7940,6 +7964,7 @@ dependencies = [
 [[package]]
 name = "pallet-asset-manager"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=bear-try-fix-compile#78beb7d9627c07372f077024bbc377a1dc5bdcfb"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -8356,6 +8381,7 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum"
 version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -8378,6 +8404,7 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum-xcm"
 version = "1.0.0-dev"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=bear-try-fix-compile#78beb7d9627c07372f077024bbc377a1dc5bdcfb"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -8403,6 +8430,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm"
 version = "6.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "environmental",
  "evm",
@@ -8428,6 +8456,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-blake2"
 version = "2.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "fp-evm",
 ]
@@ -8435,6 +8464,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-bn128"
 version = "2.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "fp-evm",
  "sp-core",
@@ -8444,6 +8474,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-conviction-voting"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=bear-try-fix-compile#78beb7d9627c07372f077024bbc377a1dc5bdcfb"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -8463,6 +8494,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-dispatch"
 version = "2.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -8474,6 +8506,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-modexp"
 version = "2.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "fp-evm",
  "num",
@@ -8482,6 +8515,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-simple"
 version = "2.0.0-dev"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "fp-evm",
  "ripemd",
@@ -11050,6 +11084,7 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 [[package]]
 name = "precompile-utils"
 version = "0.1.0"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "derive_more",
  "environmental",
@@ -11077,6 +11112,7 @@ dependencies = [
 [[package]]
 name = "precompile-utils-macro"
 version = "0.1.0"
+source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "case",
  "num_enum 0.7.1",
@@ -17436,6 +17472,7 @@ dependencies = [
 [[package]]
 name = "xcm-primitives"
 version = "0.1.1"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=bear-try-fix-compile#78beb7d9627c07372f077024bbc377a1dc5bdcfb"
 dependencies = [
  "cumulus-primitives-core",
  "ethereum",
