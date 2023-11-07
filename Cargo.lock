@@ -2859,6 +2859,7 @@ dependencies = [
  "cumulus-relay-chain-interface",
  "darwinia-runtime",
  "dc-primitives",
+ "fc-api",
  "fc-db",
  "fc-mapping-sync",
  "fc-rpc",
@@ -7139,6 +7140,7 @@ version = "0.1.0"
 dependencies = [
  "ethereum",
  "ethereum-types",
+ "fc-api",
  "fc-consensus",
  "fc-db",
  "fc-rpc",

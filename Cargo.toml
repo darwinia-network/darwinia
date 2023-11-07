@@ -86,6 +86,7 @@ pallet-bridge-parachains = { git = "https://github.com/darwinia-network/darwinia
 pallet-fee-market        = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
 
 # frontier
+fc-api                   = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
 fc-consensus                   = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
 fc-db                          = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
 fc-mapping-sync                = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", features = ["sql"] }
@@ -209,6 +210,7 @@ substrate-test-utils                       = { git = "https://github.com/parityt
 substrate-wasm-builder                     = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 
 [patch."https://github.com/paritytech/frontier"]
+fc-api                   = { path = "/home/bear/coding/rust-space/frontier/client/api" }
 fc-consensus                   = { path = "/home/bear/coding/rust-space/frontier/client/consensus" }
 fc-db                          = { path = "/home/bear/coding/rust-space/frontier/client/db" }
 fc-mapping-sync                = { path = "/home/bear/coding/rust-space/frontier/client/mapping-sync" }

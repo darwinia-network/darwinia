@@ -26,12 +26,12 @@ frame_support::parameter_types! {
 
 impl cumulus_pallet_parachain_system::Config for Runtime {
 	type CheckAssociatedRelayNumber = cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
-	type ConsensusHook = cumulus_pallet_aura_ext::FixedVelocityConsensusHook<
-		Self,
-		RELAY_CHAIN_SLOT_DURATION_MILLIS,
-		BLOCK_PROCESSING_VELOCITY,
-		UNINCLUDED_SEGMENT_CAPACITY,
-	>;
+	// type ConsensusHook = cumulus_pallet_aura_ext::FixedVelocityConsensusHook<
+	// 	Self,
+	// 	RELAY_CHAIN_SLOT_DURATION_MILLIS,
+	// 	BLOCK_PROCESSING_VELOCITY,
+	// 	UNINCLUDED_SEGMENT_CAPACITY,
+	// >;
 	type DmpMessageHandler = DmpQueue;
 	type OnSystemEvent = ();
 	type OutboundXcmpMessageSource = XcmpQueue;
