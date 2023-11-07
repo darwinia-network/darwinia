@@ -148,15 +148,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "affix"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50e7ea84d3fa2009f355f8429a0b418a96849135a4188fadf384f59127d5d4bc"
-dependencies = [
- "convert_case 0.5.0",
-]
-
-[[package]]
 name = "ahash"
 version = "0.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1756,12 +1747,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6245d59a3e82a7fc217c5828a6692dbc6dfb63a0c8c90495621f7b9d79704a0e"
 
 [[package]]
-name = "convert_case"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb4a24b1aaf0fd0ce8b45161144d6f42cd91677fd5940fd431183eb023b3a2b8"
-
-[[package]]
 name = "core-foundation"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1856,6 +1841,7 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
+ "log",
  "moonbeam-evm-tracer",
  "moonbeam-rpc-primitives-debug",
  "pallet-assets",
@@ -1895,7 +1881,7 @@ dependencies = [
  "polkadot-parachain-primitives",
  "polkadot-primitives",
  "polkadot-runtime-common",
- "precompile-utils 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
+ "precompile-utils",
  "scale-info",
  "sp-api",
  "sp-block-builder",
@@ -3097,7 +3083,7 @@ dependencies = [
  "pallet-evm",
  "pallet-timestamp",
  "parity-scale-codec",
- "precompile-utils 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
+ "precompile-utils",
  "scale-info",
  "sha3",
  "sp-core",
@@ -3118,7 +3104,7 @@ dependencies = [
  "fp-evm",
  "frame-support",
  "pallet-evm",
- "precompile-utils 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
+ "precompile-utils",
  "rand 0.8.5",
  "sha2 0.10.8",
  "sp-std",
@@ -3136,7 +3122,7 @@ dependencies = [
  "pallet-evm",
  "pallet-timestamp",
  "parity-scale-codec",
- "precompile-utils 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
+ "precompile-utils",
  "scale-info",
  "sp-core",
  "sp-io",
@@ -3157,7 +3143,7 @@ dependencies = [
  "pallet-evm",
  "pallet-timestamp",
  "parity-scale-codec",
- "precompile-utils 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
+ "precompile-utils",
  "scale-info",
  "sp-core",
  "sp-io",
@@ -3176,7 +3162,7 @@ dependencies = [
  "pallet-evm",
  "pallet-timestamp",
  "parity-scale-codec",
- "precompile-utils 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
+ "precompile-utils",
  "scale-info",
  "sp-core",
  "sp-io",
@@ -3226,6 +3212,7 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
+ "log",
  "moonbeam-evm-tracer",
  "moonbeam-rpc-primitives-debug",
  "pallet-assets",
@@ -3266,7 +3253,7 @@ dependencies = [
  "polkadot-parachain-primitives",
  "polkadot-primitives",
  "polkadot-runtime-common",
- "precompile-utils 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
+ "precompile-utils",
  "scale-info",
  "sp-api",
  "sp-block-builder",
@@ -3493,7 +3480,7 @@ version = "0.99.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4fb810d30a7c1953f91334de7244731fc3f3c10d7fe163338a35b9f640960321"
 dependencies = [
- "convert_case 0.4.0",
+ "convert_case",
  "proc-macro2",
  "quote",
  "rustc_version",
@@ -4091,7 +4078,6 @@ dependencies = [
 [[package]]
 name = "evm-tracing-events"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#8fd0988163ac1eb78631e1eea655da0c96c8c903"
 dependencies = [
  "environmental",
  "ethereum",
@@ -4204,7 +4190,6 @@ dependencies = [
 [[package]]
 name = "fc-api"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "async-trait",
  "fp-storage",
@@ -4216,7 +4201,6 @@ dependencies = [
 [[package]]
 name = "fc-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "async-trait",
  "fp-consensus",
@@ -4232,7 +4216,6 @@ dependencies = [
 [[package]]
 name = "fc-db"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "async-trait",
  "ethereum",
@@ -4263,7 +4246,6 @@ dependencies = [
 [[package]]
 name = "fc-mapping-sync"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "fc-db",
  "fc-storage",
@@ -4286,7 +4268,6 @@ dependencies = [
 [[package]]
 name = "fc-rpc"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -4340,7 +4321,6 @@ dependencies = [
 [[package]]
 name = "fc-rpc-core"
 version = "1.1.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -4353,7 +4333,6 @@ dependencies = [
 [[package]]
 name = "fc-storage"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -4544,7 +4523,6 @@ dependencies = [
 [[package]]
 name = "fp-account"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "hex",
  "impl-serde",
@@ -4563,7 +4541,6 @@ dependencies = [
 [[package]]
 name = "fp-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "ethereum",
  "parity-scale-codec",
@@ -4575,7 +4552,6 @@ dependencies = [
 [[package]]
 name = "fp-ethereum"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -4588,7 +4564,6 @@ dependencies = [
 [[package]]
 name = "fp-evm"
 version = "3.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "evm",
  "frame-support",
@@ -4604,7 +4579,6 @@ dependencies = [
 [[package]]
 name = "fp-rpc"
 version = "3.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -4621,7 +4595,6 @@ dependencies = [
 [[package]]
 name = "fp-self-contained"
 version = "1.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -4633,7 +4606,6 @@ dependencies = [
 [[package]]
 name = "fp-storage"
 version = "2.0.0"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "parity-scale-codec",
  "serde",
@@ -7083,7 +7055,6 @@ dependencies = [
 [[package]]
 name = "moonbeam-client-evm-tracing"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#8fd0988163ac1eb78631e1eea655da0c96c8c903"
 dependencies = [
  "ethereum-types",
  "evm-tracing-events",
@@ -7098,7 +7069,6 @@ dependencies = [
 [[package]]
 name = "moonbeam-evm-tracer"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#8fd0988163ac1eb78631e1eea655da0c96c8c903"
 dependencies = [
  "ethereum-types",
  "evm",
@@ -7118,7 +7088,6 @@ dependencies = [
 [[package]]
 name = "moonbeam-primitives-ext"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#8fd0988163ac1eb78631e1eea655da0c96c8c903"
 dependencies = [
  "ethereum-types",
  "evm-tracing-events",
@@ -7131,7 +7100,6 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-debug"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#8fd0988163ac1eb78631e1eea655da0c96c8c903"
 dependencies = [
  "ethereum-types",
  "futures 0.3.29",
@@ -7146,7 +7114,6 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-trace"
 version = "0.6.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#8fd0988163ac1eb78631e1eea655da0c96c8c903"
 dependencies = [
  "ethereum-types",
  "futures 0.3.29",
@@ -7160,7 +7127,6 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-types"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#8fd0988163ac1eb78631e1eea655da0c96c8c903"
 dependencies = [
  "ethereum-types",
  "serde",
@@ -7170,7 +7136,6 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-debug"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#8fd0988163ac1eb78631e1eea655da0c96c8c903"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -7200,7 +7165,6 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-primitives-debug"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#8fd0988163ac1eb78631e1eea655da0c96c8c903"
 dependencies = [
  "environmental",
  "ethereum",
@@ -7218,7 +7182,6 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-trace"
 version = "0.6.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#8fd0988163ac1eb78631e1eea655da0c96c8c903"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -7975,7 +7938,6 @@ dependencies = [
 [[package]]
 name = "pallet-asset-manager"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#8fd0988163ac1eb78631e1eea655da0c96c8c903"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -8392,7 +8354,6 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -8415,7 +8376,6 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum-xcm"
 version = "1.0.0-dev"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#8fd0988163ac1eb78631e1eea655da0c96c8c903"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -8441,7 +8401,6 @@ dependencies = [
 [[package]]
 name = "pallet-evm"
 version = "6.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "environmental",
  "evm",
@@ -8467,7 +8426,6 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-blake2"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "fp-evm",
 ]
@@ -8475,7 +8433,6 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-bn128"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "fp-evm",
  "sp-core",
@@ -8485,7 +8442,6 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-conviction-voting"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#8fd0988163ac1eb78631e1eea655da0c96c8c903"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -8495,7 +8451,7 @@ dependencies = [
  "pallet-conviction-voting",
  "pallet-evm",
  "parity-scale-codec",
- "precompile-utils 0.1.0 (git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0)",
+ "precompile-utils",
  "rustc-hex",
  "sp-core",
  "sp-runtime",
@@ -8505,7 +8461,6 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-dispatch"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -8517,7 +8472,6 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-modexp"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "fp-evm",
  "num",
@@ -8526,7 +8480,6 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-simple"
 version = "2.0.0-dev"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "fp-evm",
  "ripemd",
@@ -9296,6 +9249,7 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
+ "log",
  "moonbeam-evm-tracer",
  "moonbeam-rpc-primitives-debug",
  "orml-xcm-support",
@@ -9341,7 +9295,7 @@ dependencies = [
  "polkadot-parachain-primitives",
  "polkadot-primitives",
  "polkadot-runtime-common",
- "precompile-utils 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
+ "precompile-utils",
  "scale-info",
  "sp-api",
  "sp-block-builder",
@@ -9408,6 +9362,7 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
+ "log",
  "moonbeam-evm-tracer",
  "moonbeam-rpc-primitives-debug",
  "pallet-assets",
@@ -9448,7 +9403,7 @@ dependencies = [
  "polkadot-parachain-primitives",
  "polkadot-primitives",
  "polkadot-runtime-common",
- "precompile-utils 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
+ "precompile-utils",
  "scale-info",
  "sp-api",
  "sp-block-builder",
@@ -11093,34 +11048,6 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 [[package]]
 name = "precompile-utils"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#8fd0988163ac1eb78631e1eea655da0c96c8c903"
-dependencies = [
- "affix",
- "environmental",
- "evm",
- "fp-evm",
- "frame-support",
- "frame-system",
- "hex",
- "impl-trait-for-tuples",
- "log",
- "num_enum 0.5.11",
- "pallet-evm",
- "parity-scale-codec",
- "paste",
- "precompile-utils-macro 0.1.0 (git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0)",
- "sha3",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
- "sp-weights",
-]
-
-[[package]]
-name = "precompile-utils"
-version = "0.1.0"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "derive_more",
  "environmental",
@@ -11135,7 +11062,7 @@ dependencies = [
  "num_enum 0.7.1",
  "pallet-evm",
  "parity-scale-codec",
- "precompile-utils-macro 0.1.0 (git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0)",
+ "precompile-utils-macro",
  "scale-info",
  "serde",
  "similar-asserts",
@@ -11148,21 +11075,6 @@ dependencies = [
 [[package]]
 name = "precompile-utils-macro"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#8fd0988163ac1eb78631e1eea655da0c96c8c903"
-dependencies = [
- "case",
- "num_enum 0.5.11",
- "prettyplease 0.1.25",
- "proc-macro2",
- "quote",
- "sha3",
- "syn 1.0.109",
-]
-
-[[package]]
-name = "precompile-utils-macro"
-version = "0.1.0"
-source = "git+https://github.com/paritytech/frontier?branch=polkadot-v1.1.0#24cd3ea75262a33481d59d54de9746723ef298fb"
 dependencies = [
  "case",
  "num_enum 0.7.1",
@@ -17522,7 +17434,6 @@ dependencies = [
 [[package]]
 name = "xcm-primitives"
 version = "0.1.1"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#8fd0988163ac1eb78631e1eea655da0c96c8c903"
 dependencies = [
  "cumulus-primitives-core",
  "ethereum",

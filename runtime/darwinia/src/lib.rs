@@ -872,9 +872,6 @@ sp_api::impl_runtime_apis! {
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
 		fn on_runtime_upgrade(checks: frame_try_runtime::UpgradeCheckSelect) -> (frame_support::weights::Weight, frame_support::weights::Weight) {
-			// substrate
-			use frame_support::log;
-
 			log::info!("try-runtime::on_runtime_upgrade");
 
 			let weight = Executive::try_runtime_upgrade(checks).unwrap();

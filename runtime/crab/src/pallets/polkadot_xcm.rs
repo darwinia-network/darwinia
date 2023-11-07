@@ -126,7 +126,7 @@ impl xcm_builder::TakeRevenue for ToTreasury {
 			let treasury_account = Treasury::account_id();
 			let _ = Balances::deposit_creating(&treasury_account, amount);
 
-			frame_support::log::trace!(
+			log::trace!(
 				target: "xcm::weight",
 				"LocalAssetTrader::to_treasury amount: {amount:?}, treasury: {treasury_account:?}"
 			);
