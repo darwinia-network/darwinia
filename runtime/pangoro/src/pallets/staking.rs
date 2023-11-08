@@ -18,6 +18,8 @@
 
 // darwinia
 use crate::*;
+// substrate
+use frame_support::traits::{Currency, OnUnbalanced};
 
 pub enum RingStaking {}
 impl darwinia_staking::Stake for RingStaking {
@@ -25,7 +27,7 @@ impl darwinia_staking::Stake for RingStaking {
 	type Item = Balance;
 
 	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		<Balances as frame_support::traits::Currency<_>>::transfer(
+		<Balances as Currency<_>>::transfer(
 			who,
 			&darwinia_staking::account_id(),
 			item,
@@ -34,7 +36,7 @@ impl darwinia_staking::Stake for RingStaking {
 	}
 
 	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		<Balances as frame_support::traits::Currency<_>>::transfer(
+		<Balances as Currency<_>>::transfer(
 			&darwinia_staking::account_id(),
 			who,
 			item,
@@ -66,8 +68,37 @@ impl darwinia_staking::Stake for KtonStaking {
 	}
 }
 
-frame_support::parameter_types! {
-	pub const PayoutFraction: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(40);
+pub enum OnPangoroSessionEnd {}
+impl darwinia_staking::OnSessionEnd<Runtime> for OnPangoroSessionEnd {
+	fn inflate() -> Option<Balance> {
+		let now = Timestamp::now() as Moment;
+		let session_duration = now - <darwinia_staking::SessionStartTime<Runtime>>::get() as Moment;
+		let elapsed_time = <darwinia_staking::ElapsedTime<Runtime>>::mutate(|t| {
+			*t = t.saturating_add(session_duration);
+
+			*t
+		});
+
+		<darwinia_staking::SessionStartTime<Runtime>>::put(now);
+
+		let unminted = dc_inflation::TOTAL_SUPPLY.saturating_sub(Balances::total_issuance());
+
+		dc_inflation::in_period(unminted, session_duration, elapsed_time)
+	}
+
+	fn calculate_reward(maybe_inflation: Option<Balance>) -> Balance {
+		maybe_inflation.map(|i| sp_runtime::Perbill::from_percent(40) * i).unwrap_or_default()
+	}
+
+	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
+		let _ = Balances::deposit_into_existing(who, amount)?;
+
+		Ok(())
+	}
+
+	fn clean(unissued: Balance) {
+		Treasury::on_unbalanced(Balances::issue(unissued));
+	}
 }
 
 impl darwinia_staking::Config for Runtime {
@@ -76,12 +107,9 @@ impl darwinia_staking::Config for Runtime {
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = ConstU32<16>;
 	type MinStakingDuration = ConstU32<{ 10 * MINUTES }>;
-	type PayoutFraction = PayoutFraction;
-	type RewardRemainder = Treasury;
+	type OnSessionEnd = OnPangoroSessionEnd;
 	type Ring = RingStaking;
-	type RingCurrency = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type UnixTime = Timestamp;
 	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;
 }
 #[cfg(not(feature = "runtime-benchmarks"))]

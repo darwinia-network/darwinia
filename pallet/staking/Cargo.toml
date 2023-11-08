@@ -14,7 +14,6 @@ scale-info = { workspace = true }
 
 # darwinia
 darwinia-staking-traits = { workspace = true }
-dc-inflation            = { workspace = true }
 dc-types                = { workspace = true }
 # darwinia optional
 darwinia-deposit = { workspace = true, optional = true }
@@ -37,10 +36,12 @@ pretty_env_logger = { version = "0.4" }
 darwinia-deposit = { workspace = true, features = ["std"] }
 
 # substrate
+dc-inflation         = { workspace = true, features = ["std"] }
 pallet-assets        = { workspace = true, features = ["std"] }
 pallet-balances      = { workspace = true, features = ["std"] }
 pallet-session       = { workspace = true, features = ["std"] }
 pallet-timestamp     = { workspace = true, features = ["std"] }
+pallet-treasury      = { workspace = true, features = ["std"] }
 sp-core              = { workspace = true, features = ["std"] }
 sp-io                = { workspace = true, features = ["std"] }
 substrate-test-utils = { workspace = true }
@@ -54,7 +55,6 @@ std = [
 
 	# darwinia
 	"darwinia-staking-traits/std",
-	"dc-inflation/std",
 	# darwinia optional
 	"darwinia-deposit?/std",
 

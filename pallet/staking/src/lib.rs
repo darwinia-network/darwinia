@@ -50,14 +50,9 @@ pub use darwinia_staking_traits::*;
 // crates.io
 use codec::FullCodec;
 // darwinia
-use dc_inflation::TOTAL_SUPPLY;
-use dc_types::{Balance, Moment, UNIT};
+use dc_types::{Balance, Moment};
 // substrate
-use frame_support::{
-	pallet_prelude::*,
-	traits::{Currency, OnUnbalanced, UnixTime},
-	DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound,
-};
+use frame_support::{pallet_prelude::*, DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound};
 use frame_system::{pallet_prelude::*, RawOrigin};
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert},
@@ -85,19 +80,6 @@ pub mod pallet {
 		/// Weight information for extrinsics in this pallet.
 		type WeightInfo: WeightInfo;
 
-		/// Unix time getter.
-		type UnixTime: UnixTime;
-
-		/// RING [`Currency`] interface.
-		///
-		/// Only use for inflation.
-		type RingCurrency: Currency<Self::AccountId, Balance = Balance>;
-
-		/// Tokens have been minted and are unused for stakers reward.
-		///
-		/// Usually, it's treasury.
-		type RewardRemainder: OnUnbalanced<NegativeImbalance<Self>>;
-
 		/// RING [`Stake`] interface.
 		type Ring: Stake<AccountId = Self::AccountId, Item = Balance>;
 
@@ -107,15 +89,12 @@ pub mod pallet {
 		/// Deposit [`StakeExt`] interface.
 		type Deposit: StakeExt<AccountId = Self::AccountId, Amount = Balance>;
 
+		/// On session end handler.
+		type OnSessionEnd: OnSessionEnd<Self>;
+
 		/// Minimum time to stake at least.
 		#[pallet::constant]
 		type MinStakingDuration: Get<BlockNumberFor<Self>>;
-
-		/// The percentage of the total payout that is distributed to stakers.
-		///
-		/// Usually, the rest goes to the treasury.
-		#[pallet::constant]
-		type PayoutFraction: Get<Perbill>;
 
 		/// Maximum deposit count.
 		#[pallet::constant]
@@ -151,7 +130,12 @@ pub mod pallet {
 		/// A payout has been made for the staker.
 		Payout {
 			staker: T::AccountId,
-			ring_amount: Balance,
+			amount: Balance,
+		},
+		/// Unable to pay the staker's reward.
+		Unpaied {
+			staker: T::AccountId,
+			amount: Balance,
 		},
 		/// A new collator set has been elected.
 		Elected {
@@ -790,59 +774,35 @@ pub mod pallet {
 
 		// TODO: weight
 		/// Pay the session reward to the stakers.
-		pub fn payout(session_duration: Moment, elapsed_time: Moment) {
-			let unminted = TOTAL_SUPPLY - T::RingCurrency::total_issuance();
-
-			log::info!(
-				"\
-					[pallet::staking] making a payout for: \
-					`unminted = {unminted}`, \
-					`session_duration = {session_duration}`, \
-					`elapsed_time = {elapsed_time}`\
-				"
-			);
-
-			let Some(inflation) = dc_inflation::in_period(
-				unminted,
-				session_duration,
-				elapsed_time,
-			) else {
-				log::error!("[pallet::staking] failed to calculate the inflation");
-
-				return;
-			};
-
-			// TODO: add some tests in the core inflation,
-			// and get a more precise value/worst case.
-			if inflation > 1_000_000 * UNIT {
-				log::error!("[pallet::staking] it's impossible to mint over 1 million RING within a session according to current reward curve");
-
-				return;
-			}
-
-			let payout = T::PayoutFraction::get() * inflation;
+		pub fn payout(amount: Balance) -> Balance {
 			let (total_points, reward_map) = <RewardPoints<T>>::get();
 			// Due to the `payout * percent` there might be some losses.
 			let mut actual_payout = 0;
 
 			for (c, p) in reward_map {
 				let Some(commission) = <Collators<T>>::get(&c) else {
-					#[cfg(test)]
-					panic!("[pallet::staking] collator({c:?}) must be found; qed");
-					log::error!("[pallet::staking] collator({c:?}) must be found; qed");
+						#[cfg(test)]
+						panic!("[pallet::staking] collator({c:?}) must be found; qed");
+						#[cfg(not(test))]
+						{
+							log::error!("[pallet::staking] collator({c:?}) must be found; qed");
 
-					continue;
-				};
-				let c_total_payout = Perbill::from_rational(p, total_points) * payout;
+							continue;
+						}
+					};
+				let c_total_payout = Perbill::from_rational(p, total_points) * amount;
 				let mut c_payout = commission * c_total_payout;
 				let n_payout = c_total_payout - c_payout;
 				let Some(c_exposure) = <Exposures<T>>::get(&c) else {
-					#[cfg(test)]
-					panic!("[pallet::staking] exposure({c:?}) must be found; qed");
-					log::error!("[pallet::staking] exposure({c:?}) must be found; qed");
+						#[cfg(test)]
+						panic!("[pallet::staking] exposure({c:?}) must be found; qed");
+						#[cfg(not(test))]
+						{
+							log::error!("[pallet::staking] exposure({c:?}) must be found; qed");
 
-					continue;
-				};
+							continue;
+						}
+					};
 
 				for n_exposure in c_exposure.nominators {
 					let n_payout =
@@ -852,26 +812,31 @@ pub mod pallet {
 						// If the collator nominated themselves.
 
 						c_payout += n_payout;
-					} else if T::RingCurrency::deposit_into_existing(&n_exposure.who, n_payout)
-						.is_ok()
-					{
+					} else if T::OnSessionEnd::reward(&n_exposure.who, n_payout).is_ok() {
 						actual_payout += n_payout;
 
 						Self::deposit_event(Event::Payout {
 							staker: n_exposure.who,
-							ring_amount: n_payout,
+							amount: n_payout,
+						});
+					} else {
+						Self::deposit_event(Event::Unpaied {
+							staker: n_exposure.who,
+							amount: n_payout,
 						});
 					}
 				}
 
-				if T::RingCurrency::deposit_into_existing(&c, c_payout).is_ok() {
+				if T::OnSessionEnd::reward(&c, c_payout).is_ok() {
 					actual_payout += c_payout;
 
-					Self::deposit_event(Event::Payout { staker: c, ring_amount: c_payout });
+					Self::deposit_event(Event::Payout { staker: c, amount: c_payout });
+				} else {
+					Self::deposit_event(Event::Unpaied { staker: c, amount: c_payout });
 				}
 			}
 
-			T::RewardRemainder::on_unbalanced(T::RingCurrency::issue(inflation - actual_payout));
+			actual_payout
 		}
 
 		/// Prepare the session state.
@@ -931,9 +896,55 @@ type Power = u32;
 type Vote = u32;
 
 type DepositId<T> = <<T as Config>::Deposit as Stake>::Item;
-type NegativeImbalance<T> = <<T as Config>::RingCurrency as Currency<
-	<T as frame_system::Config>::AccountId,
->>::NegativeImbalance;
+
+/// On session end handler.
+///
+/// Currently it is only used to control the inflation.
+pub trait OnSessionEnd<T>
+where
+	T: Config,
+{
+	/// Generic session termination procedures.
+	fn on_session_end() {
+		let inflation = Self::inflate();
+		let reward = Self::calculate_reward(inflation);
+		let actual_payout = <Pallet<T>>::payout(reward);
+
+		Self::clean(inflation.unwrap_or(reward).saturating_sub(actual_payout));
+	}
+
+	/// Inflation settings.
+	fn inflate() -> Option<Balance> {
+		None
+	}
+
+	/// Calculate the reward.
+	fn calculate_reward(maybe_inflation: Option<Balance>) -> Balance;
+
+	/// The reward function.
+	fn reward(who: &T::AccountId, amount: Balance) -> DispatchResult;
+
+	/// Clean the data; currently, only the unissued reward is present.
+	fn clean(_unissued: Balance) {}
+}
+impl<T> OnSessionEnd<T> for ()
+where
+	T: Config,
+{
+	fn inflate() -> Option<Balance> {
+		None
+	}
+
+	fn calculate_reward(_maybe_inflation: Option<Balance>) -> Balance {
+		0
+	}
+
+	fn reward(_who: &T::AccountId, _amount: Balance) -> DispatchResult {
+		Ok(())
+	}
+
+	fn clean(_unissued: Balance) {}
+}
 
 /// A convertor from collators id. Since this pallet does not have stash/controller, this is
 /// just identity.
@@ -1041,17 +1052,7 @@ where
 	T: Config,
 {
 	fn end_session(_: u32) {
-		let now = T::UnixTime::now().as_millis();
-		let session_duration = now - <SessionStartTime<T>>::get();
-		let elapsed_time = <ElapsedTime<T>>::mutate(|t| {
-			*t += session_duration;
-
-			*t
-		});
-
-		<SessionStartTime<T>>::put(now);
-
-		Self::payout(session_duration, elapsed_time);
+		T::OnSessionEnd::on_session_end();
 	}
 
 	fn start_session(_: u32) {}

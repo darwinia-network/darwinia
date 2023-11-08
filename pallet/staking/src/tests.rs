@@ -556,24 +556,27 @@ fn payout_should_work() {
 		(1..=10).for_each(|i| assert_eq!(Balances::free_balance(i), 1_000 * UNIT));
 
 		let session_duration = Duration::new(6 * 60 * 60, 0).as_millis();
-		Staking::payout(session_duration, Staking::elapsed_time());
+
+		Timestamp::set_timestamp(session_duration);
+		new_session();
+
 		let rewards = [
-			1_366_118_850_452_628_471_390,
-			2_550_088_490_535_282_845_143,
-			3_551_909_019_701_415_672_898,
-			4_371_580_329_754_413_739_136,
-			5_009_102_470_967_450_861_167,
-			4_098_356_559_554_598_536_559,
-			2_914_386_924_389_972_036_239,
-			1_912_566_395_223_839_208_483,
-			1_092_895_081_892_155_893_291,
-			455_372_941_225_566_312_752,
+			1365981985468705603914,
+			2549833009234996736972,
+			3551553170742362179958,
+			4371142361805028424107,
+			5008600632691132655310,
+			4097945964602008744224,
+			2914094945753252770656,
+			1912374784245887327670,
+			1092785589904864310528,
+			455327319565152874824,
 		];
 		(1..=10)
 			.zip(rewards.iter())
-			.for_each(|(i, r)| assert_eq!(Balances::free_balance(i), 1_000 * UNIT + r));
+			.for_each(|(i, r)| assert_eq!(Balances::free_balance(i) - 1_000 * UNIT, *r));
 		assert_eq_error_rate!(
-			<Runtime as darwinia_staking::Config>::PayoutFraction::get()
+			PayoutFraction::get()
 				* dc_inflation::in_period(
 					dc_inflation::TOTAL_SUPPLY - Balances::total_issuance(),
 					session_duration,
@@ -581,8 +584,85 @@ fn payout_should_work() {
 				)
 				.unwrap(),
 			rewards.iter().sum::<Balance>(),
-			// Error rate 0.1 RING.
-			UNIT / 10
+			// Error rate 1 RING.
+			UNIT
+		);
+	});
+
+	ExtBuilder::default().on_session_end_type(1).collator_count(5).build().execute_with(|| {
+		(1..=5).for_each(|i| {
+			assert_ok!(Staking::stake(
+				RuntimeOrigin::signed(i),
+				0,
+				i as Balance * UNIT,
+				Vec::new()
+			));
+			assert_ok!(Staking::collect(RuntimeOrigin::signed(i), Perbill::from_percent(i * 10)));
+			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i));
+		});
+		(6..=10).for_each(|i| {
+			assert_ok!(Staking::stake(
+				RuntimeOrigin::signed(i),
+				0,
+				(11 - i as Balance) * UNIT,
+				Vec::new()
+			));
+			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i - 5));
+		});
+		new_session();
+		new_session();
+		Staking::reward_by_ids(&[(1, 20), (2, 20), (3, 20), (4, 20), (5, 20)]);
+		(1..=10).for_each(|i| assert_eq!(Balances::free_balance(i), 1_000 * UNIT));
+
+		let total_issuance = Balances::total_issuance();
+
+		new_session();
+
+		let rewards = [
+			499999998800000000000,
+			933333320000000000000,
+			1300000000000000000000,
+			1599999999200000000000,
+			1833333336000000000000,
+			1499999999400000000000,
+			1066666680000000000000,
+			700000000000000000000,
+			399999999600000000000,
+			166666663000000000000,
+		];
+		(1..=10)
+			.zip(rewards.iter())
+			.for_each(|(i, r)| assert_eq!(Balances::free_balance(i) - 1_000 * UNIT, *r));
+
+		assert_eq!(Balances::total_issuance(), total_issuance);
+		assert_eq!(
+			Balances::free_balance(&Treasury::account_id()),
+			1_000_000 * UNIT - rewards.iter().sum::<Balance>()
+		);
+
+		dbg!(Balances::free_balance(&Treasury::account_id()));
+		assert_ok!(Balances::transfer_all(
+			RuntimeOrigin::signed(Treasury::account_id()),
+			Default::default(),
+			false
+		));
+		dbg!(Balances::free_balance(&Treasury::account_id()));
+		Staking::reward_by_ids(&[(1, 20)]);
+		System::reset_events();
+		new_session();
+
+		assert_eq!(
+			System::events()
+				.into_iter()
+				.filter_map(|e| match e.event {
+					RuntimeEvent::Staking(e @ Event::Unpaied { .. }) => Some(e),
+					_ => None,
+				})
+				.collect::<Vec<_>>(),
+			vec![
+				Event::Unpaied { staker: 6, amount: 7499999997000000000000 },
+				Event::Unpaied { staker: 1, amount: 2499999994000000000000 }
+			]
 		);
 	});
 }
