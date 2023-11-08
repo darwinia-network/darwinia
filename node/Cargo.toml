@@ -87,7 +87,7 @@ sp-blockchain                  = { workspace = true }
 sp-consensus-aura              = { workspace = true, features = ["std"] }
 sp-core                        = { workspace = true, features = ["std"] }
 sp-inherents                   = { workspace = true, features = ["std"] }
-sp-io                          = { workspace = true, optional = true, features = ["std"] }
+# sp-io                          = { workspace = true, optional = true, features = ["std"] }
 sp-keystore                    = { workspace = true }
 sp-offchain                    = { workspace = true, features = ["std"] }
 sp-runtime                     = { workspace = true, features = ["std"] }
@@ -150,7 +150,7 @@ try-runtime = [
 	"polkadot-cli/try-runtime",
 
 	# substrate
-	"sp-io",
+	# "sp-io",
 	"sp-runtime/try-runtime",
 ]
 
