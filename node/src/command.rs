@@ -719,12 +719,3 @@ fn set_default_ss58_version(chain_spec: &dyn IdentifyVariant) {
 
 	crypto::set_default_ss58_version(ss58_version);
 }
-
-#[cfg(any(feature = "runtime-benchmarks", feature = "try-runtime"))]
-fn ensure_dev(spec: &dyn IdentifyVariant) -> Result<()> {
-	if spec.is_dev() {
-		Ok(())
-	} else {
-		Err(format!("can only use subcommand with --chain [darwinia-dev, crab-dev, pangoro-dev, pangolin-dev], got {}", spec.id()))?
-	}
-}

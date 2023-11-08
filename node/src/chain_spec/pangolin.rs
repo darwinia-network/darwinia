@@ -157,7 +157,6 @@ pub fn genesis_config() -> ChainSpec {
 						(array_bytes::hex_n_into_unchecked::<_, _, 20>(C2), 10_000 * UNIT),
 						(array_bytes::hex_n_into_unchecked::<_, _, 20>(C3), 10_000 * UNIT),
 					],
-					..Default::default()
 				},
 				transaction_payment: Default::default(),
 				assets: AssetsConfig {

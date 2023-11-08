@@ -196,8 +196,7 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_bridge_messages, MessagesBench::<Runtime, WithPangoroMessages>]
 	[pallet_fee_market, PangoroFeeMarket]
 	// substrate
-	// https://substrate.stackexchange.com/questions/9360/how-to-benchmark-frame-system-on-parachain
-	// [frame_system, SystemBench::<Runtime>]
+	[frame_system, SystemBench::<Runtime>]
 	[pallet_assets, Assets]
 	[pallet_balances, Balances]
 	[pallet_collective, Council]
@@ -733,12 +732,13 @@ sp_api::impl_runtime_apis! {
 			Vec<frame_support::traits::StorageInfo>,
 		) {
 			// substrate
+			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 			use frame_benchmarking::*;
 			use frame_support::traits::StorageInfoTrait;
-			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
+			use frame_system_benchmarking::Pallet as SystemBench;
 			// darwinia-messages-substrate
-			use pallet_bridge_parachains::benchmarking::Pallet as ParachainsBench;
 			use pallet_bridge_messages::benchmarking::Pallet as MessagesBench;
+			use pallet_bridge_parachains::benchmarking::Pallet as ParachainsBench;
 
 			let mut list = Vec::<BenchmarkList>::new();
 

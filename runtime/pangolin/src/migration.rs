@@ -22,7 +22,6 @@ use crate::*;
 // substrate
 #[allow(unused_imports)]
 use frame_support::{migration, storage::unhashed};
-use sp_runtime::DispatchError;
 
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {

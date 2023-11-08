@@ -249,7 +249,7 @@ where
 /// This is the actual implementation that is abstract over the executor and the runtime api.
 #[allow(clippy::too_many_arguments)]
 #[sc_tracing::logging::prefix_logs_with("Parachain")]
-async fn start_node_impl<RuntimeApi, Executor, RB, SC>(
+async fn start_node_impl<RuntimeApi, Executor, SC>(
 	parachain_config: sc_service::Configuration,
 	polkadot_config: sc_service::Configuration,
 	collator_options: cumulus_client_cli::CollatorOptions,
@@ -266,9 +266,6 @@ where
 		+ sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
 	Executor: 'static + sc_executor::NativeExecutionDispatch,
-	RB: Fn(
-		Arc<FullClient<RuntimeApi, Executor>>,
-	) -> Result<jsonrpsee::RpcModule<()>, sc_service::Error>,
 	SC: FnOnce(
 		Arc<FullClient<RuntimeApi, Executor>>,
 		ParachainBlockImport<RuntimeApi, Executor>,
@@ -395,7 +392,7 @@ where
 		let network = network.clone();
 		let filter_pool = filter_pool.clone();
 		let frontier_backend = frontier_backend.clone();
-		let overrides = overrides.clone();
+		let overrides = overrides;
 		let fee_history_cache = fee_history_cache.clone();
 		let max_past_logs = eth_rpc_config.max_past_logs;
 		let collator = parachain_config.role.is_authority();
@@ -470,7 +467,7 @@ where
 		config: parachain_config,
 		keystore: keystore_container.keystore(),
 		backend: backend.clone(),
-		network: network.clone(),
+		network,
 		sync_service: sync_service.clone(),
 		system_rpc_tx,
 		tx_handler_controller,
@@ -537,7 +534,7 @@ where
 			&task_manager,
 			relay_chain_interface.clone(),
 			transaction_pool,
-			sync_service.clone(),
+			sync_service,
 			keystore_container.keystore(),
 			relay_chain_slot_duration,
 			para_id,
@@ -617,7 +614,7 @@ where
 		sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>,
 	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
-	start_node_impl::<RuntimeApi, Executor, _, _>(
+	start_node_impl::<RuntimeApi, Executor, _>(
 		parachain_config,
 		polkadot_config,
 		collator_options,
@@ -643,7 +640,7 @@ where
 				client.clone(),
 				transaction_pool,
 				prometheus_registry,
-				telemetry.clone(),
+				telemetry,
 			);
 			let proposer = cumulus_client_consensus_proposer::Proposer::new(proposer_factory);
 			let collator_service = cumulus_client_collator::service::CollatorService::new(
