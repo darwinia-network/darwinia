@@ -456,6 +456,8 @@ pub fn run() -> Result<()> {
 		},
 		#[cfg(feature = "runtime-benchmarks")]
 		Some(Subcommand::Benchmark(cmd)) => {
+			// darwinia
+			use dc_primitives::Block;
 			// substrate
 			use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 
@@ -463,7 +465,7 @@ pub fn run() -> Result<()> {
 
 			set_default_ss58_version(&runner.config().chain_spec);
 
-			match cmd {
+			match &**cmd {
 				BenchmarkCmd::Pallet(cmd) =>
 					runner.sync_run(|config| cmd.run::<Block, ()>(config)),
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
@@ -487,37 +489,7 @@ pub fn run() -> Result<()> {
 		Some(Subcommand::Benchmark) => Err(
 			"Benchmarking was not enabled when building the node. You can enable it with `--features runtime-benchmarks`.".into()
 		),
-		#[cfg(feature = "try-runtime")]
-		Some(Subcommand::TryRuntime(cmd)) => {
-			// substrate
-			use frame_benchmarking::benchmarking::HostFunctions;
-			use sc_service::TaskManager;
-			use sp_io::SubstrateHostFunctions;
-			use try_runtime_cli::block_building_info;
-
-			type HostFunctions = ExtendedHostFunctions<
-				SubstrateHostFunctions,
-				HostFunctions,
-			>;
-
-			let runner = cli.create_runner(cmd)?;
-			let chain_spec = &runner.config().chain_spec;
-
-			set_default_ss58_version(chain_spec);
-			ensure_dev(chain_spec)?;
-
-			// grab the task manager.
-			let registry = &runner.config().prometheus_config.as_ref().map(|cfg| &cfg.registry);
-			let task_manager = TaskManager::new(runner.config().tokio_handle.clone(), *registry)
-				.map_err(|e| format!("Error: {:?}", e))?;
-			let info_provider = block_building_info::timestamp_with_aura_info(6000);
-
-			Ok((cmd.run::<Block, HostFunctions, _>(Some(info_provider)), task_manager))
-		},
-		#[cfg(not(feature = "try-runtime"))]
-		Some(Subcommand::TryRuntime) => Err(
-			"Try-runtime was not enabled when building the node. You can enable it with `--features try-runtime`.".into()
-		),
+		Some(Subcommand::TryRuntime) => Err("The `try-runtime` subcommand has been migrated to a standalone CLI (https://github.com/paritytech/try-runtime-cli). It is no longer being maintained here and will be removed entirely some time after January 2024. Please remove this subcommand from your runtime and use the standalone CLI.".into()),
 		None => {
 			let runner = cli.create_runner(&cli.run.normalize())?;
 			let collator_options = cli.run.collator_options();
@@ -551,14 +523,6 @@ pub fn run() -> Result<()> {
 					"Is collating: {}",
 					if config.role.is_authority() { "yes" } else { "no" }
 				);
-
-				if !collator_options.relay_chain_rpc_urls.is_empty() && !cli.relay_chain_args.is_empty() {
-					log::warn!(
-						"Detected relay chain node arguments together with --relay-chain-rpc-url. \
-						   This command starts a minimal Polkadot node that only uses a \
-						   network-related subset of all relay chain CLI options."
-					);
-				}
 
 				if chain_spec.is_dev() {
 					#[cfg(feature = "crab-native")]
@@ -755,13 +719,4 @@ fn set_default_ss58_version(chain_spec: &dyn IdentifyVariant) {
 	.into();
 
 	crypto::set_default_ss58_version(ss58_version);
-}
-
-#[cfg(any(feature = "runtime-benchmarks", feature = "try-runtime"))]
-fn ensure_dev(spec: &dyn IdentifyVariant) -> Result<()> {
-	if spec.is_dev() {
-		Ok(())
-	} else {
-		Err(format!("can only use subcommand with --chain [darwinia-dev, crab-dev, pangoro-dev, pangolin-dev], got {}", spec.id()))?
-	}
 }

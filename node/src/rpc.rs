@@ -53,7 +53,7 @@ pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi, CIDP> {
 	/// EthFilterApi pool.
 	pub filter_pool: Option<fc_rpc_core::types::FilterPool>,
 	/// Backend.
-	pub frontier_backend: Arc<dyn fc_db::BackendReader<Block> + Send + Sync>,
+	pub frontier_backend: Arc<dyn fc_api::Backend<Block> + Send + Sync>,
 	/// Maximum number of logs in a query.
 	pub max_past_logs: u32,
 	/// Fee history cache.
@@ -80,8 +80,8 @@ pub struct TracingConfig {
 pub struct DefaultEthConfig<C, BE>(std::marker::PhantomData<(C, BE)>);
 impl<C, BE> fc_rpc::EthConfig<Block, C> for DefaultEthConfig<C, BE>
 where
-	C: sc_client_api::StorageProvider<Block, BE> + Sync + Send + 'static,
-	BE: sc_client_api::Backend<Block> + 'static,
+	C: 'static + Sync + Send + sc_client_api::StorageProvider<Block, BE>,
+	BE: 'static + sc_client_api::Backend<Block>,
 {
 	type EstimateGasAdapter = ();
 	type RuntimeStorageOverride =
@@ -158,13 +158,13 @@ where
 	module.merge(System::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
 	module.merge(TransactionPayment::new(client.clone()).into_rpc())?;
 	module.merge(
-		Eth::new(
+		Eth::<Block, C, P, _, BE, A, CIDP, EC>::new(
 			client.clone(),
 			pool.clone(),
 			graph.clone(),
 			<Option<NoTransactionConverter>>::None,
 			sync.clone(),
-			vec![],
+			Vec::new(),
 			overrides.clone(),
 			frontier_backend.clone(),
 			is_authority,

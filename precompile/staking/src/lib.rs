@@ -32,11 +32,11 @@ use darwinia_staking::Stake;
 use precompile_utils::prelude::*;
 // substrate
 use frame_support::{
-	dispatch::{Dispatchable, GetDispatchInfo, PostDispatchInfo},
+	dispatch::{GetDispatchInfo, PostDispatchInfo},
 	traits::OriginTrait,
 };
 use sp_core::{H160, U256};
-use sp_runtime::Perbill;
+use sp_runtime::{traits::Dispatchable, Perbill};
 use sp_std::prelude::*;
 
 pub struct Staking<Runtime>(PhantomData<Runtime>);

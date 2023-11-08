@@ -178,7 +178,7 @@ mod benchmarks {
 		} else {
 			Some(MultisigParams {
 				address: [0; 20].into(),
-				members: other_multisig_members(z),
+				members: other_multisig_members::<20, _>(z),
 				threshold: Default::default(),
 			})
 		};
