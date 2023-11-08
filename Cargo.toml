@@ -108,15 +108,15 @@ pallet-evm-precompile-simple   = { git = "https://github.com/paritytech/frontier
 precompile-utils               = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
 
 # moonbeam
-moonbeam-evm-tracer                     = { git = "https://github.com/darwinia-network/moonbeam", branch = "bear-try-fix-compile", default-features = false }
-moonbeam-primitives-ext                 = { git = "https://github.com/darwinia-network/moonbeam", branch = "bear-try-fix-compile", default-features = false }
-moonbeam-rpc-debug                      = { git = "https://github.com/darwinia-network/moonbeam", branch = "bear-try-fix-compile" }
-moonbeam-rpc-primitives-debug           = { git = "https://github.com/darwinia-network/moonbeam", branch = "bear-try-fix-compile", default-features = false }
-moonbeam-rpc-trace                      = { git = "https://github.com/darwinia-network/moonbeam", branch = "bear-try-fix-compile" }
-pallet-asset-manager                    = { git = "https://github.com/darwinia-network/moonbeam", branch = "bear-try-fix-compile", default-features = false }
-pallet-ethereum-xcm                     = { git = "https://github.com/darwinia-network/moonbeam", branch = "bear-try-fix-compile", default-features = false }
-pallet-evm-precompile-conviction-voting = { git = "https://github.com/darwinia-network/moonbeam", branch = "bear-try-fix-compile", default-features = false }
-xcm-primitives                          = { git = "https://github.com/darwinia-network/moonbeam", branch = "bear-try-fix-compile", default-features = false }
+moonbeam-evm-tracer                     = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v1.1.0", default-features = false }
+moonbeam-primitives-ext                 = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v1.1.0", default-features = false }
+moonbeam-rpc-debug                      = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v1.1.0" }
+moonbeam-rpc-primitives-debug           = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v1.1.0", default-features = false }
+moonbeam-rpc-trace                      = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v1.1.0" }
+pallet-asset-manager                    = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v1.1.0", default-features = false }
+pallet-ethereum-xcm                     = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v1.1.0", default-features = false }
+pallet-evm-precompile-conviction-voting = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v1.1.0", default-features = false }
+xcm-primitives                          = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v1.1.0", default-features = false }
 
 # open-web3-stack
 orml-xcm-support = { git = "https://github.com/open-web3-stack/open-runtime-module-library", branch = "polkadot-v1.1.0", default-features = false }
