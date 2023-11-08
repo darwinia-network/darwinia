@@ -456,6 +456,8 @@ pub fn run() -> Result<()> {
 		},
 		#[cfg(feature = "runtime-benchmarks")]
 		Some(Subcommand::Benchmark(cmd)) => {
+			// darwinia
+			use dc_primitives::Block;
 			// substrate
 			use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 

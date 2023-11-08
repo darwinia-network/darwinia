@@ -726,7 +726,7 @@ sp_api::impl_runtime_apis! {
 		) {
 			// substrate
 			use frame_benchmarking::*;
-			use frame_support::traits::StorageInfoTrait;
+			use frame_support::traits::{StorageInfoTrait};
 			use frame_system_benchmarking::Pallet as SystemBench;
 			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 			// darwinia-messages-substrate
@@ -769,6 +769,7 @@ sp_api::impl_runtime_apis! {
 			use frame_benchmarking::*;
 			use frame_support::pallet_prelude::Weight;
 			use frame_support::traits::Currency;
+			use frame_support::traits::TrackedStorageKey;
 
 			use frame_system_benchmarking::Pallet as SystemBench;
 			impl frame_system_benchmarking::Config for Runtime {
