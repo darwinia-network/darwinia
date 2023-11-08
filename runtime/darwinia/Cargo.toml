@@ -44,6 +44,7 @@ darwinia-precompile-deposit       = { workspace = true }
 darwinia-precompile-staking       = { workspace = true }
 darwinia-precompile-state-storage = { workspace = true }
 darwinia-staking                  = { workspace = true }
+dc-inflation                      = { workspace = true }
 dc-primitives                     = { workspace = true }
 
 # darwinia-messages-substrate
@@ -169,6 +170,7 @@ std = [
 	"darwinia-precompile-staking/std",
 	"darwinia-precompile-state-storage/std",
 	"darwinia-staking/std",
+	"dc-inflation/std",
 	"dc-primitives/std",
 
 	# darwinia-messages-substrate
