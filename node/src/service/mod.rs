@@ -538,7 +538,7 @@ where
 			relay_chain_interface.clone(),
 			transaction_pool,
 			sync_service.clone(),
-			params.keystore_container.keystore(),
+			keystore_container.keystore(),
 			relay_chain_slot_duration,
 			para_id,
 			collator_key.expect("Command line arguments do not allow this. qed"),
@@ -646,7 +646,7 @@ where
 				telemetry.clone(),
 			);
 			let proposer = cumulus_client_consensus_proposer::Proposer::new(proposer_factory);
-			let collator_service = cumulus_client_collator::CollatorService::new(
+			let collator_service = cumulus_client_collator::service::CollatorService::new(
 				client.clone(),
 				Arc::new(task_manager.spawn_handle()),
 				announce_block,

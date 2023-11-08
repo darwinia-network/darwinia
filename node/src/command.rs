@@ -26,6 +26,7 @@ use crate::{
 	cli::{Cli, FrontierBackendType, RelayChainCli, Subcommand},
 	service::{self, *},
 };
+use dc_primitives::Block;
 // substrate
 use sc_cli::{
 	CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams, NetworkParams,
@@ -463,7 +464,7 @@ pub fn run() -> Result<()> {
 
 			set_default_ss58_version(&runner.config().chain_spec);
 
-			match cmd {
+			match &**cmd {
 				BenchmarkCmd::Pallet(cmd) =>
 					runner.sync_run(|config| cmd.run::<Block, ()>(config)),
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {

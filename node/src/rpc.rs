@@ -80,8 +80,8 @@ pub struct TracingConfig {
 pub struct DefaultEthConfig<C, BE>(std::marker::PhantomData<(C, BE)>);
 impl<C, BE> fc_rpc::EthConfig<Block, C> for DefaultEthConfig<C, BE>
 where
-	C: sc_client_api::StorageProvider<Block, BE> + Sync + Send + 'static,
-	BE: sc_client_api::Backend<Block> + 'static,
+	C: 'static + Sync + Send + sc_client_api::StorageProvider<Block, BE>,
+	BE: 'static + sc_client_api::Backend<Block>,
 {
 	type EstimateGasAdapter = ();
 	type RuntimeStorageOverride =
@@ -164,7 +164,7 @@ where
 			graph.clone(),
 			<Option<NoTransactionConverter>>::None,
 			sync.clone(),
-			vec![],
+			Vec::new(),
 			overrides.clone(),
 			frontier_backend.clone(),
 			is_authority,

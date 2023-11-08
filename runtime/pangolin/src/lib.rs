@@ -774,8 +774,7 @@ sp_api::impl_runtime_apis! {
 			use bp_messages::MessageNonce;
 			// substrate
 			use frame_benchmarking::*;
-			use frame_support::pallet_prelude::Weight;
-			use frame_support::traits::Currency;
+			use frame_support::{pallet_prelude::Weight, traits::{Currency, TrackedStorageKey}};
 
 			use frame_system_benchmarking::Pallet as SystemBench;
 			impl frame_system_benchmarking::Config for Runtime {
