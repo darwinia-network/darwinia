@@ -22,6 +22,7 @@ pub mod custom_origins {
 	use strum::EnumString;
 	// substrate
 	use frame_support::pallet_prelude::*;
+	use sp_runtime::RuntimeDebug;
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config {}

@@ -62,17 +62,17 @@ pub fn development_config() -> ChainSpec {
 				vec![
 					// Bind the `Alice` to `Alith` to make `--alice` available for testnet.
 					(
-						array_bytes::hex_n_into_unchecked(ALITH),
+						array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
 						get_collator_keys_from_seed("Alice"),
 					),
 				],
 				vec![
-					array_bytes::hex_n_into_unchecked(ALITH),
-					array_bytes::hex_n_into_unchecked(BALTATHAR),
-					array_bytes::hex_n_into_unchecked(CHARLETH),
-					array_bytes::hex_n_into_unchecked(DOROTHY),
-					array_bytes::hex_n_into_unchecked(ETHAN),
-					array_bytes::hex_n_into_unchecked(FAITH),
+					array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
+					array_bytes::hex_n_into_unchecked::<_, _, 20>(BALTATHAR),
+					array_bytes::hex_n_into_unchecked::<_, _, 20>(CHARLETH),
+					array_bytes::hex_n_into_unchecked::<_, _, 20>(DOROTHY),
+					array_bytes::hex_n_into_unchecked::<_, _, 20>(ETHAN),
+					array_bytes::hex_n_into_unchecked::<_, _, 20>(FAITH),
 				],
 				2105.into(),
 			)
@@ -100,27 +100,27 @@ pub fn local_config() -> ChainSpec {
 				vec![
 					// Bind the `Alice` to `Alith` to make `--alice` available for testnet.
 					(
-						array_bytes::hex_n_into_unchecked(ALITH),
+						array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
 						get_collator_keys_from_seed("Alice"),
 					),
 					// Bind the `Bob` to `Balthar` to make `--bob` available for testnet.
 					(
-						array_bytes::hex_n_into_unchecked(BALTATHAR),
+						array_bytes::hex_n_into_unchecked::<_, _, 20>(BALTATHAR),
 						get_collator_keys_from_seed("Bob"),
 					),
 					// Bind the `Charlie` to `CHARLETH` to make `--charlie` available for testnet.
 					(
-						array_bytes::hex_n_into_unchecked(CHARLETH),
+						array_bytes::hex_n_into_unchecked::<_, _, 20>(CHARLETH),
 						get_collator_keys_from_seed("Charlie"),
 					),
 				],
 				vec![
-					array_bytes::hex_n_into_unchecked(ALITH),
-					array_bytes::hex_n_into_unchecked(BALTATHAR),
-					array_bytes::hex_n_into_unchecked(CHARLETH),
-					array_bytes::hex_n_into_unchecked(DOROTHY),
-					array_bytes::hex_n_into_unchecked(ETHAN),
-					array_bytes::hex_n_into_unchecked(FAITH),
+					array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
+					array_bytes::hex_n_into_unchecked::<_, _, 20>(BALTATHAR),
+					array_bytes::hex_n_into_unchecked::<_, _, 20>(CHARLETH),
+					array_bytes::hex_n_into_unchecked::<_, _, 20>(DOROTHY),
+					array_bytes::hex_n_into_unchecked::<_, _, 20>(ETHAN),
+					array_bytes::hex_n_into_unchecked::<_, _, 20>(FAITH),
 				],
 				2105.into(),
 			)
@@ -180,7 +180,7 @@ pub fn genesis_config() -> ChainSpec {
 				balances: BalancesConfig {
 					balances: collators
 						.iter()
-						.map(|(k, _)| (array_bytes::hex_n_into_unchecked(k), 10_000 * UNIT))
+						.map(|(k, _)| (array_bytes::hex_n_into_unchecked::<_, _, 20>(k), 10_000 * UNIT))
 						.collect(),
 				},
 				transaction_payment: Default::default(),
@@ -203,7 +203,7 @@ pub fn genesis_config() -> ChainSpec {
 					collator_count: 6,
 					collators: collators
 						.iter()
-						.map(|(k, _)| (array_bytes::hex_n_into_unchecked(k), 1_000 * UNIT))
+						.map(|(k, _)| (array_bytes::hex_n_into_unchecked::<_, _, 20>(k), 1_000 * UNIT))
 						.collect(),
 				},
 				session: SessionConfig {
@@ -211,8 +211,8 @@ pub fn genesis_config() -> ChainSpec {
 						.iter()
 						.map(|(k, a)| {
 							(
-								array_bytes::hex_n_into_unchecked(k),
-								array_bytes::hex_n_into_unchecked(k),
+								array_bytes::hex_n_into_unchecked::<_, _, 20>(k),
+								array_bytes::hex_n_into_unchecked::<_, _, 20>(k),
 								session_keys(array_bytes::hex2array_unchecked(a).unchecked_into()),
 							)
 						})

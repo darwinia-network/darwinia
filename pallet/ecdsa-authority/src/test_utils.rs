@@ -23,8 +23,9 @@ pub(crate) fn gen_pair(byte: u8) -> (SecretKey, AccountId) {
 	let seed = iter::repeat(byte).take(32).collect::<Vec<_>>();
 	let secret_key = SecretKey::parse_slice(&seed).unwrap();
 	let public_key = PublicKey::from_secret_key(&secret_key).serialize();
-	let address =
-		array_bytes::slice_n_into_unchecked(&hashing::keccak_256(&public_key[1..65])[12..]);
+	let address = array_bytes::slice_n_into_unchecked::<20, _, _>(
+		&hashing::keccak_256(&public_key[1..65])[12..],
+	);
 
 	(secret_key, address)
 }

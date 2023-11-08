@@ -13,6 +13,7 @@ substrate-wasm-builder = { workspace = true, optional = true }
 [dependencies]
 # crates.io
 codec             = { workspace = true, package = "parity-scale-codec" }
+log               = { workspace = true }
 scale-info        = { workspace = true }
 static_assertions = { workspace = true }
 # crates.io optional
@@ -141,6 +142,7 @@ default = ["std"]
 std = [
 	# crates.io
 	"codec/std",
+	"log/std",
 	"scale-info/std",
 
 	# cumulus

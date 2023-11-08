@@ -29,7 +29,7 @@ use core::marker::PhantomData;
 // substrate
 use frame_support::{
 	dispatch::{GetDispatchInfo, PostDispatchInfo},
-	sp_runtime::traits::{StaticLookup, Dispatchable},
+	sp_runtime::traits::{Dispatchable, StaticLookup},
 	traits::{
 		fungibles::{
 			approvals::Inspect as ApprovalInspect, metadata::Inspect as MetadataInspect, Inspect,

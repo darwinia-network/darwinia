@@ -17,7 +17,8 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // paritytech
-use frame_support::{weights::Weight, RuntimeDebug};
+use frame_support::weights::Weight;
+use sp_runtime::RuntimeDebug;
 // darwinia
 use crate::*;
 use bp_messages::{source_chain::*, target_chain::*, *};

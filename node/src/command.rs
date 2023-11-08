@@ -456,6 +456,8 @@ pub fn run() -> Result<()> {
 		},
 		#[cfg(feature = "runtime-benchmarks")]
 		Some(Subcommand::Benchmark(cmd)) => {
+			// darwinia
+			use dc_primitives::Block;
 			// substrate
 			use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 
@@ -463,7 +465,7 @@ pub fn run() -> Result<()> {
 
 			set_default_ss58_version(&runner.config().chain_spec);
 
-			match cmd {
+			match &**cmd {
 				BenchmarkCmd::Pallet(cmd) =>
 					runner.sync_run(|config| cmd.run::<Block, ()>(config)),
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
@@ -717,13 +719,4 @@ fn set_default_ss58_version(chain_spec: &dyn IdentifyVariant) {
 	.into();
 
 	crypto::set_default_ss58_version(ss58_version);
-}
-
-#[cfg(any(feature = "runtime-benchmarks", feature = "try-runtime"))]
-fn ensure_dev(spec: &dyn IdentifyVariant) -> Result<()> {
-	if spec.is_dev() {
-		Ok(())
-	} else {
-		Err(format!("can only use subcommand with --chain [darwinia-dev, crab-dev, pangoro-dev, pangolin-dev], got {}", spec.id()))?
-	}
 }

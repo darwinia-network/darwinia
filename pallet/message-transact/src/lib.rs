@@ -33,7 +33,7 @@ use frame_support::sp_runtime::traits::UniqueSaturatedInto;
 use scale_info::TypeInfo;
 // frontier
 use fp_ethereum::{TransactionData, ValidatedTransaction};
-use fp_evm::{CheckEvmTransaction, CheckEvmTransactionConfig, InvalidEvmTransactionError};
+use fp_evm::{CheckEvmTransaction, CheckEvmTransactionConfig, TransactionValidationError};
 use pallet_evm::{FeeCalculator, GasWeightMapping};
 // substrate
 use frame_support::{traits::EnsureOrigin, PalletError};
@@ -175,11 +175,12 @@ pub mod pallet {
 			.and_then(|v| v.with_balance_for(&who))
 			.map_err(|e| <Error<T>>::MessageTransactError(e))?;
 
-			T::ValidatedTransaction::apply(source, *transaction)
+			T::ValidatedTransaction::apply(source, *transaction).map(|(post_info, _)| post_info)
 		}
 	}
 }
 
+// TODO: replace it with upstream error type
 #[derive(Encode, Decode, TypeInfo, PalletError)]
 pub enum EvmTxErrorWrapper {
 	GasLimitTooLow,
@@ -189,23 +190,26 @@ pub enum EvmTxErrorWrapper {
 	BalanceTooLow,
 	TxNonceTooLow,
 	TxNonceTooHigh,
-	InvalidPaymentInput,
+	InvalidFeeInput,
 	InvalidChainId,
+	InvalidSignature,
+	UnknownError,
 }
 
-impl From<InvalidEvmTransactionError> for EvmTxErrorWrapper {
-	fn from(validation_error: InvalidEvmTransactionError) -> Self {
+impl From<TransactionValidationError> for EvmTxErrorWrapper {
+	fn from(validation_error: TransactionValidationError) -> Self {
 		match validation_error {
-			InvalidEvmTransactionError::GasLimitTooLow => EvmTxErrorWrapper::GasLimitTooLow,
-			InvalidEvmTransactionError::GasLimitTooHigh => EvmTxErrorWrapper::GasLimitTooHigh,
-			InvalidEvmTransactionError::GasPriceTooLow => EvmTxErrorWrapper::GasPriceTooLow,
-			InvalidEvmTransactionError::PriorityFeeTooHigh => EvmTxErrorWrapper::PriorityFeeTooHigh,
-			InvalidEvmTransactionError::BalanceTooLow => EvmTxErrorWrapper::BalanceTooLow,
-			InvalidEvmTransactionError::TxNonceTooLow => EvmTxErrorWrapper::TxNonceTooLow,
-			InvalidEvmTransactionError::TxNonceTooHigh => EvmTxErrorWrapper::TxNonceTooHigh,
-			InvalidEvmTransactionError::InvalidPaymentInput =>
-				EvmTxErrorWrapper::InvalidPaymentInput,
-			InvalidEvmTransactionError::InvalidChainId => EvmTxErrorWrapper::InvalidChainId,
+			TransactionValidationError::GasLimitTooLow => EvmTxErrorWrapper::GasLimitTooLow,
+			TransactionValidationError::GasLimitTooHigh => EvmTxErrorWrapper::GasLimitTooHigh,
+			TransactionValidationError::GasPriceTooLow => EvmTxErrorWrapper::GasPriceTooLow,
+			TransactionValidationError::PriorityFeeTooHigh => EvmTxErrorWrapper::PriorityFeeTooHigh,
+			TransactionValidationError::BalanceTooLow => EvmTxErrorWrapper::BalanceTooLow,
+			TransactionValidationError::TxNonceTooLow => EvmTxErrorWrapper::TxNonceTooLow,
+			TransactionValidationError::TxNonceTooHigh => EvmTxErrorWrapper::TxNonceTooHigh,
+			TransactionValidationError::InvalidFeeInput => EvmTxErrorWrapper::InvalidFeeInput,
+			TransactionValidationError::InvalidChainId => EvmTxErrorWrapper::InvalidChainId,
+			TransactionValidationError::InvalidSignature => EvmTxErrorWrapper::InvalidSignature,
+			TransactionValidationError::UnknownError => EvmTxErrorWrapper::UnknownError,
 		}
 	}
 }
