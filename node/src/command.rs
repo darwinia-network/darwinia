@@ -26,7 +26,6 @@ use crate::{
 	cli::{Cli, FrontierBackendType, RelayChainCli, Subcommand},
 	service::{self, *},
 };
-use dc_primitives::Block;
 // substrate
 use sc_cli::{
 	CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams, NetworkParams,

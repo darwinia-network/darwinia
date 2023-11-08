@@ -208,39 +208,6 @@ substrate-prometheus-endpoint              = { git = "https://github.com/parityt
 substrate-test-utils                       = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 substrate-wasm-builder                     = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 
-# [patch."https://github.com/paritytech/frontier"]
-# fc-api                   = { path = "/home/bear/coding/rust-space/frontier/client/api" }
-# fc-consensus                   = { path = "/home/bear/coding/rust-space/frontier/client/consensus" }
-# fc-db                          = { path = "/home/bear/coding/rust-space/frontier/client/db" }
-# fc-mapping-sync                = { path = "/home/bear/coding/rust-space/frontier/client/mapping-sync" }
-# fc-rpc                         = { path = "/home/bear/coding/rust-space/frontier/client/rpc" }
-# fc-rpc-core                    = { path = "/home/bear/coding/rust-space/frontier/client/rpc-core" }
-# fc-storage                     = { path = "/home/bear/coding/rust-space/frontier/client/storage" }
-# fp-account                     = { path = "/home/bear/coding/rust-space/frontier/primitives/account" }
-# fp-ethereum                    = { path = "/home/bear/coding/rust-space/frontier/primitives/ethereum" }
-# fp-evm                         = { path = "/home/bear/coding/rust-space/frontier/primitives/evm" }
-# fp-rpc                         = { path = "/home/bear/coding/rust-space/frontier/primitives/rpc" }
-# fp-self-contained              = { path = "/home/bear/coding/rust-space/frontier/primitives/self-contained" }
-# pallet-ethereum                = { path = "/home/bear/coding/rust-space/frontier/frame/ethereum" }
-# pallet-evm                     = { path = "/home/bear/coding/rust-space/frontier/frame/evm" }
-# pallet-evm-precompile-blake2   = { path = "/home/bear/coding/rust-space/frontier/frame/evm/precompile/blake2" }
-# pallet-evm-precompile-bn128    = { path = "/home/bear/coding/rust-space/frontier/frame/evm/precompile/bn128" }
-# pallet-evm-precompile-dispatch = { path = "/home/bear/coding/rust-space/frontier/frame/evm/precompile/dispatch" }
-# pallet-evm-precompile-modexp   = { path = "/home/bear/coding/rust-space/frontier/frame/evm/precompile/modexp" }
-# pallet-evm-precompile-simple   = { path = "/home/bear/coding/rust-space/frontier/frame/evm/precompile/simple" }
-# precompile-utils               = { path = "/home/bear/coding/rust-space/frontier/precompiles" }
-
-# [patch."https://github.com/darwinia-network/moonbeam"]
-# moonbeam-evm-tracer                     = { path = "/home/bear/coding/rust-space/moonbeam/runtime/evm_tracer" }
-# moonbeam-primitives-ext                 = { path = "/home/bear/coding/rust-space/moonbeam/primitives/ext" }
-# moonbeam-rpc-debug                      = { path = "/home/bear/coding/rust-space/moonbeam/client/rpc/debug" }
-# moonbeam-rpc-primitives-debug           = { path = "/home/bear/coding/rust-space/moonbeam/primitives/rpc/debug" }
-# moonbeam-rpc-trace                      = { path = "/home/bear/coding/rust-space/moonbeam/client/rpc/trace" }
-# pallet-asset-manager                    = { path = "/home/bear/coding/rust-space/moonbeam/pallets/asset-manager" }
-# pallet-ethereum-xcm                     = { path = "/home/bear/coding/rust-space/moonbeam/pallets/ethereum-xcm" }
-# pallet-evm-precompile-conviction-voting = { path = "/home/bear/coding/rust-space/moonbeam/precompiles/conviction-voting" }
-# xcm-primitives                          = { path = "/home/bear/coding/rust-space/moonbeam/primitives/xcm" }
-
 [profile.release]
 panic = "unwind"
 
