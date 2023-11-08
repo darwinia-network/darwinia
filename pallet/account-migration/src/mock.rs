@@ -20,8 +20,8 @@ pub use crate as darwinia_account_migration;
 pub use dc_primitives::*;
 
 // substrate
-use frame_support::traits::BuildGenesisConfig;
 use sp_io::TestExternalities;
+use sp_runtime::BuildStorage;
 
 pub struct Dummy;
 impl darwinia_deposit::SimpleAsset for Dummy {
@@ -66,6 +66,7 @@ impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
 	type BaseCallFilter = frame_support::traits::Everything;
+	type Block = frame_system::mocking::MockBlock<Self>;
 	type BlockHashCount = ();
 	type BlockLength = ();
 	type BlockWeights = ();
@@ -206,7 +207,7 @@ frame_support::construct_runtime! {
 }
 
 pub(crate) fn new_test_ext() -> TestExternalities {
-	let mut storage = frame_system::GenesisConfig::default().build_storage::<Runtime>().unwrap();
+	let mut storage = <frame_system::GenesisConfig<Runtime>>::default().build_storage().unwrap();
 
 	pallet_assets::GenesisConfig::<Runtime> {
 		assets: vec![(darwinia_account_migration::KTON_ID, [0; 20].into(), true, 1)],

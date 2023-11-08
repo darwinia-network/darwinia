@@ -20,11 +20,13 @@
 
 pub use sp_core::{ecdsa::Signature, H160 as Address, H256 as Hash};
 
+// core
+use core::fmt::Debug;
 // crates.io
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 // darwinia
-use dc_primitives::{AccountId, BlockNumber};
+use dc_primitives::AccountId;
 // substrate
 use frame_support::{BoundedVec, EqNoBound, PartialEqNoBound, RuntimeDebugNoBound};
 use sp_core::Get;
@@ -131,8 +133,8 @@ impl<A> Operation<A> {
 
 /// The darwinia-ecdsa-authority commitment.
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct Commitment {
-	pub(crate) block_number: BlockNumber,
+pub struct Commitment<Bn> {
+	pub(crate) block_number: Bn,
 	pub(crate) message_root: Hash,
 	pub(crate) nonce: u32,
 }
@@ -159,11 +161,12 @@ where
 /// on-chain authorities.
 #[derive(PartialEqNoBound, EqNoBound, Decode, Encode, RuntimeDebugNoBound, TypeInfo)]
 #[scale_info(skip_type_params(MaxAuthorities))]
-pub struct MessageRootSigned<MaxAuthorities>
+pub struct MessageRootSigned<Bn, MaxAuthorities>
 where
+	Bn: Debug + PartialEq,
 	MaxAuthorities: Get<u32>,
 {
-	pub(crate) commitment: Commitment,
+	pub(crate) commitment: Commitment<Bn>,
 	pub(crate) message: Hash,
 	pub(crate) signatures: BoundedVec<(AccountId, Signature), MaxAuthorities>,
 	pub(crate) authorized: bool,

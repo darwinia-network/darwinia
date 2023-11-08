@@ -51,9 +51,9 @@ pub const ERC20_CONTRACT_BYTECODE: &str = "608060405234801561001057600080fd5b506
 
 fn prepare_message(
 	call: RuntimeCall,
-) -> <pallet_bridge_dispatch::Pallet<TestRuntime> as MessageDispatch<
+) -> <pallet_bridge_dispatch::Pallet<Runtime> as MessageDispatch<
 	AccountId,
-	<TestRuntime as pallet_bridge_dispatch::Config>::BridgeMessageId,
+	<Runtime as pallet_bridge_dispatch::Config>::BridgeMessageId,
 >>::Message {
 	MessagePayload {
 		spec_version: TEST_SPEC_VERSION,

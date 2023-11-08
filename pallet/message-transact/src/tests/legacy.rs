@@ -165,7 +165,7 @@ fn test_dispatch_legacy_transaction_with_autoset_gas_price() {
 			let mock_message_id = [0; 4];
 			let mut unsigned_tx = legacy_erc20_creation_unsigned_transaction();
 			unsigned_tx.gas_price =
-				<TestRuntime as pallet_evm::Config>::FeeCalculator::min_gas_price().0 - 1;
+				<Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0 - 1;
 			let t = unsigned_tx.sign(&alice.private_key);
 			let call = RuntimeCall::MessageTransact(crate::Call::message_transact {
 				transaction: Box::new(t),
@@ -209,7 +209,7 @@ fn test_dispatch_legacy_transaction_with_insufficient_relayer_balance() {
 
 			// Failed in pre-dispatch balance check
 			let before_dispatch =
-				pallet_evm::Pallet::<TestRuntime>::account_basic(&relayer1.address).0.balance;
+				pallet_evm::Pallet::<Runtime>::account_basic(&relayer1.address).0.balance;
 			let result = Dispatch::dispatch(
 				SOURCE_CHAIN_ID,
 				TARGET_CHAIN_ID,
@@ -227,11 +227,11 @@ fn test_dispatch_legacy_transaction_with_insufficient_relayer_balance() {
 				),
 			));
 			let after_dispatch =
-				pallet_evm::Pallet::<TestRuntime>::account_basic(&relayer1.address).0.balance;
+				pallet_evm::Pallet::<Runtime>::account_basic(&relayer1.address).0.balance;
 			assert_eq!(before_dispatch, after_dispatch);
 
 			let before_dispatch =
-				pallet_evm::Pallet::<TestRuntime>::account_basic(&relayer2.address).0.balance;
+				pallet_evm::Pallet::<Runtime>::account_basic(&relayer2.address).0.balance;
 			let result = Dispatch::dispatch(
 				SOURCE_CHAIN_ID,
 				TARGET_CHAIN_ID,
@@ -242,7 +242,7 @@ fn test_dispatch_legacy_transaction_with_insufficient_relayer_balance() {
 			);
 			assert!(result.dispatch_result);
 			let after_dispatch =
-				pallet_evm::Pallet::<TestRuntime>::account_basic(&relayer2.address).0.balance;
+				pallet_evm::Pallet::<Runtime>::account_basic(&relayer2.address).0.balance;
 			assert!(before_dispatch > after_dispatch);
 		});
 }

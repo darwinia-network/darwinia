@@ -33,7 +33,7 @@ use frame_support::assert_ok;
 use sp_core::{H256, U256};
 use sp_std::str::from_utf8;
 
-fn precompiles() -> TestPrecompiles<TestRuntime> {
+fn precompiles() -> TestPrecompiles<Runtime> {
 	PrecompilesValue::get()
 }
 

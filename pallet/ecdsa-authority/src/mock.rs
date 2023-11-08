@@ -17,12 +17,16 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 pub use crate::{self as darwinia_ecdsa_authority};
+pub use dc_primitives::AccountId;
 
 // darwinia
 use darwinia_ecdsa_authority::{primitives::*, *};
 // substrate
-use frame_support::traits::{BuildGenesisConfig, OnInitialize};
+use frame_support::traits::OnInitialize;
 use sp_io::TestExternalities;
+use sp_runtime::BuildStorage;
+
+pub type BlockNumber = u64;
 
 frame_support::parameter_types! {
 	pub Version: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
@@ -34,6 +38,7 @@ impl frame_system::Config for Runtime {
 	type AccountData = ();
 	type AccountId = AccountId;
 	type BaseCallFilter = frame_support::traits::Everything;
+	type Block = frame_system::mocking::MockBlock<Self>;
 	type BlockHashCount = ();
 	type BlockLength = ();
 	type BlockWeights = ();
@@ -62,11 +67,11 @@ frame_support::parameter_types! {
 impl Config for Runtime {
 	type ChainId = frame_support::traits::ConstU64<46>;
 	type MaxAuthorities = frame_support::traits::ConstU32<3>;
-	type MaxPendingPeriod = frame_support::traits::ConstU32<20>;
+	type MaxPendingPeriod = frame_support::traits::ConstU64<20>;
 	type MessageRoot = MessageRoot;
 	type RuntimeEvent = RuntimeEvent;
 	type SignThreshold = SignThreshold;
-	type SyncInterval = frame_support::traits::ConstU32<10>;
+	type SyncInterval = frame_support::traits::ConstU64<10>;
 	type WeightInfo = ();
 }
 
@@ -91,7 +96,7 @@ impl ExtBuilder {
 	pub(crate) fn build(self) -> TestExternalities {
 		let Self { authorities } = self;
 		let mut storage =
-			frame_system::GenesisConfig::default().build_storage::<Runtime>().unwrap();
+			<frame_system::GenesisConfig<Runtime>>::default().build_storage().unwrap();
 
 		darwinia_ecdsa_authority::GenesisConfig::<Runtime> { authorities }
 			.assimilate_storage(&mut storage)

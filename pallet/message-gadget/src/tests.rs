@@ -27,14 +27,15 @@ use crate::*;
 use pallet_evm::{FeeCalculator, Runner};
 // substrate
 use sp_core::U256;
+use sp_runtime::BuildStorage;
 
 impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<u128>;
 	type AccountId = sp_core::H160;
 	type BaseCallFilter = frame_support::traits::Everything;
+	type Block = frame_system::mocking::MockBlock<Self>;
 	type BlockHashCount = ();
 	type BlockLength = ();
-	type BlockNumber = u64;
 	type BlockWeights = ();
 	type DbWeight = ();
 	type Hash = sp_core::H256;
@@ -113,7 +114,7 @@ frame_support::construct_runtime! {
 }
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	frame_system::GenesisConfig::default().build_storage::<Runtime>().unwrap().into()
+	<frame_system::GenesisConfig<Runtime>>::default().build_storage().unwrap().into()
 }
 
 #[test]

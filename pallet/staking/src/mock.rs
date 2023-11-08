@@ -21,11 +21,9 @@ pub use crate as darwinia_staking;
 // darwinia
 use dc_types::{AssetId, Balance, Moment, UNIT};
 // substrate
-use frame_support::traits::{
-	BuildGenesisConfig, Currency, GenesisBuild, OnInitialize, OnUnbalanced,
-};
+use frame_support::traits::{Currency, OnInitialize, OnUnbalanced};
 use sp_io::TestExternalities;
-use sp_runtime::RuntimeAppPublic;
+use sp_runtime::{BuildStorage, RuntimeAppPublic};
 
 type BlockNumber = u64;
 type AccountId = u32;
@@ -34,13 +32,13 @@ impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
 	type BaseCallFilter = frame_support::traits::Everything;
+	type Block = frame_system::mocking::MockBlock<Self>;
 	type BlockHashCount = ();
 	type BlockLength = ();
 	type BlockWeights = ();
 	type DbWeight = ();
 	type Hash = sp_core::H256;
 	type Hashing = sp_runtime::traits::BlakeTwo256;
-	type Header = sp_runtime::testing::Header;
 	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 	type Nonce = u64;
@@ -422,7 +420,7 @@ impl ExtBuilder {
 	pub fn build(self) -> TestExternalities {
 		let _ = pretty_env_logger::try_init();
 		let mut storage =
-			frame_system::GenesisConfig::default().build_storage::<Runtime>().unwrap();
+			<frame_system::GenesisConfig<Runtime>>::default().build_storage().unwrap();
 
 		pallet_balances::GenesisConfig::<Runtime> {
 			balances: (1..=10)
