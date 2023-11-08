@@ -552,7 +552,7 @@ fn payout_should_work() {
 		});
 		new_session();
 		new_session();
-		Staking::reward_by_ids(&[(1, 20), (2, 20), (3, 20), (4, 20), (5, 20)]);
+		Staking::note_authors(&[1, 2, 3, 4, 5]);
 		(1..=10).for_each(|i| assert_eq!(Balances::free_balance(i), 1_000 * UNIT));
 
 		let session_duration = Duration::new(6 * 60 * 60, 0).as_millis();
@@ -611,7 +611,7 @@ fn payout_should_work() {
 		});
 		new_session();
 		new_session();
-		Staking::reward_by_ids(&[(1, 20), (2, 20), (3, 20), (4, 20), (5, 20)]);
+		Staking::note_authors(&[1, 2, 3, 4, 5]);
 		(1..=10).for_each(|i| assert_eq!(Balances::free_balance(i), 1_000 * UNIT));
 
 		let total_issuance = Balances::total_issuance();
@@ -647,7 +647,7 @@ fn payout_should_work() {
 			false
 		));
 		dbg!(Balances::free_balance(&Treasury::account_id()));
-		Staking::reward_by_ids(&[(1, 20)]);
+		Staking::note_authors(&[1]);
 		System::reset_events();
 		new_session();
 
@@ -655,13 +655,13 @@ fn payout_should_work() {
 			System::events()
 				.into_iter()
 				.filter_map(|e| match e.event {
-					RuntimeEvent::Staking(e @ Event::Unpaied { .. }) => Some(e),
+					RuntimeEvent::Staking(e @ Event::Unpaid { .. }) => Some(e),
 					_ => None,
 				})
 				.collect::<Vec<_>>(),
 			vec![
-				Event::Unpaied { staker: 6, amount: 7499999997000000000000 },
-				Event::Unpaied { staker: 1, amount: 2499999994000000000000 }
+				Event::Unpaid { staker: 6, amount: 7499999997000000000000 },
+				Event::Unpaid { staker: 1, amount: 2499999994000000000000 }
 			]
 		);
 	});
@@ -676,9 +676,7 @@ fn on_new_session_should_work() {
 		assert_ok!(Staking::collect(RuntimeOrigin::signed(3), Perbill::zero()));
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(3), 2 * UNIT, 0, Vec::new()));
 		assert_ok!(Staking::nominate(RuntimeOrigin::signed(3), 3));
-		Staking::reward_by_ids(
-			&Session::validators().into_iter().map(|v| (v, 20)).collect::<Vec<_>>(),
-		);
+		Staking::note_authors(&Session::validators());
 
 		new_session();
 		assert_eq_uvec!(<Exposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 2]);
@@ -688,9 +686,7 @@ fn on_new_session_should_work() {
 		assert_ok!(Staking::collect(RuntimeOrigin::signed(4), Perbill::zero()));
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(4), 2 * UNIT, 0, Vec::new()));
 		assert_ok!(Staking::nominate(RuntimeOrigin::signed(4), 4));
-		Staking::reward_by_ids(
-			&Session::validators().into_iter().map(|v| (v, 20)).collect::<Vec<_>>(),
-		);
+		Staking::note_authors(&Session::validators());
 
 		new_session();
 		assert_eq_uvec!(<Exposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 3]);
@@ -700,9 +696,7 @@ fn on_new_session_should_work() {
 		assert_ok!(Staking::collect(RuntimeOrigin::signed(5), Perbill::zero()));
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(5), 2 * UNIT, 0, Vec::new()));
 		assert_ok!(Staking::nominate(RuntimeOrigin::signed(5), 5));
-		Staking::reward_by_ids(
-			&Session::validators().into_iter().map(|v| (v, 20)).collect::<Vec<_>>(),
-		);
+		Staking::note_authors(&Session::validators());
 
 		new_session();
 		assert_eq_uvec!(<Exposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 4]);

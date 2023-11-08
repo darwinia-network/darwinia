@@ -28,11 +28,12 @@
 //! - KTON: Darwinia's commitment token
 //! - Deposit: Locking RINGs' ticket
 
-// TODO: nomination upper limit
-
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
 #![deny(unused_crate_dependencies)]
+
+/// Pallet migrations.
+pub mod migration;
 
 #[cfg(test)]
 mod mock;
@@ -55,7 +56,7 @@ use dc_types::{Balance, Moment};
 use frame_support::{pallet_prelude::*, DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound};
 use frame_system::{pallet_prelude::*, RawOrigin};
 use sp_runtime::{
-	traits::{AccountIdConversion, Convert},
+	traits::{AccountIdConversion, Convert, One},
 	Perbill, Perquintill,
 };
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
@@ -133,7 +134,7 @@ pub mod pallet {
 			amount: Balance,
 		},
 		/// Unable to pay the staker's reward.
-		Unpaied {
+		Unpaid {
 			staker: T::AccountId,
 			amount: Balance,
 		},
@@ -206,12 +207,18 @@ pub mod pallet {
 	#[pallet::getter(fn nominator_of)]
 	pub type Nominators<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, T::AccountId>;
 
-	/// Collator's reward points.
+	/// Number of blocks authored by the collator within current session.
 	#[pallet::storage]
 	#[pallet::unbounded]
-	#[pallet::getter(fn reward_points)]
-	pub type RewardPoints<T: Config> =
-		StorageValue<_, (RewardPoint, BTreeMap<T::AccountId, RewardPoint>), ValueQuery>;
+	#[pallet::getter(fn authored_block_count)]
+	pub type AuthoredBlocksCount<T: Config> =
+		StorageValue<_, (BlockNumberFor<T>, BTreeMap<T::AccountId, BlockNumberFor<T>>), ValueQuery>;
+
+	/// All outstanding rewards since the last payment..
+	#[pallet::storage]
+	#[pallet::unbounded]
+	#[pallet::getter(fn unpaid)]
+	pub type Unpaid<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, Balance>;
 
 	/// Active session's start-time.
 	#[pallet::storage]
@@ -735,13 +742,13 @@ pub mod pallet {
 			});
 		}
 
-		/// Add reward points to collators using their account id.
-		pub fn reward_by_ids(collators: &[(T::AccountId, RewardPoint)]) {
-			<RewardPoints<T>>::mutate(|(total, reward_map)| {
-				collators.iter().cloned().for_each(|(c, p)| {
-					*total += p;
+		/// Update the record of block production.
+		pub fn note_authors(collators: &[T::AccountId]) {
+			<AuthoredBlocksCount<T>>::mutate(|(sum, map)| {
+				collators.iter().cloned().for_each(|c| {
+					*sum += One::one();
 
-					reward_map.entry(c).and_modify(|p_| *p_ += p).or_insert(p);
+					map.entry(c).and_modify(|p_| *p_ += One::one()).or_insert(One::one());
 				});
 			});
 		}
@@ -775,11 +782,11 @@ pub mod pallet {
 		// TODO: weight
 		/// Pay the session reward to the stakers.
 		pub fn payout(amount: Balance) -> Balance {
-			let (total_points, reward_map) = <RewardPoints<T>>::get();
+			let (sum, map) = <AuthoredBlocksCount<T>>::get();
 			// Due to the `payout * percent` there might be some losses.
 			let mut actual_payout = 0;
 
-			for (c, p) in reward_map {
+			for (c, p) in map {
 				let Some(commission) = <Collators<T>>::get(&c) else {
 						#[cfg(test)]
 						panic!("[pallet::staking] collator({c:?}) must be found; qed");
@@ -790,7 +797,7 @@ pub mod pallet {
 							continue;
 						}
 					};
-				let c_total_payout = Perbill::from_rational(p, total_points) * amount;
+				let c_total_payout = Perbill::from_rational(p, sum) * amount;
 				let mut c_payout = commission * c_total_payout;
 				let n_payout = c_total_payout - c_payout;
 				let Some(c_exposure) = <Exposures<T>>::get(&c) else {
@@ -820,7 +827,7 @@ pub mod pallet {
 							amount: n_payout,
 						});
 					} else {
-						Self::deposit_event(Event::Unpaied {
+						Self::deposit_event(Event::Unpaid {
 							staker: n_exposure.who,
 							amount: n_payout,
 						});
@@ -832,7 +839,7 @@ pub mod pallet {
 
 					Self::deposit_event(Event::Payout { staker: c, amount: c_payout });
 				} else {
-					Self::deposit_event(Event::Unpaied { staker: c, amount: c_payout });
+					Self::deposit_event(Event::Unpaid { staker: c, amount: c_payout });
 				}
 			}
 
@@ -841,7 +848,7 @@ pub mod pallet {
 
 		/// Prepare the session state.
 		pub fn prepare_new_session() {
-			<RewardPoints<T>>::kill();
+			<AuthoredBlocksCount<T>>::kill();
 			#[allow(deprecated)]
 			<Exposures<T>>::remove_all(None);
 			<NextExposures<T>>::iter().drain().for_each(|(k, v)| {
@@ -891,7 +898,6 @@ pub mod pallet {
 }
 pub use pallet::*;
 
-type RewardPoint = u32;
 type Power = u32;
 type Vote = u32;
 
@@ -1042,7 +1048,7 @@ where
 	T: Config + pallet_authorship::Config + pallet_session::Config,
 {
 	fn note_author(author: T::AccountId) {
-		Self::reward_by_ids(&[(author, 20)])
+		Self::note_authors(&[author])
 	}
 }
 
