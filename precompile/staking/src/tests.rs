@@ -19,7 +19,7 @@
 // darwinia
 use crate::mock::{
 	Account::{Alice, Bob, Precompile},
-	ExtBuilder, PCall, PrecompilesValue, Staking, System, TestPrecompiles, Runtime,
+	ExtBuilder, PCall, PrecompilesValue, Runtime, Staking, System, TestPrecompiles,
 };
 use sp_runtime::Perbill;
 // moonbeam

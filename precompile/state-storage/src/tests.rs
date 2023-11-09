@@ -19,7 +19,7 @@
 // darwinia
 use crate::mock::{
 	Account::{Alice, Precompile},
-	ExtBuilder, PCall, PrecompilesValue, System, TestPrecompiles, Runtime,
+	ExtBuilder, PCall, PrecompilesValue, Runtime, System, TestPrecompiles,
 };
 // moonbeam
 use precompile_utils::{
