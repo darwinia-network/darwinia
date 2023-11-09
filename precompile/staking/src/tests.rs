@@ -19,7 +19,7 @@
 // darwinia
 use crate::mock::{
 	Account::{Alice, Bob, Precompile},
-	ExtBuilder, PCall, PrecompilesValue, Staking, System, TestPrecompiles, TestRuntime,
+	ExtBuilder, PCall, PrecompilesValue, Runtime, Staking, System, TestPrecompiles,
 };
 use sp_runtime::Perbill;
 // moonbeam
@@ -27,7 +27,7 @@ use precompile_utils::testing::PrecompileTesterExt;
 // substrate
 use sp_core::{H160, U256};
 
-fn precompiles() -> TestPrecompiles<TestRuntime> {
+fn precompiles() -> TestPrecompiles<Runtime> {
 	PrecompilesValue::get()
 }
 

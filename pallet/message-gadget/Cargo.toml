@@ -9,6 +9,7 @@ version.workspace = true
 [dependencies]
 # crates.io
 codec      = { workspace = true, package = "parity-scale-codec" }
+log        = { workspace = true }
 scale-info = { workspace = true }
 
 # frontier
@@ -19,6 +20,7 @@ frame-support = { workspace = true }
 frame-system  = { workspace = true }
 sp-core       = { workspace = true }
 sp-io         = { workspace = true }
+sp-runtime    = { workspace = true, optional = true }
 sp-std        = { workspace = true }
 
 [dev-dependencies]
@@ -28,7 +30,6 @@ array-bytes = { workspace = true }
 # substrate
 pallet-balances  = { workspace = true, features = ["std"] }
 pallet-timestamp = { workspace = true, features = ["std"] }
-sp-runtime       = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]
@@ -36,6 +37,7 @@ default = ["std"]
 std = [
 	# crates.io
 	"codec/std",
+	"log/std",
 	"scale-info/std",
 
 	# frontier
@@ -46,6 +48,7 @@ std = [
 	"frame-system/std",
 	"sp-core/std",
 	"sp-io/std",
+	"sp-runtime/std",
 	"sp-std/std",
 ]
 
@@ -54,4 +57,5 @@ try-runtime = [
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",
 	"pallet-evm/try-runtime",
+	"sp-runtime/try-runtime",
 ]

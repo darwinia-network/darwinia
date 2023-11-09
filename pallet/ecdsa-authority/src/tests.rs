@@ -85,15 +85,20 @@ fn add_authority_should_work() {
 		);
 
 		// Case 4.
-		(1..<<Runtime as Config>::MaxAuthorities as Get<BlockNumber>>::get()).for_each(|i| {
-			assert_ok!(EcdsaAuthority::add_authority(RuntimeOrigin::root(), account_id_of(i as _)));
-			EcdsaAuthority::presume_authority_change_succeed();
-			assert_eq!(EcdsaAuthority::nonce(), 1 + i);
-		});
+		(1..<<Runtime as Config>::MaxAuthorities as Get<u32>>::get() as BlockNumber).for_each(
+			|i| {
+				assert_ok!(EcdsaAuthority::add_authority(
+					RuntimeOrigin::root(),
+					account_id_of(i as _)
+				));
+				EcdsaAuthority::presume_authority_change_succeed();
+				assert_eq!(EcdsaAuthority::nonce(), 1 + i as u32);
+			},
+		);
 		assert_noop!(
 			EcdsaAuthority::add_authority(
 				RuntimeOrigin::root(),
-				account_id_of(<<Runtime as Config>::MaxAuthorities as Get<BlockNumber>>::get() as _)
+				account_id_of(<<Runtime as Config>::MaxAuthorities as Get<u32>>::get() as _)
 			),
 			<Error<Runtime>>::TooManyAuthorities
 		);
@@ -101,7 +106,7 @@ fn add_authority_should_work() {
 		// Check order.
 		assert_eq!(
 			EcdsaAuthority::authorities(),
-			(0..<<Runtime as Config>::MaxAuthorities as Get<BlockNumber>>::get())
+			(0..<<Runtime as Config>::MaxAuthorities as Get<u32>>::get())
 				.rev()
 				.map(|i| account_id_of(i as _))
 				.collect::<Vec<_>>()

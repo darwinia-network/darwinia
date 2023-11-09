@@ -75,31 +75,33 @@ pub type XcmOriginToTransactDispatchOrigin = (
 	pallet_xcm::XcmPassthrough<RuntimeOrigin>,
 );
 
-pub type Barrier = darwinia_common_runtime::xcm_configs::DenyThenTry<
-	darwinia_common_runtime::xcm_configs::DenyReserveTransferToRelayChain,
-	(
-		xcm_builder::TakeWeightCredit,
-		xcm_builder::WithComputedOrigin<
-			(
-				// If the message is one that immediately attemps to pay for execution, then allow
-				// it.
-				xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
-				// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality get
-				// free execution.
-				xcm_builder::AllowUnpaidExecutionFrom<
-					darwinia_common_runtime::xcm_configs::ParentOrParentsExecutivePlurality,
-				>,
-				// Subscriptions for version tracking are OK.
-				xcm_builder::AllowSubscriptionsFrom<
-					darwinia_common_runtime::xcm_configs::ParentOrSiblings,
-				>,
-			),
-			UniversalLocation,
-			ConstU32<8>,
-		>,
-		// Expected responses are OK.
-		xcm_builder::AllowKnownQueryResponses<PolkadotXcm>,
-	),
+pub type Barrier = xcm_builder::TrailingSetTopicAsId<
+	xcm_builder::DenyThenTry<
+		xcm_builder::DenyReserveTransferToRelayChain,
+		(
+			xcm_builder::TakeWeightCredit,
+			xcm_builder::WithComputedOrigin<
+				(
+					// If the message is one that immediately attemps to pay for execution, then
+					// allow it.
+					xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
+					// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality
+					// get free execution.
+					xcm_builder::AllowUnpaidExecutionFrom<
+						darwinia_common_runtime::xcm_configs::ParentOrParentsExecutivePlurality,
+					>,
+					// Subscriptions for version tracking are OK.
+					xcm_builder::AllowSubscriptionsFrom<
+						darwinia_common_runtime::xcm_configs::ParentOrSiblings,
+					>,
+				),
+				UniversalLocation,
+				ConstU32<8>,
+			>,
+			// Expected responses are OK.
+			xcm_builder::AllowKnownQueryResponses<PolkadotXcm>,
+		),
+	>,
 >;
 
 frame_support::parameter_types! {
@@ -124,7 +126,7 @@ impl xcm_builder::TakeRevenue for ToTreasury {
 			let treasury_account = Treasury::account_id();
 			let _ = Balances::deposit_creating(&treasury_account, amount);
 
-			frame_support::log::trace!(
+			log::trace!(
 				target: "xcm::weight",
 				"LocalAssetTrader::to_treasury amount: {amount:?}, treasury: {treasury_account:?}"
 			);
@@ -162,6 +164,7 @@ impl xcm_executor::traits::CallDispatcher<RuntimeCall> for XcmCallDispatcher {
 
 pub struct XcmExecutorConfig;
 impl xcm_executor::Config for XcmExecutorConfig {
+	type Aliasers = frame_support::traits::Nothing;
 	type AssetClaims = PolkadotXcm;
 	type AssetExchanger = ();
 	type AssetLocker = ();
@@ -204,12 +207,12 @@ pub type LocalOriginToLocation =
 	xcm_primitives::SignedToAccountId20<RuntimeOrigin, AccountId, RelayNetwork>;
 /// The means for routing XCM messages which are not for local execution into the right message
 /// queues.
-pub type XcmRouter = (
+pub type XcmRouter = xcm_builder::WithUniqueTopic<(
 	// Two routers - use UMP to communicate with the relay chain:
 	cumulus_primitives_utility::ParentAsUmp<ParachainSystem, PolkadotXcm, ()>,
 	// ..and XCMP to communicate with the sibling chains.
 	XcmpQueue,
-);
+)>;
 
 #[cfg(feature = "runtime-benchmarks")]
 frame_support::parameter_types! {

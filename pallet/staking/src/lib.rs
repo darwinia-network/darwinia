@@ -52,10 +52,8 @@ use codec::FullCodec;
 // darwinia
 use dc_types::{Balance, Moment};
 // substrate
-use frame_support::{log, pallet_prelude::*, EqNoBound, PalletId, PartialEqNoBound};
-use frame_system::pallet_prelude::*;
-#[cfg(feature = "std")]
-use frame_system::RawOrigin;
+use frame_support::{pallet_prelude::*, DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound};
+use frame_system::{pallet_prelude::*, RawOrigin};
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert},
 	Perbill, Perquintill,
@@ -96,7 +94,7 @@ pub mod pallet {
 
 		/// Minimum time to stake at least.
 		#[pallet::constant]
-		type MinStakingDuration: Get<Self::BlockNumber>;
+		type MinStakingDuration: Get<BlockNumberFor<Self>>;
 
 		/// Maximum deposit count.
 		#[pallet::constant]
@@ -225,7 +223,7 @@ pub mod pallet {
 	#[pallet::getter(fn elapsed_time)]
 	pub type ElapsedTime<T: Config> = StorageValue<_, Moment, ValueQuery>;
 
-	#[derive(frame_support::DefaultNoBound)]
+	#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
 		/// Current timestamp.
@@ -239,7 +237,7 @@ pub mod pallet {
 	}
 
 	#[pallet::genesis_build]
-	impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
+	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
 		fn build(&self) {
 			if self.collator_count == 0 {
 				panic!("[pallet::staking] collator count mustn't be 0");
@@ -564,7 +562,7 @@ pub mod pallet {
 
 		fn unstake_token<P>(
 			staked: &mut Balance,
-			unstaking: &mut BoundedVec<(Balance, T::BlockNumber), T::MaxUnstakings>,
+			unstaking: &mut BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>,
 			amount: Balance,
 		) -> DispatchResult
 		where
@@ -612,7 +610,7 @@ pub mod pallet {
 
 		fn restake_token<P>(
 			staked: &mut Balance,
-			unstaking: &mut BoundedVec<(Balance, T::BlockNumber), T::MaxUnstakings>,
+			unstaking: &mut BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>,
 			mut amount: Balance,
 		) -> DispatchResult
 		where
@@ -971,11 +969,11 @@ where
 	/// Staked deposits.
 	pub staked_deposits: BoundedVec<DepositId<T>, <T as Config>::MaxDeposits>,
 	/// The RING in unstaking process.
-	pub unstaking_ring: BoundedVec<(Balance, T::BlockNumber), T::MaxUnstakings>,
+	pub unstaking_ring: BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>,
 	/// The KTON in unstaking process.
-	pub unstaking_kton: BoundedVec<(Balance, T::BlockNumber), T::MaxUnstakings>,
+	pub unstaking_kton: BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>,
 	/// The deposit in unstaking process.
-	pub unstaking_deposits: BoundedVec<(DepositId<T>, T::BlockNumber), T::MaxUnstakings>,
+	pub unstaking_deposits: BoundedVec<(DepositId<T>, BlockNumberFor<T>), T::MaxUnstakings>,
 }
 impl<T> Ledger<T>
 where
@@ -1039,7 +1037,7 @@ pub struct IndividualExposure<AccountId> {
 // - 20 points to the block producer for producing a (non-uncle) block in the parachain chain,
 // - 2 points to the block producer for each reference to a previously unreferenced uncle, and
 // - 1 point to the producer of each referenced uncle block.
-impl<T> pallet_authorship::EventHandler<T::AccountId, T::BlockNumber> for Pallet<T>
+impl<T> pallet_authorship::EventHandler<T::AccountId, BlockNumberFor<T>> for Pallet<T>
 where
 	T: Config + pallet_authorship::Config + pallet_session::Config,
 {

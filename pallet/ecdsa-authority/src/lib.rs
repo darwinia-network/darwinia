@@ -44,11 +44,14 @@ pub use weights::WeightInfo;
 // crates.io
 use ethabi::Token;
 // darwinia
-use dc_primitives::{AccountId, BlockNumber};
+use dc_primitives::AccountId;
 // substrate
-use frame_support::pallet_prelude::*;
+use frame_support::{pallet_prelude::*, DefaultNoBound};
 use frame_system::pallet_prelude::*;
-use sp_runtime::{traits::Zero, Perbill};
+use sp_runtime::{
+	traits::{SaturatedConversion, Zero},
+	Perbill, Saturating,
+};
 use sp_std::prelude::*;
 
 #[frame_support::pallet]
@@ -57,9 +60,7 @@ pub mod pallet {
 	use crate::*;
 
 	#[pallet::config]
-	pub trait Config:
-		frame_system::Config<AccountId = AccountId, BlockNumber = BlockNumber>
-	{
+	pub trait Config: frame_system::Config<AccountId = AccountId> {
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
@@ -82,14 +83,14 @@ pub mod pallet {
 		/// The interval of checking the message root.
 		/// This must be shorter than [`Config::MaxPendingPeriod`].
 		#[pallet::constant]
-		type SyncInterval: Get<Self::BlockNumber>;
+		type SyncInterval: Get<BlockNumberFor<Self>>;
 
 		/// How long should we wait for the message root to be signed.
 		///
 		/// If the collecting new message root signatures process takes more than
 		/// `MaxPendingPeriod`, we will drop the root. And update the root with a new one.
 		#[pallet::constant]
-		type MaxPendingPeriod: Get<Self::BlockNumber>;
+		type MaxPendingPeriod: Get<BlockNumberFor<Self>>;
 
 		/// The Darwinia message root.
 		///
@@ -114,7 +115,7 @@ pub mod pallet {
 		CollectingNewMessageRootSignatures { message: Hash },
 		/// Collected enough new message root signatures.
 		CollectedEnoughNewMessageRootSignatures {
-			commitment: Commitment,
+			commitment: Commitment<BlockNumberFor<T>>,
 			message: Hash,
 			signatures: Vec<(T::AccountId, Signature)>,
 		},
@@ -163,15 +164,15 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn authorities_change_to_sign)]
 	pub type AuthoritiesChangeToSign<T: Config> =
-		StorageValue<_, AuthoritiesChangeSigned<T::MaxAuthorities>, OptionQuery>;
+		StorageValue<_, AuthoritiesChangeSigned<T::MaxAuthorities>>;
 
 	/// The incoming message root waiting for signing.
 	#[pallet::storage]
 	#[pallet::getter(fn message_root_to_sign)]
 	pub type MessageRootToSign<T: Config> =
-		StorageValue<_, MessageRootSigned<T::MaxAuthorities>, OptionQuery>;
+		StorageValue<_, MessageRootSigned<BlockNumberFor<T>, T::MaxAuthorities>>;
 
-	#[derive(frame_support::DefaultNoBound)]
+	#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T>
 	where
@@ -182,7 +183,7 @@ pub mod pallet {
 	}
 
 	#[pallet::genesis_build]
-	impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
+	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
 		fn build(&self) {
 			<Authorities<T>>::put(BoundedVec::try_from(self.authorities.clone()).unwrap());
 			<NextAuthorities<T>>::put(BoundedVec::try_from(self.authorities.clone()).unwrap());
@@ -193,9 +194,11 @@ pub mod pallet {
 	#[pallet::without_storage_info]
 	pub struct Pallet<T>(PhantomData<T>);
 	#[pallet::hooks]
-	impl<T: Config> Hooks<T::BlockNumber> for Pallet<T> {
-		fn on_initialize(now: T::BlockNumber) -> Weight {
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		fn on_initialize(now: BlockNumberFor<T>) -> Weight {
 			if (now % T::SyncInterval::get()).is_zero() {
+				let now = now.saturated_into();
+
 				if let Some(message_root) = Self::try_update_message_root(now, false) {
 					Self::on_new_message_root(now, message_root);
 				}
@@ -338,7 +341,7 @@ pub mod pallet {
 					signatures: authorities_change_signed.signatures.to_vec(),
 				});
 
-				let now = <frame_system::Pallet<T>>::block_number();
+				let now = <frame_system::Pallet<T>>::block_number().saturated_into();
 
 				if let Some(message_root) = Self::try_update_message_root(now, true) {
 					Self::on_new_message_root(now, message_root);
@@ -492,7 +495,7 @@ pub mod pallet {
 			<Nonce<T>>::mutate(|nonce| *nonce += 1);
 		}
 
-		fn try_update_message_root(at: T::BlockNumber, force: bool) -> Option<Hash> {
+		fn try_update_message_root(at: BlockNumberFor<T>, force: bool) -> Option<Hash> {
 			// Not allow to relay the messages if the new authorities set is not verified.
 			if Self::ensure_not_on_authorities_change().is_err() {
 				return None;
@@ -533,7 +536,7 @@ pub mod pallet {
 			}
 		}
 
-		fn on_new_message_root(at: T::BlockNumber, message_root: Hash) {
+		fn on_new_message_root(at: BlockNumberFor<T>, message_root: Hash) {
 			let commitment =
 				Commitment { block_number: at, message_root, nonce: <Nonce<T>>::get() };
 			let message = Sign::signable_message(
@@ -541,7 +544,9 @@ pub mod pallet {
 				T::Version::get().spec_name.as_ref(),
 				&ethabi::encode(&[
 					Token::FixedBytes(COMMIT_TYPE_HASH.into()),
-					Token::Uint(commitment.block_number.into()),
+					// Be careful to use this if your chain's block number is larger than
+					// `u32::MAX`.
+					Token::Uint(commitment.block_number.saturated_into::<u32>().into()),
 					Token::FixedBytes(commitment.message_root.as_ref().into()),
 					Token::Uint(commitment.nonce.into()),
 				]),

@@ -18,50 +18,39 @@
 
 //! Test utilities
 
+pub use crate as darwinia_message_transact;
+
 // crates.io
 use codec::{Decode, Encode};
-use sha3::{Digest, Keccak256};
-// frontier
-use pallet_ethereum::IntermediateStateRoot;
-// substrate
-use frame_support::{
-	dispatch::RawOrigin,
-	ensure,
-	traits::{ConstU32, Everything},
-};
-use sp_runtime::{
-	testing::Header,
-	traits::{BlakeTwo256, DispatchInfoOf, IdentifyAccount, IdentityLookup, Verify},
-	transaction_validity::{InvalidTransaction, TransactionValidity, TransactionValidityError},
-};
-use sp_std::prelude::*;
+use scale_info::TypeInfo;
+use sha3::Digest;
 // darwinia
-use crate::*;
-use bp_message_dispatch::{CallValidate, IntoDispatchOrigin as IntoDispatchOriginT};
+use darwinia_message_transact::LcmpEthOrigin;
+// substrate
+use sp_core::H160;
+use sp_runtime::BuildStorage;
+use sp_std::prelude::*;
 
-pub type Block = frame_system::mocking::MockBlock<TestRuntime>;
 pub type Balance = u64;
-pub type AccountId = sp_core::H160;
-pub type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<TestRuntime>;
+pub type AccountId = H160;
 
 frame_support::parameter_types! {
 	pub const BlockHashCount: u64 = 250;
 }
-impl frame_system::Config for TestRuntime {
+impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
-	type BaseCallFilter = Everything;
+	type BaseCallFilter = frame_support::traits::Everything;
+	type Block = frame_system::mocking::MockBlock<Self>;
 	type BlockHashCount = ();
 	type BlockLength = ();
-	type BlockNumber = u64;
 	type BlockWeights = ();
 	type DbWeight = ();
 	type Hash = sp_core::H256;
-	type Hashing = BlakeTwo256;
-	type Header = Header;
-	type Index = u64;
-	type Lookup = IdentityLookup<Self::AccountId>;
-	type MaxConsumers = ConstU32<16>;
+	type Hashing = sp_runtime::traits::BlakeTwo256;
+	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
+	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type Nonce = u64;
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
@@ -78,26 +67,26 @@ frame_support::parameter_types! {
 	pub const MaxLocks: u32 = 10;
 	pub const ExistentialDeposit: u64 = 0;
 }
-impl pallet_balances::Config for TestRuntime {
+impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
 	type Balance = Balance;
 	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type FreezeIdentifier = ();
-	type HoldIdentifier = ();
 	type MaxFreezes = ();
 	type MaxHolds = ();
 	type MaxLocks = MaxLocks;
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
 	type RuntimeEvent = RuntimeEvent;
+	type RuntimeHoldReason = ();
 	type WeightInfo = ();
 }
 
 frame_support::parameter_types! {
 	pub const MinimumPeriod: u64 = 6000 / 2;
 }
-impl pallet_timestamp::Config for TestRuntime {
+impl pallet_timestamp::Config for Runtime {
 	type MinimumPeriod = MinimumPeriod;
 	type Moment = u64;
 	type OnTimestampSet = ();
@@ -112,13 +101,13 @@ frame_support::parameter_types! {
 }
 
 pub struct FixedGasPrice;
-impl FeeCalculator for FixedGasPrice {
+impl fp_evm::FeeCalculator for FixedGasPrice {
 	fn min_gas_price() -> (sp_core::U256, frame_support::weights::Weight) {
 		(sp_core::U256::from(5), frame_support::weights::Weight::zero())
 	}
 }
 
-impl pallet_evm::Config for TestRuntime {
+impl pallet_evm::Config for Runtime {
 	type AddressMapping = pallet_evm::IdentityAddressMapping;
 	type BlockGasLimit = BlockGasLimit;
 	type BlockHashMapping = pallet_evm::SubstrateBlockHashMapping<Self>;
@@ -145,11 +134,11 @@ frame_support::parameter_types! {
 	pub const PostBlockAndTxnHashes: pallet_ethereum::PostLogContent = pallet_ethereum::PostLogContent::BlockAndTxnHashes;
 }
 
-impl pallet_ethereum::Config for TestRuntime {
+impl pallet_ethereum::Config for Runtime {
 	type ExtraDataLength = ();
 	type PostLogContent = PostBlockAndTxnHashes;
 	type RuntimeEvent = RuntimeEvent;
-	type StateRoot = IntermediateStateRoot<Self>;
+	type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
 }
 
 pub struct MockAccountIdConverter;
@@ -168,17 +157,19 @@ impl From<MockEncodedCall> for Result<RuntimeCall, ()> {
 }
 
 pub struct MockCallValidator;
-impl CallValidate<AccountId, RuntimeOrigin, RuntimeCall> for MockCallValidator {
+impl bp_message_dispatch::CallValidate<AccountId, RuntimeOrigin, RuntimeCall>
+	for MockCallValidator
+{
 	fn check_receiving_before_dispatch(
 		relayer_account: &AccountId,
 		call: &RuntimeCall,
 	) -> Result<(), &'static str> {
 		match call {
 			RuntimeCall::MessageTransact(crate::Call::message_transact { transaction: tx }) => {
-				let total_payment = crate::total_payment::<TestRuntime>((&**tx).into());
-				let relayer = pallet_evm::Pallet::<TestRuntime>::account_basic(relayer_account).0;
+				let total_payment = crate::total_payment::<Runtime>((&**tx).into());
+				let relayer = pallet_evm::Pallet::<Runtime>::account_basic(relayer_account).0;
 
-				ensure!(relayer.balance >= total_payment, "Insufficient balance");
+				frame_support::ensure!(relayer.balance >= total_payment, "Insufficient balance");
 				Ok(())
 			},
 			_ => Ok(()),
@@ -189,31 +180,37 @@ impl CallValidate<AccountId, RuntimeOrigin, RuntimeCall> for MockCallValidator {
 		relayer_account: &AccountId,
 		origin: &RuntimeOrigin,
 		call: &RuntimeCall,
-	) -> Result<(), TransactionValidityError> {
+	) -> Result<(), sp_runtime::transaction_validity::TransactionValidityError> {
 		match call {
 			RuntimeCall::MessageTransact(crate::Call::message_transact { transaction: tx }) =>
 				match origin.caller {
 					OriginCaller::MessageTransact(LcmpEthOrigin::MessageTransact(id)) => {
-						let total_payment = crate::total_payment::<TestRuntime>((&**tx).into());
-						pallet_balances::Pallet::<TestRuntime>::transfer(
-							RawOrigin::Signed(*relayer_account).into(),
+						let total_payment = crate::total_payment::<Runtime>((&**tx).into());
+						pallet_balances::Pallet::<Runtime>::transfer(
+							frame_system::RawOrigin::Signed(*relayer_account).into(),
 							id,
 							total_payment.as_u64(),
 						)
 						.map_err(|_| {
-							TransactionValidityError::Invalid(InvalidTransaction::Payment)
+							sp_runtime::transaction_validity::TransactionValidityError::Invalid(
+								sp_runtime::transaction_validity::InvalidTransaction::Payment,
+							)
 						})?;
 
 						Ok(())
 					},
-					_ => Err(TransactionValidityError::Invalid(InvalidTransaction::BadSigner)),
+					_ => Err(sp_runtime::transaction_validity::TransactionValidityError::Invalid(
+						sp_runtime::transaction_validity::InvalidTransaction::BadSigner,
+					)),
 				},
 			_ => Ok(()),
 		}
 	}
 }
 pub struct MockIntoDispatchOrigin;
-impl IntoDispatchOriginT<AccountId, RuntimeCall, RuntimeOrigin> for MockIntoDispatchOrigin {
+impl bp_message_dispatch::IntoDispatchOrigin<AccountId, RuntimeCall, RuntimeOrigin>
+	for MockIntoDispatchOrigin
+{
 	fn into_dispatch_origin(id: &AccountId, call: &RuntimeCall) -> RuntimeOrigin {
 		match call {
 			RuntimeCall::MessageTransact(crate::Call::message_transact { .. }) =>
@@ -224,7 +221,7 @@ impl IntoDispatchOriginT<AccountId, RuntimeCall, RuntimeOrigin> for MockIntoDisp
 }
 #[derive(Debug, Encode, Decode, Clone, PartialEq, Eq, TypeInfo)]
 pub struct MockAccountPublic(AccountId);
-impl IdentifyAccount for MockAccountPublic {
+impl sp_runtime::traits::IdentifyAccount for MockAccountPublic {
 	type AccountId = AccountId;
 
 	fn into_account(self) -> AccountId {
@@ -233,7 +230,7 @@ impl IdentifyAccount for MockAccountPublic {
 }
 #[derive(Debug, Encode, Decode, Clone, PartialEq, Eq, TypeInfo)]
 pub struct MockSignature(AccountId);
-impl Verify for MockSignature {
+impl sp_runtime::traits::Verify for MockSignature {
 	type Signer = MockAccountPublic;
 
 	fn verify<L: sp_runtime::traits::Lazy<[u8]>>(&self, _msg: L, signer: &AccountId) -> bool {
@@ -243,7 +240,7 @@ impl Verify for MockSignature {
 
 pub(crate) type MockBridgeMessageId = [u8; 4];
 
-impl pallet_bridge_dispatch::Config for TestRuntime {
+impl pallet_bridge_dispatch::Config for Runtime {
 	type AccountIdConverter = MockAccountIdConverter;
 	type BridgeMessageId = MockBridgeMessageId;
 	type CallValidator = MockCallValidator;
@@ -256,24 +253,20 @@ impl pallet_bridge_dispatch::Config for TestRuntime {
 	type TargetChainSignature = MockSignature;
 }
 
-impl crate::Config for TestRuntime {
+impl crate::Config for Runtime {
 	type LcmpEthOrigin = crate::EnsureLcmpEthOrigin;
 	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
 }
 
 frame_support::construct_runtime! {
-	pub enum TestRuntime where
-		Block = Block,
-		NodeBlock = Block,
-		UncheckedExtrinsic = UncheckedExtrinsic,
-	{
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		Timestamp: pallet_timestamp::{Pallet, Call, Storage},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		EVM: pallet_evm::{Pallet, Call, Storage, Config, Event<T>},
-		Ethereum: pallet_ethereum::{Pallet, Call, Storage, Event, Origin},
-		MessageTransact: crate::{Pallet, Call, Origin},
-		Dispatch: pallet_bridge_dispatch::{Pallet, Call, Event<T>},
+	pub enum Runtime {
+		System: frame_system,
+		Timestamp: pallet_timestamp,
+		Balances: pallet_balances,
+		EVM: pallet_evm,
+		Ethereum: pallet_ethereum,
+		MessageTransact: darwinia_message_transact,
+		Dispatch: pallet_bridge_dispatch,
 	}
 }
 
@@ -287,7 +280,10 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 		}
 	}
 
-	fn check_self_contained(&self) -> Option<Result<Self::SignedInfo, TransactionValidityError>> {
+	fn check_self_contained(
+		&self,
+	) -> Option<Result<Self::SignedInfo, sp_runtime::transaction_validity::TransactionValidityError>>
+	{
 		match self {
 			RuntimeCall::Ethereum(call) => call.check_self_contained(),
 			_ => None,
@@ -297,9 +293,9 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 	fn validate_self_contained(
 		&self,
 		info: &Self::SignedInfo,
-		dispatch_info: &DispatchInfoOf<RuntimeCall>,
+		dispatch_info: &sp_runtime::traits::DispatchInfoOf<RuntimeCall>,
 		len: usize,
-	) -> Option<TransactionValidity> {
+	) -> Option<sp_runtime::transaction_validity::TransactionValidity> {
 		match self {
 			RuntimeCall::Ethereum(call) => call.validate_self_contained(info, dispatch_info, len),
 			_ => None,
@@ -309,9 +305,9 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 	fn pre_dispatch_self_contained(
 		&self,
 		info: &Self::SignedInfo,
-		dispatch_info: &DispatchInfoOf<RuntimeCall>,
+		dispatch_info: &sp_runtime::traits::DispatchInfoOf<RuntimeCall>,
 		len: usize,
-	) -> Option<Result<(), TransactionValidityError>> {
+	) -> Option<Result<(), sp_runtime::transaction_validity::TransactionValidityError>> {
 		match self {
 			RuntimeCall::Ethereum(call) =>
 				call.pre_dispatch_self_contained(info, dispatch_info, len),
@@ -345,7 +341,7 @@ pub(crate) fn address_build(seed: u8) -> AccountInfo {
 	let raw_public_key = &libsecp256k1::PublicKey::from_secret_key(&secret_key).serialize()[1..65];
 	let raw_address = {
 		let mut s = [0; 20];
-		s.copy_from_slice(&Keccak256::digest(raw_public_key)[12..]);
+		s.copy_from_slice(&sha3::Keccak256::digest(raw_public_key)[12..]);
 		s
 	};
 
@@ -365,11 +361,11 @@ impl ExtBuilder {
 	}
 
 	pub(crate) fn build(self) -> sp_io::TestExternalities {
-		let mut t = frame_system::GenesisConfig::default()
-			.build_storage::<TestRuntime>()
+		let mut t = <frame_system::GenesisConfig<Runtime>>::default()
+			.build_storage()
 			.expect("Frame system builds valid default genesis config");
 
-		pallet_balances::GenesisConfig::<TestRuntime> { balances: self.balances }
+		pallet_balances::GenesisConfig::<Runtime> { balances: self.balances }
 			.assimilate_storage(&mut t)
 			.expect("Pallet balances storage can be assimilated");
 

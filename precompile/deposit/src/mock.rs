@@ -21,13 +21,14 @@ use codec::{Decode, Encode, MaxEncodedLen};
 // darwinia
 use crate::*;
 // frontier
-use fp_evm::{IsPrecompileResult, Precompile, PrecompileSet};
+use precompile_utils::Precompile;
 // substrate
-use sp_core::{ConstU32, H160, H256, U256};
+use sp_core::{H160, H256, U256};
+use sp_runtime::BuildStorage;
 
 pub(crate) type Balance = u128;
 pub(crate) type AccountId = H160;
-pub(crate) type PCall = DepositCall<TestRuntime>;
+pub(crate) type PCall = DepositCall<Runtime>;
 
 #[derive(Clone, Encode, Decode, Debug, MaxEncodedLen, scale_info::TypeInfo)]
 pub enum Account {
@@ -46,21 +47,20 @@ impl Into<H160> for Account {
 	}
 }
 
-impl frame_system::Config for TestRuntime {
+impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
 	type BaseCallFilter = frame_support::traits::Everything;
+	type Block = frame_system::mocking::MockBlock<Self>;
 	type BlockHashCount = ();
 	type BlockLength = ();
-	type BlockNumber = u64;
 	type BlockWeights = ();
 	type DbWeight = ();
 	type Hash = H256;
 	type Hashing = sp_runtime::traits::BlakeTwo256;
-	type Header = sp_runtime::testing::Header;
-	type Index = u64;
 	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
-	type MaxConsumers = ConstU32<16>;
+	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type Nonce = u64;
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
@@ -73,23 +73,23 @@ impl frame_system::Config for TestRuntime {
 	type Version = ();
 }
 
-impl pallet_balances::Config for TestRuntime {
+impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
 	type Balance = Balance;
 	type DustRemoval = ();
 	type ExistentialDeposit = frame_support::traits::ConstU128<0>;
 	type FreezeIdentifier = ();
-	type HoldIdentifier = ();
 	type MaxFreezes = ();
 	type MaxHolds = ();
 	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
 	type RuntimeEvent = RuntimeEvent;
+	type RuntimeHoldReason = ();
 	type WeightInfo = ();
 }
 
-impl pallet_timestamp::Config for TestRuntime {
+impl pallet_timestamp::Config for Runtime {
 	type MinimumPeriod = ();
 	type Moment = u128;
 	type OnTimestampSet = ();
@@ -109,7 +109,7 @@ impl darwinia_deposit::SimpleAsset for KtonMinting {
 	}
 }
 
-impl darwinia_deposit::Config for TestRuntime {
+impl darwinia_deposit::Config for Runtime {
 	type Kton = KtonMinting;
 	type MaxDeposits = frame_support::traits::ConstU32<16>;
 	type MinLockingAmount = frame_support::traits::ConstU128<100>;
@@ -132,9 +132,9 @@ where
 		[addr(1)]
 	}
 }
-impl<R> PrecompileSet for TestPrecompiles<R>
+impl<R> fp_evm::PrecompileSet for TestPrecompiles<R>
 where
-	crate::Deposit<R>: Precompile,
+	crate::Deposit<R>: fp_evm::Precompile,
 	R: pallet_evm::Config,
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<EvmResult<PrecompileOutput>> {
@@ -144,8 +144,8 @@ where
 		}
 	}
 
-	fn is_precompile(&self, address: H160, _gas: u64) -> IsPrecompileResult {
-		IsPrecompileResult::Answer {
+	fn is_precompile(&self, address: H160, _gas: u64) -> fp_evm::IsPrecompileResult {
+		fp_evm::IsPrecompileResult::Answer {
 			is_precompile: Self::used_addresses().contains(&address),
 			extra_cost: 0,
 		}
@@ -158,10 +158,10 @@ fn addr(a: u64) -> H160 {
 frame_support::parameter_types! {
 	pub const BlockGasLimit: U256 = U256::MAX;
 	pub const WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(20_000, 0);
-	pub PrecompilesValue: TestPrecompiles<TestRuntime> = TestPrecompiles::<_>::new();
+	pub PrecompilesValue: TestPrecompiles<Runtime> = TestPrecompiles::<_>::new();
 }
 
-impl pallet_evm::Config for TestRuntime {
+impl pallet_evm::Config for Runtime {
 	type AddressMapping = pallet_evm::IdentityAddressMapping;
 	type BlockGasLimit = BlockGasLimit;
 	type BlockHashMapping = pallet_evm::SubstrateBlockHashMapping<Self>;
@@ -185,11 +185,7 @@ impl pallet_evm::Config for TestRuntime {
 }
 
 frame_support::construct_runtime! {
-	pub enum TestRuntime where
-		Block = frame_system::mocking::MockBlock<TestRuntime>,
-		NodeBlock = frame_system::mocking::MockBlock<TestRuntime>,
-		UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<TestRuntime>,
-	{
+	pub enum Runtime {
 		System: frame_system,
 		Balances: pallet_balances,
 		Timestamp: pallet_timestamp,
@@ -215,11 +211,11 @@ impl ExtBuilder {
 	}
 
 	pub(crate) fn build(self) -> sp_io::TestExternalities {
-		let mut t = frame_system::GenesisConfig::default()
-			.build_storage::<TestRuntime>()
+		let mut t = <frame_system::GenesisConfig<Runtime>>::default()
+			.build_storage()
 			.expect("Frame system builds valid default genesis config");
 
-		pallet_balances::GenesisConfig::<TestRuntime> { balances: self.balances }
+		pallet_balances::GenesisConfig::<Runtime> { balances: self.balances }
 			.assimilate_storage(&mut t)
 			.expect("Pallet balances storage can be assimilated");
 

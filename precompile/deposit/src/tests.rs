@@ -18,9 +18,8 @@
 
 // darwinia
 use crate::mock::{
-	efflux,
 	Account::{Alice, Precompile},
-	Deposit, ExtBuilder, PCall, PrecompilesValue, TestPrecompiles, TestRuntime,
+	Deposit, *,
 };
 use darwinia_deposit::MILLISECS_PER_MONTH;
 // moonbeam
@@ -28,7 +27,7 @@ use precompile_utils::testing::PrecompileTesterExt;
 // substrate
 use sp_core::H160;
 
-fn precompiles() -> TestPrecompiles<TestRuntime> {
+fn precompiles() -> TestPrecompiles<Runtime> {
 	PrecompilesValue::get()
 }
 

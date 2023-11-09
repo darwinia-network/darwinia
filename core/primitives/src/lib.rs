@@ -38,9 +38,8 @@ pub type Signature = fp_account::EthereumSignature;
 pub type AccountId = <<Signature as sp_runtime::traits::Verify>::Signer as sp_runtime::traits::IdentifyAccount>::AccountId;
 
 /// Index of a transaction in the chain.
-pub type Index = u32;
-
-/// Nonce of an account in the chain.
+/// or
+/// nonce of an account in the chain.
 pub type Nonce = u32;
 
 /// A hash of some data used by the chain.
@@ -68,6 +67,14 @@ pub type Block = sp_runtime::generic::Block<Header, sp_runtime::OpaqueExtrinsic>
 ///
 /// Change this to adjust the block time.
 pub const MILLISECS_PER_BLOCK: u64 = 12_000;
+/// Maximum number of blocks simultaneously accepted by the Runtime, not yet included
+/// into the relay chain.
+pub const UNINCLUDED_SEGMENT_CAPACITY: u32 = 1;
+/// How many parachain blocks are processed by the relay chain per parent. Limits the
+/// number of blocks authored per slot.
+pub const BLOCK_PROCESSING_VELOCITY: u32 = 1;
+/// Relay chain slot duration, in milliseconds.
+pub const RELAY_CHAIN_SLOT_DURATION_MILLIS: u32 = 6000;
 
 // NOTE: Currently it is not possible to change the slot duration after the chain has started.
 //       Attempting to do so will brick block production.

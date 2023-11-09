@@ -35,7 +35,7 @@ use moonbeam_rpc_trace::{Trace, TraceServer};
 pub type RpcExtension = jsonrpsee::RpcModule<()>;
 
 /// Full client dependencies
-pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi> {
+pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi, CIDP> {
 	/// The client instance to use.
 	pub client: Arc<C>,
 	/// Transaction pool instance.
@@ -53,7 +53,7 @@ pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi> {
 	/// EthFilterApi pool.
 	pub filter_pool: Option<fc_rpc_core::types::FilterPool>,
 	/// Backend.
-	pub frontier_backend: Arc<dyn fc_db::BackendReader<Block> + Send + Sync>,
+	pub frontier_backend: Arc<dyn fc_api::Backend<Block> + Send + Sync>,
 	/// Maximum number of logs in a query.
 	pub max_past_logs: u32,
 	/// Fee history cache.
@@ -66,6 +66,8 @@ pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi> {
 	pub block_data_cache: Arc<fc_rpc::EthBlockDataCacheTask<Block>>,
 	/// Mandated parent hashes for a given block hash.
 	pub forced_parent_hashes: Option<BTreeMap<sp_core::H256, sp_core::H256>>,
+	/// Something that can create the inherent data providers for pending state
+	pub pending_create_inherent_data_providers: CIDP,
 }
 
 /// EVM tracing rpc server config
@@ -78,8 +80,8 @@ pub struct TracingConfig {
 pub struct DefaultEthConfig<C, BE>(std::marker::PhantomData<(C, BE)>);
 impl<C, BE> fc_rpc::EthConfig<Block, C> for DefaultEthConfig<C, BE>
 where
-	C: sc_client_api::StorageProvider<Block, BE> + Sync + Send + 'static,
-	BE: sc_client_api::Backend<Block> + 'static,
+	C: 'static + Sync + Send + sc_client_api::StorageProvider<Block, BE>,
+	BE: 'static + sc_client_api::Backend<Block>,
 {
 	type EstimateGasAdapter = ();
 	type RuntimeStorageOverride =
@@ -87,8 +89,8 @@ where
 }
 
 /// Instantiate all RPC extensions.
-pub fn create_full<C, P, BE, A, EC>(
-	deps: FullDeps<C, P, A>,
+pub fn create_full<C, P, BE, A, EC, CIDP>(
+	deps: FullDeps<C, P, A, CIDP>,
 	subscription_task_executor: sc_rpc::SubscriptionTaskExecutor,
 	pubsub_notification_sinks: Arc<
 		fc_mapping_sync::EthereumBlockNotificationSinks<
@@ -109,12 +111,16 @@ where
 		+ sp_api::CallApiAt<Block>
 		+ sp_api::ProvideRuntimeApi<Block>
 		+ sp_blockchain::HeaderBackend<Block>
+		+ sc_client_api::backend::AuxStore
+		+ sc_client_api::UsageProvider<Block>
 		+ sp_blockchain::HeaderMetadata<Block, Error = sp_blockchain::Error>,
 	C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>
 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ sp_block_builder::BlockBuilder<Block>
+		+ sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
+	CIDP: sp_inherents::CreateInherentDataProviders<Block, ()> + Send + 'static,
 	P: 'static + Sync + Send + sc_transaction_pool_api::TransactionPool<Block = Block>,
 	A: 'static + sc_transaction_pool::ChainApi<Block = Block>,
 	EC: fc_rpc::EthConfig<Block, C>,
@@ -146,18 +152,19 @@ where
 		overrides,
 		block_data_cache,
 		forced_parent_hashes,
+		pending_create_inherent_data_providers,
 	} = deps;
 
 	module.merge(System::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
 	module.merge(TransactionPayment::new(client.clone()).into_rpc())?;
 	module.merge(
-		Eth::new(
+		Eth::<Block, C, P, _, BE, A, CIDP, EC>::new(
 			client.clone(),
 			pool.clone(),
 			graph.clone(),
 			<Option<NoTransactionConverter>>::None,
 			sync.clone(),
-			vec![],
+			Vec::new(),
 			overrides.clone(),
 			frontier_backend.clone(),
 			is_authority,
@@ -166,18 +173,20 @@ where
 			fee_history_cache_limit,
 			10,
 			forced_parent_hashes,
+			pending_create_inherent_data_providers,
+			Some(Box::new(fc_rpc::pending::AuraConsensusDataProvider::new(client.clone()))),
 		)
 		.replace_config::<EC>()
 		.into_rpc(),
 	)?;
 
-	let tx_pool = TxPool::new(client.clone(), graph);
+	let tx_pool = TxPool::new(client.clone(), graph.clone());
 	if let Some(filter_pool) = filter_pool {
 		module.merge(
 			EthFilter::new(
 				client.clone(),
 				frontier_backend,
-				tx_pool.clone(),
+				graph,
 				filter_pool,
 				500_usize, // max stored filters
 				max_past_logs,

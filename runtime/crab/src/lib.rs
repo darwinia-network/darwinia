@@ -62,10 +62,6 @@ pub type SignedExtra = (
 pub type UncheckedExtrinsic =
 	fp_self_contained::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
 
-/// Extrinsic type that has already been checked.
-pub type CheckedExtrinsic =
-	fp_self_contained::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra, sp_core::H160>;
-
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
 	Runtime,
@@ -113,11 +109,7 @@ pub fn native_version() -> sp_version::NativeVersion {
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 frame_support::construct_runtime! {
-	pub enum Runtime where
-		Block = Block,
-		NodeBlock = dc_primitives::Block,
-		UncheckedExtrinsic = UncheckedExtrinsic,
-	{
+	pub enum Runtime {
 		// System stuff.
 		System: frame_system = 0,
 		ParachainSystem: cumulus_pallet_parachain_system = 1,
@@ -419,12 +411,11 @@ sp_api::impl_runtime_apis! {
 			estimate: bool,
 			access_list: Option<Vec<(sp_core::H160, Vec<sp_core::H256>)>>,
 		) -> Result<pallet_evm::CallInfo, sp_runtime::DispatchError> {
-			// crates.io
-			use codec::Encode;
 			// frontier
-			use pallet_evm::{Runner, GasWeightMapping};
+			use pallet_evm::Runner;
+			use pallet_ethereum::{TransactionData, TransactionAction};
 			// substrate
-			use sp_runtime::traits::UniqueSaturatedInto;
+			use sp_runtime::traits::{UniqueSaturatedInto, Get};
 
 			let config = if estimate {
 				let mut config = <Runtime as pallet_evm::Config>::config().clone();
@@ -434,44 +425,21 @@ sp_api::impl_runtime_apis! {
 				None
 			};
 
-			let is_transactional = false;
-			let validate = true;
-			#[allow(clippy::or_fun_call)]
-			let evm_config = config.as_ref().unwrap_or(<Runtime as pallet_evm::Config>::config());
+			let gas_limit = gas_limit.min(u64::MAX.into());
+			let transaction_data = TransactionData::new(
+				TransactionAction::Call(to),
+				data.clone(),
+				nonce.unwrap_or_default(),
+				gas_limit,
+				None,
+				max_fee_per_gas,
+				max_priority_fee_per_gas,
+				value,
+				Some(<Runtime as pallet_evm::Config>::ChainId::get()),
+				access_list.clone().unwrap_or_default(),
+			);
+			let (weight_limit, proof_size_base_cost) = pallet_ethereum::Pallet::<Runtime>::transaction_weight(&transaction_data);
 
-			let mut estimated_transaction_len = data.len() +
-				20 + // to
-				20 + // from
-				32 + // value
-				32 + // gas_limit
-				32 + // nonce
-				1 + // TransactionAction
-				8 + // chain id
-				65; // signature
-
-			if max_fee_per_gas.is_some() {
-				estimated_transaction_len += 32;
-			}
-			if max_priority_fee_per_gas.is_some() {
-				estimated_transaction_len += 32;
-			}
-			if access_list.is_some() {
-				estimated_transaction_len += access_list.encoded_size();
-			}
-
-			let gas_limit = gas_limit.min(u64::MAX.into()).low_u64();
-			let without_base_extrinsic_weight = true;
-
-			let (weight_limit, proof_size_base_cost) =
-				match <Runtime as pallet_evm::Config>::GasWeightMapping::gas_to_weight(
-					gas_limit,
-					without_base_extrinsic_weight
-				) {
-					weight_limit if weight_limit.proof_size() > 0 => {
-						(Some(weight_limit), Some(estimated_transaction_len as u64))
-					}
-					_ => (None, None),
-				};
 			<Runtime as pallet_evm::Config>::Runner::call(
 				from,
 				to,
@@ -482,11 +450,11 @@ sp_api::impl_runtime_apis! {
 				max_priority_fee_per_gas,
 				nonce,
 				access_list.unwrap_or_default(),
-				is_transactional,
-				validate,
+				false,
+				true,
 				weight_limit,
 				proof_size_base_cost,
-				evm_config,
+				config.as_ref().unwrap_or(<Runtime as pallet_evm::Config>::config()),
 			).map_err(|err| err.error.into())
 		}
 
@@ -501,12 +469,11 @@ sp_api::impl_runtime_apis! {
 			estimate: bool,
 			access_list: Option<Vec<(sp_core::H160, Vec<sp_core::H256>)>>,
 		) -> Result<pallet_evm::CreateInfo, sp_runtime::DispatchError> {
-			// crates.io
-			use codec::Encode;
 			// frontier
-			use pallet_evm::{Runner, GasWeightMapping};
+			use pallet_evm::Runner;
+			use pallet_ethereum::{TransactionData, TransactionAction};
 			// substrate
-			use sp_runtime::traits::UniqueSaturatedInto;
+			use sp_runtime::traits::{UniqueSaturatedInto, Get};
 
 			let config = if estimate {
 				let mut config = <Runtime as pallet_evm::Config>::config().clone();
@@ -516,47 +483,19 @@ sp_api::impl_runtime_apis! {
 				None
 			};
 
-			let is_transactional = false;
-			let validate = true;
-			#[allow(clippy::or_fun_call)]
-			let evm_config = config.as_ref().unwrap_or(<Runtime as pallet_evm::Config>::config());
-
-			let mut estimated_transaction_len = data.len() +
-				20 + // from
-				32 + // value
-				32 + // gas_limit
-				32 + // nonce
-				1 + // TransactionAction
-				8 + // chain id
-				65; // signature
-
-			if max_fee_per_gas.is_some() {
-				estimated_transaction_len += 32;
-			}
-			if max_priority_fee_per_gas.is_some() {
-				estimated_transaction_len += 32;
-			}
-			if access_list.is_some() {
-				estimated_transaction_len += access_list.encoded_size();
-			}
-
-			let gas_limit = if gas_limit > sp_core::U256::from(u64::MAX) {
-				u64::MAX
-			} else {
-				gas_limit.low_u64()
-			};
-			let without_base_extrinsic_weight = true;
-
-			let (weight_limit, proof_size_base_cost) =
-				match <Runtime as pallet_evm::Config>::GasWeightMapping::gas_to_weight(
-					gas_limit,
-					without_base_extrinsic_weight
-				) {
-					weight_limit if weight_limit.proof_size() > 0 => {
-						(Some(weight_limit), Some(estimated_transaction_len as u64))
-					}
-					_ => (None, None),
-				};
+			let transaction_data = TransactionData::new(
+				TransactionAction::Create,
+				data.clone(),
+				nonce.unwrap_or_default(),
+				gas_limit,
+				None,
+				max_fee_per_gas,
+				max_priority_fee_per_gas,
+				value,
+				Some(<Runtime as pallet_evm::Config>::ChainId::get()),
+				access_list.clone().unwrap_or_default(),
+			);
+			let (weight_limit, proof_size_base_cost) = pallet_ethereum::Pallet::<Runtime>::transaction_weight(&transaction_data);
 			<Runtime as pallet_evm::Config>::Runner::create(
 				from,
 				data,
@@ -566,11 +505,11 @@ sp_api::impl_runtime_apis! {
 				max_priority_fee_per_gas,
 				nonce,
 				access_list.unwrap_or_default(),
-				is_transactional,
-				validate,
+				false,
+				true,
 				weight_limit,
 				proof_size_base_cost,
-				evm_config,
+				config.as_ref().unwrap_or(<Runtime as pallet_evm::Config>::config()),
 			).map_err(|err| err.error.into())
 		}
 
@@ -775,9 +714,19 @@ sp_api::impl_runtime_apis! {
 			use frame_benchmarking::*;
 			use frame_support::pallet_prelude::Weight;
 			use frame_support::traits::Currency;
+			use frame_support::traits::TrackedStorageKey;
 
 			use frame_system_benchmarking::Pallet as SystemBench;
-			impl frame_system_benchmarking::Config for Runtime {}
+			impl frame_system_benchmarking::Config for Runtime {
+				fn setup_set_code_requirements(code: &sp_std::vec::Vec<u8>) -> Result<(), BenchmarkError> {
+					ParachainSystem::initialize_for_set_code_benchmark(code.len() as u32);
+					Ok(())
+				}
+
+				fn verify_set_code() {
+					System::assert_last_event(cumulus_pallet_parachain_system::Event::<Runtime>::ValidationFunctionStored.into());
+				}
+			}
 
 			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 			impl cumulus_pallet_session_benchmarking::Config for Runtime {}
@@ -869,9 +818,6 @@ sp_api::impl_runtime_apis! {
 	#[cfg(feature = "try-runtime")]
 	impl frame_try_runtime::TryRuntime<Block> for Runtime {
 		fn on_runtime_upgrade(checks: frame_try_runtime::UpgradeCheckSelect) -> (frame_support::weights::Weight, frame_support::weights::Weight) {
-			// substrate
-			use frame_support::log;
-
 			log::info!("try-runtime::on_runtime_upgrade");
 
 			let weight = Executive::try_runtime_upgrade(checks).unwrap();
@@ -892,29 +838,7 @@ sp_api::impl_runtime_apis! {
 	}
 }
 
-struct CheckInherents;
-impl cumulus_pallet_parachain_system::CheckInherents<Block> for CheckInherents {
-	fn check_inherents(
-		block: &Block,
-		relay_state_proof: &cumulus_pallet_parachain_system::RelayChainStateProof,
-	) -> sp_inherents::CheckInherentsResult {
-		let relay_chain_slot = relay_state_proof
-			.read_slot()
-			.expect("Could not read the relay chain slot from the proof");
-
-		let inherent_data =
-			cumulus_primitives_timestamp::InherentDataProvider::from_relay_chain_slot_and_duration(
-				relay_chain_slot,
-				sp_std::time::Duration::from_secs(6),
-			)
-			.create_inherent_data()
-			.expect("Could not create the timestamp inherent data");
-
-		inherent_data.check_extrinsics(block)
-	}
-}
 cumulus_pallet_parachain_system::register_validate_block! {
 	Runtime = Runtime,
 	BlockExecutor = cumulus_pallet_aura_ext::BlockExecutor::<Runtime, Executive>,
-	CheckInherents = CheckInherents,
 }

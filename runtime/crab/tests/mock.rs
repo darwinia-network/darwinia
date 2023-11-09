@@ -19,8 +19,8 @@
 pub use crab_runtime::*;
 
 // substrate
-use frame_support::traits::GenesisBuild;
 use sp_io::TestExternalities;
+use sp_runtime::BuildStorage;
 
 pub const KTON_ID: u64 = AssetIds::CKton as _;
 
@@ -43,7 +43,7 @@ impl ExtBuilder {
 	}
 
 	pub fn build(&mut self) -> TestExternalities {
-		let mut t = frame_system::GenesisConfig::default().build_storage::<Runtime>().unwrap();
+		let mut t = <frame_system::GenesisConfig<Runtime>>::default().build_storage().unwrap();
 
 		pallet_balances::GenesisConfig::<Runtime> { balances: self.balances.clone() }
 			.assimilate_storage(&mut t)

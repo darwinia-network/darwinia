@@ -30,10 +30,11 @@ use core::marker::PhantomData;
 use precompile_utils::prelude::*;
 // substrate
 use frame_support::{
-	dispatch::{Dispatchable, GetDispatchInfo, PostDispatchInfo},
+	dispatch::{GetDispatchInfo, PostDispatchInfo},
 	traits::OriginTrait,
 };
 use sp_core::{H160, U256};
+use sp_runtime::traits::Dispatchable;
 
 /// AccountId of the runtime.
 type AccountIdOf<R> = <R as frame_system::pallet::Config>::AccountId;

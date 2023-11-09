@@ -16,9 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-// std
-use std::{path::PathBuf, str::FromStr};
-
 /// Sub-commands supported by the collator.
 #[derive(Debug, clap::Subcommand)]
 pub enum Subcommand {
@@ -55,16 +52,13 @@ pub enum Subcommand {
 	#[command(subcommand)]
 	Benchmark(Box<frame_benchmarking_cli::BenchmarkCmd>),
 
-	/// Try some testing command against a specified runtime state.
-	#[cfg(feature = "try-runtime")]
-	TryRuntime(try_runtime_cli::TryRuntimeCmd),
-
 	/// Errors since the binary was not build with `--features runtime-benchmarks`.
 	#[cfg(not(feature = "runtime-benchmarks"))]
 	Benchmark,
 
-	/// Errors since the binary was not build with `--features try-runtime`.
-	#[cfg(not(feature = "try-runtime"))]
+	/// Try-runtime has migrated to a standalone
+	/// [CLI](<https://github.com/paritytech/try-runtime-cli>). The subcommand exists as a stub and
+	/// deprecation notice. It will be removed entirely some time after Janurary 2024.
 	TryRuntime,
 }
 
@@ -108,7 +102,7 @@ pub struct RelayChainCli {
 	pub chain_id: Option<String>,
 
 	/// The base path that should be used by the relay chain.
-	pub base_path: Option<PathBuf>,
+	pub base_path: Option<std::path::PathBuf>,
 }
 impl RelayChainCli {
 	/// Parse the relay chain CLI parameters using the para chain `Configuration`.
@@ -129,7 +123,7 @@ impl RelayChainCli {
 }
 
 /// Available frontier backend types.
-#[derive(Debug, Copy, Clone, Default, clap::ValueEnum)]
+#[derive(Copy, Clone, Debug, Default, clap::ValueEnum)]
 pub enum FrontierBackendType {
 	/// Either RocksDb or ParityDb as per inherited from the global backend settings.
 	#[default]
@@ -227,7 +221,7 @@ pub enum TracingApi {
 	Debug,
 	Trace,
 }
-impl FromStr for TracingApi {
+impl std::str::FromStr for TracingApi {
 	type Err = String;
 
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -239,7 +233,7 @@ impl FromStr for TracingApi {
 	}
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct EthRpcConfig {
 	pub tracing_api: Vec<TracingApi>,
 	pub tracing_max_permits: u32,

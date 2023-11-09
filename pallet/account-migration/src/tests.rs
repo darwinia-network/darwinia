@@ -104,7 +104,7 @@ fn migrate_multisig_should_work() {
 	new_test_ext().execute_with(|| {
 		<Accounts<Runtime>>::insert(
 			&multisig,
-			AccountInfo::<Index, AccountData<Balance>> { consumers: 1, ..Default::default() },
+			AccountInfo::<Nonce, AccountData<Balance>> { consumers: 1, ..Default::default() },
 		);
 
 		assert!(<Multisigs<Runtime>>::get(&multisig).is_none());

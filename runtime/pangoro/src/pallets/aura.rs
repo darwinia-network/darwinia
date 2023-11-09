@@ -20,6 +20,7 @@
 use crate::*;
 
 impl pallet_aura::Config for Runtime {
+	type AllowMultipleBlocksPerSlot = ConstBool<false>;
 	type AuthorityId = sp_consensus_aura::sr25519::AuthorityId;
 	type DisabledValidators = ();
 	type MaxAuthorities = ConstU32<100_000>;

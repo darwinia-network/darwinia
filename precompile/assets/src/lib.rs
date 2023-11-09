@@ -28,8 +28,8 @@ mod tests;
 use core::marker::PhantomData;
 // substrate
 use frame_support::{
-	dispatch::{Dispatchable, GetDispatchInfo, PostDispatchInfo},
-	sp_runtime::traits::StaticLookup,
+	dispatch::{GetDispatchInfo, PostDispatchInfo},
+	sp_runtime::traits::{Dispatchable, StaticLookup},
 	traits::{
 		fungibles::{
 			approvals::Inspect as ApprovalInspect, metadata::Inspect as MetadataInspect, Inspect,

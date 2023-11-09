@@ -19,7 +19,7 @@
 // darwinia
 use crate::mock::{
 	Account::{Alice, Precompile},
-	ExtBuilder, PCall, PrecompilesValue, System, TestPrecompiles, TestRuntime,
+	ExtBuilder, PCall, PrecompilesValue, Runtime, System, TestPrecompiles,
 };
 // moonbeam
 use precompile_utils::{
@@ -29,7 +29,7 @@ use precompile_utils::{
 // substrate
 use frame_support::{StorageHasher, Twox128};
 
-fn precompiles() -> TestPrecompiles<TestRuntime> {
+fn precompiles() -> TestPrecompiles<Runtime> {
 	PrecompilesValue::get()
 }
 
@@ -66,7 +66,7 @@ fn test_state_storage() {
 
 		precompiles()
 			.prepare_test(Alice, Precompile, PCall::state_storage_at { key: key.into() })
-			.expect_cost(RuntimeHelper::<TestRuntime>::db_read_gas_cost())
+			.expect_cost(RuntimeHelper::<Runtime>::db_read_gas_cost())
 			.expect_no_logs()
 			.execute_returns(UnboundedBytes::from(&5u64.to_le_bytes()));
 	});

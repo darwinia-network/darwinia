@@ -20,8 +20,8 @@ pub use crate as darwinia_account_migration;
 pub use dc_primitives::*;
 
 // substrate
-use frame_support::traits::GenesisBuild;
 use sp_io::TestExternalities;
+use sp_runtime::BuildStorage;
 
 pub struct Dummy;
 impl darwinia_deposit::SimpleAsset for Dummy {
@@ -66,17 +66,16 @@ impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
 	type BaseCallFilter = frame_support::traits::Everything;
+	type Block = frame_system::mocking::MockBlock<Self>;
 	type BlockHashCount = ();
 	type BlockLength = ();
-	type BlockNumber = BlockNumber;
 	type BlockWeights = ();
 	type DbWeight = ();
 	type Hash = sp_core::H256;
 	type Hashing = sp_runtime::traits::BlakeTwo256;
-	type Header = sp_runtime::generic::Header<Self::BlockNumber, Self::Hashing>;
-	type Index = Index;
 	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type Nonce = Nonce;
 	type OnKilledAccount = ();
 	type OnNewAccount = ();
 	type OnSetCode = ();
@@ -102,13 +101,13 @@ impl pallet_balances::Config for Runtime {
 	type DustRemoval = ();
 	type ExistentialDeposit = ();
 	type FreezeIdentifier = ();
-	type HoldIdentifier = ();
 	type MaxFreezes = ();
 	type MaxHolds = ();
 	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
 	type RuntimeEvent = RuntimeEvent;
+	type RuntimeHoldReason = ();
 	type WeightInfo = ();
 }
 
@@ -195,11 +194,7 @@ impl darwinia_account_migration::Config for Runtime {
 }
 
 frame_support::construct_runtime! {
-	pub enum Runtime where
-		Block = frame_system::mocking::MockBlock<Runtime>,
-		NodeBlock = frame_system::mocking::MockBlock<Runtime>,
-		UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Runtime>,
-	{
+	pub enum Runtime {
 		System: frame_system,
 		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
@@ -212,7 +207,7 @@ frame_support::construct_runtime! {
 }
 
 pub(crate) fn new_test_ext() -> TestExternalities {
-	let mut storage = frame_system::GenesisConfig::default().build_storage::<Runtime>().unwrap();
+	let mut storage = <frame_system::GenesisConfig<Runtime>>::default().build_storage().unwrap();
 
 	pallet_assets::GenesisConfig::<Runtime> {
 		assets: vec![(darwinia_account_migration::KTON_ID, [0; 20].into(), true, 1)],

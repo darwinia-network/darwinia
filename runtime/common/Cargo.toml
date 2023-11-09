@@ -9,9 +9,9 @@ version.workspace = true
 [dependencies]
 # crates.io
 codec      = { workspace = true, package = "parity-scale-codec" }
+log        = { workspace = true }
 scale-info = { workspace = true }
 smallvec   = { version = "1.10" }
-
 
 # darwinia
 darwinia-precompile-assets = { workspace = true }
@@ -46,6 +46,7 @@ default = ["std"]
 std = [
 	# crates.io
 	"codec/std",
+	"log/std",
 	"scale-info/std",
 
 	# darwinia
