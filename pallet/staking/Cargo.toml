@@ -51,6 +51,7 @@ default = ["std"]
 std = [
 	# crates.io
 	"codec/std",
+	"log/std",
 	"scale-info/std",
 
 	# darwinia

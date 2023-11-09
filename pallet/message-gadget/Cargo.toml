@@ -37,6 +37,7 @@ default = ["std"]
 std = [
 	# crates.io
 	"codec/std",
+	"log/std",
 	"scale-info/std",
 
 	# frontier
@@ -56,4 +57,5 @@ try-runtime = [
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",
 	"pallet-evm/try-runtime",
+	"sp-runtime/try-runtime",
 ]
