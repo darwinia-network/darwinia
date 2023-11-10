@@ -187,8 +187,7 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_bridge_messages, MessagesBench::<Runtime, WithDarwiniaMessages>]
 	[pallet_fee_market, DarwiniaFeeMarket]
 	// substrate
-	// https://substrate.stackexchange.com/questions/9360/how-to-benchmark-frame-system-on-parachain
-	// [frame_system, SystemBench::<Runtime>]
+	[frame_system, SystemBench::<Runtime>]
 	[pallet_assets, Assets]
 	[pallet_balances, Balances]
 	[pallet_collective, Council]
