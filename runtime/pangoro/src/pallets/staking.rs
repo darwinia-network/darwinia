@@ -69,8 +69,8 @@ impl darwinia_staking::Stake for KtonStaking {
 }
 
 pub enum OnPangoroSessionEnd {}
-impl darwinia_staking::OnSessionEnd<Runtime> for OnPangoroSessionEnd {
-	fn inflate() -> Option<Balance> {
+impl darwinia_staking::InflationManager<Runtime> for OnPangoroSessionEnd {
+	fn inflate() -> Balance {
 		let now = Timestamp::now() as Moment;
 		let session_duration = now - <darwinia_staking::SessionStartTime<Runtime>>::get() as Moment;
 		let elapsed_time = <darwinia_staking::ElapsedTime<Runtime>>::mutate(|t| {
@@ -83,11 +83,11 @@ impl darwinia_staking::OnSessionEnd<Runtime> for OnPangoroSessionEnd {
 
 		let unminted = dc_inflation::TOTAL_SUPPLY.saturating_sub(Balances::total_issuance());
 
-		dc_inflation::in_period(unminted, session_duration, elapsed_time)
+		dc_inflation::in_period(unminted, session_duration, elapsed_time).unwrap_or_default()
 	}
 
-	fn calculate_reward(maybe_inflation: Option<Balance>) -> Balance {
-		maybe_inflation.map(|i| sp_runtime::Perbill::from_percent(40) * i).unwrap_or_default()
+	fn calculate_reward(inflation: Balance) -> Balance {
+		sp_runtime::Perbill::from_percent(40) * inflation
 	}
 
 	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
@@ -96,8 +96,8 @@ impl darwinia_staking::OnSessionEnd<Runtime> for OnPangoroSessionEnd {
 		Ok(())
 	}
 
-	fn clean(unissued: Balance) {
-		Treasury::on_unbalanced(Balances::issue(unissued));
+	fn clear(remaining: Balance) {
+		let _ = Balances::deposit_into_existing(&Treasury::account_id(), remaining);
 	}
 }
 
@@ -107,7 +107,7 @@ impl darwinia_staking::Config for Runtime {
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = ConstU32<16>;
 	type MinStakingDuration = ConstU32<{ 10 * MINUTES }>;
-	type OnSessionEnd = OnPangoroSessionEnd;
+	type InflationManager = OnPangoroSessionEnd;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;

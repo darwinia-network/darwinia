@@ -165,7 +165,7 @@ impl darwinia_staking::Config for Runtime {
 	type MaxDeposits = ();
 	type MaxUnstakings = ();
 	type MinStakingDuration = ();
-	type OnSessionEnd = ();
+	type InflationManager = ();
 	type Ring = Dummy;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();

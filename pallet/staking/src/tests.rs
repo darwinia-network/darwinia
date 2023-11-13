@@ -589,7 +589,7 @@ fn payout_should_work() {
 		);
 	});
 
-	ExtBuilder::default().on_session_end_type(1).collator_count(5).build().execute_with(|| {
+	ExtBuilder::default().inflation_type(1).collator_count(5).build().execute_with(|| {
 		(1..=5).for_each(|i| {
 			assert_ok!(Staking::stake(
 				RuntimeOrigin::signed(i),

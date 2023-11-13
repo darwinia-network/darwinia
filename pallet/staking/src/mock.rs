@@ -21,7 +21,7 @@ pub use crate as darwinia_staking;
 // darwinia
 use dc_types::{AssetId, Balance, Moment, UNIT};
 // substrate
-use frame_support::traits::{Currency, OnInitialize, OnUnbalanced};
+use frame_support::traits::{Currency, OnInitialize};
 use sp_io::TestExternalities;
 use sp_runtime::{BuildStorage, RuntimeAppPublic};
 
@@ -232,7 +232,7 @@ impl pallet_treasury::Config for Runtime {
 
 frame_support::parameter_types! {
 	pub PayoutFraction: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(40);
-	pub static OnSessionEnd: u8 = 0;
+	pub static InflationType: u8 = 0;
 }
 pub enum KtonStaking {}
 impl darwinia_staking::Stake for KtonStaking {
@@ -258,42 +258,42 @@ impl darwinia_staking::Stake for KtonStaking {
 	}
 }
 pub enum StatedOnSessionEnd {}
-impl darwinia_staking::OnSessionEnd<Runtime> for StatedOnSessionEnd {
-	fn inflate() -> Option<Balance> {
-		if ON_SESSION_END.with(|v| *v.borrow()) == 0 {
+impl darwinia_staking::InflationManager<Runtime> for StatedOnSessionEnd {
+	fn inflate() -> Balance {
+		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
 			OnDarwiniaSessionEnd::inflate()
 		} else {
 			OnCrabSessionEnd::inflate()
 		}
 	}
 
-	fn calculate_reward(maybe_inflation: Option<Balance>) -> Balance {
-		if ON_SESSION_END.with(|v| *v.borrow()) == 0 {
-			OnDarwiniaSessionEnd::calculate_reward(maybe_inflation)
+	fn calculate_reward(inflation: Balance) -> Balance {
+		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
+			OnDarwiniaSessionEnd::calculate_reward(inflation)
 		} else {
-			OnCrabSessionEnd::calculate_reward(maybe_inflation)
+			OnCrabSessionEnd::calculate_reward(inflation)
 		}
 	}
 
 	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		if ON_SESSION_END.with(|v| *v.borrow()) == 0 {
+		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
 			OnDarwiniaSessionEnd::reward(who, amount)
 		} else {
 			OnCrabSessionEnd::reward(who, amount)
 		}
 	}
 
-	fn clean(unissued: Balance) {
-		if ON_SESSION_END.with(|v| *v.borrow()) == 0 {
-			OnDarwiniaSessionEnd::clean(unissued)
+	fn clear(remaining: Balance) {
+		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
+			OnDarwiniaSessionEnd::clear(remaining)
 		} else {
-			OnCrabSessionEnd::clean(unissued)
+			OnCrabSessionEnd::clear(remaining)
 		}
 	}
 }
 pub enum OnDarwiniaSessionEnd {}
-impl darwinia_staking::OnSessionEnd<Runtime> for OnDarwiniaSessionEnd {
-	fn inflate() -> Option<Balance> {
+impl darwinia_staking::InflationManager<Runtime> for OnDarwiniaSessionEnd {
+	fn inflate() -> Balance {
 		let now = Timestamp::now();
 		let session_duration = now - <darwinia_staking::SessionStartTime<Runtime>>::get();
 		let elapsed_time = <darwinia_staking::ElapsedTime<Runtime>>::mutate(|t| {
@@ -306,11 +306,11 @@ impl darwinia_staking::OnSessionEnd<Runtime> for OnDarwiniaSessionEnd {
 
 		let unminted = dc_inflation::TOTAL_SUPPLY.saturating_sub(Balances::total_issuance());
 
-		dc_inflation::in_period(unminted, session_duration, elapsed_time)
+		dc_inflation::in_period(unminted, session_duration, elapsed_time).unwrap_or_default()
 	}
 
-	fn calculate_reward(maybe_inflation: Option<Balance>) -> Balance {
-		maybe_inflation.map(|i| PayoutFraction::get() * i).unwrap_or_default()
+	fn calculate_reward(inflation: Balance) -> Balance {
+		PayoutFraction::get() * inflation
 	}
 
 	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
@@ -319,13 +319,13 @@ impl darwinia_staking::OnSessionEnd<Runtime> for OnDarwiniaSessionEnd {
 		Ok(())
 	}
 
-	fn clean(unissued: Balance) {
-		Treasury::on_unbalanced(Balances::issue(unissued));
+	fn clear(remaining: Balance) {
+		let _ = Balances::deposit_into_existing(&Treasury::account_id(), remaining);
 	}
 }
 pub enum OnCrabSessionEnd {}
-impl darwinia_staking::OnSessionEnd<Runtime> for OnCrabSessionEnd {
-	fn calculate_reward(_maybe_inflation: Option<Balance>) -> Balance {
+impl darwinia_staking::InflationManager<Runtime> for OnCrabSessionEnd {
+	fn calculate_reward(_inflation: Balance) -> Balance {
 		10_000 * UNIT
 	}
 
@@ -339,12 +339,13 @@ impl darwinia_staking::OnSessionEnd<Runtime> for OnCrabSessionEnd {
 	}
 }
 impl darwinia_staking::Config for Runtime {
+	type Currency = Balances;
 	type Deposit = Deposit;
+	type InflationManager = StatedOnSessionEnd;
 	type Kton = KtonStaking;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = frame_support::traits::ConstU32<16>;
 	type MinStakingDuration = frame_support::traits::ConstU64<3>;
-	type OnSessionEnd = StatedOnSessionEnd;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
@@ -399,8 +400,8 @@ pub struct ExtBuilder {
 	genesis_collator: bool,
 }
 impl ExtBuilder {
-	pub fn on_session_end_type(self, r#type: u8) -> Self {
-		ON_SESSION_END.with(|v| *v.borrow_mut() = r#type);
+	pub fn inflation_type(self, r#type: u8) -> Self {
+		INFLATION_TYPE.with(|v| *v.borrow_mut() = r#type);
 
 		self
 	}

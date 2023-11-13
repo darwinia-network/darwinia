@@ -67,8 +67,8 @@ impl darwinia_staking::Stake for KtonStaking {
 }
 
 pub enum OnPangolinSessionEnd {}
-impl darwinia_staking::OnSessionEnd<Runtime> for OnPangolinSessionEnd {
-	fn calculate_reward(_maybe_inflation: Option<Balance>) -> Balance {
+impl darwinia_staking::InflationManager<Runtime> for OnPangolinSessionEnd {
+	fn calculate_reward(_inflation: Balance) -> Balance {
 		20_000 * UNIT
 	}
 
@@ -88,7 +88,7 @@ impl darwinia_staking::Config for Runtime {
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = ConstU32<16>;
 	type MinStakingDuration = ConstU32<{ 2 * MINUTES }>;
-	type OnSessionEnd = OnPangolinSessionEnd;
+	type InflationManager = OnPangolinSessionEnd;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;
