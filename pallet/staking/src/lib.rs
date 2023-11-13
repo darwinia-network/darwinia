@@ -809,7 +809,7 @@ pub mod pallet {
 			map.into_iter().for_each(|(c, p)| {
 				let r = Perbill::from_rational(p, sum) * amount;
 
-				<Unpaid<T>>::mutate(&c, |u| u.map(|u| u + r).or(Some(r)));
+				<Unpaid<T>>::mutate(&c, |u| *u = u.map(|u| u + r).or(Some(r)));
 
 				if T::InflationManager::reward(&staking_pot, r).is_ok() {
 					actual_reward += r;
@@ -834,7 +834,7 @@ pub mod pallet {
 		/// Pay the reward to the collator and its nominators.
 		pub fn payout_inner(collator: T::AccountId) -> DispatchResult {
 			let c_exposure = <PreviousExposures<T>>::get(&collator).ok_or(<Error<T>>::NoReward)?;
-			let c_total_payout = <Unpaid<T>>::get(&collator).ok_or(<Error<T>>::NoReward)?;
+			let c_total_payout = <Unpaid<T>>::take(&collator).ok_or(<Error<T>>::NoReward)?;
 			let mut c_payout = c_exposure.commission * c_total_payout;
 			let n_payout = c_total_payout - c_payout;
 			for n_exposure in c_exposure.nominators {

@@ -168,7 +168,7 @@ sp_runtime::impl_opaque_keys! {
 		pub uint: SessionHandler,
 	}
 }
-type Period = frame_support::traits::ConstU64<3>;
+pub type Period = frame_support::traits::ConstU64<3>;
 pub struct SessionHandler;
 impl pallet_session::SessionHandler<AccountId> for SessionHandler {
 	const KEY_TYPE_IDS: &'static [sp_runtime::KeyTypeId] =
@@ -461,7 +461,7 @@ impl ExtBuilder {
 
 		let mut ext = TestExternalities::from(storage);
 
-		ext.execute_with(|| initialize_block(1));
+		ext.execute_with(|| new_session());
 
 		ext
 	}
@@ -489,5 +489,11 @@ pub fn new_session() {
 	(now + 1..=target).for_each(|i| {
 		initialize_block(i);
 		finalize_block(i);
+	});
+}
+
+pub fn payout() {
+	<darwinia_staking::PreviousExposures<Runtime>>::iter_keys().for_each(|c| {
+		let _ = Staking::payout_inner(c);
 	});
 }
