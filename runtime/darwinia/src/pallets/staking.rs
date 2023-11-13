@@ -19,7 +19,7 @@
 // darwinia
 use crate::*;
 // substrate
-use frame_support::traits::{Currency, OnUnbalanced};
+use frame_support::traits::Currency;
 
 fast_runtime_or_not!(DURATION, BlockNumber, 5 * MINUTES, 14 * DAYS);
 
@@ -106,12 +106,13 @@ impl darwinia_staking::InflationManager<Runtime> for OnDarwiniaSessionEnd {
 }
 
 impl darwinia_staking::Config for Runtime {
+	type Currency = Balances;
 	type Deposit = Deposit;
+	type InflationManager = OnDarwiniaSessionEnd;
 	type Kton = KtonStaking;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = ConstU32<16>;
 	type MinStakingDuration = MinStakingDuration;
-	type InflationManager = OnDarwiniaSessionEnd;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;

@@ -19,7 +19,7 @@
 // darwinia
 use crate::*;
 // substrate
-use frame_support::traits::{Currency, OnUnbalanced};
+use frame_support::traits::Currency;
 
 pub enum RingStaking {}
 impl darwinia_staking::Stake for RingStaking {
@@ -102,12 +102,13 @@ impl darwinia_staking::InflationManager<Runtime> for OnPangoroSessionEnd {
 }
 
 impl darwinia_staking::Config for Runtime {
+	type Currency = Balances;
 	type Deposit = Deposit;
+	type InflationManager = OnPangoroSessionEnd;
 	type Kton = KtonStaking;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = ConstU32<16>;
 	type MinStakingDuration = ConstU32<{ 10 * MINUTES }>;
-	type InflationManager = OnPangoroSessionEnd;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;

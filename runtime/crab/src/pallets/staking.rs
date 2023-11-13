@@ -89,12 +89,13 @@ impl darwinia_staking::InflationManager<Runtime> for OnCrabSessionEnd {
 }
 
 impl darwinia_staking::Config for Runtime {
+	type Currency = Balances;
 	type Deposit = Deposit;
+	type InflationManager = OnCrabSessionEnd;
 	type Kton = KtonStaking;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = ConstU32<16>;
 	type MinStakingDuration = MinStakingDuration;
-	type InflationManager = OnCrabSessionEnd;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;
