@@ -419,62 +419,62 @@ fn set_collator_count_should_work() {
 #[test]
 fn power_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(Staking::power_of(&1), 0);
-		assert_eq!(Staking::power_of(&2), 0);
-		assert_eq!(Staking::power_of(&3), 0);
-		assert_eq!(Staking::power_of(&4), 0);
+		assert_eq!(Staking::quick_power_of(&1), 0);
+		assert_eq!(Staking::quick_power_of(&2), 0);
+		assert_eq!(Staking::quick_power_of(&3), 0);
+		assert_eq!(Staking::quick_power_of(&4), 0);
 
 		// 1 stakes 1 RING.
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), UNIT, 0, Vec::new()));
-		assert_eq!(Staking::power_of(&1), 500_000_000);
+		assert_eq!(Staking::quick_power_of(&1), 500_000_000);
 
 		// 2 stakes 1 KTON.
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(2), 0, UNIT, Vec::new()));
-		assert_eq!(Staking::power_of(&1), 500_000_000);
-		assert_eq!(Staking::power_of(&2), 500_000_000);
+		assert_eq!(Staking::quick_power_of(&1), 500_000_000);
+		assert_eq!(Staking::quick_power_of(&2), 500_000_000);
 
 		// 3 stakes 1 deposit.
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(3), UNIT, 1));
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(3), 0, 0, vec![0]));
-		assert_eq!(Staking::power_of(&1), 250_000_000);
-		assert_eq!(Staking::power_of(&2), 500_000_000);
-		assert_eq!(Staking::power_of(&3), 250_000_000);
+		assert_eq!(Staking::quick_power_of(&1), 250_000_000);
+		assert_eq!(Staking::quick_power_of(&2), 500_000_000);
+		assert_eq!(Staking::quick_power_of(&3), 250_000_000);
 
 		// 4 stakes 1 KTON.
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(4), 0, UNIT, Vec::new()));
-		assert_eq!(Staking::power_of(&1), 250_000_000);
-		assert_eq!(Staking::power_of(&2), 250_000_000);
-		assert_eq!(Staking::power_of(&3), 250_000_000);
-		assert_eq!(Staking::power_of(&4), 250_000_000);
+		assert_eq!(Staking::quick_power_of(&1), 250_000_000);
+		assert_eq!(Staking::quick_power_of(&2), 250_000_000);
+		assert_eq!(Staking::quick_power_of(&3), 250_000_000);
+		assert_eq!(Staking::quick_power_of(&4), 250_000_000);
 
 		// 1 unstakes 1 RING.
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), UNIT, 0, Vec::new()));
-		assert_eq!(Staking::power_of(&1), 0);
-		assert_eq!(Staking::power_of(&2), 250_000_000);
-		assert_eq!(Staking::power_of(&3), 500_000_000);
-		assert_eq!(Staking::power_of(&4), 250_000_000);
+		assert_eq!(Staking::quick_power_of(&1), 0);
+		assert_eq!(Staking::quick_power_of(&2), 250_000_000);
+		assert_eq!(Staking::quick_power_of(&3), 500_000_000);
+		assert_eq!(Staking::quick_power_of(&4), 250_000_000);
 
 		// 2 unstakes 1 KTON.
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(2), 0, UNIT, Vec::new()));
-		assert_eq!(Staking::power_of(&1), 0);
-		assert_eq!(Staking::power_of(&2), 0);
-		assert_eq!(Staking::power_of(&3), 500_000_000);
-		assert_eq!(Staking::power_of(&4), 500_000_000);
+		assert_eq!(Staking::quick_power_of(&1), 0);
+		assert_eq!(Staking::quick_power_of(&2), 0);
+		assert_eq!(Staking::quick_power_of(&3), 500_000_000);
+		assert_eq!(Staking::quick_power_of(&4), 500_000_000);
 
 		// 3 unstakes 1 deposit.
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(3), UNIT, 1));
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(3), 0, 0, vec![0]));
-		assert_eq!(Staking::power_of(&1), 0);
-		assert_eq!(Staking::power_of(&2), 0);
-		assert_eq!(Staking::power_of(&3), 0);
-		assert_eq!(Staking::power_of(&4), 500_000_000);
+		assert_eq!(Staking::quick_power_of(&1), 0);
+		assert_eq!(Staking::quick_power_of(&2), 0);
+		assert_eq!(Staking::quick_power_of(&3), 0);
+		assert_eq!(Staking::quick_power_of(&4), 500_000_000);
 
 		// 4 unstakes 1 KTON.
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(4), 0, UNIT, Vec::new()));
-		assert_eq!(Staking::power_of(&1), 0);
-		assert_eq!(Staking::power_of(&2), 0);
-		assert_eq!(Staking::power_of(&3), 0);
-		assert_eq!(Staking::power_of(&4), 0);
+		assert_eq!(Staking::quick_power_of(&1), 0);
+		assert_eq!(Staking::quick_power_of(&2), 0);
+		assert_eq!(Staking::quick_power_of(&3), 0);
+		assert_eq!(Staking::quick_power_of(&4), 0);
 	});
 }
 

@@ -58,7 +58,7 @@ use frame_support::{
 };
 use frame_system::{pallet_prelude::*, RawOrigin};
 use sp_runtime::{
-	traits::{AccountIdConversion, Convert, One},
+	traits::{AccountIdConversion, Convert, One, Zero},
 	Perbill, Perquintill,
 };
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
@@ -67,6 +67,9 @@ use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 pub mod pallet {
 	// darwinia
 	use crate::*;
+
+	// TODO: limit the number of nominators that a collator can have.
+	// const MAX_NOMINATIONS: u32 = 32;
 
 	// Deposit helper for runtime benchmark.
 	#[cfg(feature = "runtime-benchmarks")]
@@ -277,12 +280,9 @@ pub mod pallet {
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
 		fn on_initialize(_: BlockNumberFor<T>) -> Weight {
-			<Exposures<T>>::iter_keys().take(1).for_each(|e| {
-				// TODO: benchmark
-				let _ = Self::payout_inner(e);
-			});
-
-			Default::default()
+			<Exposures<T>>::iter_keys()
+				.take(1)
+				.fold(Zero::zero(), |acc, e| acc + Self::payout_inner(e).unwrap_or(Zero::zero()))
 		}
 	}
 	#[pallet::call]
@@ -501,10 +501,9 @@ pub mod pallet {
 			Ok(())
 		}
 
-		// TODO: benchmark
 		/// Making the payout for the specified collators and its nominators.
 		#[pallet::call_index(8)]
-		#[pallet::weight(0)]
+		#[pallet::weight(<T as Config>::WeightInfo::payout())]
 		pub fn payout(origin: OriginFor<T>, who: T::AccountId) -> DispatchResult {
 			ensure_signed(origin)?;
 
@@ -773,28 +772,55 @@ pub mod pallet {
 			});
 		}
 
-		// Power is a mixture of RING and KTON.
-		// - `total_ring_power = (amount / total_staked_ring) * HALF_POWER`
-		// - `total_kton_power = (amount / total_staked_kton) * HALF_POWER`
-		fn balance2power<P>(amount: Balance) -> Power
-		where
-			P: frame_support::StorageValue<Balance, Query = Balance>,
-		{
-			(Perquintill::from_rational(amount, P::get().max(1)) * 500_000_000_u128) as _
-		}
-
 		/// Calculate the power of the given account.
-		pub fn power_of(who: &T::AccountId) -> Power {
+		#[cfg(any(feature = "runtime-benchmarks", test))]
+		pub fn quick_power_of(who: &T::AccountId) -> Power {
+			// Power is a mixture of RING and KTON.
+			// - `total_ring_power = (amount / total_staked_ring) * HALF_POWER`
+			// - `total_kton_power = (amount / total_staked_kton) * HALF_POWER`
+			fn balance2power<P>(amount: Balance) -> Power
+			where
+				P: frame_support::StorageValue<Balance, Query = Balance>,
+			{
+				(Perquintill::from_rational(amount, P::get().max(1)) * 500_000_000_u128) as _
+			}
+
 			<Ledgers<T>>::get(who)
 				.map(|l| {
-					Self::balance2power::<RingPool<T>>(
+					balance2power::<RingPool<T>>(
 						l.staked_ring
 							+ l.staked_deposits
 								.into_iter()
 								// We don't care if the deposit exists here.
 								// It was guaranteed by the `stake`/`unstake`/`restake` functions.
 								.fold(0, |r, d| r + T::Deposit::amount(who, d).unwrap_or_default()),
-					) + Self::balance2power::<KtonPool<T>>(l.staked_kton)
+					) + balance2power::<KtonPool<T>>(l.staked_kton)
+				})
+				.unwrap_or_default()
+		}
+
+		/// Calculate the power of the given account.
+		///
+		/// This is an optimized version of [`Self::quick_power_of`].
+		/// Avoiding read the pools' storage multiple times.
+		pub fn power_of(who: &T::AccountId, ring_pool: Balance, kton_pool: Balance) -> Power {
+			const HALF_POWER: u128 = 500_000_000;
+
+			<Ledgers<T>>::get(who)
+				.map(|l| {
+					(Perquintill::from_rational(
+						l.staked_ring
+							+ l.staked_deposits
+								.into_iter()
+								// We don't care if the deposit exists here.
+								// It was guaranteed by the `stake`/`unstake`/`restake` functions.
+								.fold(0, |r, d| r + T::Deposit::amount(who, d).unwrap_or_default()),
+						ring_pool.max(1),
+					) * HALF_POWER)
+						.saturating_add(
+							Perquintill::from_rational(l.staked_kton, kton_pool.max(1))
+								* HALF_POWER,
+						) as _
 				})
 				.unwrap_or_default()
 		}
@@ -830,9 +856,8 @@ pub mod pallet {
 			actual_reward
 		}
 
-		// TODO: benchmark this function
 		/// Pay the reward to the collator and its nominators.
-		pub fn payout_inner(collator: T::AccountId) -> DispatchResult {
+		pub fn payout_inner(collator: T::AccountId) -> Result<Weight, DispatchError> {
 			let c_exposure = <PreviousExposures<T>>::get(&collator).ok_or(<Error<T>>::NoReward)?;
 			let c_total_payout = <Unpaid<T>>::take(&collator).ok_or(<Error<T>>::NoReward)?;
 			let mut c_payout = c_exposure.commission * c_total_payout;
@@ -857,7 +882,7 @@ pub mod pallet {
 				Self::deposit_event(Event::Unpaid { staker: collator, amount: c_payout });
 			}
 
-			Ok(())
+			Ok(<T as Config>::WeightInfo::payout())
 		}
 
 		/// Prepare the session state.
@@ -886,18 +911,22 @@ pub mod pallet {
 		///
 		/// This should only be called by the [`pallet_session::SessionManager::new_session`].
 		pub fn elect() -> Vec<T::AccountId> {
+			let nominators = <Nominators<T>>::iter().collect::<Vec<_>>();
+			let ring_pool = <RingPool<T>>::get();
+			let kton_pool = <KtonPool<T>>::get();
 			let mut collators = <Collators<T>>::iter()
 				.map(|(c, cm)| {
 					let scaler = Perbill::one() - cm;
 					let mut collator_v = 0;
-					let nominators = <Nominators<T>>::iter()
+					let nominators = nominators
+						.iter()
 						.filter_map(|(n, c_)| {
-							if c_ == c {
-								let nominator_v = scaler * Self::power_of(&n);
+							if c_ == &c {
+								let nominator_v = scaler * Self::power_of(n, ring_pool, kton_pool);
 
 								collator_v += nominator_v;
 
-								Some(IndividualExposure { who: n, vote: nominator_v })
+								Some(IndividualExposure { who: n.to_owned(), vote: nominator_v })
 							} else {
 								None
 							}

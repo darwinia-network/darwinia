@@ -37,7 +37,7 @@ darwinia-deposit = { workspace = true, features = ["std"] }
 
 # substrate
 dc-inflation         = { workspace = true, features = ["std"] }
-pallet-assets        = { workspace = true, features = ["std"] }
+pallet-assets        = { workspace = true, features = ["runtime-benchmarks", "std"] }
 pallet-balances      = { workspace = true, features = ["std"] }
 pallet-session       = { workspace = true, features = ["std"] }
 pallet-timestamp     = { workspace = true, features = ["std"] }

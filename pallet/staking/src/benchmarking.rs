@@ -199,6 +199,30 @@ mod benchmarks {
 	}
 
 	#[benchmark]
+	fn payout() {
+		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
+		let sender = a.clone();
+
+		<PreviousExposures<T>>::insert(
+			&a,
+			Exposure {
+				commission: Perbill::zero(),
+				vote: 32,
+				nominators: (0..32)
+					.map(|i| IndividualExposure {
+						who: frame_benchmarking::account("", i, i),
+						vote: 1,
+					})
+					.collect(),
+			},
+		);
+		<Unpaid<T>>::insert(&a, 500);
+
+		#[extrinsic_call]
+		_(RawOrigin::Signed(sender), a);
+	}
+
+	#[benchmark]
 	fn set_collator_count() {
 		// Worst-case scenario:
 		//

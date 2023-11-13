@@ -63,6 +63,7 @@ pub trait WeightInfo {
 	fn nominate() -> Weight;
 	fn chill() -> Weight;
 	fn set_collator_count() -> Weight;
+	fn payout() -> Weight;
 }
 
 /// Weights for darwinia_staking using the Substrate node and recommended hardware.
@@ -203,6 +204,9 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().writes(1_u64))
 	}
+	fn payout() -> Weight {
+		Default::default()
+	}
 }
 
 // For backwards compatibility and tests
@@ -341,5 +345,8 @@ impl WeightInfo for () {
 		Weight::from_parts(16_338_000, 0)
 			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(RocksDbWeight::get().writes(1_u64))
+	}
+	fn payout() -> Weight {
+		Default::default()
 	}
 }
