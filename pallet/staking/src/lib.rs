@@ -32,7 +32,6 @@
 #![deny(missing_docs)]
 #![deny(unused_crate_dependencies)]
 
-/// Pallet migrations.
 pub mod migration;
 
 #[cfg(test)]
