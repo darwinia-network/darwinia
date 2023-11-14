@@ -155,7 +155,7 @@ pub mod pallet {
 			who: T::AccountId,
 			commission: Perbill,
 		},
-		/// A payout_inner has been made for the staker.
+		/// A payout has been made for the staker.
 		Payout {
 			staker: T::AccountId,
 			amount: Balance,
