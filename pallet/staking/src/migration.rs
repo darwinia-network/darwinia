@@ -60,6 +60,14 @@ pub mod v1 {
 
 			let mut count = 4;
 
+			let (sum, map) = <RewardPoints<T>>::take();
+			<AuthoredBlocksCount<T>>::put((
+				<BlockNumberFor<T>>::from(sum / 20),
+				map.into_iter()
+					.map(|(k, v)| (k, <BlockNumberFor<T>>::from(v / 20)))
+					.collect::<BTreeMap<_, _>>(),
+			));
+
 			<Exposures<T>>::iter().for_each(|(k, v)| {
 				count += 1;
 
@@ -85,14 +93,6 @@ pub mod v1 {
 				);
 			});
 
-			let (sum, map) = <RewardPoints<T>>::take();
-			<AuthoredBlocksCount<T>>::put((
-				<BlockNumberFor<T>>::from(sum / 20),
-				map.into_iter()
-					.map(|(k, v)| (k, <BlockNumberFor<T>>::from(v / 20)))
-					.collect::<BTreeMap<_, _>>(),
-			));
-
 			StorageVersion::new(1).put::<Pallet<T>>();
 
 			T::DbWeight::get().reads_writes(count, count)
@@ -102,10 +102,34 @@ pub mod v1 {
 		fn post_upgrade(_: Vec<u8>) -> Result<(), TryRuntimeError> {
 			assert_eq!(StorageVersion::get::<Pallet<T>>(), 1, "Version must be upgraded.");
 
+			// Old storages should be killed.
+			assert_eq!(<Exposures<T>>::iter_keys().count(), 0);
+			assert_eq!(<NextExposures<T>>::iter_keys().count(), 0);
+			assert_eq!(!<RewardPoints<T>>::exist());
+
+			// Check the starting state is correct.
+			assert_eq!(
+				<ExposureCacheStates<T>>::get(),
+				(
+					ExposureCacheState::Previous,
+					ExposureCacheState::Current,
+					ExposureCacheState::Next
+				)
+			);
+
+			assert_eq!(
+				<ExposureCache0<T>>::iter_keys().count(),
+				0,
+				"Previous exposure should be empty at start."
+			);
+
 			// Check that everything decoded fine.
-			for k in <Exposures<T>>::iter_keys() {
-				assert!(<Exposures<T>>::try_get(k).is_ok(), "Can not decode V1 `Exposure`.");
-			}
+			<ExposureCache1<T>>::iter_keys().for_each(|k| {
+				assert!(<ExposureCache0<T>>::try_get(k).is_ok(), "Can not decode V1 `Exposure`.");
+			});
+			<ExposureCache2<T>>::iter_keys().for_each(|k| {
+				assert!(<ExposureCache0<T>>::try_get(k).is_ok(), "Can not decode V1 `Exposure`.");
+			});
 
 			Ok(())
 		}
