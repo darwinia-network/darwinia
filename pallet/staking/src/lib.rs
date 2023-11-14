@@ -968,8 +968,8 @@ pub mod pallet {
 			} else {
 				// Impossible case.
 				//
-				// But if there is an issue, keep the old collators and do not update the session
-				// state to prevent the chain from stalling.
+				// But if there is an issue, retain the old collators; do not alter the session
+				// collators if any error occurs to prevent the chain from stalling.
 				None
 			}
 		}
