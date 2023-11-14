@@ -62,6 +62,26 @@ use sp_runtime::{
 };
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
+macro_rules! call_on_exposure {
+	($c:expr, $s:ident$($f:tt)*) => {{
+		match $c {
+			(ExposureCacheState::$s, _, _) => Ok(<ExposureCache0<T>>$($f)*),
+			(_, ExposureCacheState::$s, _) => Ok(<ExposureCache1<T>>$($f)*),
+			(_, _, ExposureCacheState::$s) => Ok(<ExposureCache2<T>>$($f)*),
+			_ => {
+				log::error!("[pallet::staking] exposure cache states must be correct; qed");
+
+				Err("[pallet::staking] exposure cache states must be correct; qed")
+			},
+		}
+	}};
+	($s:ident$($f:tt)*) => {{
+		let c = <ExposureCacheStates<T>>::get();
+
+		call_on_exposure!(c, $s$($f)*)
+	}};
+}
+
 #[frame_support::pallet]
 pub mod pallet {
 	// darwinia
@@ -191,18 +211,62 @@ pub mod pallet {
 	#[pallet::getter(fn collator_of)]
 	pub type Collators<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, Perbill>;
 
-	/// Previous stakers' exposure.
+	/// Exposure cache states.
+	///
+	/// To avoid extra DB RWs during new session, such as:
+	/// ```
+	/// previous = current;
+	/// current = next;
+	/// next = elect();
+	/// ```
+	///
+	/// Now, with data:
+	/// ```
+	/// cache1 == previous;
+	/// cache2 == current;
+	/// cache3 == next;
+	/// ```
+	/// Just need to shift the marker and write the storage map once:
+	/// ```
+	/// mark(cache3, current);
+	/// mark(cache2, previous);
+	/// mark(cache1, next);
+	/// cache1 = elect();
+	/// ```
+	#[pallet::storage]
+	#[pallet::getter(fn exposure_cache_states)]
+	pub type ExposureCacheStates<T: Config> = StorageValue<
+		_,
+		(ExposureCacheState, ExposureCacheState, ExposureCacheState),
+		ValueQuery,
+		ExposureCacheStatesDefault<T>,
+	>;
+	/// Default value for [`ExposureCacheStates`].
+	#[pallet::type_value]
+	pub fn ExposureCacheStatesDefault<T: Config>(
+	) -> (ExposureCacheState, ExposureCacheState, ExposureCacheState) {
+		(ExposureCacheState::Previous, ExposureCacheState::Current, ExposureCacheState::Next)
+	}
+
+	/// Exposure cache 0.
 	#[pallet::storage]
 	#[pallet::unbounded]
-	#[pallet::getter(fn previous_exposure_of)]
-	pub type PreviousExposures<T: Config> =
+	#[pallet::getter(fn exposure_cache_0_of)]
+	pub type ExposureCache0<T: Config> =
 		StorageMap<_, Twox64Concat, T::AccountId, Exposure<T::AccountId>>;
 
-	/// Active stakers' exposure.
+	/// Exposure cache 1.
 	#[pallet::storage]
 	#[pallet::unbounded]
-	#[pallet::getter(fn exposure_of)]
-	pub type Exposures<T: Config> =
+	#[pallet::getter(fn exposure_cache_1_of)]
+	pub type ExposureCache1<T: Config> =
+		StorageMap<_, Twox64Concat, T::AccountId, Exposure<T::AccountId>>;
+
+	/// Exposure cache 2.
+	#[pallet::storage]
+	#[pallet::unbounded]
+	#[pallet::getter(fn exposure_cache_2_of)]
+	pub type ExposureCache2<T: Config> =
 		StorageMap<_, Twox64Concat, T::AccountId, Exposure<T::AccountId>>;
 
 	/// The ideal number of active collators.
@@ -279,9 +343,10 @@ pub mod pallet {
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
 		fn on_initialize(_: BlockNumberFor<T>) -> Weight {
-			<Exposures<T>>::iter_keys()
+			call_on_exposure!(Previous::iter_keys()
 				.take(1)
-				.fold(Zero::zero(), |acc, e| acc + Self::payout_inner(e).unwrap_or(Zero::zero()))
+				.fold(Zero::zero(), |acc, e| acc + Self::payout_inner(e).unwrap_or(Zero::zero())))
+			.unwrap_or_default()
 		}
 	}
 	#[pallet::call]
@@ -857,7 +922,8 @@ pub mod pallet {
 
 		/// Pay the reward to the collator and its nominators.
 		pub fn payout_inner(collator: T::AccountId) -> Result<Weight, DispatchError> {
-			let c_exposure = <PreviousExposures<T>>::get(&collator).ok_or(<Error<T>>::NoReward)?;
+			let c_exposure =
+				call_on_exposure!(Previous::get(&collator).ok_or(<Error<T>>::NoReward)?)?;
 			let c_total_payout = <Unpaid<T>>::take(&collator).ok_or(<Error<T>>::NoReward)?;
 			let mut c_payout = c_exposure.commission * c_total_payout;
 			let n_payout = c_total_payout - c_payout;
@@ -885,31 +951,47 @@ pub mod pallet {
 		}
 
 		/// Prepare the session state.
-		pub fn prepare_new_session(index: u32) -> Vec<T::AccountId> {
-			// Generally, this storage should be empty.
-			#[allow(deprecated)]
-			<PreviousExposures<T>>::remove_all(None);
-			<Exposures<T>>::iter().drain().for_each(|(k, v)| {
-				<PreviousExposures<T>>::insert(k, v);
-			});
+		pub fn prepare_new_session(index: u32) -> Option<Vec<T::AccountId>> {
+			<Pallet<T>>::shift_exposure_cache_states();
 
 			log::info!(
 				"[pallet::staking] assembling new collators for new session {index} at #{:?}",
 				<frame_system::Pallet<T>>::block_number(),
 			);
 
-			let collators = Self::elect();
+			if let Ok(collators) = Self::elect() {
+				// TODO?: if we really need this event
+				Self::deposit_event(Event::Elected { collators: collators.clone() });
 
-			// TODO?: if we really need this event
-			Self::deposit_event(Event::Elected { collators: collators.clone() });
+				Some(collators)
+			} else {
+				// Impossible case.
+				//
+				// But if there is an issue, keep the old collators and do not update the session
+				// state to prevent the chain from stalling.
+				None
+			}
+		}
 
-			collators
+		/// Shift the exposure cache states.
+		///
+		/// Previous Current  Next
+		/// Next     Previous Current
+		/// Current  Next     Previous
+		///
+		/// ```
+		/// loop { mutate(2, 0, 1) }
+		/// ```
+		pub fn shift_exposure_cache_states() {
+			let (s0, s1, s2) = <ExposureCacheStates<T>>::get();
+
+			<ExposureCacheStates<T>>::put((s2, s0, s1));
 		}
 
 		/// Elect the new collators.
 		///
 		/// This should only be called by the [`pallet_session::SessionManager::new_session`].
-		pub fn elect() -> Vec<T::AccountId> {
+		pub fn elect() -> Result<Vec<T::AccountId>, DispatchError> {
 			let nominators = <Nominators<T>>::iter().collect::<Vec<_>>();
 			let ring_pool = <RingPool<T>>::get();
 			let kton_pool = <KtonPool<T>>::get();
@@ -938,13 +1020,18 @@ pub mod pallet {
 
 			collators.sort_by(|(_, a), (_, b)| b.cmp(a));
 
+			let cache_states = <ExposureCacheStates<T>>::get();
+
+			#[allow(deprecated)]
+			call_on_exposure!(cache_states, Next::remove_all(None))?;
+
 			collators
 				.into_iter()
 				.take(<CollatorCount<T>>::get() as _)
 				.map(|((c, e), _)| {
-					<Exposures<T>>::insert(&c, e);
-
-					c
+					call_on_exposure!(cache_states, Next::insert(&c, e))
+						.map(|_| c)
+						.map_err(Into::into)
 				})
 				.collect()
 		}
@@ -998,6 +1085,16 @@ where
 	fn reward(_who: &T::AccountId, _amount: Balance) -> DispatchResult {
 		Ok(())
 	}
+}
+
+/// Exposure cache's state.
+#[allow(missing_docs)]
+#[cfg_attr(feature = "runtime-benchmarks", derive(PartialEq))]
+#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+pub enum ExposureCacheState {
+	Previous,
+	Current,
+	Next,
 }
 
 /// A convertor from collators id. Since this pallet does not have stash/controller, this is
@@ -1087,7 +1184,7 @@ where
 	fn start_session(_: u32) {}
 
 	fn new_session(index: u32) -> Option<Vec<T::AccountId>> {
-		Some(Self::prepare_new_session(index))
+		Self::prepare_new_session(index)
 	}
 }
 

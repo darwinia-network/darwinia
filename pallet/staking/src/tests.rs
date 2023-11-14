@@ -501,7 +501,7 @@ fn elect_should_work() {
 			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i - 5));
 		});
 
-		assert_eq!(Staking::elect(), vec![5, 4, 3]);
+		assert_eq!(Staking::elect().unwrap(), vec![5, 4, 3]);
 	});
 	ExtBuilder::default().collator_count(3).build().execute_with(|| {
 		(1..=5).for_each(|i| {
@@ -524,7 +524,7 @@ fn elect_should_work() {
 			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i - 5));
 		});
 
-		assert_eq!(Staking::elect(), vec![1, 2, 3]);
+		assert_eq!(Staking::elect().unwrap(), vec![1, 2, 3]);
 	});
 }
 
@@ -557,6 +557,7 @@ fn payout_should_work() {
 		let session_duration = Duration::new(12 * 600, 0).as_millis();
 		Efflux::time(session_duration - <Period as Get<u64>>::get() as Moment);
 		Staking::note_authors(&[1, 2, 3, 4, 5]);
+		new_session();
 		new_session();
 		payout();
 
@@ -610,6 +611,7 @@ fn payout_should_work() {
 			));
 			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i - 5));
 		});
+		new_session();
 		new_session();
 		(1..=10).for_each(|i| assert_eq!(Balances::free_balance(i), 1_000 * UNIT));
 
@@ -672,8 +674,9 @@ fn payout_should_work() {
 #[test]
 fn on_new_session_should_work() {
 	ExtBuilder::default().collator_count(2).genesis_collator().build().execute_with(|| {
-		assert_eq_uvec!(<PreviousExposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 2]);
-		assert_eq_uvec!(<Exposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 2]);
+		assert_eq_uvec!(call_on_exposure_test!(Previous::iter_keys().collect::<Vec<_>>()), [1, 2]);
+		assert_eq_uvec!(call_on_exposure_test!(Current::iter_keys().collect::<Vec<_>>()), [1, 2]);
+		assert_eq_uvec!(call_on_exposure_test!(Next::iter_keys().collect::<Vec<_>>()), [1, 2]);
 
 		assert_ok!(Staking::collect(RuntimeOrigin::signed(3), Perbill::zero()));
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(3), 2 * UNIT, 0, Vec::new()));
@@ -681,8 +684,9 @@ fn on_new_session_should_work() {
 		Staking::note_authors(&Session::validators());
 
 		new_session();
-		assert_eq_uvec!(<PreviousExposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 2]);
-		assert_eq_uvec!(<Exposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 3]);
+		assert_eq_uvec!(call_on_exposure_test!(Previous::iter_keys().collect::<Vec<_>>()), [1, 2]);
+		assert_eq_uvec!(call_on_exposure_test!(Current::iter_keys().collect::<Vec<_>>()), [1, 2]);
+		assert_eq_uvec!(call_on_exposure_test!(Next::iter_keys().collect::<Vec<_>>()), [1, 3]);
 
 		assert_ok!(Staking::chill(RuntimeOrigin::signed(3)));
 		assert_ok!(Staking::collect(RuntimeOrigin::signed(4), Perbill::zero()));
@@ -691,8 +695,9 @@ fn on_new_session_should_work() {
 		Staking::note_authors(&Session::validators());
 
 		new_session();
-		assert_eq_uvec!(<PreviousExposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 3]);
-		assert_eq_uvec!(<Exposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 4]);
+		assert_eq_uvec!(call_on_exposure_test!(Previous::iter_keys().collect::<Vec<_>>()), [1, 2]);
+		assert_eq_uvec!(call_on_exposure_test!(Current::iter_keys().collect::<Vec<_>>()), [1, 3]);
+		assert_eq_uvec!(call_on_exposure_test!(Next::iter_keys().collect::<Vec<_>>()), [1, 4]);
 
 		assert_ok!(Staking::chill(RuntimeOrigin::signed(4)));
 		assert_ok!(Staking::collect(RuntimeOrigin::signed(5), Perbill::zero()));
@@ -701,7 +706,8 @@ fn on_new_session_should_work() {
 		Staking::note_authors(&Session::validators());
 
 		new_session();
-		assert_eq_uvec!(<PreviousExposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 4]);
-		assert_eq_uvec!(<Exposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 5]);
+		assert_eq_uvec!(call_on_exposure_test!(Previous::iter_keys().collect::<Vec<_>>()), [1, 3]);
+		assert_eq_uvec!(call_on_exposure_test!(Current::iter_keys().collect::<Vec<_>>()), [1, 4]);
+		assert_eq_uvec!(call_on_exposure_test!(Next::iter_keys().collect::<Vec<_>>()), [1, 5]);
 	});
 }

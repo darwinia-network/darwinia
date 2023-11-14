@@ -13,14 +13,16 @@ use sp_runtime::TryRuntimeError;
 pub mod v1 {
 	// darwinia
 	use super::*;
-	// substrate
-	use frame_support::storage::child::KillStorageResult;
 
 	type AccountId<T> = <T as frame_system::Config>::AccountId;
 
 	#[frame_support::storage_alias]
 	type NextExposures<T: Config> =
-		StorageMap<Pallet<T>, Twox64Concat, AccountId<T>, Exposure<AccountId<T>>>;
+		StorageMap<Pallet<T>, Twox64Concat, AccountId<T>, ExposureV0<AccountId<T>>>;
+
+	#[frame_support::storage_alias]
+	type Exposures<T: Config> =
+		StorageMap<Pallet<T>, Twox64Concat, AccountId<T>, ExposureV0<AccountId<T>>>;
 
 	#[frame_support::storage_alias]
 	type RewardPoints<T: Config> =
@@ -40,7 +42,7 @@ pub mod v1 {
 	{
 		#[cfg(feature = "try-runtime")]
 		fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
-			ensure!(StorageVersion::get::<Pallet<T>>() == 0, "Can only upgrade from version 0.");
+			assert_eq!(StorageVersion::get::<Pallet<T>>(), 0, "Can only upgrade from version 0.");
 
 			Ok(Vec::new())
 		}
@@ -58,22 +60,31 @@ pub mod v1 {
 
 			let mut count = 4;
 
-			<Exposures<T>>::translate::<ExposureV0<_>, _>(|c, v| {
+			<Exposures<T>>::iter().for_each(|(k, v)| {
 				count += 1;
 
-				Some(Exposure {
-					commission: <Collators<T>>::get(c).unwrap_or_default(),
-					vote: v.vote,
-					nominators: v.nominators,
-				})
+				<ExposureCache1<T>>::insert(
+					&k,
+					Exposure {
+						commission: <Collators<T>>::get(&k).unwrap_or_default(),
+						vote: v.vote,
+						nominators: v.nominators,
+					},
+				);
 			});
-			#[allow(deprecated)]
-			{
-				count += match <NextExposures<T>>::remove_all(None) {
-					KillStorageResult::AllRemoved(w) => w,
-					KillStorageResult::SomeRemaining(w) => w,
-				} as u64;
-			}
+			<NextExposures<T>>::iter().for_each(|(k, v)| {
+				count += 1;
+
+				<ExposureCache2<T>>::insert(
+					&k,
+					Exposure {
+						commission: <Collators<T>>::get(&k).unwrap_or_default(),
+						vote: v.vote,
+						nominators: v.nominators,
+					},
+				);
+			});
+
 			let (sum, map) = <RewardPoints<T>>::take();
 			<AuthoredBlocksCount<T>>::put((
 				<BlockNumberFor<T>>::from(sum / 20),
@@ -89,11 +100,11 @@ pub mod v1 {
 
 		#[cfg(feature = "try-runtime")]
 		fn post_upgrade(_: Vec<u8>) -> Result<(), TryRuntimeError> {
-			ensure!(StorageVersion::get::<Pallet<T>>() == 1, "Version must be upgraded.");
+			assert_eq!(StorageVersion::get::<Pallet<T>>(), 1, "Version must be upgraded.");
 
 			// Check that everything decoded fine.
 			for k in <Exposures<T>>::iter_keys() {
-				ensure!(<Exposures<T>>::try_get(k).is_ok(), "Can not decode V1 `Exposure`.");
+				assert!(<Exposures<T>>::try_get(k).is_ok(), "Can not decode V1 `Exposure`.");
 			}
 
 			Ok(())

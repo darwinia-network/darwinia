@@ -203,7 +203,9 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
 		let sender = a.clone();
 
-		<PreviousExposures<T>>::insert(
+		assert_eq!(<ExposureCacheStates<T>>::get().0, ExposureCacheState::Previous);
+
+		<ExposureCache0<T>>::insert(
 			&a,
 			Exposure {
 				commission: Perbill::zero(),

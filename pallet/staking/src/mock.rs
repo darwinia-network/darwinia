@@ -25,6 +25,18 @@ use frame_support::traits::{Currency, OnInitialize};
 use sp_io::TestExternalities;
 use sp_runtime::{BuildStorage, RuntimeAppPublic};
 
+#[macro_export]
+macro_rules! call_on_exposure_test {
+	($s:ident$($f:tt)*) => {{
+		match <darwinia_staking::ExposureCacheStates<Runtime>>::get() {
+			(darwinia_staking::ExposureCacheState::$s, _, _) => <darwinia_staking::ExposureCache0<Runtime>>$($f)*,
+			(_, darwinia_staking::ExposureCacheState::$s, _) => <darwinia_staking::ExposureCache1<Runtime>>$($f)*,
+			(_, _, darwinia_staking::ExposureCacheState::$s) => <darwinia_staking::ExposureCache2<Runtime>>$($f)*,
+			_ => unreachable!(),
+		}
+	}};
+}
+
 type BlockNumber = u64;
 type AccountId = u32;
 
@@ -493,7 +505,7 @@ pub fn new_session() {
 }
 
 pub fn payout() {
-	<darwinia_staking::PreviousExposures<Runtime>>::iter_keys().for_each(|c| {
+	call_on_exposure_test!(Previous::iter_keys().for_each(|c| {
 		let _ = Staking::payout_inner(c);
-	});
+	}));
 }
