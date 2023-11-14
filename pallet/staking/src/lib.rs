@@ -63,8 +63,8 @@ use sp_runtime::{
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
 macro_rules! call_on_exposure {
-	($c:expr, $s:ident$($f:tt)*) => {{
-		match $c {
+	($s_e:expr, $s:ident$($f:tt)*) => {{
+		match $s_e {
 			(ExposureCacheState::$s, _, _) => Ok(<ExposureCache0<T>>$($f)*),
 			(_, ExposureCacheState::$s, _) => Ok(<ExposureCache1<T>>$($f)*),
 			(_, _, ExposureCacheState::$s) => Ok(<ExposureCache2<T>>$($f)*),
@@ -76,9 +76,9 @@ macro_rules! call_on_exposure {
 		}
 	}};
 	($s:ident$($f:tt)*) => {{
-		let c = <ExposureCacheStates<T>>::get();
+		let s = <ExposureCacheStates<T>>::get();
 
-		call_on_exposure!(c, $s$($f)*)
+		call_on_exposure!(s, $s$($f)*)
 	}};
 }
 
