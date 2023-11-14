@@ -214,20 +214,20 @@ pub mod pallet {
 	/// Exposure cache states.
 	///
 	/// To avoid extra DB RWs during new session, such as:
-	/// ```
+	/// ```nocompile
 	/// previous = current;
 	/// current = next;
 	/// next = elect();
 	/// ```
 	///
 	/// Now, with data:
-	/// ```
+	/// ```nocompile
 	/// cache1 == previous;
 	/// cache2 == current;
 	/// cache3 == next;
 	/// ```
 	/// Just need to shift the marker and write the storage map once:
-	/// ```
+	/// ```nocompile
 	/// mark(cache3, current);
 	/// mark(cache2, previous);
 	/// mark(cache1, next);
@@ -980,7 +980,7 @@ pub mod pallet {
 		/// Next     Previous Current
 		/// Current  Next     Previous
 		///
-		/// ```
+		/// ```nocompile
 		/// loop { mutate(2, 0, 1) }
 		/// ```
 		pub fn shift_exposure_cache_states() {
