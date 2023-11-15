@@ -68,7 +68,7 @@ pub mod v1 {
 					.collect::<BTreeMap<_, _>>(),
 			));
 
-			<Exposures<T>>::iter().for_each(|(k, v)| {
+			<Exposures<T>>::iter().drain().for_each(|(k, v)| {
 				count += 1;
 
 				<ExposureCache1<T>>::insert(
@@ -80,7 +80,7 @@ pub mod v1 {
 					},
 				);
 			});
-			<NextExposures<T>>::iter().for_each(|(k, v)| {
+			<NextExposures<T>>::iter().drain().for_each(|(k, v)| {
 				count += 1;
 
 				<ExposureCache2<T>>::insert(
@@ -105,7 +105,7 @@ pub mod v1 {
 			// Old storages should be killed.
 			assert_eq!(<Exposures<T>>::iter_keys().count(), 0);
 			assert_eq!(<NextExposures<T>>::iter_keys().count(), 0);
-			assert_eq!(!<RewardPoints<T>>::exist());
+			assert!(!<RewardPoints<T>>::exists());
 
 			// Check the starting state is correct.
 			assert_eq!(

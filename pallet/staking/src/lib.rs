@@ -345,6 +345,7 @@ pub mod pallet {
 		fn on_initialize(_: BlockNumberFor<T>) -> Weight {
 			call_on_exposure!(Previous::iter_keys()
 				// TODO?: make this value adjustable
+				.drain()
 				.take(1)
 				.fold(Zero::zero(), |acc, e| acc + Self::payout_inner(e).unwrap_or(Zero::zero())))
 			.unwrap_or_default()
