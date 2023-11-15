@@ -23,6 +23,7 @@ use crate::*;
 // polkadot
 use xcm::prelude::*;
 // substrate
+use frame_system::EnsureNever;
 use sp_runtime::traits::Hash;
 
 // We instruct how to register the Assets
@@ -144,11 +145,11 @@ impl pallet_asset_manager::Config for Runtime {
 	type AssetRegistrarMetadata = xcm_configs::AssetRegistrarMetadata;
 	type Balance = Balance;
 	type Currency = Balances;
-	type ForeignAssetModifierOrigin = RootOr<GeneralAdmin>;
+	type ForeignAssetModifierOrigin = Root;
 	type ForeignAssetType = AssetType;
 	type LocalAssetDeposit = ConstU128<0>;
 	type LocalAssetIdCreator = LocalAssetIdCreator;
-	type LocalAssetModifierOrigin = RootOr<GeneralAdmin>;
+	type LocalAssetModifierOrigin = EnsureNever<AccountId>;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = pallet_asset_manager::weights::SubstrateWeight<Runtime>;
 }
