@@ -56,7 +56,6 @@ use frame_support::{
 	pallet_prelude::*, traits::Currency, DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound,
 };
 use frame_system::{pallet_prelude::*, RawOrigin};
-use pallet_session::ShouldEndSession;
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, One, Zero},
 	Perbill, Perquintill,
@@ -99,7 +98,7 @@ pub mod pallet {
 	pub trait DepositConfig {}
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config + pallet_session::Config + DepositConfig {
+	pub trait Config: frame_system::Config + DepositConfig {
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
@@ -120,6 +119,9 @@ pub mod pallet {
 
 		/// Inflation and reward manager.
 		type InflationManager: InflationManager<Self>;
+
+		/// Pass [`pallet_session::Config::ShouldEndSession`]'s result to here.
+		type ShouldEndSession: Get<bool>;
 
 		/// Minimum time to stake at least.
 		#[pallet::constant]
@@ -343,10 +345,10 @@ pub mod pallet {
 	pub struct Pallet<T>(PhantomData<T>);
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-		fn on_initialize(now: BlockNumberFor<T>) -> Weight {
+		fn on_initialize(_: BlockNumberFor<T>) -> Weight {
 			// There are already plenty of tasks to handle during the new session,
 			// so refrain from assigning any additional ones here.
-			if !<T as pallet_session::Config>::ShouldEndSession::should_end_session(now) {
+			if !T::ShouldEndSession::get() {
 				call_on_exposure!(Previous::iter_keys()
 					// TODO?: make this value adjustable
 					.drain()

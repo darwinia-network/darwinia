@@ -80,7 +80,7 @@ try-runtime = [
 	# darwinia
 	"darwinia-deposit/try-runtime",
 	"darwinia-staking/try-runtime",
-	
+
 	# substrate
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",

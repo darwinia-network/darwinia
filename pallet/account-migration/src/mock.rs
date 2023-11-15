@@ -169,6 +169,7 @@ impl darwinia_staking::Config for Runtime {
 	type MinStakingDuration = ();
 	type Ring = Dummy;
 	type RuntimeEvent = RuntimeEvent;
+	type ShouldEndSession = ();
 	type WeightInfo = ();
 }
 #[cfg(not(feature = "runtime-benchmarks"))]

@@ -88,6 +88,18 @@ impl darwinia_staking::InflationManager<Runtime> for OnCrabSessionEnd {
 	}
 }
 
+pub enum ShouldEndSession {}
+impl frame_support::traits::Get<bool> for ShouldEndSession {
+	fn get() -> bool {
+		// substrate
+		use pallet_session::ShouldEndSession;
+
+		<Runtime as pallet_session::Config>::ShouldEndSession::should_end_session(
+			System::block_number(),
+		)
+	}
+}
+
 impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
@@ -98,6 +110,7 @@ impl darwinia_staking::Config for Runtime {
 	type MinStakingDuration = MinStakingDuration;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
+	type ShouldEndSession = ShouldEndSession;
 	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;
 }
 #[cfg(not(feature = "runtime-benchmarks"))]
