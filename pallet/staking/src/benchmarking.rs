@@ -218,7 +218,7 @@ mod benchmarks {
 					.collect(),
 			},
 		);
-		<Unpaid<T>>::insert(&a, 500);
+		<PendingRewards<T>>::insert(&a, 500);
 
 		#[extrinsic_call]
 		_(RawOrigin::Signed(sender), a);

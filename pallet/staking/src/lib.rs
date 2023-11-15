@@ -56,6 +56,7 @@ use frame_support::{
 	pallet_prelude::*, traits::Currency, DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound,
 };
 use frame_system::{pallet_prelude::*, RawOrigin};
+use pallet_session::ShouldEndSession;
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, One, Zero},
 	Perbill, Perquintill,
@@ -98,7 +99,7 @@ pub mod pallet {
 	pub trait DepositConfig {}
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config + DepositConfig {
+	pub trait Config: frame_system::Config + pallet_session::Config + DepositConfig {
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
@@ -287,11 +288,11 @@ pub mod pallet {
 	pub type AuthoredBlocksCount<T: Config> =
 		StorageValue<_, (BlockNumberFor<T>, BTreeMap<T::AccountId, BlockNumberFor<T>>), ValueQuery>;
 
-	/// All outstanding rewards since the last payment..
+	/// All outstanding rewards since the last payment.
 	#[pallet::storage]
 	#[pallet::unbounded]
-	#[pallet::getter(fn unpaid)]
-	pub type Unpaid<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, Balance>;
+	#[pallet::getter(fn pending_reward_of)]
+	pub type PendingRewards<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, Balance>;
 
 	/// Active session's start-time.
 	#[pallet::storage]
@@ -342,13 +343,20 @@ pub mod pallet {
 	pub struct Pallet<T>(PhantomData<T>);
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-		fn on_initialize(_: BlockNumberFor<T>) -> Weight {
-			call_on_exposure!(Previous::iter_keys()
-				// TODO?: make this value adjustable
-				.drain()
-				.take(1)
-				.fold(Zero::zero(), |acc, e| acc + Self::payout_inner(e).unwrap_or(Zero::zero())))
-			.unwrap_or_default()
+		fn on_initialize(now: BlockNumberFor<T>) -> Weight {
+			// There are already plenty of tasks to handle during the new session,
+			// so refrain from assigning any additional ones here.
+			if !<T as pallet_session::Config>::ShouldEndSession::should_end_session(now) {
+				call_on_exposure!(Previous::iter_keys()
+					// TODO?: make this value adjustable
+					.drain()
+					.take(1)
+					.fold(Zero::zero(), |acc, e| acc
+						+ Self::payout_inner(e).unwrap_or(Zero::zero())))
+				.unwrap_or_default()
+			} else {
+				Zero::zero()
+			}
 		}
 	}
 	#[pallet::call]
@@ -841,28 +849,7 @@ pub mod pallet {
 		/// Calculate the power of the given account.
 		#[cfg(any(feature = "runtime-benchmarks", test))]
 		pub fn quick_power_of(who: &T::AccountId) -> Power {
-			// Power is a mixture of RING and KTON.
-			// - `total_ring_power = (amount / total_staked_ring) * HALF_POWER`
-			// - `total_kton_power = (amount / total_staked_kton) * HALF_POWER`
-			fn balance2power<P>(amount: Balance) -> Power
-			where
-				P: frame_support::StorageValue<Balance, Query = Balance>,
-			{
-				(Perquintill::from_rational(amount, P::get().max(1)) * 500_000_000_u128) as _
-			}
-
-			<Ledgers<T>>::get(who)
-				.map(|l| {
-					balance2power::<RingPool<T>>(
-						l.staked_ring
-							+ l.staked_deposits
-								.into_iter()
-								// We don't care if the deposit exists here.
-								// It was guaranteed by the `stake`/`unstake`/`restake` functions.
-								.fold(0, |r, d| r + T::Deposit::amount(who, d).unwrap_or_default()),
-					) + balance2power::<KtonPool<T>>(l.staked_kton)
-				})
-				.unwrap_or_default()
+			Self::power_of(who, <RingPool<T>>::get(), <KtonPool<T>>::get())
 		}
 
 		/// Calculate the power of the given account.
@@ -870,6 +857,10 @@ pub mod pallet {
 		/// This is an optimized version of [`Self::quick_power_of`].
 		/// Avoiding read the pools' storage multiple times.
 		pub fn power_of(who: &T::AccountId, ring_pool: Balance, kton_pool: Balance) -> Power {
+			// Power is a mixture of RING and KTON.
+			// - `total_ring_power = (amount / total_staked_ring) * HALF_POWER`
+			// - `total_kton_power = (amount / total_staked_kton) * HALF_POWER`
+
 			const HALF_POWER: u128 = 500_000_000;
 
 			<Ledgers<T>>::get(who)
@@ -891,8 +882,8 @@ pub mod pallet {
 				.unwrap_or_default()
 		}
 
-		/// Pay the session reward to staking pot and update the stakers' reward record.
-		pub fn dispatch_session_reward(amount: Balance) -> Balance {
+		/// Distribute the session reward to staking pot and update the stakers' reward record.
+		pub fn distribute_session_reward(amount: Balance) -> Balance {
 			let (sum, map) = <AuthoredBlocksCount<T>>::take();
 			let staking_pot = account_id();
 			let mut actual_reward = 0;
@@ -901,7 +892,7 @@ pub mod pallet {
 			map.into_iter().for_each(|(c, p)| {
 				let r = Perbill::from_rational(p, sum) * amount;
 
-				<Unpaid<T>>::mutate(&c, |u| *u = u.map(|u| u + r).or(Some(r)));
+				<PendingRewards<T>>::mutate(&c, |u| *u = u.map(|u| u + r).or(Some(r)));
 
 				if T::InflationManager::reward(&staking_pot, r).is_ok() {
 					actual_reward += r;
@@ -926,7 +917,8 @@ pub mod pallet {
 		pub fn payout_inner(collator: T::AccountId) -> Result<Weight, DispatchError> {
 			let c_exposure =
 				call_on_exposure!(Previous::get(&collator).ok_or(<Error<T>>::NoReward)?)?;
-			let c_total_payout = <Unpaid<T>>::take(&collator).ok_or(<Error<T>>::NoReward)?;
+			let c_total_payout =
+				<PendingRewards<T>>::take(&collator).ok_or(<Error<T>>::NoReward)?;
 			let mut c_payout = c_exposure.commission * c_total_payout;
 			let n_payout = c_total_payout - c_payout;
 			for n_exposure in c_exposure.nominators {
@@ -955,6 +947,11 @@ pub mod pallet {
 		/// Prepare the session state.
 		pub fn prepare_new_session(index: u32) -> Option<Vec<T::AccountId>> {
 			<Pallet<T>>::shift_exposure_cache_states();
+
+			#[allow(deprecated)]
+			if call_on_exposure!(Next::remove_all(None)).is_err() {
+				return None;
+			}
 
 			log::info!(
 				"[pallet::staking] assembling new collators for new session {index} at #{:?}",
@@ -1024,9 +1021,6 @@ pub mod pallet {
 
 			let cache_states = <ExposureCacheStates<T>>::get();
 
-			#[allow(deprecated)]
-			call_on_exposure!(cache_states, Next::remove_all(None))?;
-
 			collators
 				.into_iter()
 				.take(<CollatorCount<T>>::get() as _)
@@ -1055,7 +1049,7 @@ where
 	fn on_session_end() {
 		let inflation = Self::inflate();
 		let reward = Self::calculate_reward(inflation);
-		let actual_reward = <Pallet<T>>::dispatch_session_reward(reward);
+		let actual_reward = <Pallet<T>>::distribute_session_reward(reward);
 
 		if inflation != 0 {
 			Self::clear(inflation.saturating_sub(actual_reward));
