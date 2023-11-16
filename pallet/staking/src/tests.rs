@@ -28,6 +28,91 @@ use sp_runtime::{assert_eq_error_rate, DispatchError, Perbill};
 use substrate_test_utils::assert_eq_uvec;
 
 #[test]
+fn exposure_cache_states_should_work() {
+	ExtBuilder::default().build().execute_with(|| {
+		#[allow(deprecated)]
+		{
+			<ExposureCacheStates<Runtime>>::kill();
+			<ExposureCache0<Runtime>>::remove_all(None);
+			<ExposureCache1<Runtime>>::remove_all(None);
+			<ExposureCache2<Runtime>>::remove_all(None);
+
+			let e = Exposure {
+				commission: Default::default(),
+				vote: Default::default(),
+				nominators: Default::default(),
+			};
+
+			<ExposureCache0<Runtime>>::insert(0, e.clone());
+			<ExposureCache1<Runtime>>::insert(1, e.clone());
+			<ExposureCache2<Runtime>>::insert(2, e);
+		}
+
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(0).is_some()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(1).is_none()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(2).is_none()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(0).is_none()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(1).is_some()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(2).is_none()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(0).is_none()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(1).is_none()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(2).is_some()).unwrap());
+		assert_eq!(
+			<ExposureCacheStates<Runtime>>::get(),
+			(ExposureCacheState::Previous, ExposureCacheState::Current, ExposureCacheState::Next)
+		);
+
+		Staking::shift_exposure_cache_states();
+
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(0).is_none()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(1).is_some()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(2).is_none()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(0).is_none()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(1).is_none()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(2).is_some()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(0).is_some()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(1).is_none()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(2).is_none()).unwrap());
+		assert_eq!(
+			<ExposureCacheStates<Runtime>>::get(),
+			(ExposureCacheState::Next, ExposureCacheState::Previous, ExposureCacheState::Current)
+		);
+
+		Staking::shift_exposure_cache_states();
+
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(0).is_none()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(1).is_none()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(2).is_some()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(0).is_some()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(1).is_none()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(2).is_none()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(0).is_none()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(1).is_some()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(2).is_none()).unwrap());
+		assert_eq!(
+			<ExposureCacheStates<Runtime>>::get(),
+			(ExposureCacheState::Current, ExposureCacheState::Next, ExposureCacheState::Previous)
+		);
+
+		Staking::shift_exposure_cache_states();
+
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(0).is_some()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(1).is_none()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(2).is_none()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(0).is_none()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(1).is_some()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(2).is_none()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(0).is_none()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(1).is_none()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(2).is_some()).unwrap());
+		assert_eq!(
+			<ExposureCacheStates<Runtime>>::get(),
+			(ExposureCacheState::Previous, ExposureCacheState::Current, ExposureCacheState::Next)
+		);
+	});
+}
+
+#[test]
 fn stake_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_eq!(System::account(1).consumers, 0);
@@ -674,9 +759,22 @@ fn payout_should_work() {
 #[test]
 fn on_new_session_should_work() {
 	ExtBuilder::default().collator_count(2).genesis_collator().build().execute_with(|| {
-		assert_eq_uvec!(call_on_exposure_test!(Previous::iter_keys().collect::<Vec<_>>()), [1, 2]);
-		assert_eq_uvec!(call_on_exposure_test!(Current::iter_keys().collect::<Vec<_>>()), [1, 2]);
-		assert_eq_uvec!(call_on_exposure_test!(Next::iter_keys().collect::<Vec<_>>()), [1, 2]);
+		assert_eq_uvec!(
+			darwinia_staking::call_on_exposure!(
+				<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()
+			)
+			.unwrap(),
+			[1, 2]
+		);
+		assert_eq_uvec!(
+			darwinia_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			[1, 2]
+		);
+		assert_eq_uvec!(
+			darwinia_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
+				.unwrap(),
+			[1, 2]
+		);
 
 		assert_ok!(Staking::collect(RuntimeOrigin::signed(3), Perbill::zero()));
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(3), 2 * UNIT, 0, Vec::new()));
@@ -684,9 +782,22 @@ fn on_new_session_should_work() {
 		Staking::note_authors(&Session::validators());
 
 		new_session();
-		assert_eq_uvec!(call_on_exposure_test!(Previous::iter_keys().collect::<Vec<_>>()), [1, 2]);
-		assert_eq_uvec!(call_on_exposure_test!(Current::iter_keys().collect::<Vec<_>>()), [1, 2]);
-		assert_eq_uvec!(call_on_exposure_test!(Next::iter_keys().collect::<Vec<_>>()), [1, 3]);
+		assert_eq_uvec!(
+			darwinia_staking::call_on_exposure!(
+				<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()
+			)
+			.unwrap(),
+			[1, 2]
+		);
+		assert_eq_uvec!(
+			darwinia_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			[1, 2]
+		);
+		assert_eq_uvec!(
+			darwinia_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
+				.unwrap(),
+			[1, 3]
+		);
 
 		assert_ok!(Staking::chill(RuntimeOrigin::signed(3)));
 		assert_ok!(Staking::collect(RuntimeOrigin::signed(4), Perbill::zero()));
@@ -695,9 +806,22 @@ fn on_new_session_should_work() {
 		Staking::note_authors(&Session::validators());
 
 		new_session();
-		assert_eq_uvec!(call_on_exposure_test!(Previous::iter_keys().collect::<Vec<_>>()), [1, 2]);
-		assert_eq_uvec!(call_on_exposure_test!(Current::iter_keys().collect::<Vec<_>>()), [1, 3]);
-		assert_eq_uvec!(call_on_exposure_test!(Next::iter_keys().collect::<Vec<_>>()), [1, 4]);
+		assert_eq_uvec!(
+			darwinia_staking::call_on_exposure!(
+				<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()
+			)
+			.unwrap(),
+			[1, 2]
+		);
+		assert_eq_uvec!(
+			darwinia_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			[1, 3]
+		);
+		assert_eq_uvec!(
+			darwinia_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
+				.unwrap(),
+			[1, 4]
+		);
 
 		assert_ok!(Staking::chill(RuntimeOrigin::signed(4)));
 		assert_ok!(Staking::collect(RuntimeOrigin::signed(5), Perbill::zero()));
@@ -706,8 +830,21 @@ fn on_new_session_should_work() {
 		Staking::note_authors(&Session::validators());
 
 		new_session();
-		assert_eq_uvec!(call_on_exposure_test!(Previous::iter_keys().collect::<Vec<_>>()), [1, 3]);
-		assert_eq_uvec!(call_on_exposure_test!(Current::iter_keys().collect::<Vec<_>>()), [1, 4]);
-		assert_eq_uvec!(call_on_exposure_test!(Next::iter_keys().collect::<Vec<_>>()), [1, 5]);
+		assert_eq_uvec!(
+			darwinia_staking::call_on_exposure!(
+				<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()
+			)
+			.unwrap(),
+			[1, 3]
+		);
+		assert_eq_uvec!(
+			darwinia_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			[1, 4]
+		);
+		assert_eq_uvec!(
+			darwinia_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
+				.unwrap(),
+			[1, 5]
+		);
 	});
 }
