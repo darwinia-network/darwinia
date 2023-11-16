@@ -160,14 +160,16 @@ impl darwinia_deposit::Config for Runtime {
 }
 
 impl darwinia_staking::Config for Runtime {
+	type Currency = Balances;
 	type Deposit = Deposit;
+	type InflationManager = ();
 	type Kton = Dummy;
 	type MaxDeposits = ();
 	type MaxUnstakings = ();
 	type MinStakingDuration = ();
-	type OnSessionEnd = ();
 	type Ring = Dummy;
 	type RuntimeEvent = RuntimeEvent;
+	type ShouldEndSession = ();
 	type WeightInfo = ();
 }
 #[cfg(not(feature = "runtime-benchmarks"))]

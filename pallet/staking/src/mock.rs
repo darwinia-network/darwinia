@@ -21,9 +21,21 @@ pub use crate as darwinia_staking;
 // darwinia
 use dc_types::{AssetId, Balance, Moment, UNIT};
 // substrate
-use frame_support::traits::{Currency, OnInitialize, OnUnbalanced};
+use frame_support::traits::{Currency, OnInitialize};
 use sp_io::TestExternalities;
 use sp_runtime::{BuildStorage, RuntimeAppPublic};
+
+#[macro_export]
+macro_rules! call_on_exposure_test {
+	($s:ident$($f:tt)*) => {{
+		match <darwinia_staking::ExposureCacheStates<Runtime>>::get() {
+			(darwinia_staking::ExposureCacheState::$s, _, _) => <darwinia_staking::ExposureCache0<Runtime>>$($f)*,
+			(_, darwinia_staking::ExposureCacheState::$s, _) => <darwinia_staking::ExposureCache1<Runtime>>$($f)*,
+			(_, _, darwinia_staking::ExposureCacheState::$s) => <darwinia_staking::ExposureCache2<Runtime>>$($f)*,
+			_ => unreachable!(),
+		}
+	}};
+}
 
 type BlockNumber = u64;
 type AccountId = u32;
@@ -168,7 +180,7 @@ sp_runtime::impl_opaque_keys! {
 		pub uint: SessionHandler,
 	}
 }
-type Period = frame_support::traits::ConstU64<3>;
+pub type Period = frame_support::traits::ConstU64<3>;
 pub struct SessionHandler;
 impl pallet_session::SessionHandler<AccountId> for SessionHandler {
 	const KEY_TYPE_IDS: &'static [sp_runtime::KeyTypeId] =
@@ -232,7 +244,7 @@ impl pallet_treasury::Config for Runtime {
 
 frame_support::parameter_types! {
 	pub PayoutFraction: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(40);
-	pub static OnSessionEnd: u8 = 0;
+	pub static InflationType: u8 = 0;
 }
 pub enum KtonStaking {}
 impl darwinia_staking::Stake for KtonStaking {
@@ -258,42 +270,42 @@ impl darwinia_staking::Stake for KtonStaking {
 	}
 }
 pub enum StatedOnSessionEnd {}
-impl darwinia_staking::OnSessionEnd<Runtime> for StatedOnSessionEnd {
-	fn inflate() -> Option<Balance> {
-		if ON_SESSION_END.with(|v| *v.borrow()) == 0 {
+impl darwinia_staking::InflationManager<Runtime> for StatedOnSessionEnd {
+	fn inflate() -> Balance {
+		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
 			OnDarwiniaSessionEnd::inflate()
 		} else {
 			OnCrabSessionEnd::inflate()
 		}
 	}
 
-	fn calculate_reward(maybe_inflation: Option<Balance>) -> Balance {
-		if ON_SESSION_END.with(|v| *v.borrow()) == 0 {
-			OnDarwiniaSessionEnd::calculate_reward(maybe_inflation)
+	fn calculate_reward(inflation: Balance) -> Balance {
+		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
+			OnDarwiniaSessionEnd::calculate_reward(inflation)
 		} else {
-			OnCrabSessionEnd::calculate_reward(maybe_inflation)
+			OnCrabSessionEnd::calculate_reward(inflation)
 		}
 	}
 
 	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		if ON_SESSION_END.with(|v| *v.borrow()) == 0 {
+		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
 			OnDarwiniaSessionEnd::reward(who, amount)
 		} else {
 			OnCrabSessionEnd::reward(who, amount)
 		}
 	}
 
-	fn clean(unissued: Balance) {
-		if ON_SESSION_END.with(|v| *v.borrow()) == 0 {
-			OnDarwiniaSessionEnd::clean(unissued)
+	fn clear(remaining: Balance) {
+		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
+			OnDarwiniaSessionEnd::clear(remaining)
 		} else {
-			OnCrabSessionEnd::clean(unissued)
+			OnCrabSessionEnd::clear(remaining)
 		}
 	}
 }
 pub enum OnDarwiniaSessionEnd {}
-impl darwinia_staking::OnSessionEnd<Runtime> for OnDarwiniaSessionEnd {
-	fn inflate() -> Option<Balance> {
+impl darwinia_staking::InflationManager<Runtime> for OnDarwiniaSessionEnd {
+	fn inflate() -> Balance {
 		let now = Timestamp::now();
 		let session_duration = now - <darwinia_staking::SessionStartTime<Runtime>>::get();
 		let elapsed_time = <darwinia_staking::ElapsedTime<Runtime>>::mutate(|t| {
@@ -306,11 +318,11 @@ impl darwinia_staking::OnSessionEnd<Runtime> for OnDarwiniaSessionEnd {
 
 		let unminted = dc_inflation::TOTAL_SUPPLY.saturating_sub(Balances::total_issuance());
 
-		dc_inflation::in_period(unminted, session_duration, elapsed_time)
+		dc_inflation::in_period(unminted, session_duration, elapsed_time).unwrap_or_default()
 	}
 
-	fn calculate_reward(maybe_inflation: Option<Balance>) -> Balance {
-		maybe_inflation.map(|i| PayoutFraction::get() * i).unwrap_or_default()
+	fn calculate_reward(inflation: Balance) -> Balance {
+		PayoutFraction::get() * inflation
 	}
 
 	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
@@ -319,13 +331,13 @@ impl darwinia_staking::OnSessionEnd<Runtime> for OnDarwiniaSessionEnd {
 		Ok(())
 	}
 
-	fn clean(unissued: Balance) {
-		Treasury::on_unbalanced(Balances::issue(unissued));
+	fn clear(remaining: Balance) {
+		let _ = Balances::deposit_into_existing(&Treasury::account_id(), remaining);
 	}
 }
 pub enum OnCrabSessionEnd {}
-impl darwinia_staking::OnSessionEnd<Runtime> for OnCrabSessionEnd {
-	fn calculate_reward(_maybe_inflation: Option<Balance>) -> Balance {
+impl darwinia_staking::InflationManager<Runtime> for OnCrabSessionEnd {
+	fn calculate_reward(_inflation: Balance) -> Balance {
 		10_000 * UNIT
 	}
 
@@ -338,15 +350,28 @@ impl darwinia_staking::OnSessionEnd<Runtime> for OnCrabSessionEnd {
 		)
 	}
 }
+pub enum ShouldEndSession {}
+impl frame_support::traits::Get<bool> for ShouldEndSession {
+	fn get() -> bool {
+		// substrate
+		use pallet_session::ShouldEndSession;
+
+		<Runtime as pallet_session::Config>::ShouldEndSession::should_end_session(
+			System::block_number(),
+		)
+	}
+}
 impl darwinia_staking::Config for Runtime {
+	type Currency = Balances;
 	type Deposit = Deposit;
+	type InflationManager = StatedOnSessionEnd;
 	type Kton = KtonStaking;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = frame_support::traits::ConstU32<16>;
 	type MinStakingDuration = frame_support::traits::ConstU64<3>;
-	type OnSessionEnd = StatedOnSessionEnd;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
+	type ShouldEndSession = ShouldEndSession;
 	type WeightInfo = ();
 }
 #[cfg(not(feature = "runtime-benchmarks"))]
@@ -399,8 +424,8 @@ pub struct ExtBuilder {
 	genesis_collator: bool,
 }
 impl ExtBuilder {
-	pub fn on_session_end_type(self, r#type: u8) -> Self {
-		ON_SESSION_END.with(|v| *v.borrow_mut() = r#type);
+	pub fn inflation_type(self, r#type: u8) -> Self {
+		INFLATION_TYPE.with(|v| *v.borrow_mut() = r#type);
 
 		self
 	}
@@ -460,7 +485,7 @@ impl ExtBuilder {
 
 		let mut ext = TestExternalities::from(storage);
 
-		ext.execute_with(|| initialize_block(1));
+		ext.execute_with(|| new_session());
 
 		ext
 	}
@@ -489,4 +514,10 @@ pub fn new_session() {
 		initialize_block(i);
 		finalize_block(i);
 	});
+}
+
+pub fn payout() {
+	call_on_exposure_test!(Previous::iter_keys().for_each(|c| {
+		let _ = Staking::payout_inner(c);
+	}));
 }
