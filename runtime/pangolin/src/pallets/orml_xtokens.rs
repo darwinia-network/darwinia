@@ -20,12 +20,11 @@
 use crate::*;
 // polkadot
 use xcm::latest::prelude::*;
-// substrate
-use frame_support::{pallet_prelude::*, traits::*};
-use sp_std::prelude::*;
 
 // Our currencyId. We distinguish for now between SelfReserve, and Others, defined by their Id.
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Encode, Decode, TypeInfo)]
+#[derive(
+	Clone, Debug, PartialEq, Eq, PartialOrd, Ord, codec::Encode, codec::Decode, scale_info::TypeInfo,
+)]
 pub enum CurrencyId {
 	// Our native token
 	SelfReserve,
@@ -82,7 +81,7 @@ impl orml_xtokens::Config for Runtime {
 	type MaxAssetsForTransfer = MaxAssetsForTransfer;
 	// We don't have this case: fee_reserve != non_fee_reserve
 	type MinXcmFee = orml_xcm_support::DisabledParachainFee;
-	type MultiLocationsFilter = Everything;
+	type MultiLocationsFilter = frame_support::traits::Everything;
 	type ReserveProvider = xcm_primitives::AbsoluteAndRelativeReserve<SelfLocationAbsolute>;
 	type RuntimeEvent = RuntimeEvent;
 	type SelfLocation = SelfLocation;

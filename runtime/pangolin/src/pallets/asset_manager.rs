@@ -22,8 +22,6 @@ use codec::{Decode, Encode};
 use crate::*;
 // polkadot
 use xcm::prelude::*;
-// substrate
-use sp_runtime::traits::Hash;
 
 // We instruct how to register the Assets
 // In this case, we tell it to create an Asset in pallet-assets
@@ -104,6 +102,8 @@ impl From<MultiLocation> for AssetType {
 // We simply hash the `AssetType` and take the lowest 128 bits.
 impl From<AssetType> for crate::AssetId {
 	fn from(asset: AssetType) -> crate::AssetId {
+		use sp_runtime::traits::Hash;
+
 		match asset {
 			AssetType::Xcm(id) =>
 				if id == UsdtLocation::get() {

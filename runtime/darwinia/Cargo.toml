@@ -378,17 +378,17 @@ try-runtime = [
 	"pallet-bridge-parachains/try-runtime",
 	"pallet-fee-market/try-runtime",
 
+	# frontier
+	"fp-self-contained/try-runtime",
+	"pallet-ethereum/try-runtime",
+	"pallet-evm/try-runtime",
+
 	# moonbeam
 	"pallet-asset-manager/try-runtime",
 	"pallet-ethereum-xcm/try-runtime",
 
 	# open-web3-stack
 	"orml-xtokens/try-runtime",
-
-	# frontier
-	"fp-self-contained/try-runtime",
-	"pallet-ethereum/try-runtime",
-	"pallet-evm/try-runtime",
 
 	# polkadot
 	"pallet-xcm/try-runtime",
