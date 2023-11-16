@@ -169,4 +169,17 @@ where
 		)?;
 		Ok(true)
 	}
+
+	#[precompile::public("payout(address)")]
+	fn payout(handle: &mut impl PrecompileHandle, who: Address) -> EvmResult<bool> {
+		let who: H160 = who.into();
+		let origin = handle.context().caller.into();
+
+		RuntimeHelper::<Runtime>::try_dispatch(
+			handle,
+			Some(origin).into(),
+			darwinia_staking::Call::<Runtime>::payout { who: who.into() },
+		)?;
+		Ok(true)
+	}
 }

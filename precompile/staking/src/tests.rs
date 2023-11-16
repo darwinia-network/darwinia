@@ -40,6 +40,7 @@ fn selectors() {
 	assert!(PCall::nominate_selectors().contains(&0xb332180b));
 	assert!(PCall::collect_selectors().contains(&0x10a66536));
 	assert!(PCall::chill_selectors().contains(&0x2b8a3ae6));
+	assert!(PCall::payout_selectors().contains(&192846916u32));
 }
 
 #[test]
@@ -182,4 +183,16 @@ fn nominate() {
 			assert!(Staking::nominator_of(bob).is_none());
 		},
 	);
+}
+
+#[test]
+fn payout() {
+	let alice: H160 = Alice.into();
+	ExtBuilder::default().build().execute_with(|| {
+		precompiles()
+			.prepare_test(alice, Precompile, PCall::payout { who: alice.into() })
+			.execute_reverts(|out| {
+				out == b"Dispatched call failed with error: Module(ModuleError { index: 5, error: [6, 0, 0, 0], message: Some(\"NoReward\") })"
+			});
+	});
 }
