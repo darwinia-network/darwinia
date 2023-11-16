@@ -79,6 +79,27 @@
           "inputs":
           [
             {
+              "internalType": "address",
+              "name": "who",
+              "type": "address"
+            }
+          ],
+          "name": "payout",
+          "outputs":
+          [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs":
+          [
+            {
               "internalType": "uint256",
               "name": "ringAmount",
               "type": "uint256"
@@ -214,6 +235,18 @@
               "_0": "returns true on success, false otherwise."
             }
           },
+          "payout(address)":
+          {
+            "details": "Making the payout for the specified collators and its nominators.",
+            "params":
+            {
+              "who": "The collator address"
+            },
+            "returns":
+            {
+              "_0": "returns true on success, false otherwise."
+            }
+          },
           "restake(uint256,uint256,uint8[])":
           {
             "details": "Re-stake the unstaking assets immediately.",
@@ -266,6 +299,7 @@
         "claim()": "4e71d92d",
         "collect(uint32)": "10a66536",
         "nominate(address)": "b332180b",
+        "payout(address)": "0b7e9c44",
         "restake(uint256,uint256,uint8[])": "17092fcb",
         "stake(uint256,uint256,uint8[])": "757f9b3b",
         "unstake(uint256,uint256,uint8[])": "ef20fcb3"

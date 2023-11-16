@@ -40,7 +40,7 @@ fn selectors() {
 	assert!(PCall::nominate_selectors().contains(&0xb332180b));
 	assert!(PCall::collect_selectors().contains(&0x10a66536));
 	assert!(PCall::chill_selectors().contains(&0x2b8a3ae6));
-	assert!(PCall::payout_selectors().contains(&192846916u32));
+	assert!(PCall::payout_selectors().contains(&0x0b7e9c44));
 }
 
 #[test]
