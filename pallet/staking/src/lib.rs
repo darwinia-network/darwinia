@@ -62,12 +62,14 @@ use sp_runtime::{
 };
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
+/// Make it easier to call a function on a specific exposure storage.
+#[macro_export]
 macro_rules! call_on_exposure {
-	($s_e:expr, $s:ident$($f:tt)*) => {{
+	($s_e:expr, <$s:ident<$t:ident>>$($f:tt)*) => {{
 		match $s_e {
-			(ExposureCacheState::$s, _, _) => Ok(<ExposureCache0<T>>$($f)*),
-			(_, ExposureCacheState::$s, _) => Ok(<ExposureCache1<T>>$($f)*),
-			(_, _, ExposureCacheState::$s) => Ok(<ExposureCache2<T>>$($f)*),
+			($crate::ExposureCacheState::$s, _, _) => Ok(<$crate::ExposureCache0<$t>>$($f)*),
+			(_, $crate::ExposureCacheState::$s, _) => Ok(<$crate::ExposureCache1<$t>>$($f)*),
+			(_, _, $crate::ExposureCacheState::$s) => Ok(<$crate::ExposureCache2<$t>>$($f)*),
 			_ => {
 				log::error!("[pallet::staking] exposure cache states must be correct; qed");
 
@@ -75,10 +77,10 @@ macro_rules! call_on_exposure {
 			},
 		}
 	}};
-	($s:ident$($f:tt)*) => {{
-		let s = <ExposureCacheStates<T>>::get();
+	(<$s:ident<$t:ident>>$($f:tt)*) => {{
+		let s = <$crate::ExposureCacheStates<$t>>::get();
 
-		call_on_exposure!(s, $s$($f)*)
+		$crate::call_on_exposure!(s, <$s<$t>>$($f)*)
 	}};
 }
 
@@ -349,7 +351,7 @@ pub mod pallet {
 			// There are already plenty of tasks to handle during the new session,
 			// so refrain from assigning any additional ones here.
 			if !T::ShouldEndSession::get() {
-				call_on_exposure!(Previous::iter_keys()
+				call_on_exposure!(<Previous<T>>::iter_keys()
 					// TODO?: make this value adjustable
 					.drain()
 					.take(1)
@@ -918,7 +920,7 @@ pub mod pallet {
 		/// Pay the reward to the collator and its nominators.
 		pub fn payout_inner(collator: T::AccountId) -> Result<Weight, DispatchError> {
 			let c_exposure =
-				call_on_exposure!(Previous::get(&collator).ok_or(<Error<T>>::NoReward)?)?;
+				call_on_exposure!(<Previous<T>>::get(&collator).ok_or(<Error<T>>::NoReward)?)?;
 			let c_total_payout =
 				<PendingRewards<T>>::take(&collator).ok_or(<Error<T>>::NoReward)?;
 			let mut c_payout = c_exposure.commission * c_total_payout;
@@ -951,7 +953,7 @@ pub mod pallet {
 			<Pallet<T>>::shift_exposure_cache_states();
 
 			#[allow(deprecated)]
-			if call_on_exposure!(Next::remove_all(None)).is_err() {
+			if call_on_exposure!(<Next<T>>::remove_all(None)).is_err() {
 				return None;
 			}
 
@@ -1027,7 +1029,7 @@ pub mod pallet {
 				.into_iter()
 				.take(<CollatorCount<T>>::get() as _)
 				.map(|((c, e), _)| {
-					call_on_exposure!(cache_states, Next::insert(&c, e))
+					call_on_exposure!(cache_states, <Next<T>>::insert(&c, e))
 						.map(|_| c)
 						.map_err(Into::into)
 				})
@@ -1087,7 +1089,7 @@ where
 
 /// Exposure cache's state.
 #[allow(missing_docs)]
-#[cfg_attr(any(feature = "runtime-benchmarks", feature = "try-runtime"), derive(PartialEq))]
+#[cfg_attr(any(test, feature = "runtime-benchmarks", feature = "try-runtime"), derive(PartialEq))]
 #[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
 pub enum ExposureCacheState {
 	Previous,
@@ -1139,6 +1141,7 @@ where
 }
 
 /// A snapshot of the stake backing a single collator in the system.
+#[cfg_attr(test, derive(Clone))]
 #[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
 pub struct Exposure<AccountId> {
 	/// The commission of this collator.
@@ -1149,6 +1152,7 @@ pub struct Exposure<AccountId> {
 	pub nominators: Vec<IndividualExposure<AccountId>>,
 }
 /// A snapshot of the staker's state.
+#[cfg_attr(test, derive(Clone))]
 #[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
 pub struct IndividualExposure<AccountId> {
 	/// Nominator.
