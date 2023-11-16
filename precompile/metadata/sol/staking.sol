@@ -77,4 +77,9 @@ interface Staking {
     /// @dev Declare no desire to either collect or nominate.
 	/// @return returns true on success, false otherwise.
 	function chill() external returns (bool);
+
+	/// @dev Making the payout for the specified collators and its nominators.
+    /// @param who The collator address
+	/// @return returns true on success, false otherwise.
+	function payout(address who) external returns (bool);
 }
