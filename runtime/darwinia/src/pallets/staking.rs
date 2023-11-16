@@ -19,7 +19,7 @@
 // darwinia
 use crate::*;
 // substrate
-use frame_support::traits::{Currency, OnUnbalanced};
+use frame_support::traits::Currency;
 
 fast_runtime_or_not!(DURATION, BlockNumber, 5 * MINUTES, 14 * DAYS);
 
@@ -73,8 +73,8 @@ impl darwinia_staking::Stake for KtonStaking {
 }
 
 pub enum OnDarwiniaSessionEnd {}
-impl darwinia_staking::OnSessionEnd<Runtime> for OnDarwiniaSessionEnd {
-	fn inflate() -> Option<Balance> {
+impl darwinia_staking::InflationManager<Runtime> for OnDarwiniaSessionEnd {
+	fn inflate() -> Balance {
 		let now = Timestamp::now() as Moment;
 		let session_duration = now - <darwinia_staking::SessionStartTime<Runtime>>::get();
 		let elapsed_time = <darwinia_staking::ElapsedTime<Runtime>>::mutate(|t| {
@@ -87,11 +87,11 @@ impl darwinia_staking::OnSessionEnd<Runtime> for OnDarwiniaSessionEnd {
 
 		let unminted = dc_inflation::TOTAL_SUPPLY.saturating_sub(Balances::total_issuance());
 
-		dc_inflation::in_period(unminted, session_duration, elapsed_time)
+		dc_inflation::in_period(unminted, session_duration, elapsed_time).unwrap_or_default()
 	}
 
-	fn calculate_reward(maybe_inflation: Option<Balance>) -> Balance {
-		maybe_inflation.map(|i| sp_runtime::Perbill::from_percent(40) * i).unwrap_or_default()
+	fn calculate_reward(inflation: Balance) -> Balance {
+		sp_runtime::Perbill::from_percent(40) * inflation
 	}
 
 	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
@@ -100,20 +100,34 @@ impl darwinia_staking::OnSessionEnd<Runtime> for OnDarwiniaSessionEnd {
 		Ok(())
 	}
 
-	fn clean(unissued: Balance) {
-		Treasury::on_unbalanced(Balances::issue(unissued));
+	fn clear(remaining: Balance) {
+		let _ = Balances::deposit_into_existing(&Treasury::account_id(), remaining);
+	}
+}
+
+pub enum ShouldEndSession {}
+impl frame_support::traits::Get<bool> for ShouldEndSession {
+	fn get() -> bool {
+		// substrate
+		use pallet_session::ShouldEndSession;
+
+		<Runtime as pallet_session::Config>::ShouldEndSession::should_end_session(
+			System::block_number(),
+		)
 	}
 }
 
 impl darwinia_staking::Config for Runtime {
+	type Currency = Balances;
 	type Deposit = Deposit;
+	type InflationManager = OnDarwiniaSessionEnd;
 	type Kton = KtonStaking;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = ConstU32<16>;
 	type MinStakingDuration = MinStakingDuration;
-	type OnSessionEnd = OnDarwiniaSessionEnd;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
+	type ShouldEndSession = ShouldEndSession;
 	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;
 }
 #[cfg(not(feature = "runtime-benchmarks"))]

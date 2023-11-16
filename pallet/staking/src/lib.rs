@@ -28,11 +28,11 @@
 //! - KTON: Darwinia's commitment token
 //! - Deposit: Locking RINGs' ticket
 
-// TODO: nomination upper limit
-
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
 #![deny(unused_crate_dependencies)]
+
+pub mod migration;
 
 #[cfg(test)]
 mod mock;
@@ -52,18 +52,43 @@ use codec::FullCodec;
 // darwinia
 use dc_types::{Balance, Moment};
 // substrate
-use frame_support::{pallet_prelude::*, DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound};
+use frame_support::{
+	pallet_prelude::*, traits::Currency, DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound,
+};
 use frame_system::{pallet_prelude::*, RawOrigin};
 use sp_runtime::{
-	traits::{AccountIdConversion, Convert},
+	traits::{AccountIdConversion, Convert, One, Zero},
 	Perbill, Perquintill,
 };
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
+
+macro_rules! call_on_exposure {
+	($s_e:expr, $s:ident$($f:tt)*) => {{
+		match $s_e {
+			(ExposureCacheState::$s, _, _) => Ok(<ExposureCache0<T>>$($f)*),
+			(_, ExposureCacheState::$s, _) => Ok(<ExposureCache1<T>>$($f)*),
+			(_, _, ExposureCacheState::$s) => Ok(<ExposureCache2<T>>$($f)*),
+			_ => {
+				log::error!("[pallet::staking] exposure cache states must be correct; qed");
+
+				Err("[pallet::staking] exposure cache states must be correct; qed")
+			},
+		}
+	}};
+	($s:ident$($f:tt)*) => {{
+		let s = <ExposureCacheStates<T>>::get();
+
+		call_on_exposure!(s, $s$($f)*)
+	}};
+}
 
 #[frame_support::pallet]
 pub mod pallet {
 	// darwinia
 	use crate::*;
+
+	// TODO: limit the number of nominators that a collator can have.
+	// const MAX_NOMINATIONS: u32 = 32;
 
 	// Deposit helper for runtime benchmark.
 	#[cfg(feature = "runtime-benchmarks")]
@@ -89,8 +114,14 @@ pub mod pallet {
 		/// Deposit [`StakeExt`] interface.
 		type Deposit: StakeExt<AccountId = Self::AccountId, Amount = Balance>;
 
-		/// On session end handler.
-		type OnSessionEnd: OnSessionEnd<Self>;
+		/// Currency interface to pay the reward.
+		type Currency: Currency<Self::AccountId>;
+
+		/// Inflation and reward manager.
+		type InflationManager: InflationManager<Self>;
+
+		/// Pass [`pallet_session::Config::ShouldEndSession`]'s result to here.
+		type ShouldEndSession: Get<bool>;
 
 		/// Minimum time to stake at least.
 		#[pallet::constant]
@@ -133,7 +164,7 @@ pub mod pallet {
 			amount: Balance,
 		},
 		/// Unable to pay the staker's reward.
-		Unpaied {
+		Unpaid {
 			staker: T::AccountId,
 			amount: Balance,
 		},
@@ -157,6 +188,8 @@ pub mod pallet {
 		TargetNotCollator,
 		/// Collator count mustn't be zero.
 		ZeroCollatorCount,
+		/// No reward to pay for this collator.
+		NoReward,
 	}
 
 	/// All staking ledgers.
@@ -181,18 +214,62 @@ pub mod pallet {
 	#[pallet::getter(fn collator_of)]
 	pub type Collators<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, Perbill>;
 
-	/// Current stakers' exposure.
+	/// Exposure cache states.
+	///
+	/// To avoid extra DB RWs during new session, such as:
+	/// ```nocompile
+	/// previous = current;
+	/// current = next;
+	/// next = elect();
+	/// ```
+	///
+	/// Now, with data:
+	/// ```nocompile
+	/// cache1 == previous;
+	/// cache2 == current;
+	/// cache3 == next;
+	/// ```
+	/// Just need to shift the marker and write the storage map once:
+	/// ```nocompile
+	/// mark(cache3, current);
+	/// mark(cache2, previous);
+	/// mark(cache1, next);
+	/// cache1 = elect();
+	/// ```
+	#[pallet::storage]
+	#[pallet::getter(fn exposure_cache_states)]
+	pub type ExposureCacheStates<T: Config> = StorageValue<
+		_,
+		(ExposureCacheState, ExposureCacheState, ExposureCacheState),
+		ValueQuery,
+		ExposureCacheStatesDefault<T>,
+	>;
+	/// Default value for [`ExposureCacheStates`].
+	#[pallet::type_value]
+	pub fn ExposureCacheStatesDefault<T: Config>(
+	) -> (ExposureCacheState, ExposureCacheState, ExposureCacheState) {
+		(ExposureCacheState::Previous, ExposureCacheState::Current, ExposureCacheState::Next)
+	}
+
+	/// Exposure cache 0.
 	#[pallet::storage]
 	#[pallet::unbounded]
-	#[pallet::getter(fn exposure_of)]
-	pub type Exposures<T: Config> =
+	#[pallet::getter(fn exposure_cache_0_of)]
+	pub type ExposureCache0<T: Config> =
 		StorageMap<_, Twox64Concat, T::AccountId, Exposure<T::AccountId>>;
 
-	/// Next stakers' exposure.
+	/// Exposure cache 1.
 	#[pallet::storage]
 	#[pallet::unbounded]
-	#[pallet::getter(fn next_exposure_of)]
-	pub type NextExposures<T: Config> =
+	#[pallet::getter(fn exposure_cache_1_of)]
+	pub type ExposureCache1<T: Config> =
+		StorageMap<_, Twox64Concat, T::AccountId, Exposure<T::AccountId>>;
+
+	/// Exposure cache 2.
+	#[pallet::storage]
+	#[pallet::unbounded]
+	#[pallet::getter(fn exposure_cache_2_of)]
+	pub type ExposureCache2<T: Config> =
 		StorageMap<_, Twox64Concat, T::AccountId, Exposure<T::AccountId>>;
 
 	/// The ideal number of active collators.
@@ -206,12 +283,18 @@ pub mod pallet {
 	#[pallet::getter(fn nominator_of)]
 	pub type Nominators<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, T::AccountId>;
 
-	/// Collator's reward points.
+	/// Number of blocks authored by the collator within current session.
 	#[pallet::storage]
 	#[pallet::unbounded]
-	#[pallet::getter(fn reward_points)]
-	pub type RewardPoints<T: Config> =
-		StorageValue<_, (RewardPoint, BTreeMap<T::AccountId, RewardPoint>), ValueQuery>;
+	#[pallet::getter(fn authored_block_count)]
+	pub type AuthoredBlocksCount<T: Config> =
+		StorageValue<_, (BlockNumberFor<T>, BTreeMap<T::AccountId, BlockNumberFor<T>>), ValueQuery>;
+
+	/// All outstanding rewards since the last payment.
+	#[pallet::storage]
+	#[pallet::unbounded]
+	#[pallet::getter(fn pending_reward_of)]
+	pub type PendingRewards<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, Balance>;
 
 	/// Active session's start-time.
 	#[pallet::storage]
@@ -260,6 +343,24 @@ pub mod pallet {
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(PhantomData<T>);
+	#[pallet::hooks]
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		fn on_initialize(_: BlockNumberFor<T>) -> Weight {
+			// There are already plenty of tasks to handle during the new session,
+			// so refrain from assigning any additional ones here.
+			if !T::ShouldEndSession::get() {
+				call_on_exposure!(Previous::iter_keys()
+					// TODO?: make this value adjustable
+					.drain()
+					.take(1)
+					.fold(Zero::zero(), |acc, e| acc
+						+ Self::payout_inner(e).unwrap_or(Zero::zero())))
+				.unwrap_or_default()
+			} else {
+				Zero::zero()
+			}
+		}
+	}
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		/// Add stakes to the staking pool.
@@ -364,8 +465,6 @@ pub mod pallet {
 				DispatchResult::Ok(())
 			})?;
 
-			// TODO: event?
-
 			Ok(())
 		}
 
@@ -411,8 +510,6 @@ pub mod pallet {
 				DispatchResult::Ok(())
 			})?;
 
-			// TODO: event?
-
 			Ok(())
 		}
 
@@ -425,8 +522,6 @@ pub mod pallet {
 			// Deposit doesn't need to be claimed.
 			Self::claim_unstakings(&who)?;
 			Self::try_clean_ledger_of(&who);
-
-			// TODO: event?
 
 			Ok(())
 		}
@@ -463,8 +558,6 @@ pub mod pallet {
 
 			<Nominators<T>>::mutate(&who, |n| *n = Some(target));
 
-			// TODO: event?
-
 			Ok(())
 		}
 
@@ -481,7 +574,16 @@ pub mod pallet {
 			<Collators<T>>::remove(&who);
 			<Nominators<T>>::remove(&who);
 
-			// TODO: event?
+			Ok(())
+		}
+
+		/// Making the payout for the specified collators and its nominators.
+		#[pallet::call_index(8)]
+		#[pallet::weight(<T as Config>::WeightInfo::payout())]
+		pub fn payout(origin: OriginFor<T>, who: T::AccountId) -> DispatchResult {
+			ensure_signed(origin)?;
+
+			Self::payout_inner(who)?;
 
 			Ok(())
 		}
@@ -735,155 +837,199 @@ pub mod pallet {
 			});
 		}
 
-		/// Add reward points to collators using their account id.
-		pub fn reward_by_ids(collators: &[(T::AccountId, RewardPoint)]) {
-			<RewardPoints<T>>::mutate(|(total, reward_map)| {
-				collators.iter().cloned().for_each(|(c, p)| {
-					*total += p;
+		/// Update the record of block production.
+		pub fn note_authors(authors: &[T::AccountId]) {
+			<AuthoredBlocksCount<T>>::mutate(|(sum, map)| {
+				authors.iter().cloned().for_each(|c| {
+					*sum += One::one();
 
-					reward_map.entry(c).and_modify(|p_| *p_ += p).or_insert(p);
+					map.entry(c).and_modify(|p_| *p_ += One::one()).or_insert(One::one());
 				});
 			});
 		}
 
-		// Power is a mixture of RING and KTON.
-		// - `total_ring_power = (amount / total_staked_ring) * HALF_POWER`
-		// - `total_kton_power = (amount / total_staked_kton) * HALF_POWER`
-		fn balance2power<P>(amount: Balance) -> Power
-		where
-			P: frame_support::StorageValue<Balance, Query = Balance>,
-		{
-			(Perquintill::from_rational(amount, P::get().max(1)) * 500_000_000_u128) as _
+		/// Calculate the power of the given account.
+		#[cfg(any(feature = "runtime-benchmarks", test))]
+		pub fn quick_power_of(who: &T::AccountId) -> Power {
+			Self::power_of(who, <RingPool<T>>::get(), <KtonPool<T>>::get())
 		}
 
 		/// Calculate the power of the given account.
-		pub fn power_of(who: &T::AccountId) -> Power {
+		///
+		/// This is an optimized version of [`Self::quick_power_of`].
+		/// Avoiding read the pools' storage multiple times.
+		pub fn power_of(who: &T::AccountId, ring_pool: Balance, kton_pool: Balance) -> Power {
+			// Power is a mixture of RING and KTON.
+			// - `total_ring_power = (amount / total_staked_ring) * HALF_POWER`
+			// - `total_kton_power = (amount / total_staked_kton) * HALF_POWER`
+
+			const HALF_POWER: u128 = 500_000_000;
+
 			<Ledgers<T>>::get(who)
 				.map(|l| {
-					Self::balance2power::<RingPool<T>>(
+					(Perquintill::from_rational(
 						l.staked_ring
 							+ l.staked_deposits
 								.into_iter()
 								// We don't care if the deposit exists here.
 								// It was guaranteed by the `stake`/`unstake`/`restake` functions.
 								.fold(0, |r, d| r + T::Deposit::amount(who, d).unwrap_or_default()),
-					) + Self::balance2power::<KtonPool<T>>(l.staked_kton)
+						ring_pool.max(1),
+					) * HALF_POWER)
+						.saturating_add(
+							Perquintill::from_rational(l.staked_kton, kton_pool.max(1))
+								* HALF_POWER,
+						) as _
 				})
 				.unwrap_or_default()
 		}
 
-		// TODO: weight
-		/// Pay the session reward to the stakers.
-		pub fn payout(amount: Balance) -> Balance {
-			let (total_points, reward_map) = <RewardPoints<T>>::get();
-			// Due to the `payout * percent` there might be some losses.
-			let mut actual_payout = 0;
+		/// Distribute the session reward to staking pot and update the stakers' reward record.
+		pub fn distribute_session_reward(amount: Balance) -> Balance {
+			let (sum, map) = <AuthoredBlocksCount<T>>::take();
+			let staking_pot = account_id();
+			let mut actual_reward = 0;
+			let mut unpaid = 0;
 
-			for (c, p) in reward_map {
-				let Some(commission) = <Collators<T>>::get(&c) else {
-						#[cfg(test)]
-						panic!("[pallet::staking] collator({c:?}) must be found; qed");
-						#[cfg(not(test))]
-						{
-							log::error!("[pallet::staking] collator({c:?}) must be found; qed");
+			map.into_iter().for_each(|(c, p)| {
+				let r = Perbill::from_rational(p, sum) * amount;
 
-							continue;
-						}
-					};
-				let c_total_payout = Perbill::from_rational(p, total_points) * amount;
-				let mut c_payout = commission * c_total_payout;
-				let n_payout = c_total_payout - c_payout;
-				let Some(c_exposure) = <Exposures<T>>::get(&c) else {
-						#[cfg(test)]
-						panic!("[pallet::staking] exposure({c:?}) must be found; qed");
-						#[cfg(not(test))]
-						{
-							log::error!("[pallet::staking] exposure({c:?}) must be found; qed");
+				<PendingRewards<T>>::mutate(&c, |u| *u = u.map(|u| u + r).or(Some(r)));
 
-							continue;
-						}
-					};
-
-				for n_exposure in c_exposure.nominators {
-					let n_payout =
-						Perbill::from_rational(n_exposure.vote, c_exposure.vote) * n_payout;
-
-					if c == n_exposure.who {
-						// If the collator nominated themselves.
-
-						c_payout += n_payout;
-					} else if T::OnSessionEnd::reward(&n_exposure.who, n_payout).is_ok() {
-						actual_payout += n_payout;
-
-						Self::deposit_event(Event::Payout {
-							staker: n_exposure.who,
-							amount: n_payout,
-						});
-					} else {
-						Self::deposit_event(Event::Unpaied {
-							staker: n_exposure.who,
-							amount: n_payout,
-						});
-					}
-				}
-
-				if T::OnSessionEnd::reward(&c, c_payout).is_ok() {
-					actual_payout += c_payout;
-
-					Self::deposit_event(Event::Payout { staker: c, amount: c_payout });
+				if T::InflationManager::reward(&staking_pot, r).is_ok() {
+					actual_reward += r;
 				} else {
-					Self::deposit_event(Event::Unpaied { staker: c, amount: c_payout });
+					unpaid += r;
+				}
+			});
+
+			Self::deposit_event(Event::Payout {
+				staker: staking_pot.clone(),
+				amount: actual_reward,
+			});
+
+			if unpaid != 0 {
+				Self::deposit_event(Event::Unpaid { staker: staking_pot, amount: unpaid });
+			}
+
+			actual_reward
+		}
+
+		/// Pay the reward to the collator and its nominators.
+		pub fn payout_inner(collator: T::AccountId) -> Result<Weight, DispatchError> {
+			let c_exposure =
+				call_on_exposure!(Previous::get(&collator).ok_or(<Error<T>>::NoReward)?)?;
+			let c_total_payout =
+				<PendingRewards<T>>::take(&collator).ok_or(<Error<T>>::NoReward)?;
+			let mut c_payout = c_exposure.commission * c_total_payout;
+			let n_payout = c_total_payout - c_payout;
+			for n_exposure in c_exposure.nominators {
+				let n_payout = Perbill::from_rational(n_exposure.vote, c_exposure.vote) * n_payout;
+
+				if collator == n_exposure.who {
+					// If the collator nominated themselves.
+
+					c_payout += n_payout;
+				} else if T::InflationManager::reward(&n_exposure.who, n_payout).is_ok() {
+					Self::deposit_event(Event::Payout { staker: n_exposure.who, amount: n_payout });
+				} else {
+					Self::deposit_event(Event::Unpaid { staker: n_exposure.who, amount: n_payout });
 				}
 			}
 
-			actual_payout
+			if T::InflationManager::reward(&collator, c_payout).is_ok() {
+				Self::deposit_event(Event::Payout { staker: collator, amount: c_payout });
+			} else {
+				Self::deposit_event(Event::Unpaid { staker: collator, amount: c_payout });
+			}
+
+			Ok(<T as Config>::WeightInfo::payout())
 		}
 
 		/// Prepare the session state.
-		pub fn prepare_new_session() {
-			<RewardPoints<T>>::kill();
+		pub fn prepare_new_session(index: u32) -> Option<Vec<T::AccountId>> {
+			<Pallet<T>>::shift_exposure_cache_states();
+
 			#[allow(deprecated)]
-			<Exposures<T>>::remove_all(None);
-			<NextExposures<T>>::iter().drain().for_each(|(k, v)| {
-				<Exposures<T>>::insert(k, v);
-			});
+			if call_on_exposure!(Next::remove_all(None)).is_err() {
+				return None;
+			}
+
+			log::info!(
+				"[pallet::staking] assembling new collators for new session {index} at #{:?}",
+				<frame_system::Pallet<T>>::block_number(),
+			);
+
+			if let Ok(collators) = Self::elect() {
+				// TODO?: if we really need this event
+				Self::deposit_event(Event::Elected { collators: collators.clone() });
+
+				Some(collators)
+			} else {
+				// Impossible case.
+				//
+				// But if there is an issue, retain the old collators; do not alter the session
+				// collators if any error occurs to prevent the chain from stalling.
+				None
+			}
+		}
+
+		/// Shift the exposure cache states.
+		///
+		/// Previous Current  Next
+		/// Next     Previous Current
+		/// Current  Next     Previous
+		///
+		/// ```nocompile
+		/// loop { mutate(2, 0, 1) }
+		/// ```
+		pub fn shift_exposure_cache_states() {
+			let (s0, s1, s2) = <ExposureCacheStates<T>>::get();
+
+			<ExposureCacheStates<T>>::put((s2, s0, s1));
 		}
 
 		/// Elect the new collators.
 		///
 		/// This should only be called by the [`pallet_session::SessionManager::new_session`].
-		pub fn elect() -> Vec<T::AccountId> {
+		pub fn elect() -> Result<Vec<T::AccountId>, DispatchError> {
+			let nominators = <Nominators<T>>::iter().collect::<Vec<_>>();
+			let ring_pool = <RingPool<T>>::get();
+			let kton_pool = <KtonPool<T>>::get();
 			let mut collators = <Collators<T>>::iter()
 				.map(|(c, cm)| {
 					let scaler = Perbill::one() - cm;
 					let mut collator_v = 0;
-					let nominators = <Nominators<T>>::iter()
+					let nominators = nominators
+						.iter()
 						.filter_map(|(n, c_)| {
-							if c_ == c {
-								let nominator_v = scaler * Self::power_of(&n);
+							if c_ == &c {
+								let nominator_v = scaler * Self::power_of(n, ring_pool, kton_pool);
 
 								collator_v += nominator_v;
 
-								Some(IndividualExposure { who: n, vote: nominator_v })
+								Some(IndividualExposure { who: n.to_owned(), vote: nominator_v })
 							} else {
 								None
 							}
 						})
 						.collect();
 
-					((c, Exposure { vote: collator_v, nominators }), collator_v)
+					((c, Exposure { commission: cm, vote: collator_v, nominators }), collator_v)
 				})
 				.collect::<Vec<_>>();
 
 			collators.sort_by(|(_, a), (_, b)| b.cmp(a));
 
+			let cache_states = <ExposureCacheStates<T>>::get();
+
 			collators
 				.into_iter()
 				.take(<CollatorCount<T>>::get() as _)
 				.map(|((c, e), _)| {
-					<NextExposures<T>>::insert(&c, e);
-
-					c
+					call_on_exposure!(cache_states, Next::insert(&c, e))
+						.map(|_| c)
+						.map_err(Into::into)
 				})
 				.collect()
 		}
@@ -891,16 +1037,13 @@ pub mod pallet {
 }
 pub use pallet::*;
 
-type RewardPoint = u32;
 type Power = u32;
 type Vote = u32;
 
 type DepositId<T> = <<T as Config>::Deposit as Stake>::Item;
 
-/// On session end handler.
-///
-/// Currently it is only used to control the inflation.
-pub trait OnSessionEnd<T>
+/// Inflation and reward manager.
+pub trait InflationManager<T>
 where
 	T: Config,
 {
@@ -908,42 +1051,48 @@ where
 	fn on_session_end() {
 		let inflation = Self::inflate();
 		let reward = Self::calculate_reward(inflation);
-		let actual_payout = <Pallet<T>>::payout(reward);
+		let actual_reward = <Pallet<T>>::distribute_session_reward(reward);
 
-		Self::clean(inflation.unwrap_or(reward).saturating_sub(actual_payout));
+		if inflation != 0 {
+			Self::clear(inflation.saturating_sub(actual_reward));
+		}
 	}
 
 	/// Inflation settings.
-	fn inflate() -> Option<Balance> {
-		None
+	fn inflate() -> Balance {
+		0
 	}
 
 	/// Calculate the reward.
-	fn calculate_reward(maybe_inflation: Option<Balance>) -> Balance;
+	fn calculate_reward(inflation: Balance) -> Balance;
 
 	/// The reward function.
 	fn reward(who: &T::AccountId, amount: Balance) -> DispatchResult;
 
-	/// Clean the data; currently, only the unissued reward is present.
-	fn clean(_unissued: Balance) {}
+	/// Clear the remaining inflation.
+	fn clear(_remaining: Balance) {}
 }
-impl<T> OnSessionEnd<T> for ()
+impl<T> InflationManager<T> for ()
 where
 	T: Config,
 {
-	fn inflate() -> Option<Balance> {
-		None
-	}
-
-	fn calculate_reward(_maybe_inflation: Option<Balance>) -> Balance {
+	fn calculate_reward(_inflation: Balance) -> Balance {
 		0
 	}
 
 	fn reward(_who: &T::AccountId, _amount: Balance) -> DispatchResult {
 		Ok(())
 	}
+}
 
-	fn clean(_unissued: Balance) {}
+/// Exposure cache's state.
+#[allow(missing_docs)]
+#[cfg_attr(any(feature = "runtime-benchmarks", feature = "try-runtime"), derive(PartialEq))]
+#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+pub enum ExposureCacheState {
+	Previous,
+	Current,
+	Next,
 }
 
 /// A convertor from collators id. Since this pallet does not have stash/controller, this is
@@ -989,42 +1138,17 @@ where
 	}
 }
 
-// TODO: remove these
 /// A snapshot of the stake backing a single collator in the system.
-#[cfg(feature = "try-runtime")]
-#[derive(PartialEq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
-pub struct Exposure<AccountId>
-where
-	AccountId: PartialEq,
-{
-	/// The total vote backing this collator.
-	pub vote: Vote,
-	/// Nominator staking map.
-	pub nominators: Vec<IndividualExposure<AccountId>>,
-}
-/// A snapshot of the stake backing a single collator in the system.
-#[cfg(not(feature = "try-runtime"))]
 #[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
 pub struct Exposure<AccountId> {
+	/// The commission of this collator.
+	pub commission: Perbill,
 	/// The total vote backing this collator.
 	pub vote: Vote,
 	/// Nominator staking map.
 	pub nominators: Vec<IndividualExposure<AccountId>>,
 }
 /// A snapshot of the staker's state.
-#[cfg(feature = "try-runtime")]
-#[derive(PartialEq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
-pub struct IndividualExposure<AccountId>
-where
-	AccountId: PartialEq,
-{
-	/// Nominator.
-	pub who: AccountId,
-	/// Nominator's staking vote.
-	pub vote: Vote,
-}
-/// A snapshot of the staker's state.
-#[cfg(not(feature = "try-runtime"))]
 #[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
 pub struct IndividualExposure<AccountId> {
 	/// Nominator.
@@ -1042,7 +1166,7 @@ where
 	T: Config + pallet_authorship::Config + pallet_session::Config,
 {
 	fn note_author(author: T::AccountId) {
-		Self::reward_by_ids(&[(author, 20)])
+		Self::note_authors(&[author])
 	}
 }
 
@@ -1052,25 +1176,13 @@ where
 	T: Config,
 {
 	fn end_session(_: u32) {
-		T::OnSessionEnd::on_session_end();
+		T::InflationManager::on_session_end();
 	}
 
 	fn start_session(_: u32) {}
 
 	fn new_session(index: u32) -> Option<Vec<T::AccountId>> {
-		Self::prepare_new_session();
-
-		log::info!(
-			"[pallet::staking] assembling new collators for new session {} at #{:?}",
-			index,
-			<frame_system::Pallet<T>>::block_number(),
-		);
-
-		let collators = Self::elect();
-
-		Self::deposit_event(Event::Elected { collators: collators.clone() });
-
-		Some(collators)
+		Self::prepare_new_session(index)
 	}
 }
 

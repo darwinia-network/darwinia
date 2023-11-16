@@ -119,7 +119,7 @@ fn unstake_should_work() {
 				staked_ring: 2 * UNIT,
 				staked_kton: 3 * UNIT,
 				staked_deposits: BoundedVec::truncate_from(vec![0, 1, 2]),
-				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4)]),
+				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 6)]),
 				..ZeroDefault::default()
 			}
 		);
@@ -133,8 +133,8 @@ fn unstake_should_work() {
 				staked_ring: 2 * UNIT,
 				staked_kton: 2 * UNIT,
 				staked_deposits: BoundedVec::truncate_from(vec![0, 1, 2]),
-				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4)]),
-				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 5)]),
+				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 6)]),
+				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 7)]),
 				..ZeroDefault::default()
 			}
 		);
@@ -154,9 +154,9 @@ fn unstake_should_work() {
 				staked_ring: 2 * UNIT,
 				staked_kton: 2 * UNIT,
 				staked_deposits: BoundedVec::truncate_from(vec![0, 2]),
-				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4)]),
-				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 5)]),
-				unstaking_deposits: BoundedVec::truncate_from(vec![(1, 6)])
+				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 6)]),
+				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 7)]),
+				unstaking_deposits: BoundedVec::truncate_from(vec![(1, 8)])
 			}
 		);
 
@@ -166,9 +166,9 @@ fn unstake_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4), (2 * UNIT, 7)]),
-				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 5), (2 * UNIT, 7)]),
-				unstaking_deposits: BoundedVec::truncate_from(vec![(1, 6), (0, 7), (2, 7)]),
+				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 6), (2 * UNIT, 9)]),
+				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 7), (2 * UNIT, 9)]),
+				unstaking_deposits: BoundedVec::truncate_from(vec![(1, 8), (0, 9), (2, 9)]),
 				..ZeroDefault::default()
 			}
 		);
@@ -196,9 +196,9 @@ fn restake_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT, 5), (UNIT, 6)]),
-				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT, 5), (UNIT, 6)]),
-				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 4), (1, 4), (2, 4)]),
+				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 6), (UNIT, 7), (UNIT, 8)]),
+				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 6), (UNIT, 7), (UNIT, 8)]),
+				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 6), (1, 6), (2, 6)]),
 				..ZeroDefault::default()
 			}
 		);
@@ -209,9 +209,9 @@ fn restake_should_work() {
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
 				staked_ring: 3 * UNIT / 2,
-				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT / 2, 5)]),
-				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT, 5), (UNIT, 6)]),
-				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 4), (1, 4), (2, 4)]),
+				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 6), (UNIT / 2, 7)]),
+				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 6), (UNIT, 7), (UNIT, 8)]),
+				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 6), (1, 6), (2, 6)]),
 				..ZeroDefault::default()
 			}
 		);
@@ -223,9 +223,9 @@ fn restake_should_work() {
 			Ledger {
 				staked_ring: 3 * UNIT / 2,
 				staked_kton: 3 * UNIT / 2,
-				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT / 2, 5)]),
-				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT / 2, 5)]),
-				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 4), (1, 4), (2, 4)]),
+				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 6), (UNIT / 2, 7)]),
+				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 6), (UNIT / 2, 7)]),
+				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 6), (1, 6), (2, 6)]),
 				..ZeroDefault::default()
 			}
 		);
@@ -244,9 +244,9 @@ fn restake_should_work() {
 				staked_ring: 3 * UNIT / 2,
 				staked_kton: 3 * UNIT / 2,
 				staked_deposits: BoundedVec::truncate_from(vec![1]),
-				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT / 2, 5)]),
-				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT / 2, 5)]),
-				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 4), (2, 4)]),
+				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 6), (UNIT / 2, 7)]),
+				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 6), (UNIT / 2, 7)]),
+				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 6), (2, 6)]),
 			}
 		);
 
@@ -290,9 +290,9 @@ fn claim_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 4), (UNIT, 7)]),
-				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 5), (UNIT, 7)]),
-				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 6), (1, 7), (2, 7)]),
+				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 6), (UNIT, 9)]),
+				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 7), (UNIT, 9)]),
+				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 8), (1, 9), (2, 9)]),
 				..ZeroDefault::default()
 			}
 		);
@@ -304,9 +304,9 @@ fn claim_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 7)]),
-				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 5), (UNIT, 7)]),
-				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 6), (1, 7), (2, 7)]),
+				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 9)]),
+				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 7), (UNIT, 9)]),
+				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 8), (1, 9), (2, 9)]),
 				..ZeroDefault::default()
 			}
 		);
@@ -319,9 +319,9 @@ fn claim_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 7)]),
-				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 7)]),
-				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 6), (1, 7), (2, 7)]),
+				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 9)]),
+				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 9)]),
+				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 8), (1, 9), (2, 9)]),
 				..ZeroDefault::default()
 			}
 		);
@@ -334,9 +334,9 @@ fn claim_should_work() {
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
-				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 7)]),
-				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 7)]),
-				unstaking_deposits: BoundedVec::truncate_from(vec![(1, 7), (2, 7)]),
+				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 9)]),
+				unstaking_kton: BoundedVec::truncate_from(vec![(UNIT, 9)]),
+				unstaking_deposits: BoundedVec::truncate_from(vec![(1, 9), (2, 9)]),
 				..ZeroDefault::default()
 			}
 		);
@@ -419,62 +419,62 @@ fn set_collator_count_should_work() {
 #[test]
 fn power_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(Staking::power_of(&1), 0);
-		assert_eq!(Staking::power_of(&2), 0);
-		assert_eq!(Staking::power_of(&3), 0);
-		assert_eq!(Staking::power_of(&4), 0);
+		assert_eq!(Staking::quick_power_of(&1), 0);
+		assert_eq!(Staking::quick_power_of(&2), 0);
+		assert_eq!(Staking::quick_power_of(&3), 0);
+		assert_eq!(Staking::quick_power_of(&4), 0);
 
 		// 1 stakes 1 RING.
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), UNIT, 0, Vec::new()));
-		assert_eq!(Staking::power_of(&1), 500_000_000);
+		assert_eq!(Staking::quick_power_of(&1), 500_000_000);
 
 		// 2 stakes 1 KTON.
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(2), 0, UNIT, Vec::new()));
-		assert_eq!(Staking::power_of(&1), 500_000_000);
-		assert_eq!(Staking::power_of(&2), 500_000_000);
+		assert_eq!(Staking::quick_power_of(&1), 500_000_000);
+		assert_eq!(Staking::quick_power_of(&2), 500_000_000);
 
 		// 3 stakes 1 deposit.
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(3), UNIT, 1));
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(3), 0, 0, vec![0]));
-		assert_eq!(Staking::power_of(&1), 250_000_000);
-		assert_eq!(Staking::power_of(&2), 500_000_000);
-		assert_eq!(Staking::power_of(&3), 250_000_000);
+		assert_eq!(Staking::quick_power_of(&1), 250_000_000);
+		assert_eq!(Staking::quick_power_of(&2), 500_000_000);
+		assert_eq!(Staking::quick_power_of(&3), 250_000_000);
 
 		// 4 stakes 1 KTON.
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(4), 0, UNIT, Vec::new()));
-		assert_eq!(Staking::power_of(&1), 250_000_000);
-		assert_eq!(Staking::power_of(&2), 250_000_000);
-		assert_eq!(Staking::power_of(&3), 250_000_000);
-		assert_eq!(Staking::power_of(&4), 250_000_000);
+		assert_eq!(Staking::quick_power_of(&1), 250_000_000);
+		assert_eq!(Staking::quick_power_of(&2), 250_000_000);
+		assert_eq!(Staking::quick_power_of(&3), 250_000_000);
+		assert_eq!(Staking::quick_power_of(&4), 250_000_000);
 
 		// 1 unstakes 1 RING.
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), UNIT, 0, Vec::new()));
-		assert_eq!(Staking::power_of(&1), 0);
-		assert_eq!(Staking::power_of(&2), 250_000_000);
-		assert_eq!(Staking::power_of(&3), 500_000_000);
-		assert_eq!(Staking::power_of(&4), 250_000_000);
+		assert_eq!(Staking::quick_power_of(&1), 0);
+		assert_eq!(Staking::quick_power_of(&2), 250_000_000);
+		assert_eq!(Staking::quick_power_of(&3), 500_000_000);
+		assert_eq!(Staking::quick_power_of(&4), 250_000_000);
 
 		// 2 unstakes 1 KTON.
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(2), 0, UNIT, Vec::new()));
-		assert_eq!(Staking::power_of(&1), 0);
-		assert_eq!(Staking::power_of(&2), 0);
-		assert_eq!(Staking::power_of(&3), 500_000_000);
-		assert_eq!(Staking::power_of(&4), 500_000_000);
+		assert_eq!(Staking::quick_power_of(&1), 0);
+		assert_eq!(Staking::quick_power_of(&2), 0);
+		assert_eq!(Staking::quick_power_of(&3), 500_000_000);
+		assert_eq!(Staking::quick_power_of(&4), 500_000_000);
 
 		// 3 unstakes 1 deposit.
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(3), UNIT, 1));
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(3), 0, 0, vec![0]));
-		assert_eq!(Staking::power_of(&1), 0);
-		assert_eq!(Staking::power_of(&2), 0);
-		assert_eq!(Staking::power_of(&3), 0);
-		assert_eq!(Staking::power_of(&4), 500_000_000);
+		assert_eq!(Staking::quick_power_of(&1), 0);
+		assert_eq!(Staking::quick_power_of(&2), 0);
+		assert_eq!(Staking::quick_power_of(&3), 0);
+		assert_eq!(Staking::quick_power_of(&4), 500_000_000);
 
 		// 4 unstakes 1 KTON.
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(4), 0, UNIT, Vec::new()));
-		assert_eq!(Staking::power_of(&1), 0);
-		assert_eq!(Staking::power_of(&2), 0);
-		assert_eq!(Staking::power_of(&3), 0);
-		assert_eq!(Staking::power_of(&4), 0);
+		assert_eq!(Staking::quick_power_of(&1), 0);
+		assert_eq!(Staking::quick_power_of(&2), 0);
+		assert_eq!(Staking::quick_power_of(&3), 0);
+		assert_eq!(Staking::quick_power_of(&4), 0);
 	});
 }
 
@@ -501,7 +501,7 @@ fn elect_should_work() {
 			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i - 5));
 		});
 
-		assert_eq!(Staking::elect(), vec![5, 4, 3]);
+		assert_eq!(Staking::elect().unwrap(), vec![5, 4, 3]);
 	});
 	ExtBuilder::default().collator_count(3).build().execute_with(|| {
 		(1..=5).for_each(|i| {
@@ -524,7 +524,7 @@ fn elect_should_work() {
 			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i - 5));
 		});
 
-		assert_eq!(Staking::elect(), vec![1, 2, 3]);
+		assert_eq!(Staking::elect().unwrap(), vec![1, 2, 3]);
 	});
 }
 
@@ -551,36 +551,38 @@ fn payout_should_work() {
 			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i - 5));
 		});
 		new_session();
-		new_session();
-		Staking::reward_by_ids(&[(1, 20), (2, 20), (3, 20), (4, 20), (5, 20)]);
 		(1..=10).for_each(|i| assert_eq!(Balances::free_balance(i), 1_000 * UNIT));
 
-		let session_duration = Duration::new(6 * 60 * 60, 0).as_millis();
-
-		Timestamp::set_timestamp(session_duration);
+		let total_issuance = Balances::total_issuance();
+		let session_duration = Duration::new(12 * 600, 0).as_millis();
+		Efflux::time(session_duration - <Period as Get<u64>>::get() as Moment);
+		Staking::note_authors(&[1, 2, 3, 4, 5]);
 		new_session();
+		new_session();
+		payout();
 
-		let rewards = [
-			1365981985468705603914,
-			2549833009234996736972,
-			3551553170742362179958,
-			4371142361805028424107,
-			5008600632691132655310,
-			4097945964602008744224,
-			2914094945753252770656,
-			1912374784245887327670,
-			1092785589904864310528,
-			455327319565152874824,
+		let rewards = vec![
+			455327412809459795649,
+			849944493808794062101,
+			1183851276145838531437,
+			1457047723758662022603,
+			1669533853403313367198,
+			1365982241160343870361,
+			971365161800188293957,
+			637458379463143824620,
+			364261930757534540090,
+			151775801295014161055,
 		];
-		(1..=10)
-			.zip(rewards.iter())
-			.for_each(|(i, r)| assert_eq!(Balances::free_balance(i) - 1_000 * UNIT, *r));
+		assert_eq!(
+			rewards,
+			(1..=10).map(|i| Balances::free_balance(i) - 1_000 * UNIT).collect::<Vec<_>>()
+		);
 		assert_eq_error_rate!(
 			PayoutFraction::get()
 				* dc_inflation::in_period(
-					dc_inflation::TOTAL_SUPPLY - Balances::total_issuance(),
+					dc_inflation::TOTAL_SUPPLY - total_issuance,
 					session_duration,
-					0
+					Timestamp::now()
 				)
 				.unwrap(),
 			rewards.iter().sum::<Balance>(),
@@ -589,7 +591,7 @@ fn payout_should_work() {
 		);
 	});
 
-	ExtBuilder::default().on_session_end_type(1).collator_count(5).build().execute_with(|| {
+	ExtBuilder::default().inflation_type(1).collator_count(5).build().execute_with(|| {
 		(1..=5).for_each(|i| {
 			assert_ok!(Staking::stake(
 				RuntimeOrigin::signed(i),
@@ -611,14 +613,16 @@ fn payout_should_work() {
 		});
 		new_session();
 		new_session();
-		Staking::reward_by_ids(&[(1, 20), (2, 20), (3, 20), (4, 20), (5, 20)]);
 		(1..=10).for_each(|i| assert_eq!(Balances::free_balance(i), 1_000 * UNIT));
 
 		let total_issuance = Balances::total_issuance();
-
+		let session_duration = Duration::new(12 * 600, 0).as_millis();
+		Efflux::time(session_duration - <Period as Get<u64>>::get() as Moment);
+		Staking::note_authors(&[1, 2, 3, 4, 5]);
 		new_session();
+		payout();
 
-		let rewards = [
+		let rewards = vec![
 			499999998800000000000,
 			933333320000000000000,
 			1300000000000000000000,
@@ -630,9 +634,10 @@ fn payout_should_work() {
 			399999999600000000000,
 			166666663000000000000,
 		];
-		(1..=10)
-			.zip(rewards.iter())
-			.for_each(|(i, r)| assert_eq!(Balances::free_balance(i) - 1_000 * UNIT, *r));
+		assert_eq!(
+			rewards,
+			(1..=10).map(|i| Balances::free_balance(i) - 1_000 * UNIT).collect::<Vec<_>>()
+		);
 
 		assert_eq!(Balances::total_issuance(), total_issuance);
 		assert_eq!(
@@ -640,28 +645,27 @@ fn payout_should_work() {
 			1_000_000 * UNIT - rewards.iter().sum::<Balance>()
 		);
 
-		dbg!(Balances::free_balance(&Treasury::account_id()));
 		assert_ok!(Balances::transfer_all(
 			RuntimeOrigin::signed(Treasury::account_id()),
 			Default::default(),
 			false
 		));
-		dbg!(Balances::free_balance(&Treasury::account_id()));
-		Staking::reward_by_ids(&[(1, 20)]);
+		Staking::note_authors(&[1]);
 		System::reset_events();
 		new_session();
+		payout();
 
 		assert_eq!(
 			System::events()
 				.into_iter()
 				.filter_map(|e| match e.event {
-					RuntimeEvent::Staking(e @ Event::Unpaied { .. }) => Some(e),
+					RuntimeEvent::Staking(e @ Event::Unpaid { .. }) => Some(e),
 					_ => None,
 				})
 				.collect::<Vec<_>>(),
 			vec![
-				Event::Unpaied { staker: 6, amount: 7499999997000000000000 },
-				Event::Unpaied { staker: 1, amount: 2499999994000000000000 }
+				Event::Unpaid { staker: 6, amount: 7499999997000000000000 },
+				Event::Unpaid { staker: 1, amount: 2499999994000000000000 }
 			]
 		);
 	});
@@ -670,42 +674,40 @@ fn payout_should_work() {
 #[test]
 fn on_new_session_should_work() {
 	ExtBuilder::default().collator_count(2).genesis_collator().build().execute_with(|| {
-		assert_eq_uvec!(<Exposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 2]);
-		assert_eq_uvec!(<NextExposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 2]);
+		assert_eq_uvec!(call_on_exposure_test!(Previous::iter_keys().collect::<Vec<_>>()), [1, 2]);
+		assert_eq_uvec!(call_on_exposure_test!(Current::iter_keys().collect::<Vec<_>>()), [1, 2]);
+		assert_eq_uvec!(call_on_exposure_test!(Next::iter_keys().collect::<Vec<_>>()), [1, 2]);
 
 		assert_ok!(Staking::collect(RuntimeOrigin::signed(3), Perbill::zero()));
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(3), 2 * UNIT, 0, Vec::new()));
 		assert_ok!(Staking::nominate(RuntimeOrigin::signed(3), 3));
-		Staking::reward_by_ids(
-			&Session::validators().into_iter().map(|v| (v, 20)).collect::<Vec<_>>(),
-		);
+		Staking::note_authors(&Session::validators());
 
 		new_session();
-		assert_eq_uvec!(<Exposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 2]);
-		assert_eq_uvec!(<NextExposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 3]);
+		assert_eq_uvec!(call_on_exposure_test!(Previous::iter_keys().collect::<Vec<_>>()), [1, 2]);
+		assert_eq_uvec!(call_on_exposure_test!(Current::iter_keys().collect::<Vec<_>>()), [1, 2]);
+		assert_eq_uvec!(call_on_exposure_test!(Next::iter_keys().collect::<Vec<_>>()), [1, 3]);
 
 		assert_ok!(Staking::chill(RuntimeOrigin::signed(3)));
 		assert_ok!(Staking::collect(RuntimeOrigin::signed(4), Perbill::zero()));
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(4), 2 * UNIT, 0, Vec::new()));
 		assert_ok!(Staking::nominate(RuntimeOrigin::signed(4), 4));
-		Staking::reward_by_ids(
-			&Session::validators().into_iter().map(|v| (v, 20)).collect::<Vec<_>>(),
-		);
+		Staking::note_authors(&Session::validators());
 
 		new_session();
-		assert_eq_uvec!(<Exposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 3]);
-		assert_eq_uvec!(<NextExposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 4]);
+		assert_eq_uvec!(call_on_exposure_test!(Previous::iter_keys().collect::<Vec<_>>()), [1, 2]);
+		assert_eq_uvec!(call_on_exposure_test!(Current::iter_keys().collect::<Vec<_>>()), [1, 3]);
+		assert_eq_uvec!(call_on_exposure_test!(Next::iter_keys().collect::<Vec<_>>()), [1, 4]);
 
 		assert_ok!(Staking::chill(RuntimeOrigin::signed(4)));
 		assert_ok!(Staking::collect(RuntimeOrigin::signed(5), Perbill::zero()));
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(5), 2 * UNIT, 0, Vec::new()));
 		assert_ok!(Staking::nominate(RuntimeOrigin::signed(5), 5));
-		Staking::reward_by_ids(
-			&Session::validators().into_iter().map(|v| (v, 20)).collect::<Vec<_>>(),
-		);
+		Staking::note_authors(&Session::validators());
 
 		new_session();
-		assert_eq_uvec!(<Exposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 4]);
-		assert_eq_uvec!(<NextExposures<Runtime>>::iter_keys().collect::<Vec<_>>(), [1, 5]);
+		assert_eq_uvec!(call_on_exposure_test!(Previous::iter_keys().collect::<Vec<_>>()), [1, 3]);
+		assert_eq_uvec!(call_on_exposure_test!(Current::iter_keys().collect::<Vec<_>>()), [1, 4]);
+		assert_eq_uvec!(call_on_exposure_test!(Next::iter_keys().collect::<Vec<_>>()), [1, 5]);
 	});
 }
