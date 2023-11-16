@@ -131,10 +131,10 @@ impl Into<Option<MultiLocation>> for AssetType {
 frame_support::parameter_types! {
 	/// 1000 is AssetHub paraId.
 	/// 50 is pallet-assets index on AssetHub.
-	/// 7777 is the id of Test USDT on AssetHub(Rococo).
+	/// 1984 is the id of Test USDT on AssetHub(Polkadot).
 	pub UsdtLocation: MultiLocation = MultiLocation::new(
 		1,
-		X3(Parachain(1000), PalletInstance(50), GeneralIndex(7777))
+		X3(Parachain(1000), PalletInstance(50), GeneralIndex(1984))
 	);
 }
 
@@ -144,11 +144,11 @@ impl pallet_asset_manager::Config for Runtime {
 	type AssetRegistrarMetadata = xcm_configs::AssetRegistrarMetadata;
 	type Balance = Balance;
 	type Currency = Balances;
-	type ForeignAssetModifierOrigin = RootOr<GeneralAdmin>;
+	type ForeignAssetModifierOrigin = Root;
 	type ForeignAssetType = AssetType;
 	type LocalAssetDeposit = ConstU128<0>;
 	type LocalAssetIdCreator = LocalAssetIdCreator;
-	type LocalAssetModifierOrigin = RootOr<GeneralAdmin>;
+	type LocalAssetModifierOrigin = frame_system::EnsureNever<AccountId>;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = pallet_asset_manager::weights::SubstrateWeight<Runtime>;
 }
