@@ -48,7 +48,7 @@ fn migrate() -> frame_support::weights::Weight {
 	const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
 	const USDT_ADDRESS: &str = "0x0000000000000000000000000000000000000403";
 
-	if let Some(a) = H160::from_str(USDT_ADDRESS) {
+	if let Ok(a) = H160::from_str(USDT_ADDRESS) {
 		EVM::create_account(a, REVERT_BYTECODE.to_vec());
 	}
 
