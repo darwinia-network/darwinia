@@ -95,6 +95,9 @@ pub mod pallet {
 	// Deposit helper for runtime benchmark.
 	#[cfg(feature = "runtime-benchmarks")]
 	use darwinia_deposit::Config as DepositConfig;
+
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
+
 	/// Empty trait acts as a place holder to satisfy the `#[pallet::config]` macro.
 	#[cfg(not(feature = "runtime-benchmarks"))]
 	pub trait DepositConfig {}
@@ -344,7 +347,8 @@ pub mod pallet {
 	}
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	#[pallet::storage_version(STORAGE_VERSION)]
+	pub struct Pallet<T>(_);
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
 		fn on_initialize(_: BlockNumberFor<T>) -> Weight {
