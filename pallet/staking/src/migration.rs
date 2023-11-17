@@ -42,8 +42,6 @@ pub mod v1 {
 	{
 		#[cfg(feature = "try-runtime")]
 		fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
-			assert_eq!(StorageVersion::get::<Pallet<T>>(), 0, "Can only upgrade from version 0.");
-
 			Ok(Vec::new())
 		}
 
@@ -52,7 +50,7 @@ pub mod v1 {
 
 			if version != 0 {
 				log::warn!(
-					"[pallet::staking] skipping v0 to v1 migration: executed on wrong storage version. Expected version 1, found {version:?}",
+					"[pallet::staking] skipping v0 to v1 migration: executed on wrong storage version. Expected version 0, found {version:?}",
 				);
 
 				return T::DbWeight::get().reads(1);
@@ -125,10 +123,10 @@ pub mod v1 {
 
 			// Check that everything decoded fine.
 			<ExposureCache1<T>>::iter_keys().for_each(|k| {
-				assert!(<ExposureCache0<T>>::try_get(k).is_ok(), "Can not decode V1 `Exposure`.");
+				assert!(<ExposureCache1<T>>::try_get(k).is_ok(), "Can not decode V1 `Exposure`.");
 			});
 			<ExposureCache2<T>>::iter_keys().for_each(|k| {
-				assert!(<ExposureCache0<T>>::try_get(k).is_ok(), "Can not decode V1 `Exposure`.");
+				assert!(<ExposureCache2<T>>::try_get(k).is_ok(), "Can not decode V1 `Exposure`.");
 			});
 
 			Ok(())

@@ -69,7 +69,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
-	migration::CustomOnRuntimeUpgrade,
+	(migration::CustomOnRuntimeUpgrade, darwinia_staking::migration::v1::MigrateToV1<Runtime>),
 >;
 
 /// Darwinia proposal base fee.
@@ -82,7 +82,7 @@ pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Crab2"),
 	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
 	authoring_version: 0,
-	spec_version: 6_4_0_2,
+	spec_version: 6_5_0_0,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 0,
