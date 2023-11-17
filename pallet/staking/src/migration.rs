@@ -125,10 +125,10 @@ pub mod v1 {
 
 			// Check that everything decoded fine.
 			<ExposureCache1<T>>::iter_keys().for_each(|k| {
-				assert!(<ExposureCache0<T>>::try_get(k).is_ok(), "Can not decode V1 `Exposure`.");
+				assert!(<ExposureCache1<T>>::try_get(k).is_ok(), "Can not decode V1 `Exposure`.");
 			});
 			<ExposureCache2<T>>::iter_keys().for_each(|k| {
-				assert!(<ExposureCache0<T>>::try_get(k).is_ok(), "Can not decode V1 `Exposure`.");
+				assert!(<ExposureCache2<T>>::try_get(k).is_ok(), "Can not decode V1 `Exposure`.");
 			});
 
 			Ok(())
