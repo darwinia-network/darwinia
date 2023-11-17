@@ -98,7 +98,7 @@ pub mod pallet {
 	pub(crate) const E_NOT_MULTISIG_MEMBER: u8 = 4;
 
 	#[pallet::pallet]
-	pub struct Pallet<T>(PhantomData<T>);
+	pub struct Pallet<T>(_);
 
 	#[pallet::config]
 	pub trait Config:
