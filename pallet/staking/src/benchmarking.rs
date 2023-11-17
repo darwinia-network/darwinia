@@ -203,9 +203,7 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
 		let sender = a.clone();
 
-		assert_eq!(<ExposureCacheStates<T>>::get().0, ExposureCacheState::Previous);
-
-		<ExposureCache0<T>>::insert(
+		call_on_exposure!(<Previous<T>>::insert(
 			&a,
 			Exposure {
 				commission: Perbill::zero(),
@@ -217,7 +215,8 @@ mod benchmarks {
 					})
 					.collect(),
 			},
-		);
+		))
+		.unwrap();
 		<PendingRewards<T>>::insert(&a, 500);
 
 		#[extrinsic_call]
