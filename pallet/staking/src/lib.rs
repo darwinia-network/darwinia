@@ -957,23 +957,30 @@ pub mod pallet {
 				return None;
 			}
 
+			let bn = <frame_system::Pallet<T>>::block_number();
+
 			log::info!(
-				"[pallet::staking] assembling new collators for new session {index} at #{:?}",
-				<frame_system::Pallet<T>>::block_number(),
+				"[pallet::staking] assembling new collators for new session {index} at #{bn:?}",
 			);
 
 			if let Ok(collators) = Self::elect() {
-				// TODO?: if we really need this event
-				Self::deposit_event(Event::Elected { collators: collators.clone() });
+				if !collators.is_empty() {
+					// TODO?: if we really need this event
+					Self::deposit_event(Event::Elected { collators: collators.clone() });
 
-				Some(collators)
-			} else {
-				// Impossible case.
-				//
-				// But if there is an issue, retain the old collators; do not alter the session
-				// collators if any error occurs to prevent the chain from stalling.
-				None
+					return Some(collators);
+				}
 			}
+
+			log::error!(
+				"[pallet::staking] fail to elect collators for new session {index} at #{bn:?}"
+			);
+
+			// Impossible case.
+			//
+			// But if there is an issue, retain the old collators; do not alter the session
+			// collators if any error occurs to prevent the chain from stalling.
+			None
 		}
 
 		/// Shift the exposure cache states.
