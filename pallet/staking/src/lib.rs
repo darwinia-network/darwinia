@@ -357,7 +357,6 @@ pub mod pallet {
 			if !T::ShouldEndSession::get() {
 				call_on_exposure!(<Previous<T>>::iter_keys()
 					// TODO?: make this value adjustable
-					.drain()
 					.take(1)
 					.fold(Zero::zero(), |acc, e| acc
 						+ Self::payout_inner(e).unwrap_or(Zero::zero())))
@@ -902,6 +901,7 @@ pub mod pallet {
 
 				<PendingRewards<T>>::mutate(&c, |u| *u = u.map(|u| u + r).or(Some(r)));
 
+				// TODO: merge into one call
 				if T::InflationManager::reward(&staking_pot, r).is_ok() {
 					actual_reward += r;
 				} else {
@@ -924,7 +924,7 @@ pub mod pallet {
 		/// Pay the reward to the collator and its nominators.
 		pub fn payout_inner(collator: T::AccountId) -> Result<Weight, DispatchError> {
 			let c_exposure =
-				call_on_exposure!(<Previous<T>>::get(&collator).ok_or(<Error<T>>::NoReward)?)?;
+				call_on_exposure!(<Previous<T>>::take(&collator).ok_or(<Error<T>>::NoReward)?)?;
 			let c_total_payout =
 				<PendingRewards<T>>::take(&collator).ok_or(<Error<T>>::NoReward)?;
 			let mut c_payout = c_exposure.commission * c_total_payout;

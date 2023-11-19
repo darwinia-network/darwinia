@@ -757,6 +757,56 @@ fn payout_should_work() {
 }
 
 #[test]
+fn auto_payout_should_work() {
+	ExtBuilder::default().collator_count(2).build().execute_with(|| {
+		(1..=2).for_each(|i| {
+			assert_ok!(Staking::stake(
+				RuntimeOrigin::signed(i),
+				0,
+				i as Balance * UNIT,
+				Vec::new()
+			));
+			assert_ok!(Staking::collect(RuntimeOrigin::signed(i), Perbill::from_percent(i * 10)));
+			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i));
+		});
+		(3..=4).for_each(|i| {
+			assert_ok!(Staking::stake(
+				RuntimeOrigin::signed(i),
+				0,
+				(11 - i as Balance) * UNIT,
+				Vec::new()
+			));
+			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i - 2));
+		});
+		new_session();
+		new_session();
+
+		Efflux::time(<Period as Get<u64>>::get() as Moment);
+		Staking::note_authors(&[1, 2]);
+		new_session();
+		(1..=4).for_each(|i| assert_eq!(Balances::free_balance(i), 1_000 * UNIT));
+
+		Efflux::block(1);
+		assert_eq!(Balances::free_balance(1), 1000000758879022790250);
+		assert_eq!(Balances::free_balance(2), 1000000000000000000000);
+		assert_eq!(Balances::free_balance(3), 1000003035516089643241);
+		assert_eq!(Balances::free_balance(4), 1000000000000000000000);
+
+		Efflux::block(1);
+		assert_eq!(Balances::free_balance(1), 1000000758879022790250);
+		assert_eq!(Balances::free_balance(2), 1000001433438163308069);
+		assert_eq!(Balances::free_balance(3), 1000003035516089643241);
+		assert_eq!(Balances::free_balance(4), 1000002360956952540378);
+
+		Efflux::block(1);
+		assert_eq!(Balances::free_balance(1), 1000000758879022790250);
+		assert_eq!(Balances::free_balance(2), 1000001433438163308069);
+		assert_eq!(Balances::free_balance(3), 1000003035516089643241);
+		assert_eq!(Balances::free_balance(4), 1000002360956952540378);
+	});
+}
+
+#[test]
 fn on_new_session_should_work() {
 	ExtBuilder::default().collator_count(2).genesis_collator().build().execute_with(|| {
 		assert_eq_uvec!(

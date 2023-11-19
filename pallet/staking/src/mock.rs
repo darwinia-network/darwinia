@@ -401,9 +401,12 @@ impl Efflux {
 	}
 
 	pub fn block(number: BlockNumber) {
-		for _ in 0..number {
-			initialize_block(System::block_number() + 1)
-		}
+		let now = System::block_number();
+
+		(now..now + number).for_each(|n| {
+			initialize_block(n + 1);
+			finalize_block(n + 1);
+		});
 	}
 }
 
@@ -498,10 +501,7 @@ pub fn new_session() {
 	let now = System::block_number();
 	let target = now + <Period as sp_runtime::traits::Get<BlockNumber>>::get();
 
-	(now + 1..=target).for_each(|i| {
-		initialize_block(i);
-		finalize_block(i);
-	});
+	(now..target).for_each(|_| Efflux::block(1));
 }
 
 pub fn payout() {
