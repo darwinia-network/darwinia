@@ -6,21 +6,22 @@ on:
     paths:
       - "**.rs"
       - "**.toml"
-      - "**lock"
-      - "**.json"
+      - "**.lock"
+      - "**.ts"
       - "**.yml"
+      - "**.sol"
   pull_request:
     types: [opened, synchronize, ready_for_review]
     branches:
       - main
     paths:
       - "**.rs"
-      - "**.ts"
       - "**.toml"
-      - "**lock"
-      - "**.json"
+      - "**.lock"
+      - "**.ts"
       - "**.yml"
-
+      - "**.sol"
+      
 env:
   CACHE_VERSION: 0
 
