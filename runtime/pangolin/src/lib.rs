@@ -70,7 +70,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
-	(migration::CustomOnRuntimeUpgrade, darwinia_staking::migration::v1::MigrateToV1<Runtime>),
+	migration::CustomOnRuntimeUpgrade,
 >;
 
 /// Darwinia proposal base fee.
