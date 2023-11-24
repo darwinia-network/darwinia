@@ -122,7 +122,7 @@ where
 			a if a == addr(0x12) => Some(pallet_evm_precompile_bls12381::Bls12381Pairing::execute(handle)),
 			a if a == addr(0x13) => Some(pallet_evm_precompile_bls12381::Bls12381MapG1::execute(handle)),
 			a if a == addr(0x14) => Some(pallet_evm_precompile_bls12381::Bls12381MapG2::execute(handle)),
-			// Darwinia precompiles: [1024, 2048) for stable precompiles.
+			// Darwinia precompiles: [0x400, 0x800) for stable precompiles.
 			a if a == addr(0x400) => Some(<darwinia_precompile_state_storage::StateStorage<
 				Runtime,
 				darwinia_precompile_state_storage::StateStorageFilter,

@@ -101,12 +101,12 @@ fp-self-contained              = { git = "https://github.com/paritytech/frontier
 pallet-ethereum                = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false, features = ["forbid-evm-reentrancy"] }
 pallet-evm                     = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false, features = ["forbid-evm-reentrancy"] }
 pallet-evm-precompile-blake2   = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
+pallet-evm-precompile-bls12381 = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch", default-features = false }
 pallet-evm-precompile-bn128    = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
 pallet-evm-precompile-dispatch = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
 pallet-evm-precompile-modexp   = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
 pallet-evm-precompile-simple   = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
 precompile-utils               = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
-pallet-evm-precompile-bls12381 = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch", default-features = false }
 
 # moonbeam
 moonbeam-evm-tracer                     = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v1.1.0", default-features = false }

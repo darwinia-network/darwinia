@@ -67,8 +67,8 @@ fp-self-contained              = { workspace = true }
 pallet-ethereum                = { workspace = true }
 pallet-evm                     = { workspace = true }
 pallet-evm-precompile-blake2   = { workspace = true }
-pallet-evm-precompile-bn128    = { workspace = true }
 pallet-evm-precompile-bls12381 = { workspace = true }
+pallet-evm-precompile-bn128    = { workspace = true }
 pallet-evm-precompile-dispatch = { workspace = true }
 pallet-evm-precompile-modexp   = { workspace = true }
 pallet-evm-precompile-simple   = { workspace = true }
@@ -202,8 +202,8 @@ std = [
 	"fp-self-contained/std",
 	"pallet-ethereum/std",
 	"pallet-evm-precompile-blake2/std",
-	"pallet-evm-precompile-bn128/std",
 	"pallet-evm-precompile-bls12381/std",
+	"pallet-evm-precompile-bn128/std",
 	"pallet-evm-precompile-dispatch/std",
 	"pallet-evm-precompile-modexp/std",
 	"pallet-evm-precompile-simple/std",
