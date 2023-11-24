@@ -101,6 +101,7 @@ fp-self-contained              = { git = "https://github.com/paritytech/frontier
 pallet-ethereum                = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false, features = ["forbid-evm-reentrancy"] }
 pallet-evm                     = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false, features = ["forbid-evm-reentrancy"] }
 pallet-evm-precompile-blake2   = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
+pallet-evm-precompile-bls12381 = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch", default-features = false }
 pallet-evm-precompile-bn128    = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
 pallet-evm-precompile-dispatch = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
 pallet-evm-precompile-modexp   = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0", default-features = false }
@@ -207,6 +208,28 @@ substrate-frame-rpc-system                 = { git = "https://github.com/parityt
 substrate-prometheus-endpoint              = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 substrate-test-utils                       = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 substrate-wasm-builder                     = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+
+[patch."https://github.com/paritytech/frontier"]
+fc-api                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fc-consensus                   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fc-db                          = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fc-mapping-sync                = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fc-rpc                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fc-rpc-core                    = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fc-storage                     = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fp-account                     = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fp-ethereum                    = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fp-evm                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fp-rpc                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fp-self-contained              = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+pallet-ethereum                = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+pallet-evm                     = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+pallet-evm-precompile-blake2   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+pallet-evm-precompile-bn128    = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+pallet-evm-precompile-dispatch = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+pallet-evm-precompile-modexp   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+pallet-evm-precompile-simple   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+precompile-utils               = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
 
 [profile.release]
 panic = "unwind"
