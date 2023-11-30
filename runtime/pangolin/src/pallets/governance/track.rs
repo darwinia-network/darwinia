@@ -21,14 +21,6 @@ use core::str::FromStr;
 // darwinia
 use super::*;
 
-// TODO: move to common-runtime
-const fn percent(x: i32) -> sp_runtime::FixedI64 {
-	sp_runtime::FixedI64::from_rational(x as u128, 100)
-}
-const fn permill(x: i32) -> sp_runtime::FixedI64 {
-	sp_runtime::FixedI64::from_rational(x as u128, 1000)
-}
-
 const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 5] = [
 	(
 		0,

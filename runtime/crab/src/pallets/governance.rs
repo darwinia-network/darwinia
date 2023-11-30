@@ -31,12 +31,6 @@ pub use pallet_collective::{Instance1 as CouncilCollective, Instance2 as Technic
 
 pub(super) use crate::*;
 
-fast_runtime_or_not!(TIME_1, BlockNumber, 2 * MINUTES, 10 * MINUTES);
-fast_runtime_or_not!(TIME_2, BlockNumber, 5 * MINUTES, 20 * MINUTES);
-
-type Time1 = ConstU32<TIME_1>;
-type Time2 = ConstU32<TIME_2>;
-
 pub const COLLECTIVE_DESIRED_MEMBERS: u32 = 7;
 pub const COLLECTIVE_MAX_MEMBERS: u32 = 100;
 pub const COLLECTIVE_MAX_PROPOSALS: u32 = 100;
@@ -53,7 +47,7 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type MaxMembers = ConstU32<COLLECTIVE_MAX_MEMBERS>;
 	type MaxProposalWeight = MaxProposalWeight;
 	type MaxProposals = ConstU32<100>;
-	type MotionDuration = Time1;
+	type MotionDuration = ConstU32<{ 3 * DAYS }>;
 	type Proposal = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
@@ -65,7 +59,7 @@ impl pallet_collective::Config<TechnicalCollective> for Runtime {
 	type MaxMembers = ConstU32<COLLECTIVE_MAX_MEMBERS>;
 	type MaxProposalWeight = MaxProposalWeight;
 	type MaxProposals = ConstU32<100>;
-	type MotionDuration = Time1;
+	type MotionDuration = ConstU32<{ 3 * DAYS }>;
 	type Proposal = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
@@ -79,7 +73,7 @@ impl pallet_conviction_voting::Config for Runtime {
 	type MaxVotes = ConstU32<512>;
 	type Polls = Referenda;
 	type RuntimeEvent = RuntimeEvent;
-	type VoteLockingPeriod = Time2;
+	type VoteLockingPeriod = ConstU32<{ DAYS }>;
 	type WeightInfo = ();
 	// type WeightInfo = weights::pallet_conviction_voting::WeightInfo<Self>;
 }
@@ -101,7 +95,7 @@ impl pallet_referenda::Config for Runtime {
 	type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
 	type Tally = pallet_conviction_voting::TallyOf<Self>;
 	type Tracks = TracksInfo;
-	type UndecidingTimeout = Time2;
+	type UndecidingTimeout = ConstU32<{ 14 * DAYS }>;
 	type Votes = pallet_conviction_voting::VotesOf<Self>;
 	type WeightInfo = ();
 	// type WeightInfo = weights::pallet_referenda::WeightInfo<Self>;
