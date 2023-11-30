@@ -44,7 +44,8 @@ fn migrate() -> frame_support::weights::Weight {
 	let _ = migration::clear_storage_prefix(b"PhragmenElection", b"Members", &[], None, None);
 	let _ = migration::clear_storage_prefix(b"PhragmenElection", b"RunnersUp", &[], None, None);
 	let _ = migration::clear_storage_prefix(b"PhragmenElection", b"Candidates", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"PhragmenElection", b"ElectionRounds", &[], None, None);
+	let _ =
+		migration::clear_storage_prefix(b"PhragmenElection", b"ElectionRounds", &[], None, None);
 	let _ = migration::clear_storage_prefix(b"PhragmenElection", b"Voting", &[], None, None);
 	let _ = migration::clear_storage_prefix(b"TechnicalMembership", b"Members", &[], None, None);
 	let _ = migration::clear_storage_prefix(b"TechnicalMembership", b"Prime", &[], None, None);
