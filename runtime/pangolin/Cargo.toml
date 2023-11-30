@@ -93,6 +93,8 @@ polkadot-runtime-common = { workspace = true }
 xcm                     = { workspace = true }
 xcm-builder             = { workspace = true }
 xcm-executor            = { workspace = true }
+# polkadot optional
+pallet-xcm-benchmarks = { workspace = true, optional = true }
 
 # substrate
 frame-executive                            = { workspace = true }
@@ -333,6 +335,8 @@ runtime-benchmarks = [
 	"polkadot-runtime-common/runtime-benchmarks",
 	"xcm-builder/runtime-benchmarks",
 	"xcm-executor/runtime-benchmarks",
+	# polkadot optional
+	"pallet-xcm-benchmarks/runtime-benchmarks",
 
 	# substrate
 	"frame-support/runtime-benchmarks",

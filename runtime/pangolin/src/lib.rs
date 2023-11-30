@@ -195,6 +195,10 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_bridge_parachains, ParachainsBench::<Runtime, WithMoonbaseParachainsInstance>]
 	[pallet_bridge_messages, MessagesBench::<Runtime, WithPangoroMessages>]
 	[pallet_fee_market, PangoroFeeMarket]
+	// polkadot
+	[pallet_xcm, PalletXcmExtrinsicsBenchmark::<Runtime>]
+	[pallet_xcm_benchmarks::fungible, XcmBalances]
+	[pallet_xcm_benchmarks::generic, XcmGeneric]
 	// substrate
 	[frame_system, SystemBench::<Runtime>]
 	[pallet_assets, Assets]
@@ -678,14 +682,20 @@ sp_api::impl_runtime_apis! {
 			Vec<frame_benchmarking::BenchmarkList>,
 			Vec<frame_support::traits::StorageInfo>,
 		) {
-			// substrate
+			// cumulus
 			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
-			use frame_benchmarking::*;
-			use frame_support::traits::StorageInfoTrait;
-			use frame_system_benchmarking::Pallet as SystemBench;
 			// darwinia-messages-substrate
 			use pallet_bridge_messages::benchmarking::Pallet as MessagesBench;
 			use pallet_bridge_parachains::benchmarking::Pallet as ParachainsBench;
+			// polkadot
+			use pallet_xcm::benchmarking::Pallet as PalletXcmExtrinsicsBenchmark;
+			// substrate
+			use frame_benchmarking::*;
+			use frame_support::traits::StorageInfoTrait;
+			use frame_system_benchmarking::Pallet as SystemBench;
+
+			type XcmBalances = pallet_xcm_benchmarks::fungible::Pallet::<Runtime>;
+			type XcmGeneric = pallet_xcm_benchmarks::generic::Pallet::<Runtime>;
 
 			let mut list = Vec::<BenchmarkList>::new();
 
@@ -737,6 +747,125 @@ sp_api::impl_runtime_apis! {
 
 			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 			impl cumulus_pallet_session_benchmarking::Config for Runtime {}
+
+			use pallet_xcm::benchmarking::Pallet as PalletXcmExtrinsicsBenchmark;
+			use xcm::latest::prelude::*;
+			type XcmBalances = pallet_xcm_benchmarks::fungible::Pallet::<Runtime>;
+			type XcmGeneric = pallet_xcm_benchmarks::generic::Pallet::<Runtime>;
+			impl pallet_xcm::benchmarking::Config for Runtime {
+				fn reachable_dest() -> Option<MultiLocation> {
+					Some(Parent.into())
+				}
+
+				fn teleportable_asset_and_dest() -> Option<(MultiAsset, MultiLocation)> {
+					Some((
+						MultiAsset {
+							fun: Fungible(EXISTENTIAL_DEPOSIT),
+							id: Concrete(Parent.into())
+						},
+						Parent.into(),
+					))
+				}
+
+				fn reserve_transferable_asset_and_dest() -> Option<(MultiAsset, MultiLocation)> {
+					None
+				}
+			}
+			frame_support::parameter_types! {
+				pub ExistentialDepositMultiAsset: Option<MultiAsset> = Some((
+					AnchoringSelfReserve::get(),
+					ExistentialDeposit::get()
+				).into());
+			}
+			impl pallet_xcm_benchmarks::Config for Runtime {
+				type XcmConfig = XcmExecutorConfig;
+				type AccountIdConverter = LocationToAccountId;
+				type DeliveryHelper = cumulus_primitives_utility::ToParentDeliveryHelper<
+					XcmExecutorConfig,
+					ExistentialDepositMultiAsset,
+					PriceForParentDelivery,
+				>;
+
+				fn valid_destination() -> Result<MultiLocation, BenchmarkError> {
+					Ok(AnchoringSelfReserve::get())
+				}
+
+				fn worst_case_holding(_depositable_count: u32) -> MultiAssets {
+					// just concrete assets according to relay chain.
+					let assets: Vec<MultiAsset> = vec![
+						MultiAsset {
+							id: Concrete(AnchoringSelfReserve::get()),
+							fun: Fungible(1_000_000 * UNIT),
+						}
+					];
+					assets.into()
+				}
+			}
+			frame_support::parameter_types! {
+				pub const TrustedTeleporter: Option<(MultiLocation, MultiAsset)> = Some((
+					AnchoringSelfReserve::get(),
+					MultiAsset { fun: Fungible(UNIT), id: Concrete(AnchoringSelfReserve::get()) },
+				));
+				pub const CheckedAccount: Option<(AccountId, xcm_builder::MintLocation)> = None;
+				pub const TrustedReserve: Option<(MultiLocation, MultiAsset)> = None;
+			}
+			impl pallet_xcm_benchmarks::fungible::Config for Runtime {
+				type TransactAsset = Balances;
+				type CheckedAccount = CheckedAccount;
+				type TrustedTeleporter = TrustedTeleporter;
+				type TrustedReserve = TrustedReserve;
+
+				fn get_multi_asset() -> MultiAsset {
+					MultiAsset {
+						id: Concrete(AnchoringSelfReserve::get()),
+						fun: Fungible(UNIT),
+					}
+				}
+			}
+			impl pallet_xcm_benchmarks::generic::Config for Runtime {
+				type TransactAsset = Balances;
+				type RuntimeCall = RuntimeCall;
+
+				fn worst_case_response() -> (u64, Response) {
+					(0u64, Response::Version(Default::default()))
+				}
+
+				fn worst_case_asset_exchange() -> Result<(MultiAssets, MultiAssets), BenchmarkError> {
+					Err(BenchmarkError::Skip)
+				}
+
+				fn universal_alias() -> Result<(MultiLocation, Junction), BenchmarkError> {
+					Err(BenchmarkError::Skip)
+				}
+
+				fn transact_origin_and_runtime_call() -> Result<(MultiLocation, RuntimeCall), BenchmarkError> {
+					Ok((AnchoringSelfReserve::get(), frame_system::Call::remark_with_event { remark: vec![] }.into()))
+				}
+
+				fn subscribe_origin() -> Result<MultiLocation, BenchmarkError> {
+					Ok(AnchoringSelfReserve::get())
+				}
+
+				fn claimable_asset() -> Result<(MultiLocation, MultiLocation, MultiAssets), BenchmarkError> {
+					let origin = AnchoringSelfReserve::get();
+					let assets: MultiAssets = (Concrete(AnchoringSelfReserve::get()), 1_000 * UNIT).into();
+					let ticket = MultiLocation { parents: 0, interior: Here };
+					Ok((origin, ticket, assets))
+				}
+
+				fn unlockable_asset() -> Result<(MultiLocation, MultiLocation, MultiAsset), BenchmarkError> {
+					Err(BenchmarkError::Skip)
+				}
+
+				fn export_message_origin_and_destination(
+				) -> Result<(MultiLocation, NetworkId, InteriorMultiLocation), BenchmarkError> {
+					Ok((AnchoringSelfReserve::get(), NetworkId::Rococo, X1(Parachain(100))))
+				}
+
+				fn alias_origin() -> Result<(MultiLocation, MultiLocation), BenchmarkError> {
+					Err(BenchmarkError::Skip)
+				}
+			}
 
 			impl ParachainsConfig<WithMoonbaseParachainsInstance> for Runtime {
 				fn prepare_parachain_heads_proof(
