@@ -67,12 +67,8 @@ mod message_gadget;
 mod ecdsa_authority;
 
 // Governance stuff.
-mod democracy;
-
-mod collective;
-pub use collective::*;
-
-mod treasury;
+mod governance;
+pub use governance::*;
 
 // Utility stuff.
 mod utility;
