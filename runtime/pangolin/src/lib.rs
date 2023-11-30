@@ -73,9 +73,6 @@ pub type Executive = frame_executive::Executive<
 	migration::CustomOnRuntimeUpgrade,
 >;
 
-/// Darwinia proposal base fee.
-pub const DARWINIA_PROPOSAL_REQUIREMENT: Balance = 5_000 * UNIT;
-
 /// Runtime version.
 #[cfg(not(feature = "runtime-benchmarks"))]
 #[sp_version::runtime_version]

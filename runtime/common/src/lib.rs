@@ -58,6 +58,9 @@ pub const EXISTENTIAL_DEPOSIT: Balance = 0;
 #[cfg(feature = "runtime-benchmarks")]
 pub const EXISTENTIAL_DEPOSIT: Balance = 1;
 
+/// Darwinia proposal base fee.
+pub const DARWINIA_PROPOSAL_REQUIREMENT: Balance = 5_000 * UNIT;
+
 /// Handles converting a weight scalar to a fee value, based on the scale and granularity of the
 /// node's balance type.
 ///

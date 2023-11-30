@@ -72,10 +72,6 @@ mod democracy;
 mod collective;
 pub use collective::*;
 
-mod elections_phragmen;
-
-mod membership;
-
 mod treasury;
 
 // Utility stuff.
