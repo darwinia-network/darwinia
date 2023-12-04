@@ -131,8 +131,8 @@ where
 				Runtime,
 				DarwiniaDispatchValidator,
 			>>::execute(handle)),
-			// [0x400, 0x600) reserved for assets precompiles.
-			a if (0x400..0x600).contains(&AssetIdConverter::account_to_asset_id(a.into())) =>
+			// [0x402, 0x600) reserved for assets precompiles.
+			a if (0x402..0x600).contains(&AssetIdConverter::account_to_asset_id(a.into())) =>
 				Some(<darwinia_precompile_assets::ERC20Assets<Runtime, AssetIdConverter>>::execute(
 					handle,
 				)),

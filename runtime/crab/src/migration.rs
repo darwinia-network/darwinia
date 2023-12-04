@@ -50,6 +50,13 @@ fn migrate() -> frame_support::weights::Weight {
 	let _ = migration::clear_storage_prefix(b"TechnicalMembership", b"Members", &[], None, None);
 	let _ = migration::clear_storage_prefix(b"TechnicalMembership", b"Prime", &[], None, None);
 
+	const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
+	// CONVICTION_VOTING_ADDRESS equals to the addr(0x602) in the pallet-evm runtime.
+	const CONVICTION_VOTING_ADDRESS: &str = "0x0000000000000000000000000000000000000602";
+	if let Some(addr) = H160::from_str(CONVICTION_VOTING_ADDRESS) {
+		EVM::create_account(addr, REVERT_BYTECODE.to_vec());
+	}
+
 	// frame_support::weights::Weight::zero()
 	RuntimeBlockWeights::get().max_block
 	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 2)
