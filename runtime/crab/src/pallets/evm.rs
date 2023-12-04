@@ -51,15 +51,15 @@ where
 
 	pub fn used_addresses() -> [sp_core::H160; 16] {
 		[
-			addr(0x1),
-			addr(0x2),
-			addr(0x3),
-			addr(0x4),
-			addr(0x5),
-			addr(0x6),
-			addr(0x7),
-			addr(0x8),
-			addr(0x9),
+			addr(0x01),
+			addr(0x02),
+			addr(0x03),
+			addr(0x04),
+			addr(0x05),
+			addr(0x06),
+			addr(0x07),
+			addr(0x08),
+			addr(0x09),
 			addr(0x400),
 			addr(0x401),
 			addr(0x402), // For KTON asset.
