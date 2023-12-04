@@ -112,5 +112,5 @@ impl pallet_whitelist::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 	// type WeightInfo = weights::pallet_whitelist::WeightInfo<Self>;
-	type WhitelistOrigin = RootOrDiverse<All<TechnicalCollective>>;
+	type WhitelistOrigin = RootOrAtLeastFourFifth<TechnicalCollective>;
 }
