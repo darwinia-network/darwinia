@@ -157,6 +157,7 @@ frame_support::construct_runtime! {
 		Preimage: pallet_preimage = 29,
 		Proxy: pallet_proxy = 30,
 		TxPause: pallet_tx_pause = 52,
+		SafeMode: pallet_safe_mode = 53,
 
 		// XCM stuff.
 		XcmpQueue: cumulus_pallet_xcmp_queue = 32,
@@ -214,6 +215,8 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_session, SessionBench::<Runtime>]
 	[pallet_timestamp, Timestamp]
 	[pallet_whitelist, Whitelist]
+	[pallet_tx_pause, TxPause]
+	[pallet_safe_mode, SafeMode]
 }
 
 impl_self_contained_call!();

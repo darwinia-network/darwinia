@@ -68,8 +68,6 @@ mod ecdsa_authority;
 mod governance;
 pub use governance::*;
 
-mod tx_pause;
-
 // Utility stuff.
 mod sudo;
 
@@ -82,6 +80,10 @@ mod scheduler;
 mod preimage;
 
 mod proxy;
+
+mod tx_pause;
+
+mod safe_mode;
 
 // XCM stuff.
 mod xcmp_queue;
