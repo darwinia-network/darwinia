@@ -156,6 +156,7 @@ frame_support::construct_runtime! {
 		Scheduler: pallet_scheduler = 28,
 		Preimage: pallet_preimage = 29,
 		Proxy: pallet_proxy = 30,
+		TxPause: pallet_tx_pause = 52,
 
 		// XCM stuff.
 		XcmpQueue: cumulus_pallet_xcmp_queue = 32,

@@ -68,6 +68,8 @@ mod ecdsa_authority;
 mod governance;
 pub use governance::*;
 
+mod tx_pause;
+
 // Utility stuff.
 mod sudo;
 
