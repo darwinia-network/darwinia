@@ -49,23 +49,24 @@ where
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> [sp_core::H160; 15] {
+	pub fn used_addresses() -> [sp_core::H160; 16] {
 		[
-			addr(1),
-			addr(2),
-			addr(3),
-			addr(4),
-			addr(5),
-			addr(6),
-			addr(7),
-			addr(8),
-			addr(9),
-			addr(1024),
-			addr(1025),
-			addr(1026), // For KTON asset.
-			addr(1536),
-			addr(1537),
-			addr(2048),
+			addr(0x1),
+			addr(0x2),
+			addr(0x3),
+			addr(0x4),
+			addr(0x5),
+			addr(0x6),
+			addr(0x7),
+			addr(0x8),
+			addr(0x9),
+			addr(0x400),
+			addr(0x401),
+			addr(0x402), // For KTON asset.
+			addr(0x600),
+			addr(0x601),
+			addr(0x602),
+			addr(0x800),
 		]
 	}
 }
@@ -93,36 +94,38 @@ where
 
 		match code_addr {
 			// Ethereum precompiles:
-			a if a == addr(1) => Some(pallet_evm_precompile_simple::ECRecover::execute(handle)),
-			a if a == addr(2) => Some(pallet_evm_precompile_simple::Sha256::execute(handle)),
-			a if a == addr(3) => Some(pallet_evm_precompile_simple::Ripemd160::execute(handle)),
-			a if a == addr(4) => Some(pallet_evm_precompile_simple::Identity::execute(handle)),
-			a if a == addr(5) => Some(pallet_evm_precompile_modexp::Modexp::execute(handle)),
-			a if a == addr(6) => Some(pallet_evm_precompile_bn128::Bn128Add::execute(handle)),
-			a if a == addr(7) => Some(pallet_evm_precompile_bn128::Bn128Mul::execute(handle)),
-			a if a == addr(8) => Some(pallet_evm_precompile_bn128::Bn128Pairing::execute(handle)),
-			a if a == addr(9) => Some(pallet_evm_precompile_blake2::Blake2F::execute(handle)),
-			// Darwinia precompiles: [1024, 2048) for stable precompiles.
-			a if a == addr(1024) => Some(<darwinia_precompile_state_storage::StateStorage<
+			a if a == addr(0x01) => Some(pallet_evm_precompile_simple::ECRecover::execute(handle)),
+			a if a == addr(0x02) => Some(pallet_evm_precompile_simple::Sha256::execute(handle)),
+			a if a == addr(0x03) => Some(pallet_evm_precompile_simple::Ripemd160::execute(handle)),
+			a if a == addr(0x04) => Some(pallet_evm_precompile_simple::Identity::execute(handle)),
+			a if a == addr(0x05) => Some(pallet_evm_precompile_modexp::Modexp::execute(handle)),
+			a if a == addr(0x06) => Some(pallet_evm_precompile_bn128::Bn128Add::execute(handle)),
+			a if a == addr(0x07) => Some(pallet_evm_precompile_bn128::Bn128Mul::execute(handle)),
+			a if a == addr(0x08) => Some(pallet_evm_precompile_bn128::Bn128Pairing::execute(handle)),
+			a if a == addr(0x09) => Some(pallet_evm_precompile_blake2::Blake2F::execute(handle)),
+			// Darwinia precompiles: [0x400, 0x800) for stable precompiles.
+			a if a == addr(0x400) => Some(<darwinia_precompile_state_storage::StateStorage<
 				Runtime,
 				darwinia_precompile_state_storage::StateStorageFilter,
 			>>::execute(handle)),
-			a if a == addr(1025) => Some(<pallet_evm_precompile_dispatch::Dispatch<
+			a if a == addr(0x401) => Some(<pallet_evm_precompile_dispatch::Dispatch<
 				Runtime,
 				DarwiniaDispatchValidator,
 			>>::execute(handle)),
-			// [1026, 1536) reserved for assets precompiles.
-			a if (1026..1536).contains(&AssetIdConverter::account_to_asset_id(a.into())) =>
+			// [0x402, 0x600) reserved for assets precompiles.
+			a if (0x402..0x600).contains(&AssetIdConverter::account_to_asset_id(a.into())) =>
 				Some(<darwinia_precompile_assets::ERC20Assets<Runtime, AssetIdConverter>>::execute(
 					handle,
 				)),
-			// [1536, 2048) reserved for other stable precompiles.
-			a if a == addr(1536) =>
+			// [0x600, 0x800) reserved for other stable precompiles.
+			a if a == addr(0x600) =>
 				Some(<darwinia_precompile_deposit::Deposit<Runtime>>::execute(handle)),
-			a if a == addr(1537) =>
+			a if a == addr(0x601) =>
 				Some(<darwinia_precompile_staking::Staking<Runtime>>::execute(handle)),
-			// [2048..) reserved for the experimental precompiles.
-			a if a == addr(2048) =>
+				a if a == addr(0x602) =>
+				Some(<pallet_evm_precompile_conviction_voting::ConvictionVotingPrecompile<Runtime>>::execute(handle)),
+			// [0x800..) reserved for the experimental precompiles.
+			a if a == addr(0x800) =>
 				Some(<darwinia_precompile_bls12_381::BLS12381<Runtime>>::execute(handle)),
 			_ => None,
 		}
