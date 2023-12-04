@@ -16,6 +16,7 @@ codec             = { workspace = true, package = "parity-scale-codec" }
 log               = { workspace = true }
 scale-info        = { workspace = true }
 static_assertions = { workspace = true }
+strum             = { workspace = true, features = ["derive"] }
 # crates.io optional
 array-bytes = { workspace = true, optional = true }
 
@@ -71,10 +72,11 @@ pallet-evm-precompile-modexp   = { workspace = true }
 pallet-evm-precompile-simple   = { workspace = true }
 
 # moonbeam
-moonbeam-evm-tracer           = { workspace = true, optional = true }
-moonbeam-rpc-primitives-debug = { workspace = true }
-precompile-utils              = { workspace = true }
-xcm-primitives                = { workspace = true }
+moonbeam-evm-tracer                     = { workspace = true, optional = true }
+moonbeam-rpc-primitives-debug           = { workspace = true }
+pallet-evm-precompile-conviction-voting = { workspace = true }
+precompile-utils                        = { workspace = true }
+xcm-primitives                          = { workspace = true }
 
 # polkadot
 pallet-xcm              = { workspace = true }
@@ -94,12 +96,12 @@ pallet-aura                                = { workspace = true }
 pallet-authorship                          = { workspace = true }
 pallet-balances                            = { workspace = true }
 pallet-collective                          = { workspace = true }
+pallet-conviction-voting                   = { workspace = true }
 pallet-democracy                           = { workspace = true }
-pallet-elections-phragmen                  = { workspace = true }
 pallet-identity                            = { workspace = true }
-pallet-membership                          = { workspace = true }
 pallet-preimage                            = { workspace = true }
 pallet-proxy                               = { workspace = true }
+pallet-referenda                           = { workspace = true }
 pallet-scheduler                           = { workspace = true }
 pallet-session                             = { workspace = true }
 pallet-timestamp                           = { workspace = true }
@@ -108,6 +110,7 @@ pallet-transaction-payment-rpc-runtime-api = { workspace = true }
 pallet-treasury                            = { workspace = true }
 pallet-utility                             = { workspace = true }
 pallet-vesting                             = { workspace = true }
+pallet-whitelist                           = { workspace = true }
 sp-api                                     = { workspace = true }
 sp-block-builder                           = { workspace = true }
 sp-consensus-aura                          = { workspace = true }
@@ -143,6 +146,7 @@ std = [
 	"codec/std",
 	"log/std",
 	"scale-info/std",
+	"strum/std",
 
 	# cumulus
 	"cumulus-pallet-aura-ext/std",
@@ -198,6 +202,7 @@ std = [
 	# moonbeam
 	"moonbeam-evm-tracer/std",
 	"moonbeam-rpc-primitives-debug/std",
+	"pallet-evm-precompile-conviction-voting/std",
 	"precompile-utils/std",
 	"xcm-primitives/std",
 
@@ -219,12 +224,12 @@ std = [
 	"pallet-authorship/std",
 	"pallet-balances/std",
 	"pallet-collective/std",
+	"pallet-conviction-voting/std",
 	"pallet-democracy/std",
-	"pallet-elections-phragmen/std",
 	"pallet-identity/std",
-	"pallet-membership/std",
 	"pallet-preimage/std",
 	"pallet-proxy/std",
+	"pallet-referenda/std",
 	"pallet-scheduler/std",
 	"pallet-session/std",
 	"pallet-timestamp/std",
@@ -233,6 +238,7 @@ std = [
 	"pallet-treasury/std",
 	"pallet-utility/std",
 	"pallet-vesting/std",
+	"pallet-whitelist/std",
 	"sp-api/std",
 	"sp-block-builder/std",
 	"sp-consensus-aura/std",
@@ -314,17 +320,18 @@ runtime-benchmarks = [
 	"pallet-assets/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
 	"pallet-collective/runtime-benchmarks",
+	"pallet-conviction-voting/runtime-benchmarks",
 	"pallet-democracy/runtime-benchmarks",
-	"pallet-elections-phragmen/runtime-benchmarks",
 	"pallet-identity/runtime-benchmarks",
-	"pallet-membership/runtime-benchmarks",
 	"pallet-preimage/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",
+	"pallet-referenda/runtime-benchmarks",
 	"pallet-scheduler/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-treasury/runtime-benchmarks",
 	"pallet-utility/runtime-benchmarks",
 	"pallet-vesting/runtime-benchmarks",
+	"pallet-whitelist/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	# substrate optional
 	"frame-benchmarking/runtime-benchmarks",
@@ -374,12 +381,12 @@ try-runtime = [
 	"pallet-authorship/try-runtime",
 	"pallet-balances/try-runtime",
 	"pallet-collective/try-runtime",
+	"pallet-conviction-voting/try-runtime",
 	"pallet-democracy/try-runtime",
-	"pallet-elections-phragmen/try-runtime",
 	"pallet-identity/try-runtime",
-	"pallet-membership/try-runtime",
 	"pallet-preimage/try-runtime",
 	"pallet-proxy/try-runtime",
+	"pallet-referenda/try-runtime",
 	"pallet-scheduler/try-runtime",
 	"pallet-session/try-runtime",
 	"pallet-timestamp/try-runtime",
@@ -387,6 +394,7 @@ try-runtime = [
 	"pallet-treasury/try-runtime",
 	"pallet-utility/try-runtime",
 	"pallet-vesting/try-runtime",
+	"pallet-whitelist/try-runtime",
 	"sp-runtime/try-runtime",
 	# substrate optional
 	"frame-try-runtime/try-runtime",
