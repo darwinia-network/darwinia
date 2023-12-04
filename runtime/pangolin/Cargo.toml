@@ -214,6 +214,7 @@ std = [
 	"moonbeam-rpc-primitives-debug/std",
 	"pallet-asset-manager/std",
 	"pallet-ethereum-xcm/std",
+	"pallet-evm-precompile-conviction-voting/std",
 	"precompile-utils/std",
 	"xcm-primitives/std",
 
