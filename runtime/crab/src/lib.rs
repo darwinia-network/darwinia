@@ -79,7 +79,7 @@ pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Crab2"),
 	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
 	authoring_version: 0,
-	spec_version: 6_5_0_1,
+	spec_version: 6_5_1_0,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 0,
@@ -193,16 +193,19 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_balances, Balances]
 	[pallet_collective, Council]
 	[pallet_collective, TechnicalCommittee]
+	[pallet_conviction_voting, ConvictionVoting]
 	[pallet_democracy, Democracy]
 	[pallet_identity, Identity]
 	[pallet_preimage, Preimage]
 	[pallet_proxy, Proxy]
+	[pallet_referenda, Referenda]
 	[pallet_scheduler, Scheduler]
 	[pallet_treasury, Treasury]
 	[pallet_utility, Utility]
 	[pallet_vesting, Vesting]
 	[pallet_session, SessionBench::<Runtime>]
 	[pallet_timestamp, Timestamp]
+	[pallet_whitelist, Whitelist]
 }
 
 impl_self_contained_call!();
