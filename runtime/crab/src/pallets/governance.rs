@@ -74,8 +74,7 @@ impl pallet_conviction_voting::Config for Runtime {
 	type Polls = Referenda;
 	type RuntimeEvent = RuntimeEvent;
 	type VoteLockingPeriod = ConstU32<{ DAYS }>;
-	type WeightInfo = ();
-	// type WeightInfo = weights::pallet_conviction_voting::WeightInfo<Self>;
+	type WeightInfo = weights::pallet_conviction_voting::WeightInfo<Self>;
 }
 
 pallet_referenda::impl_tracksinfo_get!(TracksInfo, Balance, BlockNumber);
@@ -97,8 +96,7 @@ impl pallet_referenda::Config for Runtime {
 	type Tracks = TracksInfo;
 	type UndecidingTimeout = ConstU32<{ 14 * DAYS }>;
 	type Votes = pallet_conviction_voting::VotesOf<Self>;
-	type WeightInfo = ();
-	// type WeightInfo = weights::pallet_referenda::WeightInfo<Self>;
+	type WeightInfo = weights::pallet_referenda::WeightInfo<Self>;
 }
 
 impl custom_origins::Config for Runtime {}
@@ -110,7 +108,6 @@ impl pallet_whitelist::Config for Runtime {
 	type Preimages = Preimage;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
-	// type WeightInfo = weights::pallet_whitelist::WeightInfo<Self>;
+	type WeightInfo = weights::pallet_whitelist::WeightInfo<Self>;
 	type WhitelistOrigin = RootOrAtLeastFourFifth<TechnicalCollective>;
 }
