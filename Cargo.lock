@@ -1819,7 +1819,7 @@ dependencies = [
 
 [[package]]
 name = "crab-runtime"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "array-bytes",
  "bp-darwinia-core",
@@ -1871,20 +1871,21 @@ dependencies = [
  "pallet-bridge-messages",
  "pallet-bridge-parachains",
  "pallet-collective",
+ "pallet-conviction-voting",
  "pallet-democracy",
- "pallet-elections-phragmen",
  "pallet-ethereum",
  "pallet-evm",
  "pallet-evm-precompile-blake2",
  "pallet-evm-precompile-bn128",
+ "pallet-evm-precompile-conviction-voting",
  "pallet-evm-precompile-dispatch",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-simple",
  "pallet-fee-market",
  "pallet-identity",
- "pallet-membership",
  "pallet-preimage",
  "pallet-proxy",
+ "pallet-referenda",
  "pallet-scheduler",
  "pallet-session",
  "pallet-timestamp",
@@ -1893,6 +1894,7 @@ dependencies = [
  "pallet-treasury",
  "pallet-utility",
  "pallet-vesting",
+ "pallet-whitelist",
  "pallet-xcm",
  "parachain-info",
  "parity-scale-codec",
@@ -1919,6 +1921,7 @@ dependencies = [
  "staging-xcm-builder",
  "staging-xcm-executor",
  "static_assertions",
+ "strum 0.25.0",
  "substrate-wasm-builder",
  "xcm-primitives",
 ]
@@ -2860,7 +2863,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "array-bytes",
  "async-trait",
@@ -2939,7 +2942,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-account-migration"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "array-bytes",
  "darwinia-deposit",
@@ -2964,7 +2967,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-asset-limit"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2975,7 +2978,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-common-runtime"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "bp-darwinia-core",
  "darwinia-precompile-assets",
@@ -3003,7 +3006,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-deposit"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "darwinia-staking-traits",
  "dc-inflation",
@@ -3024,7 +3027,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-ecdsa-authority"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "array-bytes",
  "dc-primitives",
@@ -3044,7 +3047,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-message-gadget"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "array-bytes",
  "frame-support",
@@ -3063,7 +3066,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-message-transact"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "array-bytes",
  "bp-message-dispatch",
@@ -3092,7 +3095,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-assets"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -3113,7 +3116,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-bls12-381"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "ark-bls12-381",
  "ark-ec",
@@ -3131,7 +3134,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-deposit"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "darwinia-deposit",
  "fp-evm",
@@ -3151,7 +3154,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-staking"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "darwinia-deposit",
  "darwinia-staking",
@@ -3172,7 +3175,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-state-storage"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -3191,7 +3194,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-runtime"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "array-bytes",
  "bp-darwinia-core",
@@ -3303,7 +3306,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "darwinia-deposit",
  "darwinia-staking-traits",
@@ -3331,7 +3334,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking-traits"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -3379,7 +3382,7 @@ dependencies = [
 
 [[package]]
 name = "dc-inflation"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "dc-types",
  "primitive-types",
@@ -3389,7 +3392,7 @@ dependencies = [
 
 [[package]]
 name = "dc-primitives"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "dc-types",
  "fp-account",
@@ -3399,7 +3402,7 @@ dependencies = [
 
 [[package]]
 name = "dc-types"
-version = "6.5.0-1"
+version = "6.5.1"
 
 [[package]]
 name = "der"
@@ -9309,7 +9312,7 @@ dependencies = [
 
 [[package]]
 name = "pangolin-runtime"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "array-bytes",
  "bp-darwinia-core",
@@ -9425,7 +9428,7 @@ dependencies = [
 
 [[package]]
 name = "pangoro-runtime"
-version = "6.5.0-1"
+version = "6.5.1"
 dependencies = [
  "array-bytes",
  "bp-darwinia-core",

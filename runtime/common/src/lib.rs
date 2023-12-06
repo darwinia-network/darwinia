@@ -53,10 +53,105 @@ macro_rules! fast_runtime_or_not {
 	};
 }
 
+#[macro_export]
+macro_rules! impl_self_contained_call {
+	() => {
+		impl fp_self_contained::SelfContainedCall for RuntimeCall {
+			type SignedInfo = sp_core::H160;
+
+			fn is_self_contained(&self) -> bool {
+				match self {
+					RuntimeCall::Ethereum(call) => call.is_self_contained(),
+					_ => false,
+				}
+			}
+
+			fn check_self_contained(
+				&self,
+			) -> Option<
+				Result<
+					Self::SignedInfo,
+					sp_runtime::transaction_validity::TransactionValidityError,
+				>,
+			> {
+				match self {
+					RuntimeCall::Ethereum(call) => call.check_self_contained(),
+					_ => None,
+				}
+			}
+
+			fn validate_self_contained(
+				&self,
+				info: &Self::SignedInfo,
+				dispatch_info: &sp_runtime::traits::DispatchInfoOf<RuntimeCall>,
+				len: usize,
+			) -> Option<sp_runtime::transaction_validity::TransactionValidity> {
+				match self {
+					RuntimeCall::Ethereum(call) =>
+						call.validate_self_contained(info, dispatch_info, len),
+					_ => None,
+				}
+			}
+
+			fn pre_dispatch_self_contained(
+				&self,
+				info: &Self::SignedInfo,
+				dispatch_info: &sp_runtime::traits::DispatchInfoOf<RuntimeCall>,
+				len: usize,
+			) -> Option<Result<(), sp_runtime::transaction_validity::TransactionValidityError>> {
+				match self {
+					RuntimeCall::Ethereum(call) =>
+						call.pre_dispatch_self_contained(info, dispatch_info, len),
+					_ => None,
+				}
+			}
+
+			fn apply_self_contained(
+				self,
+				info: Self::SignedInfo,
+			) -> Option<
+				sp_runtime::DispatchResultWithInfo<sp_runtime::traits::PostDispatchInfoOf<Self>>,
+			> {
+				// substrate
+				use sp_runtime::traits::Dispatchable;
+
+				match self {
+					call @ RuntimeCall::Ethereum(pallet_ethereum::Call::transact { .. }) =>
+						Some(call.dispatch(RuntimeOrigin::from(
+							pallet_ethereum::RawOrigin::EthereumTransaction(info),
+						))),
+					_ => None,
+				}
+			}
+		}
+	};
+}
+
 #[cfg(not(feature = "runtime-benchmarks"))]
 pub const EXISTENTIAL_DEPOSIT: Balance = 0;
 #[cfg(feature = "runtime-benchmarks")]
 pub const EXISTENTIAL_DEPOSIT: Balance = 1;
+
+/// Darwinia proposal base fee.
+pub const DARWINIA_PROPOSAL_REQUIREMENT: Balance = 5_000 * UNIT;
+
+/// Deposit calculator for Darwinia.
+/// 100 UNIT for the base fee, 102.4 UNIT/MB.
+pub const fn darwinia_deposit(items: u32, bytes: u32) -> Balance {
+	// First try.
+	items as Balance * 100 * UNIT + (bytes as Balance) * 100 * MICROUNIT
+	// items as Balance * 100 * UNIT + (bytes as Balance) * 100 * MILLIUNIT
+}
+
+/// Construct a [`FixedI64`] percent quickly.
+pub const fn percent(x: i32) -> sp_runtime::FixedI64 {
+	sp_runtime::FixedI64::from_rational(x as u128, 100)
+}
+
+/// Construct a [`FixedI64`] permill quickly.
+pub const fn permill(x: i32) -> sp_runtime::FixedI64 {
+	sp_runtime::FixedI64::from_rational(x as u128, 1000)
+}
 
 /// Handles converting a weight scalar to a fee value, based on the scale and granularity of the
 /// node's balance type.
@@ -155,88 +250,6 @@ where
 			to_treasury,
 		);
 	}
-}
-
-/// Deposit calculator for Darwinia.
-/// 100 UNIT for the base fee, 102.4 UNIT/MB.
-pub const fn darwinia_deposit(items: u32, bytes: u32) -> Balance {
-	// First try.
-	items as Balance * 100 * UNIT + (bytes as Balance) * 100 * MICROUNIT
-	// items as Balance * 100 * UNIT + (bytes as Balance) * 100 * MILLIUNIT
-}
-
-#[macro_export]
-macro_rules! impl_self_contained_call {
-	() => {
-		impl fp_self_contained::SelfContainedCall for RuntimeCall {
-			type SignedInfo = sp_core::H160;
-
-			fn is_self_contained(&self) -> bool {
-				match self {
-					RuntimeCall::Ethereum(call) => call.is_self_contained(),
-					_ => false,
-				}
-			}
-
-			fn check_self_contained(
-				&self,
-			) -> Option<
-				Result<
-					Self::SignedInfo,
-					sp_runtime::transaction_validity::TransactionValidityError,
-				>,
-			> {
-				match self {
-					RuntimeCall::Ethereum(call) => call.check_self_contained(),
-					_ => None,
-				}
-			}
-
-			fn validate_self_contained(
-				&self,
-				info: &Self::SignedInfo,
-				dispatch_info: &sp_runtime::traits::DispatchInfoOf<RuntimeCall>,
-				len: usize,
-			) -> Option<sp_runtime::transaction_validity::TransactionValidity> {
-				match self {
-					RuntimeCall::Ethereum(call) =>
-						call.validate_self_contained(info, dispatch_info, len),
-					_ => None,
-				}
-			}
-
-			fn pre_dispatch_self_contained(
-				&self,
-				info: &Self::SignedInfo,
-				dispatch_info: &sp_runtime::traits::DispatchInfoOf<RuntimeCall>,
-				len: usize,
-			) -> Option<Result<(), sp_runtime::transaction_validity::TransactionValidityError>> {
-				match self {
-					RuntimeCall::Ethereum(call) =>
-						call.pre_dispatch_self_contained(info, dispatch_info, len),
-					_ => None,
-				}
-			}
-
-			fn apply_self_contained(
-				self,
-				info: Self::SignedInfo,
-			) -> Option<
-				sp_runtime::DispatchResultWithInfo<sp_runtime::traits::PostDispatchInfoOf<Self>>,
-			> {
-				// substrate
-				use sp_runtime::traits::Dispatchable;
-
-				match self {
-					call @ RuntimeCall::Ethereum(pallet_ethereum::Call::transact { .. }) =>
-						Some(call.dispatch(RuntimeOrigin::from(
-							pallet_ethereum::RawOrigin::EthereumTransaction(info),
-						))),
-					_ => None,
-				}
-			}
-		}
-	};
 }
 
 pub struct DarwiniaFindAuthor<Inner>(sp_std::marker::PhantomData<Inner>);

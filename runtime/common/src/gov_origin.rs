@@ -26,9 +26,9 @@ use fp_account::AccountId20;
 use frame_system::EnsureRoot;
 use pallet_collective::{EnsureProportionAtLeast, EnsureProportionMoreThan};
 
-pub type Root = EnsureRoot<AccountId>;
-pub type RootOr<T> = EitherOf<Root, T>;
 pub type RootOrDiverse<T> = EitherOfDiverse<Root, T>;
+pub type RootOr<T> = EitherOf<Root, T>;
+pub type Root = EnsureRoot<AccountId>;
 
 pub type RootOrAtLeastHalf<T> = EitherOfDiverse<Root, AtLeastHalf<T>>;
 pub type AtLeastHalf<T> = EnsureProportionAtLeast<AccountId, T, 1, 2>;
@@ -42,7 +42,10 @@ pub type AtLeastTwoThird<T> = EnsureProportionAtLeast<AccountId, T, 2, 3>;
 pub type RootOrAtLeastThreeFifth<T> = EitherOfDiverse<Root, AtLeastThreeFifth<T>>;
 pub type AtLeastThreeFifth<T> = EnsureProportionAtLeast<AccountId, T, 3, 5>;
 
-pub type RootOrAll<T> = EitherOfDiverse<Root, All<T>>;
+pub type RootOrAtLeastFourFifth<T> = EitherOfDiverse<Root, AtLeastFourFifth<T>>;
+pub type AtLeastFourFifth<T> = EnsureProportionAtLeast<AccountId, T, 4, 5>;
+
+pub type RootOrAll<T> = RootOrDiverse<All<T>>;
 pub type All<T> = EnsureProportionAtLeast<AccountId, T, 1, 1>;
 
 /// An [`AccountId20`] generated from b"root".

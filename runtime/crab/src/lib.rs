@@ -72,9 +72,6 @@ pub type Executive = frame_executive::Executive<
 	migration::CustomOnRuntimeUpgrade,
 >;
 
-/// Darwinia proposal base fee.
-pub const DARWINIA_PROPOSAL_REQUIREMENT: Balance = 5_000 * UNIT;
-
 /// Runtime version.
 #[cfg(not(feature = "runtime-benchmarks"))]
 #[sp_version::runtime_version]
@@ -82,7 +79,7 @@ pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Crab2"),
 	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
 	authoring_version: 0,
-	spec_version: 6_5_0_1,
+	spec_version: 6_5_1_0,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 0,
@@ -136,13 +133,17 @@ frame_support::construct_runtime! {
 		EcdsaAuthority: darwinia_ecdsa_authority = 17,
 
 		// Governance stuff.
-		Democracy: pallet_democracy = 18,
+		// PhragmenElection: pallet_elections_phragmen = 21,
+		// TechnicalMembership: pallet_membership::<Instance1> = 22,
 		Council: pallet_collective::<Instance1> = 19,
 		TechnicalCommittee: pallet_collective::<Instance2> = 20,
-		PhragmenElection: pallet_elections_phragmen = 21,
-		TechnicalMembership: pallet_membership::<Instance1> = 22,
 		Treasury: pallet_treasury = 23,
 		// Tips: pallet_tips = 24,
+		Democracy: pallet_democracy = 18,
+		ConvictionVoting: pallet_conviction_voting = 44,
+		Referenda: pallet_referenda = 45,
+		Origins: custom_origins = 46,
+		Whitelist: pallet_whitelist = 47,
 
 		// Utility stuff.
 		// Sudo: pallet_sudo = 25,
@@ -192,18 +193,19 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_balances, Balances]
 	[pallet_collective, Council]
 	[pallet_collective, TechnicalCommittee]
+	[pallet_conviction_voting, ConvictionVoting]
 	[pallet_democracy, Democracy]
-	[pallet_elections_phragmen, PhragmenElection]
 	[pallet_identity, Identity]
-	[pallet_membership, TechnicalMembership]
 	[pallet_preimage, Preimage]
 	[pallet_proxy, Proxy]
+	[pallet_referenda, Referenda]
 	[pallet_scheduler, Scheduler]
 	[pallet_treasury, Treasury]
 	[pallet_utility, Utility]
 	[pallet_vesting, Vesting]
 	[pallet_session, SessionBench::<Runtime>]
 	[pallet_timestamp, Timestamp]
+	[pallet_whitelist, Whitelist]
 }
 
 impl_self_contained_call!();
