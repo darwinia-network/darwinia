@@ -38,7 +38,7 @@ impl pallet_tx_pause::Config for Runtime {
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type UnpauseOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
-	// TODO: Benchmark locally
+	// TODO: Update the benchmark weight info
 	type WeightInfo = ();
 	type WhitelistedCalls = TxPauseWhitelistedCalls;
 }

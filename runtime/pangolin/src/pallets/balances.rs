@@ -35,6 +35,6 @@ impl pallet_balances::Config for Runtime {
 	type MaxReserves = ConstU32<50>;
 	type ReserveIdentifier = [u8; 8];
 	type RuntimeEvent = RuntimeEvent;
-	type RuntimeHoldReason = RuntimeHoldReason;
+	type RuntimeHoldReason = ();
 	type WeightInfo = weights::pallet_balances::WeightInfo<Self>;
 }
