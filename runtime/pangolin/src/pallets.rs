@@ -83,8 +83,6 @@ mod proxy;
 
 mod tx_pause;
 
-mod safe_mode;
-
 // XCM stuff.
 mod xcmp_queue;
 

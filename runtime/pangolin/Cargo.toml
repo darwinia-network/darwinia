@@ -110,7 +110,6 @@ pallet-identity                            = { workspace = true }
 pallet-preimage                            = { workspace = true }
 pallet-proxy                               = { workspace = true }
 pallet-referenda                           = { workspace = true }
-pallet-safe-mode                            = { workspace = true }
 pallet-scheduler                           = { workspace = true }
 pallet-session                             = { workspace = true }
 pallet-sudo                                = { workspace = true }
@@ -247,7 +246,6 @@ std = [
 	"pallet-preimage/std",
 	"pallet-proxy/std",
 	"pallet-referenda/std",
-	"pallet-safe-mode/std",
 	"pallet-scheduler/std",
 	"pallet-session/std",
 	"pallet-sudo/std",
@@ -350,7 +348,6 @@ runtime-benchmarks = [
 	"pallet-preimage/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",
 	"pallet-referenda/runtime-benchmarks",
-	"pallet-safe-mode/runtime-benchmarks",
 	"pallet-scheduler/runtime-benchmarks",
 	"pallet-sudo/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
@@ -421,7 +418,6 @@ try-runtime = [
 	"pallet-preimage/try-runtime",
 	"pallet-proxy/try-runtime",
 	"pallet-referenda/try-runtime",
-	"pallet-safe-mode/try-runtime",
 	"pallet-scheduler/try-runtime",
 	"pallet-session/try-runtime",
 	"pallet-sudo/try-runtime",

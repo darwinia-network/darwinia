@@ -8947,24 +8947,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-safe-mode"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.1.0#c8d2251cafadc108ba2f1f8a3208dc547ff38901"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "pallet-balances",
- "pallet-proxy",
- "pallet-utility",
- "parity-scale-codec",
- "scale-info",
- "sp-arithmetic",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-scheduler"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.1.0#c8d2251cafadc108ba2f1f8a3208dc547ff38901"
@@ -9400,7 +9382,6 @@ dependencies = [
  "pallet-preimage",
  "pallet-proxy",
  "pallet-referenda",
- "pallet-safe-mode",
  "pallet-scheduler",
  "pallet-session",
  "pallet-sudo",
