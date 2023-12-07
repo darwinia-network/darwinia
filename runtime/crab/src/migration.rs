@@ -41,28 +41,32 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	// core
-	use core::str::FromStr;
-	// substrate
-	use frame_support::pallet_prelude::StorageVersion;
+	// polkadot-sdk
+	use frame_support::traits::{LockableCurrency, ReservableCurrency};
 
-	let _ = migration::clear_storage_prefix(b"PhragmenElection", b"Members", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"PhragmenElection", b"RunnersUp", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"PhragmenElection", b"Candidates", &[], None, None);
-	let _ =
-		migration::clear_storage_prefix(b"PhragmenElection", b"ElectionRounds", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"PhragmenElection", b"Voting", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"TechnicalMembership", b"Members", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"TechnicalMembership", b"Prime", &[], None, None);
+	[
+		("0xb2960e11b253c107f973cd778bbe1520e35e8602", 100009600000000000000_u128),
+		("0x3e25247cff03f99a7d83b28f207112234fee73a6", 100022400000000000000),
+		("0x0a1287977578f888bdc1c7627781af1cc000e6ab", 100009600000000000000),
+		("0xd891ce6a97b4f01a8b9b36d0298aa3631fe2eef5", 100019200000000000000),
+		("0xe59261f6d4088bcd69985a3d369ff14cc54ef1e5", 100009600000000000000),
+		("0xabcf7060a68f62624f7569ada9d78b5a5db0782a", 100012800000000000000),
+		("0x9f33a4809aa708d7a399fedba514e0a0d15efa85", 100012800000000000000),
+		("0xacfa39b864e42d1bd3792783a571d2958af0bf1f", 100009600000000000000),
+		("0x88a39b052d477cfde47600a7c9950a441ce61cb4", 100009600000000000000),
+		("0x5b7544b3f6abd9e03fba494796b1ee6f9543e2e4", 100012800000000000000),
+		("0x44cda595218ddb3810fb66c2e982f50ea00255ee", 100009600000000000000),
+	]
+	.iter()
+	.for_each(|(acc, deposit)| {
+		if let Ok(a) = array_bytes::hex_n_into::<_, AccountId, 20>(acc) {
+			let r = Balances::unreserve(&a, *deposit);
 
-	StorageVersion::new(1).put::<pallet_referenda::Pallet<Runtime>>();
+			Balances::remove_lock(*b"phrelect", &a);
 
-	const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
-	// CONVICTION_VOTING_ADDRESS equals to the addr(0x602) in the pallet-evm runtime.
-	const CONVICTION_VOTING_ADDRESS: &str = "0x0000000000000000000000000000000000000602";
-	if let Ok(addr) = sp_core::H160::from_str(CONVICTION_VOTING_ADDRESS) {
-		EVM::create_account(addr, REVERT_BYTECODE.to_vec());
-	}
+			log::info!("{acc}: {r:?}");
+		}
+	});
 
 	// frame_support::weights::Weight::zero()
 	RuntimeBlockWeights::get().max_block
