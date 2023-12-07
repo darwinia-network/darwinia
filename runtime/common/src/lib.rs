@@ -216,7 +216,7 @@ impl WeightToFeePolynomial for ProofSizeToFee {
 
 /// EIP-1559 like configuration.
 ///
-/// Burn the base fee and allocate tips to the block producer.
+/// Burn the base fee and allocate the tips to the block producer.
 pub struct DealWithFees<R>(core::marker::PhantomData<R>);
 impl<R> frame_support::traits::OnUnbalanced<pallet_balances::NegativeImbalance<R>>
 	for DealWithFees<R>
