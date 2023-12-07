@@ -180,7 +180,6 @@ frame_benchmarking::define_benchmarks! {
 	// darwinia
 	[darwinia_account_migration, AccountMigration]
 	[darwinia_deposit, Deposit]
-	[darwinia_ecdsa_authority, EcdsaAuthority]
 	[darwinia_staking, DarwiniaStaking]
 	// darwinia-messages-substrate
 	[pallet_bridge_grandpa, BridgePolkadotGrandpa]
