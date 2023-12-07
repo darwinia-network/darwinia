@@ -19,21 +19,26 @@
 // darwinia
 use crate::*;
 
-const MAX_PENDING_PERIOD: BlockNumber = 100;
-const SYNC_INTERVAL: BlockNumber = 10;
-
-frame_support::parameter_types! {
-	pub const SignThreshold: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(60);
+/// Calls that cannot be paused by the tx-pause pallet.
+pub struct TxPauseWhitelistedCalls;
+impl frame_support::traits::Contains<pallet_tx_pause::RuntimeCallNameOf<Runtime>>
+	for TxPauseWhitelistedCalls
+{
+	fn contains(full_name: &pallet_tx_pause::RuntimeCallNameOf<Runtime>) -> bool {
+		match (full_name.0.as_slice(), full_name.1.as_slice()) {
+			(b"System", b"remark_with_event") => true,
+			_ => false,
+		}
+	}
 }
-static_assertions::const_assert!(MAX_PENDING_PERIOD > SYNC_INTERVAL);
 
-impl darwinia_ecdsa_authority::Config for Runtime {
-	type ChainId = <Self as pallet_evm::Config>::ChainId;
-	type MaxAuthorities = ConstU32<7>;
-	type MaxPendingPeriod = ConstU32<MAX_PENDING_PERIOD>;
-	type MessageRoot = darwinia_message_gadget::MessageRootGetter<Self>;
+impl pallet_tx_pause::Config for Runtime {
+	type MaxNameLen = ConstU32<256>;
+	type PauseOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
+	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
-	type SignThreshold = SignThreshold;
-	type SyncInterval = ConstU32<SYNC_INTERVAL>;
-	type WeightInfo = weights::darwinia_ecdsa_authority::WeightInfo<Self>;
+	type UnpauseOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
+	// TODO: Update the benchmark weight info
+	type WeightInfo = ();
+	type WhitelistedCalls = TxPauseWhitelistedCalls;
 }
