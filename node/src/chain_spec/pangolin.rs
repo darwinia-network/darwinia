@@ -219,6 +219,7 @@ pub fn genesis_config() -> ChainSpec {
 
 				// Utility stuff.
 				sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked::<_, _, 20>(SUDO)) },
+				tx_pause: Default::default(),
 
 				// XCM stuff.
 				polkadot_xcm: PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION), ..Default::default() },
@@ -340,6 +341,7 @@ fn testnet_genesis(
 
 		// Utility stuff.
 		sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH)) },
+		tx_pause: Default::default(),
 
 		// XCM stuff.
 		polkadot_xcm: PolkadotXcmConfig {

@@ -848,3 +848,98 @@ macro_rules! impl_messages_bridge_tests {
 		}
 	};
 }
+
+#[macro_export]
+macro_rules! impl_maintenance_tests {
+	() => {
+		mod maintenance_test {
+			// darwinia
+			use super::mock::*;
+			// polkadot-sdk
+			use frame_support::{assert_err, assert_ok};
+			use pallet_tx_pause::RuntimeCallNameOf;
+			use sp_core::H160;
+			use sp_runtime::{traits::Dispatchable, DispatchError};
+
+			pub fn full_name(pallet_name: &[u8], call_name: &[u8]) -> RuntimeCallNameOf<Runtime> {
+				<RuntimeCallNameOf<Runtime>>::from((
+					pallet_name.to_vec().try_into().unwrap(),
+					call_name.to_vec().try_into().unwrap(),
+				))
+			}
+
+			#[test]
+			fn tx_pause_origins_work_correctly() {
+				ExtBuilder::default().build().execute_with(|| {
+					assert_ok!(TxPause::pause(
+						RuntimeOrigin::root(),
+						full_name(b"Balances", b"transfer")
+					));
+
+					assert_err!(
+						TxPause::pause(
+							RuntimeOrigin::signed(H160::default().into()),
+							full_name(b"Balances", b"transfer")
+						),
+						DispatchError::BadOrigin
+					);
+				})
+			}
+
+			#[test]
+			fn tx_pause_pause_and_unpause_work_correctly() {
+				let from = H160::from_low_u64_be(555).into();
+				let to = H160::from_low_u64_be(333).into();
+				ExtBuilder::default()
+					.with_balances(vec![(from, 100), (to, 50)])
+					.build()
+					.execute_with(|| {
+						assert_ok!(TxPause::pause(
+							RuntimeOrigin::root(),
+							full_name(b"System", b"remark")
+						));
+						assert_err!(
+							RuntimeCall::System(frame_system::Call::remark {
+								remark: b"hello world".to_vec()
+							})
+							.dispatch(RuntimeOrigin::signed(from)),
+							frame_system::Error::<Runtime>::CallFiltered
+						);
+
+						assert_ok!(TxPause::unpause(
+							RuntimeOrigin::root(),
+							full_name(b"System", b"remark")
+						));
+						assert_ok!(RuntimeCall::System(frame_system::Call::remark {
+							remark: b"hello world".to_vec(),
+						})
+						.dispatch(RuntimeOrigin::signed(from)));
+					})
+			}
+
+			#[test]
+			fn tx_pause_pause_calls_except_on_whitelist() {
+				let from = H160::from_low_u64_be(555).into();
+				ExtBuilder::default().with_balances(vec![(from, 100)]).build().execute_with(|| {
+					assert_ok!(RuntimeCall::System(frame_system::Call::remark_with_event {
+						remark: b"hello world".to_vec(),
+					})
+					.dispatch(RuntimeOrigin::signed(from)));
+
+					assert_err!(
+						TxPause::pause(
+							RuntimeOrigin::root(),
+							full_name(b"System", b"remark_with_event")
+						),
+						pallet_tx_pause::Error::<Runtime>::Unpausable
+					);
+
+					assert_ok!(RuntimeCall::System(frame_system::Call::remark_with_event {
+						remark: b"hello world".to_vec(),
+					})
+					.dispatch(RuntimeOrigin::signed(from)));
+				})
+			}
+		}
+	};
+}
