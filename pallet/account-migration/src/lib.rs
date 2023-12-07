@@ -200,7 +200,6 @@ pub mod pallet {
 			ensure_none(origin)?;
 
 			Self::migrate_inner(&from, &to)?;
-
 			Self::deposit_event(Event::Migrated { from, to });
 
 			Ok(())

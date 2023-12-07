@@ -34,13 +34,21 @@ use crate::*;
 	sp_runtime::RuntimeDebug,
 )]
 pub enum ProxyType {
+	#[codec(index = 0)]
 	Any,
+	#[codec(index = 1)]
 	NonTransfer,
+	#[codec(index = 2)]
 	Governance,
+	#[codec(index = 3)]
 	Staking,
+	#[codec(index = 4)]
 	IdentityJudgement,
+	#[codec(index = 5)]
 	CancelProxy,
-	EcdsaBridge,
+	// #[codec(index = 6)]
+	// EcdsaBridge,
+	#[codec(index = 7)]
 	SubstrateBridge,
 }
 impl Default for ProxyType {
@@ -84,9 +92,6 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 				matches!(c, RuntimeCall::Identity(pallet_identity::Call::provide_judgement { .. })),
 			ProxyType::CancelProxy => {
 				matches!(c, RuntimeCall::Proxy(pallet_proxy::Call::reject_announcement { .. }))
-			},
-			ProxyType::EcdsaBridge => {
-				matches!(c, RuntimeCall::EcdsaAuthority(..))
 			},
 			ProxyType::SubstrateBridge => {
 				matches!(

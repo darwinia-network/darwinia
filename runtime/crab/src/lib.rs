@@ -129,8 +129,8 @@ frame_support::construct_runtime! {
 		Session: pallet_session = 13,
 		Aura: pallet_aura = 14,
 		AuraExt: cumulus_pallet_aura_ext = 15,
-		MessageGadget: darwinia_message_gadget = 16,
-		EcdsaAuthority: darwinia_ecdsa_authority = 17,
+		// MessageGadget: darwinia_message_gadget = 16,
+		// EcdsaAuthority: darwinia_ecdsa_authority = 17,
 
 		// Governance stuff.
 		// PhragmenElection: pallet_elections_phragmen = 21,
@@ -180,7 +180,6 @@ frame_benchmarking::define_benchmarks! {
 	// darwinia
 	[darwinia_account_migration, AccountMigration]
 	[darwinia_deposit, Deposit]
-	[darwinia_ecdsa_authority, EcdsaAuthority]
 	[darwinia_staking, DarwiniaStaking]
 	// darwinia-messages-substrate
 	[pallet_bridge_grandpa, BridgePolkadotGrandpa]

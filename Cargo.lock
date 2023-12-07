@@ -1821,8 +1821,6 @@ dependencies = [
  "darwinia-account-migration",
  "darwinia-common-runtime",
  "darwinia-deposit",
- "darwinia-ecdsa-authority",
- "darwinia-message-gadget",
  "darwinia-message-transact",
  "darwinia-precompile-assets",
  "darwinia-precompile-bls12-381",
