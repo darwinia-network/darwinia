@@ -214,46 +214,38 @@ impl WeightToFeePolynomial for ProofSizeToFee {
 	}
 }
 
-pub struct DealWithFees<R>(sp_std::marker::PhantomData<R>);
+/// EIP-1559 like configuration.
+///
+/// Burn the base fee and allocate tips to the block producer.
+pub struct DealWithFees<R>(core::marker::PhantomData<R>);
 impl<R> frame_support::traits::OnUnbalanced<pallet_balances::NegativeImbalance<R>>
 	for DealWithFees<R>
 where
-	R: pallet_balances::Config,
-	R: pallet_balances::Config + pallet_treasury::Config,
-	pallet_treasury::Pallet<R>:
-		frame_support::traits::OnUnbalanced<pallet_balances::NegativeImbalance<R>>,
+	R: pallet_authorship::Config + pallet_balances::Config,
 {
-	// this seems to be called for substrate-based transactions
 	fn on_unbalanceds<B>(
 		mut fees_then_tips: impl Iterator<Item = pallet_balances::NegativeImbalance<R>>,
 	) {
-		if let Some(fees) = fees_then_tips.next() {
-			// Balances pallet automatically burns dropped Negative Imbalances by decreasing
-			// total_supply accordingly
-			<pallet_treasury::Pallet<R> as frame_support::traits::OnUnbalanced<_>>::on_unbalanced(
-				fees,
-			);
-		}
-	}
-
-	// this is called from pallet_evm for Ethereum-based transactions
-	// (technically, it calls on_unbalanced, which calls this when non-zero)
-	fn on_nonzero_unbalanced(amount: pallet_balances::NegativeImbalance<R>) {
 		// substrate
-		use frame_support::traits::Imbalance;
+		use frame_support::traits::Currency;
 
-		// Balances pallet automatically burns dropped Negative Imbalances by decreasing
-		// total_supply accordingly
-		let (_, to_treasury) = amount.ration(80, 20);
+		if fees_then_tips.next().is_some() {
+			if let Some(tips) = fees_then_tips.next() {
+				if let Some(author) = <pallet_authorship::Pallet<R>>::author() {
+					// Tip the block producer here.
+					<pallet_balances::Pallet<R>>::resolve_creating(&author, tips);
+				}
 
-		<pallet_treasury::Pallet<R> as frame_support::traits::OnUnbalanced<_>>::on_unbalanced(
-			to_treasury,
-		);
+				// Burn the tips here. (IMPOSSIBLE CASE)
+			}
+		}
+
+		// Burn the base fee here.
 	}
 }
 
-pub struct DarwiniaFindAuthor<Inner>(sp_std::marker::PhantomData<Inner>);
-impl<Inner> frame_support::traits::FindAuthor<sp_core::H160> for DarwiniaFindAuthor<Inner>
+pub struct FindAuthor<Inner>(core::marker::PhantomData<Inner>);
+impl<Inner> frame_support::traits::FindAuthor<sp_core::H160> for FindAuthor<Inner>
 where
 	Inner: frame_support::traits::FindAuthor<AccountId>,
 {

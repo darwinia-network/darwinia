@@ -25,10 +25,10 @@ impl frame_support::traits::Contains<pallet_tx_pause::RuntimeCallNameOf<Runtime>
 	for TxPauseWhitelistedCalls
 {
 	fn contains(full_name: &pallet_tx_pause::RuntimeCallNameOf<Runtime>) -> bool {
-		match (full_name.0.as_slice(), full_name.1.as_slice()) {
-			(b"System", b"remark_with_event") => true,
-			_ => false,
-		}
+		matches!(
+			(full_name.0.as_slice(), full_name.1.as_slice()),
+			(b"System", b"remark_with_event")
+		)
 	}
 }
 
