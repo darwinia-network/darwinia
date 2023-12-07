@@ -40,7 +40,7 @@ pub enum ProxyType {
 	Staking,
 	IdentityJudgement,
 	CancelProxy,
-	EcdsaBridge,
+	_EcdsaBridge,
 	SubstrateBridge,
 }
 impl Default for ProxyType {
@@ -85,9 +85,6 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 			ProxyType::CancelProxy => {
 				matches!(c, RuntimeCall::Proxy(pallet_proxy::Call::reject_announcement { .. }))
 			},
-			ProxyType::EcdsaBridge => {
-				matches!(c, RuntimeCall::EcdsaAuthority(..))
-			},
 			ProxyType::SubstrateBridge => {
 				matches!(
 					c,
@@ -98,6 +95,7 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 						| RuntimeCall::DarwiniaFeeMarket(..)
 				)
 			},
+			_ => false,
 		}
 	}
 
