@@ -34,13 +34,21 @@ use crate::*;
 	sp_runtime::RuntimeDebug,
 )]
 pub enum ProxyType {
+	#[codec(index = 0)]
 	Any,
+	#[codec(index = 1)]
 	NonTransfer,
+	#[codec(index = 2)]
 	Governance,
+	#[codec(index = 3)]
 	Staking,
+	#[codec(index = 4)]
 	IdentityJudgement,
+	#[codec(index = 5)]
 	CancelProxy,
-	_EcdsaBridge,
+	// #[codec(index = 6)]
+	// EcdsaBridge,
+	#[codec(index = 7)]
 	SubstrateBridge,
 }
 impl Default for ProxyType {
@@ -95,7 +103,6 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 						| RuntimeCall::DarwiniaFeeMarket(..)
 				)
 			},
-			_ => false,
 		}
 	}
 
