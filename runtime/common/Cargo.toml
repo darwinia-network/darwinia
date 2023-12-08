@@ -33,9 +33,9 @@ xcm-executor = { workspace = true }
 frame-support     = { workspace = true }
 frame-system      = { workspace = true }
 pallet-assets     = { workspace = true, optional = true }
+pallet-authorship = { workspace = true }
 pallet-balances   = { workspace = true }
 pallet-collective = { workspace = true }
-pallet-treasury   = { workspace = true }
 sp-core           = { workspace = true }
 sp-io             = { workspace = true }
 sp-runtime        = { workspace = true }
@@ -61,16 +61,16 @@ std = [
 	"pallet-evm/std",
 
 	# polkadot
-	"xcm/std",
 	"xcm-builder/std",
 	"xcm-executor/std",
+	"xcm/std",
 
 	# substrate
 	"frame-support/std",
 	"frame-system/std",
+	"pallet-authorship/std",
 	"pallet-balances/std",
 	"pallet-collective/std",
-	"pallet-treasury/std",
 	"sp-core/std",
 	"sp-io/std",
 	"sp-runtime/std",

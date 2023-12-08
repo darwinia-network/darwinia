@@ -21,9 +21,9 @@ frame-support    = { workspace = true }
 frame-system     = { workspace = true }
 pallet-timestamp = { workspace = true }
 sp-runtime       = { workspace = true }
-sp-std           = { workspace = true }
 # substrate optional
 frame-benchmarking = { workspace = true, optional = true }
+sp-std             = { workspace = true, optional = true }
 
 [dev-dependencies]
 # substrate
@@ -48,7 +48,7 @@ std = [
 	"frame-system/std",
 	"pallet-timestamp/std",
 	"sp-runtime/std",
-	"sp-std/std",
+	"sp-std?/std",
 	# substrate optional
 	"frame-benchmarking?/std",
 ]
@@ -58,11 +58,13 @@ runtime-benchmarks = [
 	"darwinia-staking-traits/runtime-benchmarks",
 
 	# substrate
-	"frame-benchmarking/runtime-benchmarks",
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
+	# substrate optional
+	"frame-benchmarking/runtime-benchmarks",
+	"sp-std",
 ]
 
 try-runtime = [

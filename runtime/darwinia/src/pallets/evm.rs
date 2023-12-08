@@ -38,7 +38,7 @@ frame_support::parameter_types! {
 	// TODO: FIX ME. https://github.com/rust-lang/rust/issues/88581
 	pub GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(BlockPovSizeLimit::get()) + 1;
 }
-pub struct DarwiniaPrecompiles<R>(sp_std::marker::PhantomData<R>);
+pub struct DarwiniaPrecompiles<R>(core::marker::PhantomData<R>);
 impl<R> DarwiniaPrecompiles<R>
 where
 	R: pallet_evm::Config,
@@ -163,7 +163,7 @@ impl pallet_evm::Config for Runtime {
 	type ChainId = ConstU64<46>;
 	type Currency = Balances;
 	type FeeCalculator = TransactionPaymentGasPrice;
-	type FindAuthor = DarwiniaFindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
+	type FindAuthor = FindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = ();

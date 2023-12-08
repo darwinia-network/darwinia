@@ -855,7 +855,7 @@ macro_rules! impl_maintenance_tests {
 		mod maintenance_test {
 			// darwinia
 			use super::mock::*;
-			// polkadot-sdk
+			// substrate
 			use frame_support::{assert_err, assert_ok};
 			use pallet_tx_pause::RuntimeCallNameOf;
 			use sp_core::H160;

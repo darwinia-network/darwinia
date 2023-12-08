@@ -33,7 +33,7 @@ pub enum CurrencyId {
 }
 
 // How to convert from CurrencyId to MultiLocation
-pub struct CurrencyIdtoMultiLocation<AssetXConverter>(sp_std::marker::PhantomData<AssetXConverter>);
+pub struct CurrencyIdtoMultiLocation<AssetXConverter>(core::marker::PhantomData<AssetXConverter>);
 impl<AssetXConverter> sp_runtime::traits::Convert<CurrencyId, Option<MultiLocation>>
 	for CurrencyIdtoMultiLocation<AssetXConverter>
 where
