@@ -112,7 +112,7 @@ jobs:
           chmod +x ${BIN_PATH}/gomplate
       - name: Build ${{ matrix.runtime }} runtime
         id: srtool_build
-        uses: chevdor/srtool-actions@v0.9.0
+        uses: chevdor/srtool-actions@v0.9.1
         with:
           image: paritytech/srtool
           tag: "1.70.0"
