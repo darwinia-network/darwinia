@@ -47,9 +47,6 @@ impl<T: pallet_fee_market::Config<I>, I: 'static> pallet_fee_market::Slasher<T, 
 }
 
 frame_support::parameter_types! {
-	pub const TreasuryPalletId: frame_support::PalletId = frame_support::PalletId(*b"da/trsry");
-	pub const FeeMarketLockId: frame_support::traits::LockIdentifier = *b"da/feecr";
-
 	pub const DutyRelayersRewardRatio: sp_runtime::Permill = sp_runtime::Permill::from_percent(60);
 	pub const MessageRelayersRewardRatio: sp_runtime::Permill = sp_runtime::Permill::from_percent(80);
 	pub const ConfirmRelayersRewardRatio: sp_runtime::Permill = sp_runtime::Permill::from_percent(20);
@@ -62,12 +59,12 @@ impl pallet_fee_market::Config<WithPangolinFeeMarket> for Runtime {
 	type ConfirmRelayersRewardRatio = ConfirmRelayersRewardRatio;
 	type Currency = Balances;
 	type DutyRelayersRewardRatio = DutyRelayersRewardRatio;
-	type LockId = FeeMarketLockId;
+	type LockId = pallet_config::FeeMarketLid;
 	type MessageRelayersRewardRatio = MessageRelayersRewardRatio;
 	type MinimumRelayFee = ConstU128<{ 15 * UNIT }>;
 	type RuntimeEvent = RuntimeEvent;
 	type Slasher = FeeMarketSlasher;
 	type Slot = ConstU32<600>;
-	type TreasuryPalletId = TreasuryPalletId;
+	type TreasuryPalletId = pallet_config::TreasuryPid;
 	type WeightInfo = weights::pallet_fee_market::WeightInfo<Self>;
 }

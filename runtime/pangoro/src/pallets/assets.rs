@@ -24,10 +24,6 @@ pub enum AssetIds {
 	OKton = 1026,
 }
 
-frame_support::parameter_types! {
-	pub Creators: Vec<AccountId> = vec![ROOT];
-}
-
 impl pallet_assets::Config for Runtime {
 	type ApprovalDeposit = ConstU128<0>;
 	#[cfg(feature = "runtime-benchmarks")]
@@ -42,7 +38,10 @@ impl pallet_assets::Config for Runtime {
 	type BenchmarkHelper = AssetsBenchmarkHelper;
 	type CallbackHandle = ();
 	type CreateOrigin = frame_support::traits::AsEnsureOriginWithArg<
-		frame_system::EnsureSignedBy<frame_support::traits::IsInVec<Creators>, AccountId>,
+		frame_system::EnsureSignedBy<
+			frame_support::traits::IsInVec<pallet_config::AssetCreators>,
+			AccountId,
+		>,
 	>;
 	type Currency = Balances;
 	type Extra = ();
