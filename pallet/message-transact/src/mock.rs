@@ -63,19 +63,15 @@ impl frame_system::Config for Runtime {
 	type Version = ();
 }
 
-frame_support::parameter_types! {
-	pub const MaxLocks: u32 = 10;
-	pub const ExistentialDeposit: u64 = 0;
-}
 impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
 	type Balance = Balance;
 	type DustRemoval = ();
-	type ExistentialDeposit = pallet_config::ExistentialDeposit;
+	type ExistentialDeposit = ();
 	type FreezeIdentifier = ();
 	type MaxFreezes = ();
 	type MaxHolds = ();
-	type MaxLocks = MaxLocks;
+	type MaxLocks = ();
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
 	type RuntimeEvent = RuntimeEvent;
