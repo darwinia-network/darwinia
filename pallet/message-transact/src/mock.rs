@@ -71,7 +71,7 @@ impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
 	type Balance = Balance;
 	type DustRemoval = ();
-	type ExistentialDeposit = ExistentialDeposit;
+	type ExistentialDeposit = pallet_config::ExistentialDeposit;
 	type FreezeIdentifier = ();
 	type MaxFreezes = ();
 	type MaxHolds = ();

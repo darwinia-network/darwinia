@@ -22,6 +22,7 @@
 // #![deny(missing_docs)]
 
 pub mod gov_origin;
+pub mod pallet_config;
 pub mod xcm_configs;
 
 pub use bp_darwinia_core as bp_crab;
@@ -126,11 +127,6 @@ macro_rules! impl_self_contained_call {
 		}
 	};
 }
-
-#[cfg(not(feature = "runtime-benchmarks"))]
-pub const EXISTENTIAL_DEPOSIT: Balance = 0;
-#[cfg(feature = "runtime-benchmarks")]
-pub const EXISTENTIAL_DEPOSIT: Balance = 1;
 
 /// Darwinia proposal base fee.
 pub const DARWINIA_PROPOSAL_REQUIREMENT: Balance = 5_000 * UNIT;

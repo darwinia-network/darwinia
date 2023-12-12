@@ -117,7 +117,6 @@ impl pallet_whitelist::Config for Runtime {
 }
 
 frame_support::parameter_types! {
-	pub const TreasuryPalletId: frame_support::PalletId = frame_support::PalletId(*b"da/trsry");
 	pub const ProposalBond: sp_runtime::Permill = sp_runtime::Permill::from_percent(5);
 }
 
@@ -128,7 +127,7 @@ impl pallet_treasury::Config for Runtime {
 	type Currency = Balances;
 	type MaxApprovals = ConstU32<100>;
 	type OnSlash = Treasury;
-	type PalletId = TreasuryPalletId;
+	type PalletId = pallet_config::TreasuryPid;
 	type ProposalBond = ProposalBond;
 	type ProposalBondMaximum = ();
 	type ProposalBondMinimum = ConstU128<DARWINIA_PROPOSAL_REQUIREMENT>;
