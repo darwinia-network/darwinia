@@ -148,7 +148,7 @@ jobs:
       - name: Fetch latest code
         uses: actions/checkout@v4
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: darwinia-artifact
           path: build
@@ -190,7 +190,7 @@ jobs:
       - name: Fetch latest code
         uses: actions/checkout@v4
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: darwinia-artifact
           path: build
