@@ -25,16 +25,20 @@ jobs:
       matrix:
         artifact:
           - type: mainnets
+            name: mainnets
             features: darwinia-native,crab-native
             enable_tar_bz2: true
           - type: mainnets
+            name: mainnets-tracing
             features: darwinia-native,crab-native,evm-tracing
             suffix: tracing
             enable_tar_bz2: false
           - type: testnets
+            name: testnets
             features: pangoro-native,pangolin-native
             enable_tar_bz2: true
           - type: testnets
+            name: testnets-tracing
             features: pangoro-native,pangolin-native,evm-tracing
             suffix: tracing
             enable_tar_bz2: false
@@ -77,7 +81,7 @@ jobs:
       - name: Upload shared
         uses: actions/upload-artifact@v4
         with:
-          name: darwinia-artifact
+          name: artifact-package-${{ matrix.artifact.name }}
           path: build
       - name: Fail fast
         uses: vishnudxb/cancel-workflow@v1.2
@@ -130,7 +134,7 @@ jobs:
       - name: Upload ${{ matrix.runtime }} wasm
         uses: actions/upload-artifact@v4
         with:
-          name: darwinia-artifact
+          name: artifact-runtime-${{ matrix.runtime }}
           path: build
       - name: Fail fast
         uses: vishnudxb/cancel-workflow@v1.2
@@ -192,7 +196,6 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: darwinia-artifact
           path: build
       - name: Install deps
         env:
@@ -211,8 +214,8 @@ jobs:
       - name: Prepare artifacts
         run: |
           mkdir -p deploy
-          mv build/*.tar.bz2 deploy/
-          mv build/*.tar.zst deploy/
+          mv build/*/*.tar.bz2 deploy/
+          mv build/*/*.tar.zst deploy/
       - name: Prepare release template
         run: |
           export RELEASE_SCHEMA='{"tag": "'$GIT_TAG_NAME'", "sha": "'$SHA'"}'
@@ -222,16 +225,16 @@ jobs:
       - name: Fill mainnets release
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          mv build/darwinia* deploy/
-          mv build/crab* deploy/
+          mv build/*/darwinia* deploy/
+          mv build/*/crab* deploy/
           cat build/release-template-darwinia.md >> template-release.md
           cat build/release-template-crab.md >> template-release.md
           cat template-release.tmp.md >> template-release.md
       - name: Fill testnets release
         if: startsWith(github.ref, 'refs/tags/pango')
         run: |
-          mv build/pangolin* deploy/
-          mv build/pangoro* deploy/
+          mv build/*/pangolin* deploy/
+          mv build/*/pangoro* deploy/
           cat build/release-template-pangolin.md >> template-release.md
           cat build/release-template-pangoro.md >> template-release.md
           cat template-release.tmp.md >> template-release.md
@@ -303,4 +306,4 @@ jobs:
     steps:
       - uses: geekyeggo/delete-artifact@v2
         with:
-          name: darwinia-artifact
+          name: artifact-*
