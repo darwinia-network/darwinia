@@ -75,7 +75,7 @@ jobs:
           suffix: ${{ matrix.artifact.suffix }}
           enable_cache: false
       - name: Upload shared
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: darwinia-artifact
           path: build
@@ -128,7 +128,7 @@ jobs:
             | gomplate -d srtool=build/${{ matrix.runtime }}-srtool.json \
             > build/release-template-${{ matrix.runtime }}.md
       - name: Upload ${{ matrix.runtime }} wasm
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: darwinia-artifact
           path: build

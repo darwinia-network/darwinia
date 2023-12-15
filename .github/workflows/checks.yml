@@ -80,7 +80,7 @@ jobs:
           .github/shrink-cache.sh
       - name: Upload
         if: matrix.action == 'build'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: darwinia
           path: darwinia
