@@ -21,7 +21,7 @@ on:
       - "**.ts"
       - "**.yml"
       - "**.sol"
-      
+
 env:
   CACHE_VERSION: 0
 
@@ -147,7 +147,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check ${{ matrix.target.chain }}
-        uses: hack-ink/subalfred-check-runtime-action@v0.2.0
+        uses: hack-ink/subalfred-check-runtime-action@v0.2.1
         with:
           uploaded-artifact: darwinia
           chain: ${{ matrix.target.chain }}
