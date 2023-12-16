@@ -104,6 +104,7 @@ jobs:
           chmod u+x ${{ env.GOMPLATE }}
           sudo mv ${{ env.GOMPLATE }} /usr/bin/gomplate
       - name: Build ${{ matrix.runtime }} runtime
+        id: srtool_build
         uses: chevdor/srtool-actions@v0.9.1
         with:
           image: paritytech/srtool
@@ -139,6 +140,10 @@ jobs:
     steps:
       - name: Download node
         uses: actions/download-artifact@v4
+      - name: Extract node
+        run: |
+          mkdir -p dist
+          tar -xvf build/darwinia-x86_64-linux-gnu.tar.bz2 -C dist/
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
       - name: Sha
@@ -149,10 +154,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ${{ env.DOCKER_REGISTRY }}
-      - name: Extract shared
-        run: |
-          mkdir -p dist
-          tar -xvf build/darwinia-x86_64-linux-gnu.tar.bz2 -C dist/
       - name: Publish docker image
         uses: docker/build-push-action@v5
         with:
