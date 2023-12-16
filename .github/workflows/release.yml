@@ -7,41 +7,37 @@ on:
       - "pango*"
 
 env:
-  CACHE_VERSION: 0
-
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
   CARGO_TERM_COLOR: always
 
   DOCKER_REGISTRY: ghcr.io
 
+  GOMPLATE_VERSION: v3.11.6
+  GOMPLATE: gomplate_linux-amd64
+  GOMPLATE_URL: https://github.com/hairyhenderson/gomplate/releases/download/${{ env.GOMPLATE_VERSION }}/${{ env.GOMPLATE }}
+
   RUST_BACKTRACE: full
   RUST_TOOLCHAIN: nightly-2023-05-22
 
 jobs:
-  build-package:
-    name: Build package
+  build-packages:
+    name: Build packages
     runs-on: ubuntu-latest
     strategy:
       matrix:
         artifact:
-          - type: mainnets
-            name: mainnets
+          - network: mainnet
             features: darwinia-native,crab-native
-            enable_tar_bz2: true
-          - type: mainnets
-            name: mainnets-tracing
+            bz2: true
+          - network: mainnet
             features: darwinia-native,crab-native,evm-tracing
-            suffix: tracing
-            enable_tar_bz2: false
-          - type: testnets
-            name: testnets
+            node-type: tracing
+          - network: testnet
             features: pangoro-native,pangolin-native
-            enable_tar_bz2: true
-          - type: testnets
-            name: testnets-tracing
+            bz2: true
+          - network: testnet
             features: pangoro-native,pangolin-native,evm-tracing
-            suffix: tracing
-            enable_tar_bz2: false
+            node-type: tracing
     steps:
       - name: Free disk space
         uses: jlumbroso/free-disk-space@main
@@ -59,29 +55,27 @@ jobs:
           swap-size-gb: 8
       - name: Fetch latest code
         uses: actions/checkout@v4
-      - name: Build testnets
-        id: build-testnets
-        if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.artifact.type == 'testnets') }}
+      - name: Build testnet
+        if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.artifact.network == 'testnet') }}
         uses: ./.github/actions/build
         with:
           package: darwinia
           features: ${{ matrix.artifact.features }}
-          suffix: ${{ matrix.artifact.suffix }}
+          suffix: ${{ matrix.artifact.node-type }}
           enable_cache: false
-          enable_tar_bz2: ${{ matrix.artifact.enable_tar_bz2 }}
-      - name: Build mainnets
-        id: build-mainnets
-        if: ${{ startsWith(github.ref, 'refs/tags/v') && (matrix.artifact.type == 'mainnets') }}
+          bz2: ${{ matrix.artifact.bz2 }}
+      - name: Build mainnet
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && (matrix.artifact.network == 'mainnet') }}
         uses: ./.github/actions/build
         with:
           package: darwinia
           features: ${{ matrix.artifact.features }}
-          suffix: ${{ matrix.artifact.suffix }}
+          suffix: ${{ matrix.artifact.node-type }}
           enable_cache: false
-      - name: Upload shared
+      - name: Upload ${{ matrix.artifact.network }}-${{ matrix.artifact.node-type }} node
         uses: actions/upload-artifact@v4
         with:
-          name: artifact-package-${{ matrix.artifact.name }}
+          name: ${{ matrix.artifact.network }}-${{ matrix.artifact.node-type }}
           path: build
       - name: Fail fast
         uses: vishnudxb/cancel-workflow@v1.2
@@ -104,18 +98,12 @@ jobs:
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v4
-      - name: Install deps
-        env:
-          GOMPLATE_VERSION: v3.11.4
+      - name: Setup gomplate
         run: |
-          BIN_PATH=$HOME/.local/bin
-          mkdir -p ${BIN_PATH}
-          # gomplate
-          curl -L -o ${BIN_PATH}/gomplate \
-            https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64
-          chmod +x ${BIN_PATH}/gomplate
+          curl -LO ${{ env.GOMPLATE_URL }}
+          chmod u+x ${{ env.GOMPLATE }}
+          mv ${{ env.GOMPLATE }} ~/.local/bin/gomplate
       - name: Build ${{ matrix.runtime }} runtime
-        id: srtool_build
         uses: chevdor/srtool-actions@v0.9.1
         with:
           image: paritytech/srtool
@@ -131,7 +119,7 @@ jobs:
           cat .github/template-runtime.md \
             | gomplate -d srtool=build/${{ matrix.runtime }}-srtool.json \
             > build/release-template-${{ matrix.runtime }}.md
-      - name: Upload ${{ matrix.runtime }} wasm
+      - name: Upload ${{ matrix.runtime }} runtime
         uses: actions/upload-artifact@v4
         with:
           name: artifact-runtime-${{ matrix.runtime }}
@@ -147,15 +135,10 @@ jobs:
   build-docker-image:
     name: Build Docker image
     runs-on: ubuntu-latest
-    needs: [build-package]
+    needs: [build-packages]
     steps:
-      - name: Fetch latest code
-        uses: actions/checkout@v4
-      - name: Download artifact
+      - name: Download node
         uses: actions/download-artifact@v4
-        with:
-          name: darwinia-artifact
-          path: build
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
       - name: Sha
@@ -191,22 +174,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-package, build-runtimes, build-docker-image]
     steps:
-      - name: Fetch latest code
-        uses: actions/checkout@v4
-      - name: Download artifact
+      - name: Download nodes and runtimes
         uses: actions/download-artifact@v4
-        with:
-          path: build
-      - name: Install deps
-        env:
-          GOMPLATE_VERSION: v3.11.4
+      - name: Setup gomplate
         run: |
-          BIN_PATH=$HOME/.local/bin
-          mkdir -p ${BIN_PATH}
-          # gomplate
-          curl -L -o ${BIN_PATH}/gomplate \
-            https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64
-          chmod +x ${BIN_PATH}/gomplate
+          curl -LO ${{ env.GOMPLATE_URL }}
+          chmod u+x ${{ env.GOMPLATE }}
+          mv ${{ env.GOMPLATE }} ~/.local/bin/gomplate
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
       - name: Sha
@@ -255,43 +229,28 @@ jobs:
             deploy/*
           generate_release_notes: true
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Publish github release
-        if: startsWith(github.ref, 'refs/tags/pango')
-        uses: softprops/action-gh-release@v1
-        with:
-          body_path: "template-release.md"
-          files: |
-            deploy/*
-          generate_release_notes: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: true
+          prerelease: ${{ startsWith(github.ref, 'refs/tags/pango') }}
 
   deploy-tracing-node:
     name: Deploy tracing node
     runs-on: ubuntu-latest
     needs: [release]
     steps:
-      - name: Fetch latest code
-        uses: actions/checkout@v4
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
-      - name: Deploy tracing node (mainnets)
+      - name: Deploy mainnets' tracing node
         if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TKN_DARWINIA }}
         run: |
-          gh workflow run \
+          GITHUB_TOKEN=${{ secrets.GH_TKN_DARWINIA }} gh workflow run \
             trigger-tracing-node.yml \
             --ref=main \
             --repo=darwinia-network/devops \
             --raw-field=type=mainnets \
             --raw-field="version=$GIT_TAG_NAME"
-      - name: Deploy tracing node (testnets)
+      - name: Deploy testnets' tracing node
         if: startsWith(github.ref, 'refs/tags/pango')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TKN_DARWINIA }}
         run: |
-          gh workflow run \
+          GITHUB_TOKEN=${{ secrets.GH_TKN_DARWINIA }} gh workflow run \
             trigger-tracing-node.yml \
             --ref=main \
             --repo=darwinia-network/devops \
