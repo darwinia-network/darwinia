@@ -14,7 +14,7 @@ env:
 
   GOMPLATE_VERSION: v3.11.6
   GOMPLATE: gomplate_linux-amd64
-  GOMPLATE_URL: https://github.com/hairyhenderson/gomplate/releases/download/${{ env.GOMPLATE_VERSION }}/${{ env.GOMPLATE }}
+  GOMPLATE_URL: https://github.com/hairyhenderson/gomplate/releases/download
 
   RUST_BACKTRACE: full
   RUST_TOOLCHAIN: nightly-2023-05-22
@@ -100,7 +100,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup gomplate
         run: |
-          curl -LO ${{ env.GOMPLATE_URL }}
+          curl -LO ${{ env.GOMPLATE_URL }}/${{ env.GOMPLATE_VERSION }}/${{ env.GOMPLATE }}
           chmod u+x ${{ env.GOMPLATE }}
           mv ${{ env.GOMPLATE }} ~/.local/bin/gomplate
       - name: Build ${{ matrix.runtime }} runtime
@@ -178,7 +178,7 @@ jobs:
         uses: actions/download-artifact@v4
       - name: Setup gomplate
         run: |
-          curl -LO ${{ env.GOMPLATE_URL }}
+          curl -LO ${{ env.GOMPLATE_URL }}/${{ env.GOMPLATE_VERSION }}/${{ env.GOMPLATE }}
           chmod u+x ${{ env.GOMPLATE }}
           mv ${{ env.GOMPLATE }} ~/.local/bin/gomplate
       - name: Tag
