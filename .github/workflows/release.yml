@@ -102,7 +102,7 @@ jobs:
         run: |
           curl -LO ${{ env.GOMPLATE_URL }}/${{ env.GOMPLATE_VERSION }}/${{ env.GOMPLATE }}
           chmod u+x ${{ env.GOMPLATE }}
-          mv ${{ env.GOMPLATE }} ~/.local/bin/gomplate
+          sudo mv ${{ env.GOMPLATE }} /usr/bin/gomplate
       - name: Build ${{ matrix.runtime }} runtime
         uses: chevdor/srtool-actions@v0.9.1
         with:
@@ -172,7 +172,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    needs: [build-package, build-runtimes, build-docker-image]
+    needs: [build-packages, build-runtimes, build-docker-image]
     steps:
       - name: Download nodes and runtimes
         uses: actions/download-artifact@v4
@@ -180,7 +180,7 @@ jobs:
         run: |
           curl -LO ${{ env.GOMPLATE_URL }}/${{ env.GOMPLATE_VERSION }}/${{ env.GOMPLATE }}
           chmod u+x ${{ env.GOMPLATE }}
-          mv ${{ env.GOMPLATE }} ~/.local/bin/gomplate
+          sudo mv ${{ env.GOMPLATE }} /usr/bin/gomplate
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
       - name: Sha
