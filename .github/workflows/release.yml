@@ -154,7 +154,6 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: darwinia-artifact
           path: build
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
@@ -166,10 +165,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ${{ env.DOCKER_REGISTRY }}
-      - name: Extract shared
+      - name: Extract shared (mainnets)
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
         run: |
           mkdir -p dist
-          tar -xvf build/darwinia-x86_64-linux-gnu.tar.bz2 -C dist/
+          tar -xvf build/artifact-package-mainnets/darwinia-x86_64-linux-gnu.tar.bz2 -C dist/
+      - name: Extract shared (testnets)
+        if: ${{ startsWith(github.ref, 'refs/tags/pango') }}
+        run: |
+          mkdir -p dist
+          tar -xvf build/artifact-package-testnets/darwinia-x86_64-linux-gnu.tar.bz2 -C dist/
       - name: Publish docker image
         uses: docker/build-push-action@v5
         with:
