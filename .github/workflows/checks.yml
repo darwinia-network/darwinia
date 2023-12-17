@@ -84,6 +84,7 @@ jobs:
         with:
           name: darwinia
           path: darwinia
+          retention-days: 1
 
   format-checks:
     name: Task check format
@@ -180,14 +181,3 @@ jobs:
           cd tests/ethereum
           npm install
           npm run test
-
-  checks-cleaning:
-    name: Task checks cleaning
-    if: always()
-    needs: [features-checks, runtime-checks]
-    steps:
-      - name: Clean artifacts
-        uses: geekyeggo/delete-artifact@v2
-        with:
-          name: darwinia
-    runs-on: ubuntu-latest

@@ -62,8 +62,7 @@ jobs:
           package: darwinia
           features: ${{ matrix.artifact.features }}
           suffix: ${{ matrix.artifact.node-type }}
-          enable_cache: false
-          bz2: ${{ matrix.artifact.bz2 }}
+          enable_tar_bz2: ${{ matrix.artifact.bz2 }}
       - name: Build mainnet
         if: ${{ startsWith(github.ref, 'refs/tags/v') && (matrix.artifact.network == 'mainnet') }}
         uses: ./.github/actions/build
@@ -71,12 +70,13 @@ jobs:
           package: darwinia
           features: ${{ matrix.artifact.features }}
           suffix: ${{ matrix.artifact.node-type }}
-          enable_cache: false
-      - name: Upload ${{ matrix.artifact.network }}-${{ matrix.artifact.node-type }} node
+          enable_tar_bz2: ${{ matrix.artifact.bz2 }}
+      - name: Upload node
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact.network }}-${{ matrix.artifact.node-type }}
+          name: darwinia${{ matrix.artifact.node-type != '' && format('-%s', matrix.artifact.node-type) || '' }}
           path: build
+          retention-days: 1
       - name: Fail fast
         uses: vishnudxb/cancel-workflow@v1.2
         if: failure()
@@ -123,8 +123,9 @@ jobs:
       - name: Upload ${{ matrix.runtime }} runtime
         uses: actions/upload-artifact@v4
         with:
-          name: artifact-runtime-${{ matrix.runtime }}
+          name: ${{ matrix.runtime }}-runtime
           path: build
+          retention-days: 1
       - name: Fail fast
         uses: vishnudxb/cancel-workflow@v1.2
         if: failure()
@@ -143,7 +144,7 @@ jobs:
       - name: Extract node
         run: |
           mkdir -p dist
-          tar -xvf build/darwinia-x86_64-linux-gnu.tar.bz2 -C dist/
+          tar -xvf darwinia/darwinia-x86_64-linux-gnu.tar.bz2 -C dist/
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
       - name: Sha
@@ -177,6 +178,13 @@ jobs:
     steps:
       - name: Download nodes and runtimes
         uses: actions/download-artifact@v4
+      - name: Prepare nodes and runtimes
+        run: |
+          mkdir -p deploy
+          mv *runtime/*.json deploy/
+          mv *runtime/*.wasm deploy/
+          mv darwinia/*.tar.* deploy/
+          mv darwinia-tracing/*.tar.* deploy/
       - name: Setup gomplate
         run: |
           curl -LO ${{ env.GOMPLATE_URL }}/${{ env.GOMPLATE_VERSION }}/${{ env.GOMPLATE }}
@@ -186,30 +194,21 @@ jobs:
         uses: olegtarasov/get-tag@v2.1
       - name: Sha
         uses: benjlevesque/short-sha@v2.2
-      - name: Prepare artifacts
-        run: |
-          mkdir -p deploy
-          mv build/*/*.tar.bz2 deploy/
-          mv build/*/*.tar.zst deploy/
-      - name: Prepare release template
+      - name: Prepare release note
         run: |
           export RELEASE_SCHEMA='{"tag": "'$GIT_TAG_NAME'", "sha": "'$SHA'"}'
           cat .github/template-release.md \
             | gomplate -d schema='env:/RELEASE_SCHEMA?type=application/json' \
             > template-release.tmp.md
-      - name: Fill mainnets release
+      - name: Fill mainnet release note
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          mv build/*/darwinia* deploy/
-          mv build/*/crab* deploy/
-          cat build/release-template-darwinia.md >> template-release.md
-          cat build/release-template-crab.md >> template-release.md
+          cat darwinia-runtime/release-template-darwinia.md >> template-release.md
+          cat crab-runtime/release-template-crab.md >> template-release.md
           cat template-release.tmp.md >> template-release.md
-      - name: Fill testnets release
+      - name: Fill testnet release note
         if: startsWith(github.ref, 'refs/tags/pango')
         run: |
-          mv build/*/pangolin* deploy/
-          mv build/*/pangoro* deploy/
           cat build/release-template-pangolin.md >> template-release.md
           cat build/release-template-pangoro.md >> template-release.md
           cat template-release.tmp.md >> template-release.md
@@ -221,7 +220,7 @@ jobs:
       #          cat template-release.md
       #          ls -la deploy/
       #          cat build/*.md
-      - name: Publish github release
+      - name: Publish release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
@@ -239,7 +238,7 @@ jobs:
     steps:
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
-      - name: Deploy mainnets' tracing node
+      - name: Deploy mainnet tracing nodes
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           GITHUB_TOKEN=${{ secrets.GH_TKN_DARWINIA }} gh workflow run \
@@ -248,7 +247,7 @@ jobs:
             --repo=darwinia-network/devops \
             --raw-field=type=mainnets \
             --raw-field="version=$GIT_TAG_NAME"
-      - name: Deploy testnets' tracing node
+      - name: Deploy testnet tracing nodes
         if: startsWith(github.ref, 'refs/tags/pango')
         run: |
           GITHUB_TOKEN=${{ secrets.GH_TKN_DARWINIA }} gh workflow run \
@@ -257,13 +256,3 @@ jobs:
             --repo=darwinia-network/devops \
             --raw-field=type=testnets \
             --raw-field="version=$GIT_TAG_NAME"
-
-  clean-artifacts:
-    name: Clean artifacts
-    runs-on: ubuntu-latest
-    needs: [release]
-    if: always()
-    steps:
-      - uses: geekyeggo/delete-artifact@v2
-        with:
-          name: artifact-*
