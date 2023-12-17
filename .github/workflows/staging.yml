@@ -43,6 +43,7 @@ jobs:
           package: darwinia
           features: all-natives
           cache_prefix: staging-${{ env.CACHE_VERSION }}
+          enable_cache: true
           enable_tar_bz2: true
 
       - name: Upload
@@ -50,6 +51,7 @@ jobs:
         with:
           name: darwinia-artifact
           path: build
+          retention-days: 1
 
   build-docker-image:
     name: Build image
