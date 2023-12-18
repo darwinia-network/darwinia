@@ -129,17 +129,17 @@ jobs:
 
           mkdir -p build
 
-          if [ "$SKIP_BUILD" == "false"  ]; then
-            if [ "$IS_MAINNET" == "true" || "$IS_TESTNET" == "true" ]; then
-              echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${CHAIN}-srtool.json
-              mv ${CHAIN}_runtime.compact.compressed.wasm build/
+          if [ "$SKIP_BUILD" == "false" ]; then
+            if [ "$IS_MAINNET" == "true" ] || [ "$IS_TESTNET" == "true" ]; then
+              echo "${{ steps.srtool_build.outputs.json }}" | jq > build/${CHAIN}-srtool.json
+              mv ${{ steps.srtool_build.outputs.wasm_compressed }} build/
 
               cat .github/note-template/runtime.md \
                 | gomplate -d srtool=build/${CHAIN}-srtool.json \
                 > build/runtime.md
             fi
           else
-            if [ "$IS_MAINNET" == "true" || "$IS_TESTNET" == "true" ]; then
+            if [ "$IS_MAINNET" == "true" ] || [ "$IS_TESTNET" == "true" ]; then
               echo SKIP_BUILD > build/${CHAIN}-srtool.json
               echo SKIP_BUILD > build/${CHAIN}_runtime.compact.compressed.wasm
               echo SKIP_BUILD > build/runtime.md
