@@ -1,12 +1,8 @@
-name: "Build"
+name: "Build darwinia node"
 
 description: "Darwinia artifacts building action."
 
 inputs:
-  package:
-    description: "cargo build package"
-    required: false
-    default: "darwinia"
   features:
     description: "build features"
     required: false
@@ -15,10 +11,6 @@ inputs:
     description: "output file suffix"
     required: false
     default: ""
-  build_dockerfile:
-    description: "build dockerfile path"
-    required: true
-    default: ".maintain/docker/ubuntu:20.04.Dockerfile"
   enable_cache:
     description: "enable cache"
     required: false
@@ -27,81 +19,68 @@ inputs:
     description: "shrink cache script file path"
     required: false
     default: ".github/shrink-cache.sh"
-  cache_prefix:
-    description: "cache key prefix"
-    required: false
-    default: "darwinia"
   enable_tar_bz2:
     description: "enable package tar.bz2"
     required: false
     default: "false"
-
-outputs:
-  PACKAGE_BINARY_BZ2:
-    description: "Build package binary path (tar bz2)"
-    value: ${{ steps.cargo_build.outputs.PACKAGE_BINARY_BZ2 }}
-  PACKAGE_BINARY_ZST:
-    description: "Build package binary path (tar zst)"
-    value: ${{ steps.cargo_build.outputs.PACKAGE_BINARY_ZST }}
+  skip-build:
+    description: "use this for testing purposes only"
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
   steps:
-    - name: Build image for compile
+    - name: Build Docker image
+      if: ${{ inputs.skip-build == 'false' }}
       uses: docker/build-push-action@v4
       with:
         context: .
-        file: ${{ inputs.build_dockerfile }}
+        file: .maintain/docker/ubuntu:20.04.Dockerfile
         tags: darwinia-network/build-tool:latest
-
     - name: Cache cargo
+      if: ${{ inputs.enable_cache == 'true' && inputs.skip-build == 'false' }}
       uses: actions/cache@v3
-      if: ${{ inputs.enable_cache == 'true' }}
       with:
         path: |
           ./target
-        key: ${{ inputs.cache_prefix }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-${{ hashFiles('Cargo.lock') }}
+        key: darwinia-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-${{ hashFiles('Cargo.lock') }}
         restore-keys: |
-          ${{ inputs.cache_prefix }}-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-
-          ${{ inputs.cache_prefix }}-${{ runner.os }}-
-
-    - name: Build
+          darwinia-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-
+          darwinia-${{ runner.os }}-
+    - name: Build node
       shell: bash
-      id: cargo_build
       run: |
-        PACKAGE=${{ inputs.package }}
         FEATURES=${{ inputs.features }}
         SUFFIX=${{ inputs.suffix }}
         ENABLE_TAR_BZ2=${{ inputs.enable_tar_bz2 }}
+        SKIP_BUILD=${{ inputs.skip-build }}
 
-        docker run -i --rm \
-          --name=build-darwinia \
-          -v=$(pwd):/build \
-          darwinia-network/build-tool:latest \
-            cargo build --release --locked \
-              ${PACKAGE:+--package=$PACKAGE} \
-              ${FEATURES:+--features=$FEATURES}
-
-        if [ -z "${PACKAGE}" ]; then
-          exit 0
+        if [ "$SKIP_BUILD" == "false" ]; then
+          docker run -i --rm \
+            --name=build-darwinia \
+            -v=$(pwd):/build \
+            darwinia-network/build-tool:latest \
+              cargo build --release --locked \
+                -p darwinia \
+                --no-default-features \
+                --features=$FEATURES
+        else
+          mkdir -p target/release
+          touch target/release/darwinia
         fi
 
-        DIST_PATH=build
-        mkdir -p ${DIST_PATH}
+        BUILD_DIR=build
+        mkdir -p $BUILD_DIR
 
-        if [ "${ENABLE_TAR_BZ2}" == "true" ]; then
-          PACKAGE_BINARY_BZ2=${DIST_PATH}/${PACKAGE}${SUFFIX:+-$SUFFIX}-x86_64-linux-gnu.tar.bz2
-          tar cjSf ${PACKAGE_BINARY_BZ2} -C target/release ${PACKAGE}
-          echo "PACKAGE_BINARY_BZ2=$PACKAGE_BINARY_BZ2" >> $GITHUB_OUTPUT
+        if [ "$ENABLE_TAR_BZ2" == "true" ]; then
+          tar cjSf ${ BUILD_DIR }/darwinia${ SUFFIX:+-$SUFFIX }-x86_64-linux-gnu.tar.bz2 target/release/darwinia
         fi
 
-        PACKAGE_BINARY_ZST=${DIST_PATH}/${PACKAGE}${SUFFIX:+-$SUFFIX}-x86_64-linux-gnu.tar.zst
-        tar cf ${PACKAGE_BINARY_ZST} -C target/release ${PACKAGE} -I zstd
-        echo "PACKAGE_BINARY_ZST=$PACKAGE_BINARY_ZST" >> $GITHUB_OUTPUT
-
-    - name: Shrink Cache
+        tar cf ${ BUILD_DIR }/darwinia${ SUFFIX:+-$SUFFIX }-x86_64-linux-gnu.tar.zst target/release/darwinia -I zstd
+    - name: Shrink cache
+      if: ${{ inputs.enable_cache == 'true' && inputs.skip-build == 'false' }}
       shell: bash
-      if: ${{ inputs.enable_cache == 'true' }}
       run: |
         docker run -i --rm \
           --name=build-darwinia \

@@ -19,25 +19,27 @@ env:
   RUST_BACKTRACE: full
   RUST_TOOLCHAIN: nightly-2023-05-22
 
+  SKIP_BUILD: true
+
 jobs:
-  build-packages:
-    name: Build packages
+  build-nodes:
+    name: Build nodes
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        artifact:
+        node:
           - network: mainnet
             features: darwinia-native,crab-native
             bz2: true
           - network: mainnet
             features: darwinia-native,crab-native,evm-tracing
-            node-type: tracing
+            type: tracing
           - network: testnet
             features: pangoro-native,pangolin-native
             bz2: true
           - network: testnet
             features: pangoro-native,pangolin-native,evm-tracing
-            node-type: tracing
+            type: tracing
     steps:
       - name: Free disk space
         uses: jlumbroso/free-disk-space@main
@@ -55,26 +57,26 @@ jobs:
           swap-size-gb: 8
       - name: Fetch latest code
         uses: actions/checkout@v4
-      - name: Build testnet
-        if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.artifact.network == 'testnet') }}
+      - name: Build mainnet node
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && (matrix.node.network == 'mainnet') }}
         uses: ./.github/actions/build
         with:
-          package: darwinia
-          features: ${{ matrix.artifact.features }}
-          suffix: ${{ matrix.artifact.node-type }}
-          enable_tar_bz2: ${{ matrix.artifact.bz2 }}
-      - name: Build mainnet
-        if: ${{ startsWith(github.ref, 'refs/tags/v') && (matrix.artifact.network == 'mainnet') }}
+          features: ${{ matrix.node.features }}
+          suffix: ${{ matrix.node.type }}
+          enable_tar_bz2: ${{ matrix.node.bz2 }}
+          skip-build: ${{ env.SKIP_BUILD }}
+      - name: Build testnet node
+        if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.node.network == 'testnet') }}
         uses: ./.github/actions/build
         with:
-          package: darwinia
-          features: ${{ matrix.artifact.features }}
-          suffix: ${{ matrix.artifact.node-type }}
-          enable_tar_bz2: ${{ matrix.artifact.bz2 }}
+          features: ${{ matrix.node.features }}
+          suffix: ${{ matrix.node.type }}
+          enable_tar_bz2: ${{ matrix.node.bz2 }}
+          skip-build: ${{ env.SKIP_BUILD }}
       - name: Upload node
         uses: actions/upload-artifact@v4
         with:
-          name: darwinia${{ matrix.artifact.node-type != '' && format('-%s', matrix.artifact.node-type) || '' }}
+          name: darwinia${{ (matrix.node.type != '' && format('-%s', matrix.node.type)) || '' }}
           path: build
           retention-days: 1
       - name: Fail fast
@@ -93,8 +95,8 @@ jobs:
         runtime:
           - darwinia
           - crab
-          - pangolin
           - pangoro
+          - pangolin
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v4
@@ -105,6 +107,7 @@ jobs:
           sudo mv ${{ env.GOMPLATE }} /usr/bin/gomplate
       - name: Build ${{ matrix.runtime }} runtime
         id: srtool_build
+        if: ${{ env.SKIP_BUILD != 'false' }}
         uses: chevdor/srtool-actions@v0.9.1
         with:
           image: paritytech/srtool
@@ -112,14 +115,22 @@ jobs:
           chain: ${{ matrix.runtime }}
       - name: Prepare artifact
         run: |
-          mkdir -p build
-          echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${{ matrix.runtime }}-srtool.json
-          cp ${{ steps.srtool_build.outputs.wasm_compressed }} build/
+          CHAIN=${{ matrix.runtime }}
+          SKIP_BUILD=${{ inputs.skip-build }}
 
-          export CHAIN=${{ matrix.runtime }}
-          cat .github/template-runtime.md \
-            | gomplate -d srtool=build/${{ matrix.runtime }}-srtool.json \
-            > build/release-template-${{ matrix.runtime }}.md
+          mkdir -p build
+
+          if [ "$SKIP_BUILD" == "false" ]; then
+            echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${ CHAIN }-srtool.json
+            mv ${ CHAIN }_runtime.compact.compressed.wasm build/
+
+            cat .github/template-runtime.md \
+              | gomplate -d srtool=build/${ CHAIN }-srtool.json \
+              > build/release-template-${ CHAIN }.md
+          else
+            touch build/${ CHAIN }-srtool.json
+            touch build/${ CHAIN }_runtime.compact.compressed.wasm
+          fi
       - name: Upload ${{ matrix.runtime }} runtime
         uses: actions/upload-artifact@v4
         with:
@@ -134,10 +145,10 @@ jobs:
           workflow_id: ${{ github.run_id }}
           access_token: ${{ github.token }}
 
-  build-docker-image:
-    name: Build Docker image
+  publish-docker-image:
+    name: Publish Docker image
     runs-on: ubuntu-latest
-    needs: [build-packages]
+    needs: [build-nodes]
     steps:
       - name: Download node
         uses: actions/download-artifact@v4
@@ -155,26 +166,27 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ${{ env.DOCKER_REGISTRY }}
-      - name: Publish docker image
+      - name: Publish
+        if: ${{ env.SKIP_BUILD != 'false' }}
         uses: docker/build-push-action@v5
         with:
           push: true
           context: .
           file: .maintain/docker/Dockerfile
           tags: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:sha-${{ env.SHA }}
-      - name: Publish docker image with tag
+      - name: Publish with tag
+        if: ${{ env.SKIP_BUILD != 'false' }} && (startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/pango'))
         uses: docker/build-push-action@v5
-        if: startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/pango')
         with:
           push: true
           context: .
           file: .maintain/docker/Dockerfile
           tags: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:${{ env.GIT_TAG_NAME }}
 
-  release:
-    name: Release
+  publish-github-release:
+    name: Publish GitHub release
     runs-on: ubuntu-latest
-    needs: [build-packages, build-runtimes, build-docker-image]
+    needs: [build-nodes, build-runtimes, publish-docker-image]
     steps:
       - name: Download nodes and runtimes
         uses: actions/download-artifact@v4
@@ -194,33 +206,33 @@ jobs:
         uses: olegtarasov/get-tag@v2.1
       - name: Sha
         uses: benjlevesque/short-sha@v2.2
-      - name: Prepare release note
+      - name: Prepare note
         run: |
           export RELEASE_SCHEMA='{"tag": "'$GIT_TAG_NAME'", "sha": "'$SHA'"}'
           cat .github/template-release.md \
             | gomplate -d schema='env:/RELEASE_SCHEMA?type=application/json' \
             > template-release.tmp.md
-      - name: Fill mainnet release note
+      - name: Fill mainnet note
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           cat darwinia-runtime/release-template-darwinia.md >> template-release.md
           cat crab-runtime/release-template-crab.md >> template-release.md
           cat template-release.tmp.md >> template-release.md
-      - name: Fill testnet release note
+      - name: Fill testnet note
         if: startsWith(github.ref, 'refs/tags/pango')
         run: |
-          cat build/release-template-pangolin.md >> template-release.md
-          cat build/release-template-pangoro.md >> template-release.md
+          cat pangolin-runtime/release-template-pangolin.md >> template-release.md
+          cat pangoro-runtime/release-template-pangoro.md >> template-release.md
           cat template-release.tmp.md >> template-release.md
       - name: Hash file
         run: cd deploy && sha256sum * | tee sha256sums.txt
-      #      - name: Verify
-      #        run: |
-      #          set -xe
-      #          cat template-release.md
-      #          ls -la deploy/
-      #          cat build/*.md
-      - name: Publish release
+      # - name: Verify
+      #   run: |
+      #     set -xe
+      #     cat template-release.md
+      #     ls -la deploy/
+      #     cat build/*.md
+      - name: Publish
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
@@ -234,7 +246,7 @@ jobs:
   deploy-tracing-node:
     name: Deploy tracing node
     runs-on: ubuntu-latest
-    needs: [release]
+    needs: [publish-github-release]
     steps:
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
