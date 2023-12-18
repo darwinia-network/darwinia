@@ -20,7 +20,7 @@ env:
   RUST_TOOLCHAIN: nightly-2023-05-22
 
   # Set this to true for CI testing purposes only.
-  SKIP_BUILD: false
+  # SKIP_BUILD: true
 
 jobs:
   build-nodes:
@@ -43,7 +43,7 @@ jobs:
             type: tracing
     steps:
       - name: Free disk space
-        if: ${{ env.SKIP_BUILD == 'false' }}
+        if: ${{ env.SKIP_BUILD != 'true' }}
         uses: jlumbroso/free-disk-space@main
         with:
           tool-cache: true
@@ -54,7 +54,7 @@ jobs:
           docker-images: true
           swap-storage: false
       - name: Set swap space
-        if: ${{ env.SKIP_BUILD == 'false' }}
+        if: ${{ env.SKIP_BUILD != 'true' }}
         uses: pierotofy/set-swap-space@master
         with:
           swap-size-gb: 8
@@ -112,9 +112,21 @@ jobs:
           curl -LO ${{ env.GOMPLATE_URL }}/${{ env.GOMPLATE_VERSION }}/${{ env.GOMPLATE }}
           chmod u+x ${{ env.GOMPLATE }}
           sudo mv ${{ env.GOMPLATE }} /usr/bin/gomplate
+      - name: Filter
+        run: |
+          SKIP_BUILD=${{ env.SKIP_BUILD }}
+          IS_MAINNET=${{ matrix.runtime.type == 'mainnet' && startsWith(github.ref, 'refs/tags/v') }}
+          IS_TESTNET=${{ matrix.runtime.type == 'testnet' && startsWith(github.ref, 'refs/tags/pango') }}
+
+          echo "IS_MAINNET='$IS_MAINNET'" >> $GITHUB_ENV
+          echo "IS_TESTNET='$IS_TESTNET'" >> $GITHUB_ENV
+
+          if [[ "$SKIP_BUILD" != "true" && ( "$IS_MAINNET" == "true" || "$IS_TESTNET" == "true" ) ]] ; then
+            echo "FILTER=true" >> $GITHUB_ENV
+          fi
       - name: Build ${{ matrix.runtime.name }} runtime
         id: srtool_build
-        if: ${{ env.SKIP_BUILD == 'false' }}
+        if: ${{ env.FILTER == 'true' }}
         uses: chevdor/srtool-actions@v0.9.1
         with:
           image: paritytech/srtool
@@ -122,28 +134,24 @@ jobs:
           chain: ${{ matrix.runtime.name }}
       - name: Prepare runtime
         run: |
-          SKIP_BUILD=${{ env.SKIP_BUILD }}
+          IS_MAINNET=${{ env.IS_MAINNET }}
+          IS_TESTNET=${{ env.IS_TESTNET }}
+          FILTER=${{ env.FILTER }}
           CHAIN=${{ matrix.runtime.name }}
-          IS_MAINNET=${{ matrix.runtime.type == 'mainnet' && startsWith(github.ref, 'refs/tags/v') }}
-          IS_TESTNET=${{ matrix.runtime.type == 'testnet' && startsWith(github.ref, 'refs/tags/pango') }}
 
           mkdir -p build
 
-          if [ "$SKIP_BUILD" == "false" ]; then
-            if [ "$IS_MAINNET" == "true" ] || [ "$IS_TESTNET" == "true" ]; then
-              echo "${{ steps.srtool_build.outputs.json }}" | jq > build/${CHAIN}-srtool.json
-              mv ${{ steps.srtool_build.outputs.wasm_compressed }} build/
+          if [ "$FILTER" == "true" ]; then
+            echo "${{ steps.srtool_build.outputs.json }}" | jq > build/${CHAIN}-srtool.json
+            mv ${{ steps.srtool_build.outputs.wasm_compressed }} build/
 
-              cat .github/note-template/runtime.md \
-                | gomplate -d srtool=build/${CHAIN}-srtool.json \
-                > build/runtime.md
-            fi
-          else
-            if [ "$IS_MAINNET" == "true" ] || [ "$IS_TESTNET" == "true" ]; then
-              echo SKIP_BUILD > build/${CHAIN}-srtool.json
-              echo SKIP_BUILD > build/${CHAIN}_runtime.compact.compressed.wasm
-              echo SKIP_BUILD > build/runtime.md
-            fi
+            cat .github/note-template/runtime.md \
+              | gomplate -d srtool=build/${CHAIN}-srtool.json \
+              > build/runtime.md
+          elif [[ "$IS_MAINNET" == "true" || "$IS_TESTNET" == "true" ]]; then
+            echo SKIP_BUILD > build/${CHAIN}-srtool.json
+            echo SKIP_BUILD > build/${CHAIN}_runtime.compact.compressed.wasm
+            echo SKIP_BUILD > build/runtime.md
           fi
       - name: Upload ${{ matrix.runtime.name }} runtime
         uses: actions/upload-artifact@v4
@@ -177,14 +185,14 @@ jobs:
       - name: Sha
         uses: benjlevesque/short-sha@v2.2
       - name: Docker login
-        if: ${{ env.SKIP_BUILD == 'false' }}
+        if: ${{ env.SKIP_BUILD != 'true' }}
         uses: docker/login-action@v3
         with:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ${{ env.DOCKER_REGISTRY }}
       - name: Publish
-        if: ${{ env.SKIP_BUILD == 'false' }}
+        if: ${{ env.SKIP_BUILD != 'true' }}
         uses: docker/build-push-action@v5
         with:
           push: true
@@ -192,7 +200,7 @@ jobs:
           file: .maintain/docker/Dockerfile
           tags: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:sha-${{ env.SHA }}
       - name: Publish with tag
-        if: ${{ env.SKIP_BUILD == 'false' }}
+        if: ${{ env.SKIP_BUILD != 'true' }}
         uses: docker/build-push-action@v5
         with:
           push: true
@@ -269,8 +277,8 @@ jobs:
         uses: olegtarasov/get-tag@v2.1
       - name: Deploy tracing nodes
         run: |
-          IS_MAINNET=${{ env.SKIP_BUILD == 'false' && startsWith(github.ref, 'refs/tags/v') }}
-          IS_TESTNET=${{ env.SKIP_BUILD == 'false' && startsWith(github.ref, 'refs/tags/pango') }}
+          IS_MAINNET=${{ env.SKIP_BUILD != 'true' && startsWith(github.ref, 'refs/tags/v') }}
+          IS_TESTNET=${{ env.SKIP_BUILD != 'true' && startsWith(github.ref, 'refs/tags/pango') }}
 
           if [ "$IS_MAINNET" == "true" ]; then
             TYPE=mainnets
