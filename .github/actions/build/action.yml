@@ -32,14 +32,14 @@ runs:
   using: "composite"
   steps:
     - name: Build Docker image
-      if: ${{ inputs.skip-build == 'false' }}
+      if: ${{ inputs.skip-build != 'true' }}
       uses: docker/build-push-action@v4
       with:
         context: .
         file: .maintain/docker/ubuntu:20.04.Dockerfile
         tags: darwinia-network/build-tool:latest
     - name: Cache cargo
-      if: ${{ inputs.enable_cache == 'true' && inputs.skip-build == 'false' }}
+      if: ${{ inputs.enable_cache == 'true' && inputs.skip-build != 'true' }}
       uses: actions/cache@v3
       with:
         path: |
@@ -56,7 +56,7 @@ runs:
         ENABLE_TAR_BZ2=${{ inputs.enable_tar_bz2 }}
         SKIP_BUILD=${{ inputs.skip-build }}
 
-        if [ "$SKIP_BUILD" == "false" ]; then
+        if [ "$SKIP_BUILD" != "true" ]; then
           docker run -i --rm \
             --name=build-darwinia \
             -v=$(pwd):/build \
@@ -79,7 +79,7 @@ runs:
 
         tar cf ${BUILD_DIR}/darwinia${SUFFIX:+-$SUFFIX}-x86_64-linux-gnu.tar.zst target/release/darwinia -I zstd
     - name: Shrink cache
-      if: ${{ inputs.enable_cache == 'true' && inputs.skip-build == 'false' }}
+      if: ${{ inputs.enable_cache == 'true' && inputs.skip-build != 'true' }}
       shell: bash
       run: |
         docker run -i --rm \
