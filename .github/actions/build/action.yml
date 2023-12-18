@@ -67,7 +67,7 @@ runs:
                 --features=$FEATURES
         else
           mkdir -p target/release
-          touch target/release/darwinia
+          echo SKIP_BUILD > target/release/darwinia
         fi
 
         BUILD_DIR=build
