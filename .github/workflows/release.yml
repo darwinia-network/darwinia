@@ -64,7 +64,7 @@ jobs:
           features: ${{ matrix.node.features }}
           suffix: ${{ matrix.node.type }}
           enable_tar_bz2: ${{ matrix.node.bz2 }}
-          skip-build: ${{ env.SKIP_BUILD }}}
+          skip-build: ${{ env.SKIP_BUILD }}
       - name: Build testnet node
         if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.node.network == 'testnet') }}
         uses: ./.github/actions/build
@@ -107,7 +107,7 @@ jobs:
           sudo mv ${{ env.GOMPLATE }} /usr/bin/gomplate
       - name: Build ${{ matrix.runtime }} runtime
         id: srtool_build
-        if: ${{ env.SKIP_BUILD != 'false' } }}
+        if: ${{ env.SKIP_BUILD != 'false' }}
         uses: chevdor/srtool-actions@v0.9.1
         with:
           image: paritytech/srtool
@@ -167,7 +167,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ${{ env.DOCKER_REGISTRY }}
       - name: Publish
-        if: ${{ env.SKIP_BUILD != 'false' } }}
+        if: ${{ env.SKIP_BUILD != 'false' }}
         uses: docker/build-push-action@v5
         with:
           push: true
@@ -175,7 +175,7 @@ jobs:
           file: .maintain/docker/Dockerfile
           tags: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:sha-${{ env.SHA }}
       - name: Publish with tag
-        if: ${{ env.SKIP_BUILD != 'false' } }} && (startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/pango'))
+        if: ${{ env.SKIP_BUILD != 'false' }} && (startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/pango'))
         uses: docker/build-push-action@v5
         with:
           push: true
