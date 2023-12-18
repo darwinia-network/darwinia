@@ -96,10 +96,14 @@ jobs:
     strategy:
       matrix:
         runtime:
-          - darwinia
-          - crab
-          - pangoro
-          - pangolin
+          - name: darwinia
+            type: mainnet
+          - name: crab
+            type: mainnet
+          - name: pangoro
+            type: testnet
+          - name: pangolin
+            type: testnet
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v4
@@ -108,37 +112,43 @@ jobs:
           curl -LO ${{ env.GOMPLATE_URL }}/${{ env.GOMPLATE_VERSION }}/${{ env.GOMPLATE }}
           chmod u+x ${{ env.GOMPLATE }}
           sudo mv ${{ env.GOMPLATE }} /usr/bin/gomplate
-      - name: Build ${{ matrix.runtime }} runtime
+      - name: Build ${{ matrix.runtime.name }} runtime
         id: srtool_build
         if: ${{ env.SKIP_BUILD == 'false' }}
         uses: chevdor/srtool-actions@v0.9.1
         with:
           image: paritytech/srtool
           tag: "1.70.0"
-          chain: ${{ matrix.runtime }}
-      - name: Prepare artifact
+          chain: ${{ matrix.runtime.name }}
+      - name: Prepare runtime
         run: |
-          CHAIN=${{ matrix.runtime }}
-          SKIP_BUILD=${{ inputs.skip-build }}
+          SKIP_BUILD=${{ env.SKIP_BUILD }}
+          CHAIN=${{ matrix.runtime.name }}
+          IS_MAINNET=${{ matrix.runtime.type == 'mainnet' && startsWith(github.ref, 'refs/tags/v') }}
+          IS_TESTNET=${{ matrix.runtime.type == 'testnet' && startsWith(github.ref, 'refs/tags/pango') }}
 
           mkdir -p build
 
-          if [ "$SKIP_BUILD" == "false" ]; then
-            echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${CHAIN}-srtool.json
-            mv ${CHAIN}_runtime.compact.compressed.wasm build/
+          if [ "$SKIP_BUILD" == "false"  ]; then
+            if [ "$IS_MAINNET" == "true" || "$IS_TESTNET" == "true" ]; then
+              echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${CHAIN}-srtool.json
+              mv ${CHAIN}_runtime.compact.compressed.wasm build/
 
-            cat .github/note-template/runtime.md \
-              | gomplate -d srtool=build/${CHAIN}-srtool.json \
-              > build/runtime.md
+              cat .github/note-template/runtime.md \
+                | gomplate -d srtool=build/${CHAIN}-srtool.json \
+                > build/runtime.md
+            fi
           else
-            echo SKIP_BUILD > build/${CHAIN}-srtool.json
-            echo SKIP_BUILD > build/${CHAIN}_runtime.compact.compressed.wasm
-            echo SKIP_BUILD > build/runtime.md
+            if [ "$IS_MAINNET" == "true" || "$IS_TESTNET" == "true" ]; then
+              echo SKIP_BUILD > build/${CHAIN}-srtool.json
+              echo SKIP_BUILD > build/${CHAIN}_runtime.compact.compressed.wasm
+              echo SKIP_BUILD > build/runtime.md
+            fi
           fi
-      - name: Upload ${{ matrix.runtime }} runtime
+      - name: Upload ${{ matrix.runtime.name }} runtime
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.runtime }}-runtime
+          name: ${{ matrix.runtime.name }}-runtime
           path: build
           retention-days: 1
       - name: Fail fast
@@ -215,22 +225,23 @@ jobs:
         uses: benjlevesque/short-sha@v2.2
       - name: Prepare note
         run: |
-          export RELEASE_SCHEMA='{"tag": "'$GIT_TAG_NAME'", "sha": "'$SHA'"}'
+          export RELEASE_SCHEMA='{"tag":"'$GIT_TAG_NAME'","sha":"'$SHA'"}'
           cat .github/note-template/node.md \
             | gomplate -d schema='env:/RELEASE_SCHEMA?type=application/json' \
             > node.tmp.md
-      - name: Fill mainnet note
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Fill note
         run: |
-          cat darwinia-runtime/runtime.md >> node.md
-          cat crab-runtime/runtime.md >> node.md
-          cat node.tmp.md >> node.md
-      - name: Fill testnet note
-        if: startsWith(github.ref, 'refs/tags/pango')
-        run: |
-          cat pangolin-runtime/runtime.md >> node.md
-          cat pangoro-runtime/runtime.md >> node.md
-          cat node.tmp.md >> node.md
+          IS_MAINNET=${{ startsWith(github.ref, 'refs/tags/v') }}
+
+          if [ "$IS_MAINNET" == "true" ]; then
+            cat darwinia-runtime/runtime.md >> node.md
+            cat crab-runtime/runtime.md >> node.md
+            cat node.tmp.md >> node.md
+          else
+            cat pangolin-runtime/runtime.md >> node.md
+            cat pangoro-runtime/runtime.md >> node.md
+            cat node.tmp.md >> node.md
+          fi
       - name: Hash file
         run: cd deploy && sha256sum * | tee sha256sums.txt
       # - name: Verify
@@ -249,28 +260,31 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: ${{ startsWith(github.ref, 'refs/tags/pango') }}
 
-  deploy-tracing-node:
-    name: Deploy tracing node
+  deploy-tracing-nodes:
+    name: Deploy tracing nodes
     runs-on: ubuntu-latest
     needs: [publish-github-release]
     steps:
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
-      - name: Deploy mainnet tracing nodes
-        if: ${{ env.SKIP_BUILD == 'false' && startsWith(github.ref, 'refs/tags/v') }}
+      - name: Deploy tracing nodes
         run: |
-          GITHUB_TOKEN=${{ secrets.GH_TKN_DARWINIA }} gh workflow run \
-            trigger-tracing-node.yml \
-            --ref=main \
-            --repo=darwinia-network/devops \
-            --raw-field=type=mainnets \
-            --raw-field="version=$GIT_TAG_NAME"
-      - name: Deploy testnet tracing nodes
-        if: ${{ env.SKIP_BUILD == 'false' && startsWith(github.ref, 'refs/tags/pango') }}
-        run: |
-          GITHUB_TOKEN=${{ secrets.GH_TKN_DARWINIA }} gh workflow run \
-            trigger-tracing-node.yml \
-            --ref=main \
-            --repo=darwinia-network/devops \
-            --raw-field=type=testnets \
-            --raw-field="version=$GIT_TAG_NAME"
+          IS_MAINNET=${{ env.SKIP_BUILD == 'false' && startsWith(github.ref, 'refs/tags/v') }}
+          IS_TESTNET=${{ env.SKIP_BUILD == 'false' && startsWith(github.ref, 'refs/tags/pango') }}
+
+          if [ "$IS_MAINNET" == "true" ]; then
+            TYPE=mainnets
+          elif [ "$IS_TESTNET" == "true" ]; then
+            TYPE=testnets
+          fi
+
+          echo $TYPE
+
+          if [ "$TYPE" != "" ]; then
+            GITHUB_TOKEN=${{ secrets.GH_TKN_DARWINIA }} gh workflow run \
+              trigger-tracing-node.yml \
+              --ref=main \
+              --repo=darwinia-network/devops \
+              --raw-field=type=$TYPE \
+              --raw-field="version=$GIT_TAG_NAME"
+          fi
