@@ -19,7 +19,8 @@ env:
   RUST_BACKTRACE: full
   RUST_TOOLCHAIN: nightly-2023-05-22
 
-  SKIP_BUILD: true
+  # Set this to true for CI testing purposes only.
+  SKIP_BUILD: false
 
 jobs:
   build-nodes:
@@ -42,6 +43,7 @@ jobs:
             type: tracing
     steps:
       - name: Free disk space
+        if: ${{ env.SKIP_BUILD == 'false' }}
         uses: jlumbroso/free-disk-space@main
         with:
           tool-cache: true
@@ -52,6 +54,7 @@ jobs:
           docker-images: true
           swap-storage: false
       - name: Set swap space
+        if: ${{ env.SKIP_BUILD == 'false' }}
         uses: pierotofy/set-swap-space@master
         with:
           swap-size-gb: 8
@@ -76,7 +79,7 @@ jobs:
       - name: Upload node
         uses: actions/upload-artifact@v4
         with:
-          name: darwinia${{ (matrix.node.type != '' && format('-%s', matrix.node.type)) || '' }}
+          name: darwinia${{ matrix.node.type != '' && format('-{0}', matrix.node.type) || '' }}
           path: build
           retention-days: 1
       - name: Fail fast
@@ -107,7 +110,7 @@ jobs:
           sudo mv ${{ env.GOMPLATE }} /usr/bin/gomplate
       - name: Build ${{ matrix.runtime }} runtime
         id: srtool_build
-        if: ${{ env.SKIP_BUILD != 'false' }}
+        if: ${{ env.SKIP_BUILD == 'false' }}
         uses: chevdor/srtool-actions@v0.9.1
         with:
           image: paritytech/srtool
@@ -124,12 +127,13 @@ jobs:
             echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${CHAIN}-srtool.json
             mv ${CHAIN}_runtime.compact.compressed.wasm build/
 
-            cat .github/template-runtime.md \
+            cat .github/note-template/runtime.md \
               | gomplate -d srtool=build/${CHAIN}-srtool.json \
-              > build/release-template-${CHAIN}.md
+              > build/runtime.md
           else
-            touch build/${CHAIN}-srtool.json
-            touch build/${CHAIN}_runtime.compact.compressed.wasm
+            echo SKIP_BUILD > build/${CHAIN}-srtool.json
+            echo SKIP_BUILD > build/${CHAIN}_runtime.compact.compressed.wasm
+            echo SKIP_BUILD > build/runtime.md
           fi
       - name: Upload ${{ matrix.runtime }} runtime
         uses: actions/upload-artifact@v4
@@ -161,13 +165,14 @@ jobs:
       - name: Sha
         uses: benjlevesque/short-sha@v2.2
       - name: Docker login
+        if: ${{ env.SKIP_BUILD == 'false' }}
         uses: docker/login-action@v3
         with:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ${{ env.DOCKER_REGISTRY }}
       - name: Publish
-        if: ${{ env.SKIP_BUILD != 'false' }}
+        if: ${{ env.SKIP_BUILD == 'false' }}
         uses: docker/build-push-action@v5
         with:
           push: true
@@ -175,7 +180,7 @@ jobs:
           file: .maintain/docker/Dockerfile
           tags: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:sha-${{ env.SHA }}
       - name: Publish with tag
-        if: ${{ env.SKIP_BUILD != 'false' }} && (startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/pango'))
+        if: ${{ env.SKIP_BUILD == 'false' }}
         uses: docker/build-push-action@v5
         with:
           push: true
@@ -209,34 +214,33 @@ jobs:
       - name: Prepare note
         run: |
           export RELEASE_SCHEMA='{"tag": "'$GIT_TAG_NAME'", "sha": "'$SHA'"}'
-          cat .github/template-release.md \
+          cat .github/note-template/node.md \
             | gomplate -d schema='env:/RELEASE_SCHEMA?type=application/json' \
-            > template-release.tmp.md
+            > node.tmp.md
       - name: Fill mainnet note
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          cat darwinia-runtime/release-template-darwinia.md >> template-release.md
-          cat crab-runtime/release-template-crab.md >> template-release.md
-          cat template-release.tmp.md >> template-release.md
+          cat darwinia-runtime/runtime.md >> node.md
+          cat crab-runtime/runtime.md >> node.md
+          cat node.tmp.md >> node.md
       - name: Fill testnet note
         if: startsWith(github.ref, 'refs/tags/pango')
         run: |
-          cat pangolin-runtime/release-template-pangolin.md >> template-release.md
-          cat pangoro-runtime/release-template-pangoro.md >> template-release.md
-          cat template-release.tmp.md >> template-release.md
+          cat pangolin-runtime/runtime.md >> node.md
+          cat pangoro-runtime/runtime.md >> node.md
+          cat node.tmp.md >> node.md
       - name: Hash file
         run: cd deploy && sha256sum * | tee sha256sums.txt
       # - name: Verify
       #   run: |
       #     set -xe
-      #     cat template-release.md
+      #     cat node.md
       #     ls -la deploy/
       #     cat build/*.md
       - name: Publish
-        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
-          body_path: "template-release.md"
+          body_path: "node.md"
           files: |
             deploy/*
           generate_release_notes: true
@@ -251,7 +255,7 @@ jobs:
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
       - name: Deploy mainnet tracing nodes
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: ${{ env.SKIP_BUILD == 'false' && startsWith(github.ref, 'refs/tags/v') }}
         run: |
           GITHUB_TOKEN=${{ secrets.GH_TKN_DARWINIA }} gh workflow run \
             trigger-tracing-node.yml \
@@ -260,7 +264,7 @@ jobs:
             --raw-field=type=mainnets \
             --raw-field="version=$GIT_TAG_NAME"
       - name: Deploy testnet tracing nodes
-        if: startsWith(github.ref, 'refs/tags/pango')
+        if: ${{ env.SKIP_BUILD == 'false' && startsWith(github.ref, 'refs/tags/pango') }}
         run: |
           GITHUB_TOKEN=${{ secrets.GH_TKN_DARWINIA }} gh workflow run \
             trigger-tracing-node.yml \
