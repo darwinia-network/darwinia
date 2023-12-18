@@ -20,7 +20,7 @@ env:
   RUST_TOOLCHAIN: nightly-2023-05-22
 
   # Set this to true for CI testing purposes only.
-  SKIP_BUILD: false
+  SKIP_BUILD: true
 
 jobs:
   build-nodes:
@@ -126,12 +126,11 @@ jobs:
           CHAIN=${{ matrix.runtime.name }}
           IS_MAINNET=${{ matrix.runtime.type == 'mainnet' && startsWith(github.ref, 'refs/tags/v') }}
           IS_TESTNET=${{ matrix.runtime.type == 'testnet' && startsWith(github.ref, 'refs/tags/pango') }}
-          EXECUTABLE=${{ IS_MAINNET == 'true' || IS_TESTNET == 'true' }}
 
           mkdir -p build
 
           if [ "$SKIP_BUILD" == "false"  ]; then
-            if [ "$EXECUTABLE" == "true" ]; then
+            if [ "$IS_MAINNET" == "true" || "$IS_TESTNET" == "true" ]; then
               echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${CHAIN}-srtool.json
               mv ${CHAIN}_runtime.compact.compressed.wasm build/
 
@@ -140,7 +139,7 @@ jobs:
                 > build/runtime.md
             fi
           else
-            if [ "$EXECUTABLE" == "true" ]; then
+            if [ "$IS_MAINNET" == "true" || "$IS_TESTNET" == "true" ]; then
               echo SKIP_BUILD > build/${CHAIN}-srtool.json
               echo SKIP_BUILD > build/${CHAIN}_runtime.compact.compressed.wasm
               echo SKIP_BUILD > build/runtime.md
@@ -272,11 +271,20 @@ jobs:
         run: |
           IS_MAINNET=${{ env.SKIP_BUILD == 'false' && startsWith(github.ref, 'refs/tags/v') }}
           IS_TESTNET=${{ env.SKIP_BUILD == 'false' && startsWith(github.ref, 'refs/tags/pango') }}
-          TYPE=${{ IS_MAINNET == 'true' && 'mainnets' || IS_TESTNET == 'true' && 'testnets' }}
 
-          GITHUB_TOKEN=${{ secrets.GH_TKN_DARWINIA }} gh workflow run \
-            trigger-tracing-node.yml \
-            --ref=main \
-            --repo=darwinia-network/devops \
-            --raw-field=type=$TYPE \
-            --raw-field="version=$GIT_TAG_NAME"
+          if [ "$IS_MAINNET" == "true" ]; then
+            TYPE=mainnets
+          elif [ "$IS_TESTNET" == "true" ]; then
+            TYPE=testnets
+          fi
+
+          echo $TYPE
+
+          if [ "$TYPE" != "" ]; then
+            GITHUB_TOKEN=${{ secrets.GH_TKN_DARWINIA }} gh workflow run \
+              trigger-tracing-node.yml \
+              --ref=main \
+              --repo=darwinia-network/devops \
+              --raw-field=type=$TYPE \
+              --raw-field="version=$GIT_TAG_NAME"
+          fi
