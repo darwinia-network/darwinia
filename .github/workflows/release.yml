@@ -121,15 +121,15 @@ jobs:
           mkdir -p build
 
           if [ "$SKIP_BUILD" == "false" ]; then
-            echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${ CHAIN }-srtool.json
-            mv ${ CHAIN }_runtime.compact.compressed.wasm build/
+            echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${CHAIN}-srtool.json
+            mv ${CHAIN}_runtime.compact.compressed.wasm build/
 
             cat .github/template-runtime.md \
-              | gomplate -d srtool=build/${ CHAIN }-srtool.json \
-              > build/release-template-${ CHAIN }.md
+              | gomplate -d srtool=build/${CHAIN}-srtool.json \
+              > build/release-template-${CHAIN}.md
           else
-            touch build/${ CHAIN }-srtool.json
-            touch build/${ CHAIN }_runtime.compact.compressed.wasm
+            touch build/${CHAIN}-srtool.json
+            touch build/${CHAIN}_runtime.compact.compressed.wasm
           fi
       - name: Upload ${{ matrix.runtime }} runtime
         uses: actions/upload-artifact@v4
