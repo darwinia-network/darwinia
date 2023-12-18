@@ -16,8 +16,8 @@ env:
   RUST_BACKTRACE: full
 
 jobs:
-  build-package:
-    name: Build package [linux]
+  build-node:
+    name: Build node
     runs-on: ubuntu-latest
     steps:
       - name: Free disk space
@@ -36,8 +36,7 @@ jobs:
           swap-size-gb: 8
       - name: Fetch latest code
         uses: actions/checkout@v4
-
-      - name: Build package
+      - name: Build node
         uses: ./.github/actions/build
         with:
           package: darwinia
@@ -45,21 +44,24 @@ jobs:
           cache_prefix: staging-${{ env.CACHE_VERSION }}
           enable_cache: true
           enable_tar_bz2: true
-
-      - name: Upload
+      - name: Upload node
         uses: actions/upload-artifact@v4
         with:
-          name: darwinia-artifact
+          name: darwinia
           path: build
           retention-days: 1
 
   build-docker-image:
     name: Build image
     runs-on: ubuntu-latest
-    needs: [build-package]
+    needs: [build-node]
     steps:
-      - name: Fetch latest code
-        uses: actions/checkout@v4
+      - name: Download node
+        uses: actions/download-artifact@v4
+      - name: Extract node
+        run: |
+          mkdir -p dist
+          tar -xvf darwinia/darwinia-x86_64-linux-gnu.tar.bz2 -C dist/
       - name: Sha
         uses: benjlevesque/short-sha@v2.2
       - name: Docker login
@@ -68,15 +70,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ${{ env.DOCKER_REGISTRY }}
-      - name: Download shared
-        uses: actions/download-artifact@v4
-        with:
-          name: darwinia-artifact
-          path: build
-      - name: Extract shared
-        run: |
-          mkdir -p dist
-          tar -xvf build/darwinia-x86_64-linux-gnu.tar.bz2 -C dist/
       - name: Publish docker image
         uses: docker/build-push-action@v5
         with:
