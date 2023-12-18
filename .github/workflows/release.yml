@@ -154,6 +154,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-nodes]
     steps:
+      - name: Fetch Dockerfile
+        uses: actions/checkout@v4
       - name: Download node
         uses: actions/download-artifact@v4
       - name: Extract node
