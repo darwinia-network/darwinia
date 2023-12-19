@@ -142,7 +142,7 @@ jobs:
           mkdir -p build
 
           if [ "$FILTER" == "true" ]; then
-            echo "${{ steps.srtool_build.outputs.json }}" | jq > build/${CHAIN}-srtool.json
+            echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${CHAIN}-srtool.json
             mv ${{ steps.srtool_build.outputs.wasm_compressed }} build/
 
             cat .github/note-template/runtime.md \
