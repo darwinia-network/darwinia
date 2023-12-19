@@ -137,7 +137,10 @@ jobs:
           IS_MAINNET=${{ env.IS_MAINNET }}
           IS_TESTNET=${{ env.IS_TESTNET }}
           FILTER=${{ env.FILTER }}
-          CHAIN=${{ matrix.runtime.name }}
+
+          export CHAIN=${{ matrix.runtime.name }}
+
+          echo $CHAIN
 
           mkdir -p build
 
