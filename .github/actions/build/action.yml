@@ -74,10 +74,10 @@ runs:
         mkdir -p $BUILD_DIR
 
         if [ "$ENABLE_TAR_BZ2" == "true" ]; then
-          tar cjSf ${BUILD_DIR}/darwinia${SUFFIX:+-$SUFFIX}-x86_64-linux-gnu.tar.bz2 target/release/darwinia
+          tar cjSf ${BUILD_DIR}/darwinia${SUFFIX:+-$SUFFIX}-x86_64-linux-gnu.tar.bz2 -C target/release darwinia
         fi
 
-        tar cf ${BUILD_DIR}/darwinia${SUFFIX:+-$SUFFIX}-x86_64-linux-gnu.tar.zst target/release/darwinia -I zstd
+        tar cf ${BUILD_DIR}/darwinia${SUFFIX:+-$SUFFIX}-x86_64-linux-gnu.tar.zst -C target/release darwinia -I zstd
     - name: Shrink cache
       if: ${{ inputs.enable_cache == 'true' && inputs.skip-build != 'true' }}
       shell: bash
