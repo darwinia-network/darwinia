@@ -22,7 +22,7 @@ use dc_types::UNIT;
 // github
 use substrate_fixed::{transcendental, types::I95F33};
 
-// Calculate the issuing map.
+// Generate the issuing map.
 //
 // Formula:
 // ```
