@@ -18,9 +18,43 @@
 
 // darwinia
 use crate::*;
+use dc_types::UNIT;
+// github
+use substrate_fixed::{transcendental, types::I95F33};
+
+// Calculate the issuing map.
+//
+// Formula:
+// ```
+// unissued * (1 - (99 / 100) ^ sqrt(years));
+// ```
+//
+// Use `I95F33` here, because `2^94 > TOTAL_SUPPLY * 10^18`.
+fn issuing_map() -> Vec<Balance> {
+	let ninety_nine = I95F33::from_num(99_u8) / 100_i128;
+	let max = 10_000_000_000_u128;
+	let mut supply = 2_000_000_000_u128;
+
+	(1_u8..=100)
+		.map(|years| {
+			let sqrt = transcendental::sqrt::<I95F33, I95F33>(years.into()).unwrap();
+			let pow = transcendental::pow::<I95F33, I95F33>(ninety_nine, sqrt).unwrap();
+			let ratio = I95F33::from_num(1_u8) - pow;
+			let unissued = max - supply;
+			let to_issue =
+				(I95F33::checked_from_num(unissued).unwrap() * ratio).floor().to_num::<Balance>();
+
+			supply += to_issue;
+
+			to_issue * UNIT
+		})
+		.collect()
+}
 
 #[test]
-fn inflate_should_work() {
+fn issuing_map_should_work() {
+	assert_eq!(issuing_map(), ISSUING_MAP);
+
 	let max = 10_000_000_000_u128 * UNIT;
 	let init = 2_000_000_000_u128 * UNIT;
 	#[allow(clippy::approx_constant)]
@@ -33,21 +67,19 @@ fn inflate_should_work() {
 		0.08, 0.07, 0.07, 0.06, 0.06, 0.05, 0.05, 0.04, 0.04, 0.04, 0.03, 0.03, 0.03, 0.03, 0.02,
 		0.02, 0.02, 0.02, 0.02, 0.01, 0.01, 0.01, 0.01, 0.01,
 	];
-	let mut unminted = max - init;
+	let mut unissued = max - init;
 
-	for (&rate, years) in rates.iter().zip(1..) {
-		let inflation =
-			in_period(unminted, MILLISECS_PER_YEAR, (years - 1) as u128 * MILLISECS_PER_YEAR)
-				.unwrap();
+	rates.iter().zip(0..).for_each(|(rate, years)| {
+		let issued = issuing_in_period(MILLISECS_PER_YEAR, years * MILLISECS_PER_YEAR).unwrap();
 
 		sp_arithmetic::assert_eq_error_rate!(
-			inflation as f64 / (max - unminted) as f64,
-			rate / 100_f64,
+			issued as f64 / (max - unissued) as f64,
+			*rate / 100_f64,
 			0.0001_f64
 		);
 
-		unminted -= inflation;
-	}
+		unissued -= issued;
+	});
 }
 
 #[test]
