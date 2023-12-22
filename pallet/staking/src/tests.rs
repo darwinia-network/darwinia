@@ -638,7 +638,6 @@ fn payout_should_work() {
 		new_session();
 		(1..=10).for_each(|i| assert_eq!(Balances::free_balance(i), 1_000 * UNIT));
 
-		let total_issuance = Balances::total_issuance();
 		let session_duration = Duration::new(12 * 600, 0).as_millis();
 		Efflux::time(session_duration - <Period as Get<u64>>::get() as Moment);
 		Staking::note_authors(&[1, 2, 3, 4, 5]);
@@ -647,16 +646,16 @@ fn payout_should_work() {
 		payout();
 
 		let rewards = vec![
-			455327412809459795649,
-			849944493808794062101,
-			1183851276145838531437,
-			1457047723758662022603,
-			1669533853403313367198,
-			1365982241160343870361,
-			971365161800188293957,
-			637458379463143824620,
-			364261930757534540090,
-			151775801295014161055,
+			364298724080145719490,
+			680024276867030965392,
+			947176684881602914390,
+			1165755919271402550091,
+			1335761993442622950820,
+			1092896174426229508197,
+			777170622950819672131,
+			510018214936247723133,
+			291438979672131147541,
+			121432905646630236794,
 		];
 		assert_eq!(
 			rewards,
@@ -664,12 +663,7 @@ fn payout_should_work() {
 		);
 		assert_eq_error_rate!(
 			PayoutFraction::get()
-				* dc_inflation::in_period(
-					dc_inflation::TOTAL_SUPPLY - total_issuance,
-					session_duration,
-					Timestamp::now()
-				)
-				.unwrap(),
+				* dc_inflation::issuing_in_period(session_duration, Timestamp::now()).unwrap(),
 			rewards.iter().sum::<Balance>(),
 			// Error rate 1 RING.
 			UNIT
@@ -787,22 +781,22 @@ fn auto_payout_should_work() {
 		(1..=4).for_each(|i| assert_eq!(Balances::free_balance(i), 1_000 * UNIT));
 
 		Efflux::block(1);
-		assert_eq!(Balances::free_balance(1), 1000000758879022790250);
+		assert_eq!(Balances::free_balance(1), 1000000607164541287188);
 		assert_eq!(Balances::free_balance(2), 1000000000000000000000);
-		assert_eq!(Balances::free_balance(3), 1000003035516089643241);
+		assert_eq!(Balances::free_balance(3), 1000002428658163934426);
 		assert_eq!(Balances::free_balance(4), 1000000000000000000000);
 
 		Efflux::block(1);
-		assert_eq!(Balances::free_balance(1), 1000000758879022790250);
-		assert_eq!(Balances::free_balance(2), 1000001433438163308069);
-		assert_eq!(Balances::free_balance(3), 1000003035516089643241);
-		assert_eq!(Balances::free_balance(4), 1000002360956952540378);
+		assert_eq!(Balances::free_balance(1), 1000000607164541287188);
+		assert_eq!(Balances::free_balance(2), 1000001146866363084396);
+		assert_eq!(Balances::free_balance(3), 1000002428658163934426);
+		assert_eq!(Balances::free_balance(4), 1000001888956344869459);
 
 		Efflux::block(1);
-		assert_eq!(Balances::free_balance(1), 1000000758879022790250);
-		assert_eq!(Balances::free_balance(2), 1000001433438163308069);
-		assert_eq!(Balances::free_balance(3), 1000003035516089643241);
-		assert_eq!(Balances::free_balance(4), 1000002360956952540378);
+		assert_eq!(Balances::free_balance(1), 1000000607164541287188);
+		assert_eq!(Balances::free_balance(2), 1000001146866363084396);
+		assert_eq!(Balances::free_balance(3), 1000002428658163934426);
+		assert_eq!(Balances::free_balance(4), 1000001888956344869459);
 	});
 }
 

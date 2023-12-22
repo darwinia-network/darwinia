@@ -73,7 +73,7 @@ impl darwinia_staking::Stake for KtonStaking {
 }
 
 pub enum OnDarwiniaSessionEnd {}
-impl darwinia_staking::InflationManager<Runtime> for OnDarwiniaSessionEnd {
+impl darwinia_staking::IssuingManager<Runtime> for OnDarwiniaSessionEnd {
 	fn inflate() -> Balance {
 		let now = Timestamp::now() as Moment;
 		let session_duration = now - <darwinia_staking::SessionStartTime<Runtime>>::get();
@@ -85,13 +85,11 @@ impl darwinia_staking::InflationManager<Runtime> for OnDarwiniaSessionEnd {
 
 		<darwinia_staking::SessionStartTime<Runtime>>::put(now);
 
-		let unminted = dc_inflation::TOTAL_SUPPLY.saturating_sub(Balances::total_issuance());
-
-		dc_inflation::in_period(unminted, session_duration, elapsed_time).unwrap_or_default()
+		dc_inflation::issuing_in_period(session_duration, elapsed_time).unwrap_or_default()
 	}
 
-	fn calculate_reward(inflation: Balance) -> Balance {
-		sp_runtime::Perbill::from_percent(40) * inflation
+	fn calculate_reward(issued: Balance) -> Balance {
+		sp_runtime::Perbill::from_percent(40) * issued
 	}
 
 	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
@@ -120,7 +118,7 @@ impl frame_support::traits::Get<bool> for ShouldEndSession {
 impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
-	type InflationManager = OnDarwiniaSessionEnd;
+	type IssuingManager = OnDarwiniaSessionEnd;
 	type Kton = KtonStaking;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = ConstU32<16>;
