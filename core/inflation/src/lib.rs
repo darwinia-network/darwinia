@@ -35,7 +35,7 @@ use substrate_fixed::types::U94F34;
 /// Milliseconds per year.
 pub const MILLISECS_PER_YEAR: Balance = (366 * 24 * 60 * 60) * 1000;
 
-/// Issuing maps for ages 0 to 100 years.
+/// Issuing maps for ages 1 to 100 years.
 pub const ISSUING_MAP: [Balance; 100] = [
 	80000000000000000000000000,
 	111773286000000000000000000,
