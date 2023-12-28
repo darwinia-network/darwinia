@@ -223,8 +223,6 @@ pub fn genesis_config() -> ChainSpec {
 				democracy: Default::default(),
 				council: Default::default(),
 				technical_committee: Default::default(),
-				phragmen_election: Default::default(),
-				technical_membership: Default::default(),
 				treasury: Default::default(),
 
 				// XCM stuff.
@@ -332,8 +330,6 @@ fn testnet_genesis(
 		democracy: Default::default(),
 		council: Default::default(),
 		technical_committee: Default::default(),
-		phragmen_election: Default::default(),
-		technical_membership: Default::default(),
 		treasury: Default::default(),
 
 		// XCM stuff.

@@ -133,13 +133,17 @@ frame_support::construct_runtime! {
 		EcdsaAuthority: darwinia_ecdsa_authority = 17,
 
 		// Governance stuff.
-		Democracy: pallet_democracy = 18,
+		// PhragmenElection: pallet_elections_phragmen = 21,
+		// TechnicalMembership: pallet_membership::<Instance1> = 22,
 		Council: pallet_collective::<Instance1> = 19,
 		TechnicalCommittee: pallet_collective::<Instance2> = 20,
-		PhragmenElection: pallet_elections_phragmen = 21,
-		TechnicalMembership: pallet_membership::<Instance1> = 22,
 		Treasury: pallet_treasury = 23,
 		// Tips: pallet_tips = 24,
+		Democracy: pallet_democracy = 18,
+		ConvictionVoting: pallet_conviction_voting = 48,
+		Referenda: pallet_referenda = 49,
+		Origins: custom_origins = 50,
+		Whitelist: pallet_whitelist = 51,
 
 		// Utility stuff.
 		// Sudo: pallet_sudo = 25,
@@ -194,9 +198,7 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_collective, Council]
 	[pallet_collective, TechnicalCommittee]
 	[pallet_democracy, Democracy]
-	[pallet_elections_phragmen, PhragmenElection]
 	[pallet_identity, Identity]
-	[pallet_membership, TechnicalMembership]
 	[pallet_preimage, Preimage]
 	[pallet_proxy, Proxy]
 	[pallet_scheduler, Scheduler]
