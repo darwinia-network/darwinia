@@ -9,7 +9,7 @@ version.workspace = true
 [dependencies]
 # crates.io
 codec      = { workspace = true, package = "parity-scale-codec" }
-ethereum   = { version = "0.15", default-features = false, features = ["with-codec"] }
+ethereum   = { workspace = true }
 scale-info = { workspace = true }
 
 # frontier

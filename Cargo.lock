@@ -900,7 +900,7 @@ name = "binary-merkle-tree"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.1.0#c8d2251cafadc108ba2f1f8a3208dc547ff38901"
 dependencies = [
- "hash-db 0.16.0",
+ "hash-db",
  "log",
 ]
 
@@ -1224,7 +1224,7 @@ source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?br
 dependencies = [
  "frame-support",
  "frame-system",
- "hash-db 0.16.0",
+ "hash-db",
  "log",
  "num-traits",
  "parity-scale-codec",
@@ -1268,7 +1268,7 @@ dependencies = [
  "fp-account",
  "frame-support",
  "frame-system",
- "hash-db 0.16.0",
+ "hash-db",
  "log",
  "num-traits",
  "pallet-balances",
@@ -3051,7 +3051,7 @@ dependencies = [
  "array-bytes",
  "bp-message-dispatch",
  "bp-runtime",
- "ethereum 0.15.0",
+ "ethereum",
  "fp-ethereum",
  "fp-evm",
  "fp-self-contained",
@@ -3980,31 +3980,13 @@ dependencies = [
 
 [[package]]
 name = "ethereum"
-version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a89fb87a9e103f71b903b80b670200b54cc67a07578f070681f1fffb7396fb7"
-dependencies = [
- "bytes",
- "ethereum-types",
- "hash-db 0.15.2",
- "hash256-std-hasher",
- "parity-scale-codec",
- "rlp",
- "scale-info",
- "serde",
- "sha3",
- "triehash",
-]
-
-[[package]]
-name = "ethereum"
 version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2e04d24d20b8ff2235cffbf242d5092de3aa45f77c5270ddbfadd2778ca13fea"
 dependencies = [
  "bytes",
  "ethereum-types",
- "hash-db 0.16.0",
+ "hash-db",
  "hash256-std-hasher",
  "parity-scale-codec",
  "rlp",
@@ -4049,36 +4031,16 @@ dependencies = [
 
 [[package]]
 name = "evm"
-version = "0.39.1"
-source = "git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65#b7b82c7e1fc57b7449d6dfa6826600de37cc1e65"
-dependencies = [
- "auto_impl",
- "environmental",
- "ethereum 0.14.0",
- "evm-core 0.39.0",
- "evm-gasometer 0.39.0",
- "evm-runtime 0.39.0",
- "log",
- "parity-scale-codec",
- "primitive-types",
- "rlp",
- "scale-info",
- "serde",
- "sha3",
-]
-
-[[package]]
-name = "evm"
 version = "0.41.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "767f43e9630cc36cf8ff2777cbb0121b055f0d1fd6eaaa13b46a1808f0d0e7e9"
 dependencies = [
  "auto_impl",
  "environmental",
- "ethereum 0.15.0",
- "evm-core 0.41.0",
- "evm-gasometer 0.41.0",
- "evm-runtime 0.41.0",
+ "ethereum",
+ "evm-core",
+ "evm-gasometer",
+ "evm-runtime",
  "log",
  "parity-scale-codec",
  "primitive-types",
@@ -4086,17 +4048,6 @@ dependencies = [
  "scale-info",
  "serde",
  "sha3",
-]
-
-[[package]]
-name = "evm-core"
-version = "0.39.0"
-source = "git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65#b7b82c7e1fc57b7449d6dfa6826600de37cc1e65"
-dependencies = [
- "parity-scale-codec",
- "primitive-types",
- "scale-info",
- "serde",
 ]
 
 [[package]]
@@ -4113,37 +4064,14 @@ dependencies = [
 
 [[package]]
 name = "evm-gasometer"
-version = "0.39.0"
-source = "git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65#b7b82c7e1fc57b7449d6dfa6826600de37cc1e65"
-dependencies = [
- "environmental",
- "evm-core 0.39.0",
- "evm-runtime 0.39.0",
- "primitive-types",
-]
-
-[[package]]
-name = "evm-gasometer"
 version = "0.41.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1dc0eb591abc5cd7b05bef6a036c2bb6c66ab6c5e0c5ce94bfe377ab670b1fd7"
 dependencies = [
  "environmental",
- "evm-core 0.41.0",
- "evm-runtime 0.41.0",
+ "evm-core",
+ "evm-runtime",
  "primitive-types",
-]
-
-[[package]]
-name = "evm-runtime"
-version = "0.39.0"
-source = "git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65#b7b82c7e1fc57b7449d6dfa6826600de37cc1e65"
-dependencies = [
- "auto_impl",
- "environmental",
- "evm-core 0.39.0",
- "primitive-types",
- "sha3",
 ]
 
 [[package]]
@@ -4154,7 +4082,7 @@ checksum = "84bbe09b64ae13a29514048c1bb6fda6374ac0b4f6a1f15a443348ab88ef42cd"
 dependencies = [
  "auto_impl",
  "environmental",
- "evm-core 0.41.0",
+ "evm-core",
  "primitive-types",
  "sha3",
 ]
@@ -4162,13 +4090,14 @@ dependencies = [
 [[package]]
 name = "evm-tracing-events"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#078eff3e62d8a69e0ff744525f4d4b049630d3cd"
 dependencies = [
  "environmental",
- "ethereum 0.14.0",
+ "ethereum",
  "ethereum-types",
- "evm 0.39.1",
- "evm-gasometer 0.39.0",
- "evm-runtime 0.39.0",
+ "evm",
+ "evm-gasometer",
+ "evm-runtime",
  "parity-scale-codec",
  "sp-runtime-interface",
 ]
@@ -4305,7 +4234,7 @@ version = "2.0.0-dev"
 source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
  "async-trait",
- "ethereum 0.15.0",
+ "ethereum",
  "fc-api",
  "fc-storage",
  "fp-consensus",
@@ -4358,9 +4287,9 @@ name = "fc-rpc"
 version = "2.0.0-dev"
 source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
- "ethereum 0.15.0",
+ "ethereum",
  "ethereum-types",
- "evm 0.41.1",
+ "evm",
  "fc-api",
  "fc-mapping-sync",
  "fc-rpc-core",
@@ -4412,7 +4341,7 @@ name = "fc-rpc-core"
 version = "1.1.0-dev"
 source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
- "ethereum 0.15.0",
+ "ethereum",
  "ethereum-types",
  "jsonrpsee",
  "rustc-hex",
@@ -4425,7 +4354,7 @@ name = "fc-storage"
 version = "1.0.0-dev"
 source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
- "ethereum 0.15.0",
+ "ethereum",
  "ethereum-types",
  "fp-rpc",
  "fp-storage",
@@ -4635,7 +4564,7 @@ name = "fp-consensus"
 version = "2.0.0-dev"
 source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
- "ethereum 0.15.0",
+ "ethereum",
  "parity-scale-codec",
  "sp-core",
  "sp-runtime",
@@ -4647,7 +4576,7 @@ name = "fp-ethereum"
 version = "1.0.0-dev"
 source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
- "ethereum 0.15.0",
+ "ethereum",
  "ethereum-types",
  "fp-evm",
  "frame-support",
@@ -4660,7 +4589,7 @@ name = "fp-evm"
 version = "3.0.0-dev"
 source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
- "evm 0.41.1",
+ "evm",
  "frame-support",
  "num_enum 0.7.1",
  "parity-scale-codec",
@@ -4676,7 +4605,7 @@ name = "fp-rpc"
 version = "3.0.0-dev"
 source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
- "ethereum 0.15.0",
+ "ethereum",
  "ethereum-types",
  "fp-evm",
  "parity-scale-codec",
@@ -5348,12 +5277,6 @@ dependencies = [
  "serde_json",
  "thiserror",
 ]
-
-[[package]]
-name = "hash-db"
-version = "0.15.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d23bd4e7b5eda0d0f3a307e8b381fdc8ba9000f26fbe912250c0a4cc3956364a"
 
 [[package]]
 name = "hash-db"
@@ -7008,7 +6931,7 @@ version = "0.32.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "808b50db46293432a45e63bc15ea51e0ab4c0a1647b8eb114e31a3e698dd6fbe"
 dependencies = [
- "hash-db 0.16.0",
+ "hash-db",
 ]
 
 [[package]]
@@ -7153,6 +7076,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-client-evm-tracing"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#078eff3e62d8a69e0ff744525f4d4b049630d3cd"
 dependencies = [
  "ethereum-types",
  "evm-tracing-events",
@@ -7167,11 +7091,12 @@ dependencies = [
 [[package]]
 name = "moonbeam-evm-tracer"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#078eff3e62d8a69e0ff744525f4d4b049630d3cd"
 dependencies = [
  "ethereum-types",
- "evm 0.39.1",
- "evm-gasometer 0.39.0",
- "evm-runtime 0.39.0",
+ "evm",
+ "evm-gasometer",
+ "evm-runtime",
  "evm-tracing-events",
  "fp-evm",
  "moonbeam-primitives-ext",
@@ -7186,6 +7111,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-primitives-ext"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#078eff3e62d8a69e0ff744525f4d4b049630d3cd"
 dependencies = [
  "ethereum-types",
  "evm-tracing-events",
@@ -7198,6 +7124,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-debug"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#078eff3e62d8a69e0ff744525f4d4b049630d3cd"
 dependencies = [
  "ethereum-types",
  "futures 0.3.29",
@@ -7212,6 +7139,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-trace"
 version = "0.6.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#078eff3e62d8a69e0ff744525f4d4b049630d3cd"
 dependencies = [
  "ethereum-types",
  "futures 0.3.29",
@@ -7225,6 +7153,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-types"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#078eff3e62d8a69e0ff744525f4d4b049630d3cd"
 dependencies = [
  "ethereum-types",
  "serde",
@@ -7234,8 +7163,9 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-debug"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#078eff3e62d8a69e0ff744525f4d4b049630d3cd"
 dependencies = [
- "ethereum 0.14.0",
+ "ethereum",
  "ethereum-types",
  "fc-api",
  "fc-consensus",
@@ -7264,9 +7194,10 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-primitives-debug"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#078eff3e62d8a69e0ff744525f4d4b049630d3cd"
 dependencies = [
  "environmental",
- "ethereum 0.14.0",
+ "ethereum",
  "ethereum-types",
  "hex",
  "parity-scale-codec",
@@ -7281,8 +7212,9 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-trace"
 version = "0.6.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#078eff3e62d8a69e0ff744525f4d4b049630d3cd"
 dependencies = [
- "ethereum 0.14.0",
+ "ethereum",
  "ethereum-types",
  "fc-consensus",
  "fc-rpc",
@@ -8037,6 +7969,7 @@ dependencies = [
 [[package]]
 name = "pallet-asset-manager"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#078eff3e62d8a69e0ff744525f4d4b049630d3cd"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -8455,9 +8388,9 @@ name = "pallet-ethereum"
 version = "4.0.0-dev"
 source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
- "ethereum 0.15.0",
+ "ethereum",
  "ethereum-types",
- "evm 0.41.1",
+ "evm",
  "fp-consensus",
  "fp-ethereum",
  "fp-evm",
@@ -8476,8 +8409,9 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum-xcm"
 version = "1.0.0-dev"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#078eff3e62d8a69e0ff744525f4d4b049630d3cd"
 dependencies = [
- "ethereum 0.14.0",
+ "ethereum",
  "ethereum-types",
  "fp-ethereum",
  "fp-evm",
@@ -8504,13 +8438,13 @@ version = "6.0.0-dev"
 source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
  "environmental",
- "evm 0.41.1",
+ "evm",
  "fp-account",
  "fp-evm",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "hash-db 0.16.0",
+ "hash-db",
  "hex",
  "hex-literal 0.4.1",
  "impl-trait-for-tuples",
@@ -8557,6 +8491,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-conviction-voting"
 version = "0.1.0"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#078eff3e62d8a69e0ff744525f4d4b049630d3cd"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -11190,7 +11125,7 @@ source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.
 dependencies = [
  "derive_more",
  "environmental",
- "evm 0.41.1",
+ "evm",
  "fp-evm",
  "frame-support",
  "frame-system",
@@ -12570,7 +12505,7 @@ name = "sc-client-db"
 version = "0.10.0-dev"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.1.0#c8d2251cafadc108ba2f1f8a3208dc547ff38901"
 dependencies = [
- "hash-db 0.16.0",
+ "hash-db",
  "kvdb",
  "kvdb-memorydb",
  "kvdb-rocksdb",
@@ -14127,7 +14062,7 @@ name = "sp-api"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.1.0#c8d2251cafadc108ba2f1f8a3208dc547ff38901"
 dependencies = [
- "hash-db 0.16.0",
+ "hash-db",
  "log",
  "parity-scale-codec",
  "scale-info",
@@ -14341,7 +14276,7 @@ dependencies = [
  "dyn-clonable",
  "ed25519-zebra 3.1.0",
  "futures 0.3.29",
- "hash-db 0.16.0",
+ "hash-db",
  "hash256-std-hasher",
  "impl-serde",
  "lazy_static",
@@ -14666,7 +14601,7 @@ name = "sp-state-machine"
 version = "0.28.0"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.1.0#c8d2251cafadc108ba2f1f8a3208dc547ff38901"
 dependencies = [
- "hash-db 0.16.0",
+ "hash-db",
  "log",
  "parity-scale-codec",
  "parking_lot 0.12.1",
@@ -14779,7 +14714,7 @@ version = "22.0.0"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.1.0#c8d2251cafadc108ba2f1f8a3208dc547ff38901"
 dependencies = [
  "ahash 0.8.6",
- "hash-db 0.16.0",
+ "hash-db",
  "hashbrown 0.13.2",
  "lazy_static",
  "memory-db",
@@ -16131,7 +16066,7 @@ version = "0.27.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "767abe6ffed88a1889671a102c2861ae742726f52e0a5a425b92c9fbfa7e9c85"
 dependencies = [
- "hash-db 0.16.0",
+ "hash-db",
  "hashbrown 0.13.2",
  "log",
  "rustc-hex",
@@ -16144,7 +16079,7 @@ version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ff28e0f815c2fea41ebddf148e008b077d2faddb026c9555b29696114d602642"
 dependencies = [
- "hash-db 0.16.0",
+ "hash-db",
  "hashbrown 0.13.2",
  "log",
  "rustc-hex",
@@ -16157,17 +16092,7 @@ version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d4ed310ef5ab98f5fa467900ed906cb9232dd5376597e00fd4cba2a449d06c0b"
 dependencies = [
- "hash-db 0.16.0",
-]
-
-[[package]]
-name = "triehash"
-version = "0.8.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1631b201eb031b563d2e85ca18ec8092508e262a3196ce9bd10a67ec87b9f5c"
-dependencies = [
- "hash-db 0.15.2",
- "rlp",
+ "hash-db",
 ]
 
 [[package]]
@@ -17574,9 +17499,10 @@ dependencies = [
 [[package]]
 name = "xcm-primitives"
 version = "0.1.1"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#078eff3e62d8a69e0ff744525f4d4b049630d3cd"
 dependencies = [
  "cumulus-primitives-core",
- "ethereum 0.14.0",
+ "ethereum",
  "ethereum-types",
  "frame-benchmarking",
  "frame-support",

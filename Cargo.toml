@@ -23,6 +23,7 @@ version    = "6.5.1"
 # crates.io
 array-bytes       = { version = "6.2" }
 codec             = { package = "parity-scale-codec", version = "3.6", default-features = false }
+ethereum          = { version = "0.15", default-features = false, features = ["with-codec"] }
 libsecp256k1      = { version = "0.7", default-features = false }
 log               = { version = "0.4" }
 scale-info        = { version = "2.10", default-features = false }
@@ -231,18 +232,6 @@ pallet-evm-precompile-dispatch = { git = "https://github.com/darwinia-network/fr
 pallet-evm-precompile-modexp   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
 pallet-evm-precompile-simple   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
 precompile-utils               = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-
-[patch."https://github.com/darwinia-network/moonbeam"]
-moonbeam-evm-tracer                     = { path = "/home/bear/coding/rust-space/moonbeam/runtime/evm_tracer" }
-moonbeam-primitives-ext                 = { path = "/home/bear/coding/rust-space/moonbeam/primitives/ext" }
-moonbeam-rpc-debug                      = { path = "/home/bear/coding/rust-space/moonbeam/client/rpc/debug"  }
-moonbeam-rpc-primitives-debug           = { path = "/home/bear/coding/rust-space/moonbeam/primitives/rpc/debug" }
-moonbeam-rpc-trace                      = { path = "/home/bear/coding/rust-space/moonbeam/client/rpc/trace" }
-pallet-asset-manager                    = { path = "/home/bear/coding/rust-space/moonbeam/pallets/asset-manager" }
-pallet-ethereum-xcm                     = { path = "/home/bear/coding/rust-space/moonbeam/pallets/ethereum-xcm" }
-pallet-evm-precompile-conviction-voting = { path = "/home/bear/coding/rust-space/moonbeam/precompiles/conviction-voting" }
-xcm-primitives                          = { path = "/home/bear/coding/rust-space/moonbeam/primitives/xcm" }
-
 
 [profile.release]
 panic = "unwind"
