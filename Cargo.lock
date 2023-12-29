@@ -3051,7 +3051,7 @@ dependencies = [
  "array-bytes",
  "bp-message-dispatch",
  "bp-runtime",
- "ethereum",
+ "ethereum 0.15.0",
  "fp-ethereum",
  "fp-evm",
  "fp-self-contained",
@@ -3997,6 +3997,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "ethereum"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2e04d24d20b8ff2235cffbf242d5092de3aa45f77c5270ddbfadd2778ca13fea"
+dependencies = [
+ "bytes",
+ "ethereum-types",
+ "hash-db 0.16.0",
+ "hash256-std-hasher",
+ "parity-scale-codec",
+ "rlp",
+ "scale-info",
+ "serde",
+ "sha3",
+ "trie-root",
+]
+
+[[package]]
 name = "ethereum-types"
 version = "0.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4036,10 +4054,31 @@ source = "git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa
 dependencies = [
  "auto_impl",
  "environmental",
- "ethereum",
- "evm-core",
- "evm-gasometer",
- "evm-runtime",
+ "ethereum 0.14.0",
+ "evm-core 0.39.0",
+ "evm-gasometer 0.39.0",
+ "evm-runtime 0.39.0",
+ "log",
+ "parity-scale-codec",
+ "primitive-types",
+ "rlp",
+ "scale-info",
+ "serde",
+ "sha3",
+]
+
+[[package]]
+name = "evm"
+version = "0.41.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "767f43e9630cc36cf8ff2777cbb0121b055f0d1fd6eaaa13b46a1808f0d0e7e9"
+dependencies = [
+ "auto_impl",
+ "environmental",
+ "ethereum 0.15.0",
+ "evm-core 0.41.0",
+ "evm-gasometer 0.41.0",
+ "evm-runtime 0.41.0",
  "log",
  "parity-scale-codec",
  "primitive-types",
@@ -4061,13 +4100,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "evm-core"
+version = "0.41.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d1da6cedc5cedb4208e59467106db0d1f50db01b920920589f8e672c02fdc04f"
+dependencies = [
+ "parity-scale-codec",
+ "primitive-types",
+ "scale-info",
+ "serde",
+]
+
+[[package]]
 name = "evm-gasometer"
 version = "0.39.0"
 source = "git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65#b7b82c7e1fc57b7449d6dfa6826600de37cc1e65"
 dependencies = [
  "environmental",
- "evm-core",
- "evm-runtime",
+ "evm-core 0.39.0",
+ "evm-runtime 0.39.0",
+ "primitive-types",
+]
+
+[[package]]
+name = "evm-gasometer"
+version = "0.41.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1dc0eb591abc5cd7b05bef6a036c2bb6c66ab6c5e0c5ce94bfe377ab670b1fd7"
+dependencies = [
+ "environmental",
+ "evm-core 0.41.0",
+ "evm-runtime 0.41.0",
  "primitive-types",
 ]
 
@@ -4078,7 +4141,20 @@ source = "git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa
 dependencies = [
  "auto_impl",
  "environmental",
- "evm-core",
+ "evm-core 0.39.0",
+ "primitive-types",
+ "sha3",
+]
+
+[[package]]
+name = "evm-runtime"
+version = "0.41.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "84bbe09b64ae13a29514048c1bb6fda6374ac0b4f6a1f15a443348ab88ef42cd"
+dependencies = [
+ "auto_impl",
+ "environmental",
+ "evm-core 0.41.0",
  "primitive-types",
  "sha3",
 ]
@@ -4086,14 +4162,13 @@ dependencies = [
 [[package]]
 name = "evm-tracing-events"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#d0eb9c608654ab19c461e0610b8f67bd4ef16430"
 dependencies = [
  "environmental",
- "ethereum",
+ "ethereum 0.14.0",
  "ethereum-types",
- "evm",
- "evm-gasometer",
- "evm-runtime",
+ "evm 0.39.1",
+ "evm-gasometer 0.39.0",
+ "evm-runtime 0.39.0",
  "parity-scale-codec",
  "sp-runtime-interface",
 ]
@@ -4199,7 +4274,7 @@ dependencies = [
 [[package]]
 name = "fc-api"
 version = "1.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
  "async-trait",
  "fp-storage",
@@ -4211,7 +4286,7 @@ dependencies = [
 [[package]]
 name = "fc-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
  "async-trait",
  "fp-consensus",
@@ -4227,10 +4302,10 @@ dependencies = [
 [[package]]
 name = "fc-db"
 version = "2.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
  "async-trait",
- "ethereum",
+ "ethereum 0.15.0",
  "fc-api",
  "fc-storage",
  "fp-consensus",
@@ -4258,7 +4333,7 @@ dependencies = [
 [[package]]
 name = "fc-mapping-sync"
 version = "2.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
  "fc-db",
  "fc-storage",
@@ -4281,11 +4356,11 @@ dependencies = [
 [[package]]
 name = "fc-rpc"
 version = "2.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
- "ethereum",
+ "ethereum 0.15.0",
  "ethereum-types",
- "evm",
+ "evm 0.41.1",
  "fc-api",
  "fc-mapping-sync",
  "fc-rpc-core",
@@ -4335,9 +4410,9 @@ dependencies = [
 [[package]]
 name = "fc-rpc-core"
 version = "1.1.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
- "ethereum",
+ "ethereum 0.15.0",
  "ethereum-types",
  "jsonrpsee",
  "rustc-hex",
@@ -4348,9 +4423,9 @@ dependencies = [
 [[package]]
 name = "fc-storage"
 version = "1.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
- "ethereum",
+ "ethereum 0.15.0",
  "ethereum-types",
  "fp-rpc",
  "fp-storage",
@@ -4539,7 +4614,7 @@ dependencies = [
 [[package]]
 name = "fp-account"
 version = "1.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
  "hex",
  "impl-serde",
@@ -4558,9 +4633,9 @@ dependencies = [
 [[package]]
 name = "fp-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
- "ethereum",
+ "ethereum 0.15.0",
  "parity-scale-codec",
  "sp-core",
  "sp-runtime",
@@ -4570,9 +4645,9 @@ dependencies = [
 [[package]]
 name = "fp-ethereum"
 version = "1.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
- "ethereum",
+ "ethereum 0.15.0",
  "ethereum-types",
  "fp-evm",
  "frame-support",
@@ -4583,9 +4658,9 @@ dependencies = [
 [[package]]
 name = "fp-evm"
 version = "3.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
- "evm",
+ "evm 0.41.1",
  "frame-support",
  "num_enum 0.7.1",
  "parity-scale-codec",
@@ -4599,9 +4674,9 @@ dependencies = [
 [[package]]
 name = "fp-rpc"
 version = "3.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
- "ethereum",
+ "ethereum 0.15.0",
  "ethereum-types",
  "fp-evm",
  "parity-scale-codec",
@@ -4616,7 +4691,7 @@ dependencies = [
 [[package]]
 name = "fp-self-contained"
 version = "1.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -4628,7 +4703,7 @@ dependencies = [
 [[package]]
 name = "fp-storage"
 version = "2.0.0"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
  "parity-scale-codec",
  "serde",
@@ -7078,7 +7153,6 @@ dependencies = [
 [[package]]
 name = "moonbeam-client-evm-tracing"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#d0eb9c608654ab19c461e0610b8f67bd4ef16430"
 dependencies = [
  "ethereum-types",
  "evm-tracing-events",
@@ -7093,12 +7167,11 @@ dependencies = [
 [[package]]
 name = "moonbeam-evm-tracer"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#d0eb9c608654ab19c461e0610b8f67bd4ef16430"
 dependencies = [
  "ethereum-types",
- "evm",
- "evm-gasometer",
- "evm-runtime",
+ "evm 0.39.1",
+ "evm-gasometer 0.39.0",
+ "evm-runtime 0.39.0",
  "evm-tracing-events",
  "fp-evm",
  "moonbeam-primitives-ext",
@@ -7113,7 +7186,6 @@ dependencies = [
 [[package]]
 name = "moonbeam-primitives-ext"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#d0eb9c608654ab19c461e0610b8f67bd4ef16430"
 dependencies = [
  "ethereum-types",
  "evm-tracing-events",
@@ -7126,7 +7198,6 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-debug"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#d0eb9c608654ab19c461e0610b8f67bd4ef16430"
 dependencies = [
  "ethereum-types",
  "futures 0.3.29",
@@ -7141,7 +7212,6 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-trace"
 version = "0.6.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#d0eb9c608654ab19c461e0610b8f67bd4ef16430"
 dependencies = [
  "ethereum-types",
  "futures 0.3.29",
@@ -7155,7 +7225,6 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-types"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#d0eb9c608654ab19c461e0610b8f67bd4ef16430"
 dependencies = [
  "ethereum-types",
  "serde",
@@ -7165,9 +7234,8 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-debug"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#d0eb9c608654ab19c461e0610b8f67bd4ef16430"
 dependencies = [
- "ethereum",
+ "ethereum 0.14.0",
  "ethereum-types",
  "fc-api",
  "fc-consensus",
@@ -7196,10 +7264,9 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-primitives-debug"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#d0eb9c608654ab19c461e0610b8f67bd4ef16430"
 dependencies = [
  "environmental",
- "ethereum",
+ "ethereum 0.14.0",
  "ethereum-types",
  "hex",
  "parity-scale-codec",
@@ -7214,9 +7281,8 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-trace"
 version = "0.6.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#d0eb9c608654ab19c461e0610b8f67bd4ef16430"
 dependencies = [
- "ethereum",
+ "ethereum 0.14.0",
  "ethereum-types",
  "fc-consensus",
  "fc-rpc",
@@ -7971,7 +8037,6 @@ dependencies = [
 [[package]]
 name = "pallet-asset-manager"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#d0eb9c608654ab19c461e0610b8f67bd4ef16430"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -8388,11 +8453,11 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum"
 version = "4.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
- "ethereum",
+ "ethereum 0.15.0",
  "ethereum-types",
- "evm",
+ "evm 0.41.1",
  "fp-consensus",
  "fp-ethereum",
  "fp-evm",
@@ -8411,9 +8476,8 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum-xcm"
 version = "1.0.0-dev"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#d0eb9c608654ab19c461e0610b8f67bd4ef16430"
 dependencies = [
- "ethereum",
+ "ethereum 0.14.0",
  "ethereum-types",
  "fp-ethereum",
  "fp-evm",
@@ -8437,10 +8501,10 @@ dependencies = [
 [[package]]
 name = "pallet-evm"
 version = "6.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
  "environmental",
- "evm",
+ "evm 0.41.1",
  "fp-account",
  "fp-evm",
  "frame-benchmarking",
@@ -8463,7 +8527,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-blake2"
 version = "2.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
  "fp-evm",
 ]
@@ -8471,7 +8535,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-bls12381"
 version = "1.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
  "ark-bls12-381",
  "ark-ec",
@@ -8483,7 +8547,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-bn128"
 version = "2.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
  "fp-evm",
  "sp-core",
@@ -8493,7 +8557,6 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-conviction-voting"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#d0eb9c608654ab19c461e0610b8f67bd4ef16430"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -8513,7 +8576,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-dispatch"
 version = "2.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -8525,7 +8588,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-modexp"
 version = "2.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
  "fp-evm",
  "num",
@@ -8534,7 +8597,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-simple"
 version = "2.0.0-dev"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
  "fp-evm",
  "ripemd",
@@ -11123,11 +11186,11 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 [[package]]
 name = "precompile-utils"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
  "derive_more",
  "environmental",
- "evm",
+ "evm 0.41.1",
  "fp-evm",
  "frame-support",
  "frame-system",
@@ -11151,7 +11214,7 @@ dependencies = [
 [[package]]
 name = "precompile-utils-macro"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#45d5f996e64252be981e886ef46525019db99684"
+source = "git+https://github.com/darwinia-network/frontier?branch=polkadot-v1.1.0-patch#6365fe96c79935954226f60f380ff06181e1fdfe"
 dependencies = [
  "case",
  "num_enum 0.7.1",
@@ -17511,10 +17574,9 @@ dependencies = [
 [[package]]
 name = "xcm-primitives"
 version = "0.1.1"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.1.0#d0eb9c608654ab19c461e0610b8f67bd4ef16430"
 dependencies = [
  "cumulus-primitives-core",
- "ethereum",
+ "ethereum 0.14.0",
  "ethereum-types",
  "frame-benchmarking",
  "frame-support",

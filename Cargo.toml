@@ -232,6 +232,18 @@ pallet-evm-precompile-modexp   = { git = "https://github.com/darwinia-network/fr
 pallet-evm-precompile-simple   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
 precompile-utils               = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
 
+[patch."https://github.com/darwinia-network/moonbeam"]
+moonbeam-evm-tracer                     = { path = "/home/bear/coding/rust-space/moonbeam/runtime/evm_tracer" }
+moonbeam-primitives-ext                 = { path = "/home/bear/coding/rust-space/moonbeam/primitives/ext" }
+moonbeam-rpc-debug                      = { path = "/home/bear/coding/rust-space/moonbeam/client/rpc/debug"  }
+moonbeam-rpc-primitives-debug           = { path = "/home/bear/coding/rust-space/moonbeam/primitives/rpc/debug" }
+moonbeam-rpc-trace                      = { path = "/home/bear/coding/rust-space/moonbeam/client/rpc/trace" }
+pallet-asset-manager                    = { path = "/home/bear/coding/rust-space/moonbeam/pallets/asset-manager" }
+pallet-ethereum-xcm                     = { path = "/home/bear/coding/rust-space/moonbeam/pallets/ethereum-xcm" }
+pallet-evm-precompile-conviction-voting = { path = "/home/bear/coding/rust-space/moonbeam/precompiles/conviction-voting" }
+xcm-primitives                          = { path = "/home/bear/coding/rust-space/moonbeam/primitives/xcm" }
+
+
 [profile.release]
 panic = "unwind"
 
