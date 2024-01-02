@@ -147,6 +147,7 @@ std = [
 	"codec/std",
 	"log/std",
 	"scale-info/std",
+	"strum/std",
 
 	# cumulus
 	"cumulus-pallet-aura-ext/std",
