@@ -17,26 +17,23 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // darwinia
-use crate::*;
-
-const ENACTMENT_PERIOD: u32 = 28 * DAYS;
+use super::*;
 
 impl pallet_democracy::Config for Runtime {
-	type BlacklistOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
+	type BlacklistOrigin = Root;
 	type CancelProposalOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
-	type CancellationOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
-	type CooloffPeriod = ConstU32<{ 7 * DAYS }>;
+	type CancellationOrigin = RootOrAtLeastTwoThird<CouncilCollective>;
+	type CooloffPeriod = Time1;
 	type Currency = Balances;
-	type EnactmentPeriod = ConstU32<ENACTMENT_PERIOD>;
-	// There are no plans to use this yet.
-	type ExternalDefaultOrigin = Root;
+	type EnactmentPeriod = Time1;
+	type ExternalDefaultOrigin = RootOrAll<CouncilCollective>;
 	type ExternalMajorityOrigin = RootOrAtLeastHalf<CouncilCollective>;
 	type ExternalOrigin = RootOrAtLeastHalf<CouncilCollective>;
 	type FastTrackOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
-	type FastTrackVotingPeriod = ConstU32<{ 3 * HOURS }>;
+	type FastTrackVotingPeriod = Time1;
 	type InstantAllowed = ConstBool<true>;
 	type InstantOrigin = RootOrAll<TechnicalCollective>;
-	type LaunchPeriod = ConstU32<{ 28 * DAYS }>;
+	type LaunchPeriod = Time1;
 	type MaxBlacklisted = ConstU32<100>;
 	type MaxDeposits = ConstU32<100>;
 	type MaxProposals = ConstU32<100>;
@@ -49,7 +46,7 @@ impl pallet_democracy::Config for Runtime {
 	type Slash = Treasury;
 	type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
 	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
-	type VoteLockingPeriod = ConstU32<ENACTMENT_PERIOD>;
-	type VotingPeriod = ConstU32<{ 28 * DAYS }>;
+	type VoteLockingPeriod = Time1;
+	type VotingPeriod = Time1;
 	type WeightInfo = weights::pallet_democracy::WeightInfo<Self>;
 }
