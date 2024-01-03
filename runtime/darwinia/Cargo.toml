@@ -74,12 +74,13 @@ pallet-evm-precompile-modexp   = { workspace = true }
 pallet-evm-precompile-simple   = { workspace = true }
 
 # moonbeam
-moonbeam-evm-tracer           = { workspace = true, optional = true }
-moonbeam-rpc-primitives-debug = { workspace = true }
-pallet-asset-manager          = { workspace = true }
-pallet-ethereum-xcm           = { workspace = true }
-precompile-utils              = { workspace = true }
-xcm-primitives                = { workspace = true }
+moonbeam-evm-tracer                     = { workspace = true, optional = true }
+moonbeam-rpc-primitives-debug           = { workspace = true }
+pallet-asset-manager                    = { workspace = true }
+pallet-evm-precompile-conviction-voting = { workspace = true }
+pallet-ethereum-xcm                     = { workspace = true }
+precompile-utils                        = { workspace = true }
+xcm-primitives                          = { workspace = true }
 
 # open-web3-stack
 orml-xcm-support = { workspace = true }
@@ -212,6 +213,7 @@ std = [
 	"moonbeam-evm-tracer/std",
 	"moonbeam-rpc-primitives-debug/std",
 	"pallet-asset-manager/std",
+	"pallet-evm-precompile-conviction-voting/std",
 	"pallet-ethereum-xcm/std",
 	"precompile-utils/std",
 	"xcm-primitives/std",
