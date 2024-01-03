@@ -23,6 +23,7 @@ version    = "6.5.1"
 # crates.io
 array-bytes       = { version = "6.2" }
 codec             = { package = "parity-scale-codec", version = "3.6", default-features = false }
+ethereum          = { version = "0.15", default-features = false, features = ["with-codec"] }
 libsecp256k1      = { version = "0.7", default-features = false }
 log               = { version = "0.4" }
 scale-info        = { version = "2.10", default-features = false }
@@ -149,9 +150,7 @@ pallet-balances                            = { git = "https://github.com/parityt
 pallet-collective                          = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 pallet-conviction-voting                   = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 pallet-democracy                           = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-pallet-elections-phragmen                  = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 pallet-identity                            = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-pallet-membership                          = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 pallet-preimage                            = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 pallet-proxy                               = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 pallet-referenda                           = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }

@@ -33,11 +33,11 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 5]
 			// Amount that must be placed on deposit before a decision can be made.
 			decision_deposit: DARWINIA_PROPOSAL_REQUIREMENT,
 			// Amount of time this must be submitted for before a decision can be made.
-			prepare_period: 2 * DAYS,
+			prepare_period: 3 * DAYS,
 			// Amount of time that a decision may take to be approved prior to cancellation.
-			decision_period: 14 * DAYS,
+			decision_period: 28 * DAYS,
 			// Amount of time that the approval criteria must hold before it can be approved.
-			confirm_period: 3 * DAYS,
+			confirm_period: 4 * DAYS,
 			// Minimum amount of time that an approved proposal must be in the dispatch queue.
 			min_enactment_period: DAYS,
 			// Minimum aye votes as percentage of overall conviction-weighted votes needed for
@@ -61,7 +61,7 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 5]
 			max_deciding: 100,
 			decision_deposit: DARWINIA_PROPOSAL_REQUIREMENT,
 			prepare_period: 10 * MINUTES,
-			decision_period: 14 * DAYS,
+			decision_period: 28 * DAYS,
 			confirm_period: 10 * MINUTES,
 			min_enactment_period: 30 * MINUTES,
 			min_approval: pallet_referenda::Curve::make_reciprocal(
@@ -86,9 +86,9 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 5]
 			name: "general_admin",
 			max_deciding: 10,
 			decision_deposit: DARWINIA_PROPOSAL_REQUIREMENT,
-			prepare_period: 2 * DAYS,
-			decision_period: 14 * DAYS,
-			confirm_period: 3 * DAYS,
+			prepare_period: 3 * DAYS,
+			decision_period: 28 * DAYS,
+			confirm_period: 4 * DAYS,
 			min_enactment_period: DAYS,
 			min_approval: pallet_referenda::Curve::make_reciprocal(
 				3,
@@ -115,7 +115,7 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 5]
 			max_deciding: 20,
 			decision_deposit: DARWINIA_PROPOSAL_REQUIREMENT,
 			prepare_period: HOURS,
-			decision_period: 14 * DAYS,
+			decision_period: 28 * DAYS,
 			confirm_period: 3 * HOURS,
 			min_enactment_period: 10 * MINUTES,
 			min_approval: pallet_referenda::Curve::make_reciprocal(
@@ -141,7 +141,7 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 5]
 			max_deciding: 100,
 			decision_deposit: DARWINIA_PROPOSAL_REQUIREMENT,
 			prepare_period: HOURS,
-			decision_period: 14 * DAYS,
+			decision_period: 28 * DAYS,
 			confirm_period: 3 * HOURS,
 			min_enactment_period: 10 * MINUTES,
 			min_approval: pallet_referenda::Curve::make_reciprocal(
