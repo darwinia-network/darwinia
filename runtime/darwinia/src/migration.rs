@@ -41,6 +41,18 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
+	// polkadot-sdk
+	use sp_core::H160;
+	use sp_std::str::FromStr;
+
+	const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
+	// CONVICTION_VOTING_ADDRESS equals to the addr(1538) in the pallet-evm runtime.
+	const CONVICTION_VOTING_ADDRESS: &str = "0x0000000000000000000000000000000000000602";
+	if let Ok(addr) = H160::from_str(CONVICTION_VOTING_ADDRESS) {
+		EVM::create_account(addr, REVERT_BYTECODE.to_vec());
+		return RuntimeBlockWeights::get().max_block;
+	}
+
 	frame_support::weights::Weight::zero()
 	// RuntimeBlockWeights::get().max_block
 	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 1)
