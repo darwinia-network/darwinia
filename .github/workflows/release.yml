@@ -216,7 +216,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-nodes, build-runtimes, publish-docker-image]
     steps:
-      - name: Fetch template
+      - name: Fetch note template
         uses: actions/checkout@v4
       - name: Download nodes and runtimes
         uses: actions/download-artifact@v4

@@ -123,7 +123,7 @@ pub mod pallet {
 		type Currency: Currency<Self::AccountId>;
 
 		/// Inflation and reward manager.
-		type InflationManager: InflationManager<Self>;
+		type IssuingManager: IssuingManager<Self>;
 
 		/// Pass [`pallet_session::Config::ShouldEndSession`]'s result to here.
 		type ShouldEndSession: Get<bool>;
@@ -902,7 +902,7 @@ pub mod pallet {
 				<PendingRewards<T>>::mutate(&c, |u| *u = u.map(|u| u + r).or(Some(r)));
 
 				// TODO: merge into one call
-				if T::InflationManager::reward(&staking_pot, r).is_ok() {
+				if T::IssuingManager::reward(&staking_pot, r).is_ok() {
 					actual_reward += r;
 				} else {
 					unpaid += r;
@@ -936,14 +936,14 @@ pub mod pallet {
 					// If the collator nominated themselves.
 
 					c_payout += n_payout;
-				} else if T::InflationManager::reward(&n_exposure.who, n_payout).is_ok() {
+				} else if T::IssuingManager::reward(&n_exposure.who, n_payout).is_ok() {
 					Self::deposit_event(Event::Payout { staker: n_exposure.who, amount: n_payout });
 				} else {
 					Self::deposit_event(Event::Unpaid { staker: n_exposure.who, amount: n_payout });
 				}
 			}
 
-			if T::InflationManager::reward(&collator, c_payout).is_ok() {
+			if T::IssuingManager::reward(&collator, c_payout).is_ok() {
 				Self::deposit_event(Event::Payout { staker: collator, amount: c_payout });
 			} else {
 				Self::deposit_event(Event::Unpaid { staker: collator, amount: c_payout });
@@ -1055,8 +1055,8 @@ type Vote = u32;
 
 type DepositId<T> = <<T as Config>::Deposit as Stake>::Item;
 
-/// Inflation and reward manager.
-pub trait InflationManager<T>
+/// Issuing and reward manager.
+pub trait IssuingManager<T>
 where
 	T: Config,
 {
@@ -1077,7 +1077,7 @@ where
 	}
 
 	/// Calculate the reward.
-	fn calculate_reward(inflation: Balance) -> Balance;
+	fn calculate_reward(issued: Balance) -> Balance;
 
 	/// The reward function.
 	fn reward(who: &T::AccountId, amount: Balance) -> DispatchResult;
@@ -1085,7 +1085,7 @@ where
 	/// Clear the remaining inflation.
 	fn clear(_remaining: Balance) {}
 }
-impl<T> InflationManager<T> for ()
+impl<T> IssuingManager<T> for ()
 where
 	T: Config,
 {
@@ -1191,7 +1191,7 @@ where
 	T: Config,
 {
 	fn end_session(_: u32) {
-		T::InflationManager::on_session_end();
+		T::IssuingManager::on_session_end();
 	}
 
 	fn start_session(_: u32) {}

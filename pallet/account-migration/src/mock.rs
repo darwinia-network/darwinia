@@ -162,7 +162,7 @@ impl darwinia_deposit::Config for Runtime {
 impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
-	type InflationManager = ();
+	type IssuingManager = ();
 	type Kton = Dummy;
 	type MaxDeposits = ();
 	type MaxUnstakings = ();
