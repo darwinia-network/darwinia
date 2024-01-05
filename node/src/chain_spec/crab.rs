@@ -222,8 +222,6 @@ pub fn genesis_config() -> ChainSpec {
 				aura_ext: Default::default(),
 
 				// Governance stuff.
-				democracy: Default::default(),
-				council: Default::default(),
 				technical_committee: Default::default(),
 				treasury: Default::default(),
 
@@ -327,8 +325,6 @@ fn testnet_genesis(
 		aura_ext: Default::default(),
 
 		// Governance stuff.
-		democracy: Default::default(),
-		council: Default::default(),
 		technical_committee: Default::default(),
 		treasury: Default::default(),
 

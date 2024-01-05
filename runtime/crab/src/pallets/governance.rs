@@ -23,9 +23,7 @@ pub use origin::{custom_origins, GeneralAdmin};
 mod track;
 use track::*;
 
-mod v1;
-
-pub use pallet_collective::{Instance1 as CouncilCollective, Instance2 as TechnicalCollective};
+pub use pallet_collective::Instance2 as TechnicalCollective;
 
 pub(super) use crate::*;
 
@@ -40,18 +38,6 @@ frame_support::parameter_types! {
 	pub MaxProposalWeight: frame_support::weights::Weight = sp_runtime::Perbill::from_percent(50) * RuntimeBlockWeights::get().max_block;
 }
 
-impl pallet_collective::Config<CouncilCollective> for Runtime {
-	type DefaultVote = pallet_collective::PrimeDefaultVote;
-	type MaxMembers = ConstU32<COLLECTIVE_MAX_MEMBERS>;
-	type MaxProposalWeight = MaxProposalWeight;
-	type MaxProposals = ConstU32<100>;
-	type MotionDuration = ConstU32<{ 3 * DAYS }>;
-	type Proposal = RuntimeCall;
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeOrigin = RuntimeOrigin;
-	type SetMembersOrigin = RootOr<GeneralAdmin>;
-	type WeightInfo = weights::pallet_collective_council::WeightInfo<Self>;
-}
 impl pallet_collective::Config<TechnicalCollective> for Runtime {
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
 	type MaxMembers = ConstU32<COLLECTIVE_MAX_MEMBERS>;
@@ -125,10 +111,10 @@ impl pallet_treasury::Config for Runtime {
 	type ProposalBond = ProposalBond;
 	type ProposalBondMaximum = ();
 	type ProposalBondMinimum = ConstU128<DARWINIA_PROPOSAL_REQUIREMENT>;
-	type RejectOrigin = RootOrAll<CouncilCollective>;
+	type RejectOrigin = RootOr<GeneralAdmin>;
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
 	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
-	type SpendPeriod = ConstU32<{ 7 * DAYS }>;
+	type SpendPeriod = ConstU32<{ 14 * DAYS }>;
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Self>;
 }

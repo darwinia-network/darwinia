@@ -136,11 +136,11 @@ frame_support::construct_runtime! {
 		// Governance stuff.
 		// PhragmenElection: pallet_elections_phragmen = 21,
 		// TechnicalMembership: pallet_membership::<Instance1> = 22,
-		Council: pallet_collective::<Instance1> = 19,
+		// Council: pallet_collective::<Instance1> = 19,
 		TechnicalCommittee: pallet_collective::<Instance2> = 20,
 		Treasury: pallet_treasury = 23,
 		// Tips: pallet_tips = 24,
-		Democracy: pallet_democracy = 18,
+		// Democracy: pallet_democracy = 18,
 		ConvictionVoting: pallet_conviction_voting = 48,
 		Referenda: pallet_referenda = 49,
 		Origins: custom_origins = 50,
