@@ -135,11 +135,11 @@ frame_support::construct_runtime! {
 		// Governance stuff.
 		// PhragmenElection: pallet_elections_phragmen = 21,
 		// TechnicalMembership: pallet_membership::<Instance1> = 22,
-		Council: pallet_collective::<Instance1> = 19,
+		// Council: pallet_collective::<Instance1> = 19,
 		TechnicalCommittee: pallet_collective::<Instance2> = 20,
 		Treasury: pallet_treasury = 23,
 		// Tips: pallet_tips = 24,
-		Democracy: pallet_democracy = 18,
+		// Democracy: pallet_democracy = 18,
 		ConvictionVoting: pallet_conviction_voting = 44,
 		Referenda: pallet_referenda = 45,
 		Origins: custom_origins = 46,
@@ -190,10 +190,8 @@ frame_benchmarking::define_benchmarks! {
 	[frame_system, SystemBench::<Runtime>]
 	[pallet_assets, Assets]
 	[pallet_balances, Balances]
-	[pallet_collective, Council]
 	[pallet_collective, TechnicalCommittee]
 	[pallet_conviction_voting, ConvictionVoting]
-	[pallet_democracy, Democracy]
 	[pallet_identity, Identity]
 	[pallet_preimage, Preimage]
 	[pallet_proxy, Proxy]
