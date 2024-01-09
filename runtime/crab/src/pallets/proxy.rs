@@ -73,12 +73,9 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 					| RuntimeCall::PolkadotXcm(..)
 					| RuntimeCall::Ethereum(..) // }
 			),
-			ProxyType::Governance => matches!(
-				c,
-					| RuntimeCall::Referenda(..)
-					| RuntimeCall::TechnicalCommittee(..)
-					| RuntimeCall::Treasury(..)
-			),
+			ProxyType::Governance =>
+				matches!(c, |RuntimeCall::Referenda(..)| RuntimeCall::TechnicalCommittee(..)
+					| RuntimeCall::Treasury(..)),
 			ProxyType::Staking => {
 				matches!(
 					c,
