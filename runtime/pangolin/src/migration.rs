@@ -41,7 +41,26 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	frame_support::weights::Weight::zero()
-	// RuntimeBlockWeights::get().max_block
+	let _ = migration::clear_storage_prefix(b"Council", b"Proposals", &[], None);
+	let _ = migration::clear_storage_prefix(b"Council", b"ProposalOf", &[], None);
+	let _ = migration::clear_storage_prefix(b"Council", b"Voting", &[], None);
+	let _ = migration::clear_storage_prefix(b"Council", b"ProposalCount", &[], None);
+	let _ = migration::clear_storage_prefix(b"Council", b"Members", &[], None);
+	let _ = migration::clear_storage_prefix(b"Council", b"Prime", &[], None);
+	let _ = migration::clear_storage_prefix(b"Democracy", b"PublicPropCount", &[], None);
+	let _ = migration::clear_storage_prefix(b"Democracy", b"PublicProps", &[], None);
+	let _ = migration::clear_storage_prefix(b"Democracy", b"DepositOf", &[], None);
+	let _ = migration::clear_storage_prefix(b"Democracy", b"ReferendumCount", &[], None);
+	let _ = migration::clear_storage_prefix(b"Democracy", b"LowestUnbaked", &[], None);
+	let _ = migration::clear_storage_prefix(b"Democracy", b"ReferendumInfoOf", &[], None);
+	let _ = migration::clear_storage_prefix(b"Democracy", b"VotingOf", &[], None);
+	let _ = migration::clear_storage_prefix(b"Democracy", b"LastTabledWasExternal", &[], None);
+	let _ = migration::clear_storage_prefix(b"Democracy", b"NextExternal", &[], None);
+	let _ = migration::clear_storage_prefix(b"Democracy", b"Blacklist", &[], None);
+	let _ = migration::clear_storage_prefix(b"Democracy", b"Cancellations", &[], None);
+	let _ = migration::clear_storage_prefix(b"Democracy", b"MetadataOf", &[], None);
+
+	// frame_support::weights::Weight::zero()
+	RuntimeBlockWeights::get().max_block
 	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(5, 5)
 }
