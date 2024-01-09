@@ -212,10 +212,8 @@ pub fn genesis_config() -> ChainSpec {
 				ecdsa_authority: Default::default(),
 
 				// Governance stuff.
-				council: Default::default(),
 				technical_committee: Default::default(),
 				treasury: Default::default(),
-				democracy: Default::default(),
 
 				// Utility stuff.
 				sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked::<_, _, 20>(SUDO)) },
@@ -322,13 +320,6 @@ fn testnet_genesis(
 		ecdsa_authority: Default::default(),
 
 		// Governance stuff.
-		council: CouncilConfig {
-			members: vec![
-				array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
-				array_bytes::hex_n_into_unchecked::<_, _, 20>(BALTATHAR),
-			],
-			..Default::default()
-		},
 		technical_committee: TechnicalCommitteeConfig {
 			members: vec![
 				array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
@@ -337,7 +328,6 @@ fn testnet_genesis(
 			..Default::default()
 		},
 		treasury: Default::default(),
-		democracy: Default::default(),
 
 		// Utility stuff.
 		sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH)) },
