@@ -55,20 +55,21 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 				c,
 				RuntimeCall::Balances(..)
 					| RuntimeCall::Assets(..)
-					| RuntimeCall::Deposit(..)
-					| RuntimeCall::DarwiniaStaking(..)
-					// Might contains transfer {
+					// Might contains transfer
 					| RuntimeCall::Utility(..)
 					| RuntimeCall::Proxy(..)
 					| RuntimeCall::PolkadotXcm(..)
-					| RuntimeCall::Ethereum(..) // }
+					| RuntimeCall::Ethereum(..)
 			),
 			ProxyType::Governance => matches!(
 				c,
-				RuntimeCall::Democracy(..)
+				RuntimeCall::ConvictionVoting(..)
 					| RuntimeCall::Council(..)
+					| RuntimeCall::Democracy(..)
+					| RuntimeCall::Referenda(..)
 					| RuntimeCall::TechnicalCommittee(..)
 					| RuntimeCall::Treasury(..)
+					| RuntimeCall::Whitelist(..)
 			),
 			ProxyType::Staking => {
 				matches!(
