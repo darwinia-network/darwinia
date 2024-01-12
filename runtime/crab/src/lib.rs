@@ -152,6 +152,7 @@ frame_support::construct_runtime! {
 		Scheduler: pallet_scheduler = 28,
 		Preimage: pallet_preimage = 29,
 		Proxy: pallet_proxy = 30,
+		TxPause: pallet_tx_pause = 48,
 
 		// XCM stuff.
 		XcmpQueue: cumulus_pallet_xcmp_queue = 32,
@@ -197,11 +198,12 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_proxy, Proxy]
 	[pallet_referenda, Referenda]
 	[pallet_scheduler, Scheduler]
-	[pallet_treasury, Treasury]
-	[pallet_utility, Utility]
-	[pallet_vesting, Vesting]
 	[pallet_session, SessionBench::<Runtime>]
 	[pallet_timestamp, Timestamp]
+	[pallet_treasury, Treasury]
+	[pallet_tx_pause, TxPause]
+	[pallet_utility, Utility]
+	[pallet_vesting, Vesting]
 	[pallet_whitelist, Whitelist]
 }
 

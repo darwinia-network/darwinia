@@ -204,12 +204,12 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_proxy, Proxy]
 	[pallet_referenda, Referenda]
 	[pallet_scheduler, Scheduler]
-	[pallet_treasury, Treasury]
-	[pallet_utility, Utility]
 	[pallet_session, SessionBench::<Runtime>]
 	[pallet_timestamp, Timestamp]
-	[pallet_whitelist, Whitelist]
+	[pallet_treasury, Treasury]
 	[pallet_tx_pause, TxPause]
+	[pallet_utility, Utility]
+	[pallet_whitelist, Whitelist]
 }
 
 impl_self_contained_call!();

@@ -77,6 +77,8 @@ mod preimage;
 
 mod proxy;
 
+mod tx_pause;
+
 // XCM stuff.
 mod xcmp_queue;
 
