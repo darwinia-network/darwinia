@@ -77,8 +77,8 @@ pallet-evm-precompile-simple   = { workspace = true }
 moonbeam-evm-tracer                     = { workspace = true, optional = true }
 moonbeam-rpc-primitives-debug           = { workspace = true }
 pallet-asset-manager                    = { workspace = true }
-pallet-evm-precompile-conviction-voting = { workspace = true }
 pallet-ethereum-xcm                     = { workspace = true }
+pallet-evm-precompile-conviction-voting = { workspace = true }
 precompile-utils                        = { workspace = true }
 xcm-primitives                          = { workspace = true }
 
@@ -116,6 +116,7 @@ pallet-timestamp                           = { workspace = true }
 pallet-transaction-payment                 = { workspace = true }
 pallet-transaction-payment-rpc-runtime-api = { workspace = true }
 pallet-treasury                            = { workspace = true }
+pallet-tx-pause                            = { workspace = true }
 pallet-utility                             = { workspace = true }
 pallet-vesting                             = { workspace = true }
 pallet-whitelist                           = { workspace = true }
@@ -213,8 +214,8 @@ std = [
 	"moonbeam-evm-tracer/std",
 	"moonbeam-rpc-primitives-debug/std",
 	"pallet-asset-manager/std",
-	"pallet-evm-precompile-conviction-voting/std",
 	"pallet-ethereum-xcm/std",
+	"pallet-evm-precompile-conviction-voting/std",
 	"precompile-utils/std",
 	"xcm-primitives/std",
 
@@ -252,6 +253,7 @@ std = [
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
 	"pallet-treasury/std",
+	"pallet-tx-pause/std",
 	"pallet-utility/std",
 	"pallet-vesting/std",
 	"pallet-whitelist/std",
@@ -350,6 +352,7 @@ runtime-benchmarks = [
 	"pallet-scheduler/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-treasury/runtime-benchmarks",
+	"pallet-tx-pause/runtime-benchmarks",
 	"pallet-utility/runtime-benchmarks",
 	"pallet-vesting/runtime-benchmarks",
 	"pallet-whitelist/runtime-benchmarks",
@@ -421,6 +424,7 @@ try-runtime = [
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"pallet-treasury/try-runtime",
+	"pallet-tx-pause/try-runtime",
 	"pallet-utility/try-runtime",
 	"pallet-vesting/try-runtime",
 	"pallet-whitelist/try-runtime",

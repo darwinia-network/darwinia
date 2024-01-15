@@ -110,6 +110,7 @@ pallet-timestamp                           = { workspace = true }
 pallet-transaction-payment                 = { workspace = true }
 pallet-transaction-payment-rpc-runtime-api = { workspace = true }
 pallet-treasury                            = { workspace = true }
+pallet-tx-pause                            = { workspace = true }
 pallet-utility                             = { workspace = true }
 pallet-whitelist                           = { workspace = true }
 sp-api                                     = { workspace = true }
@@ -239,6 +240,7 @@ std = [
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
 	"pallet-treasury/std",
+	"pallet-tx-pause/std",
 	"pallet-utility/std",
 	"pallet-whitelist/std",
 	"sp-api/std",
@@ -331,6 +333,7 @@ runtime-benchmarks = [
 	"pallet-sudo/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-treasury/runtime-benchmarks",
+	"pallet-tx-pause/runtime-benchmarks",
 	"pallet-utility/runtime-benchmarks",
 	"pallet-whitelist/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
@@ -397,6 +400,7 @@ try-runtime = [
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"pallet-treasury/try-runtime",
+	"pallet-tx-pause/try-runtime",
 	"pallet-utility/try-runtime",
 	"pallet-whitelist/try-runtime",
 	"sp-runtime/try-runtime",

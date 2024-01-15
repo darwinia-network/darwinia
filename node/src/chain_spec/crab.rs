@@ -225,6 +225,9 @@ pub fn genesis_config() -> ChainSpec {
 				technical_committee: Default::default(),
 				treasury: Default::default(),
 
+				// Utility stuff.
+				tx_pause: Default::default(),
+
 				// XCM stuff.
 				polkadot_xcm: PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION), ..Default::default() },
 
@@ -327,6 +330,9 @@ fn testnet_genesis(
 		// Governance stuff.
 		technical_committee: Default::default(),
 		treasury: Default::default(),
+
+		// Utility stuff.
+		tx_pause: Default::default(),
 
 		// XCM stuff.
 		polkadot_xcm: PolkadotXcmConfig {
