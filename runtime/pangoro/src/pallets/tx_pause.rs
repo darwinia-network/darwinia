@@ -21,7 +21,7 @@ use crate::*;
 
 pub struct TxPauseWhitelistedCalls;
 impl frame_support::traits::Contains<pallet_tx_pause::RuntimeCallNameOf<Runtime>>
-for TxPauseWhitelistedCalls
+	for TxPauseWhitelistedCalls
 {
 	fn contains(full_name: &pallet_tx_pause::RuntimeCallNameOf<Runtime>) -> bool {
 		let pallet = full_name.0.as_slice();
