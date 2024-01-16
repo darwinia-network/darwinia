@@ -29,20 +29,17 @@ impl frame_support::traits::Contains<pallet_tx_pause::RuntimeCallNameOf<Runtime>
 		// Pallets that can be paused by the tx-pause pallet.
 		!matches!(
 			pallet,
-			b"Balances",
-			b"Assets",
-			b"Vesting",
-			b"Deposit",
-			b"AccountMigration",
-			b"DarwiniaStaking",
-			b"Ethereum",
-			b"EVM",
-			b"MessageTransact",
-			b"BridgePolkadotGrandpa",
-			b"BridgePolkadotParachain",
-			b"BridgeDarwiniaMessages",
-			b"BridgeDarwiniaDispatch",
-			b"DarwiniaFeeMarket",
+			b"Balances"
+				| b"Assets" | b"Vesting"
+				| b"Deposit" | b"AccountMigration"
+				| b"DarwiniaStaking"
+				| b"Ethereum" | b"EVM"
+				| b"MessageTransact"
+				| b"BridgePolkadotGrandpa"
+				| b"BridgePolkadotParachain"
+				| b"BridgeDarwiniaMessages"
+				| b"BridgeDarwiniaDispatch"
+				| b"DarwiniaFeeMarket"
 		)
 	}
 }
