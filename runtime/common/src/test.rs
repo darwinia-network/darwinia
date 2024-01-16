@@ -861,7 +861,7 @@ macro_rules! impl_maintenance_tests {
 			use sp_core::H160;
 			use sp_runtime::{traits::Dispatchable, DispatchError};
 
-			pub fn full_name(pallet_name: &[u8], call_name: &[u8]) -> RuntimeCallNameOf<Runtime> {
+			fn full_name(pallet_name: &[u8], call_name: &[u8]) -> RuntimeCallNameOf<Runtime> {
 				<RuntimeCallNameOf<Runtime>>::from((
 					pallet_name.to_vec().try_into().unwrap(),
 					call_name.to_vec().try_into().unwrap(),
@@ -896,11 +896,12 @@ macro_rules! impl_maintenance_tests {
 					.execute_with(|| {
 						assert_ok!(TxPause::pause(
 							RuntimeOrigin::root(),
-							full_name(b"System", b"remark")
+							full_name(b"Balances", b"transfer")
 						));
 						assert_err!(
-							RuntimeCall::System(frame_system::Call::remark {
-								remark: b"hello world".to_vec()
+							RuntimeCall::Balances(pallet_balances::Call::transfer {
+								dest: to,
+								value: 1,
 							})
 							.dispatch(RuntimeOrigin::signed(from)),
 							frame_system::Error::<Runtime>::CallFiltered
@@ -908,10 +909,11 @@ macro_rules! impl_maintenance_tests {
 
 						assert_ok!(TxPause::unpause(
 							RuntimeOrigin::root(),
-							full_name(b"System", b"remark")
+							full_name(b"Balances", b"transfer")
 						));
-						assert_ok!(RuntimeCall::System(frame_system::Call::remark {
-							remark: b"hello world".to_vec(),
+						assert_ok!(RuntimeCall::Balances(pallet_balances::Call::transfer {
+							dest: to,
+							value: 1,
 						})
 						.dispatch(RuntimeOrigin::signed(from)));
 					})
@@ -921,11 +923,10 @@ macro_rules! impl_maintenance_tests {
 			fn tx_pause_pause_calls_except_on_whitelist() {
 				let from = H160::from_low_u64_be(555).into();
 				ExtBuilder::default().with_balances(vec![(from, 100)]).build().execute_with(|| {
-					assert_ok!(RuntimeCall::System(frame_system::Call::remark_with_event {
-						remark: b"hello world".to_vec(),
-					})
-					.dispatch(RuntimeOrigin::signed(from)));
-
+					assert_ok!(System::remark_with_event(
+						RuntimeOrigin::signed(from),
+						b"hello world".to_vec()
+					));
 					assert_err!(
 						TxPause::pause(
 							RuntimeOrigin::root(),
@@ -933,11 +934,6 @@ macro_rules! impl_maintenance_tests {
 						),
 						pallet_tx_pause::Error::<Runtime>::Unpausable
 					);
-
-					assert_ok!(RuntimeCall::System(frame_system::Call::remark_with_event {
-						remark: b"hello world".to_vec(),
-					})
-					.dispatch(RuntimeOrigin::signed(from)));
 				})
 			}
 		}
