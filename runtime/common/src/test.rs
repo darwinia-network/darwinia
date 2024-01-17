@@ -173,7 +173,7 @@ macro_rules! impl_account_migration_tests {
 			#[test]
 			fn validate_evm_account_already_exist() {
 				let (from, _) = alice();
-				let to = H160::from_low_u64_be(33).into();
+				let to = H160::from_low_u64_be(0).into();
 
 				ExtBuilder::default().with_balances(vec![(to, RING_AMOUNT)]).build().execute_with(
 					|| {
@@ -188,7 +188,7 @@ macro_rules! impl_account_migration_tests {
 			#[test]
 			fn validate_invalid_sig() {
 				let (from, from_pk) = alice();
-				let to = H160::from_low_u64_be(33).into();
+				let to = H160::from_low_u64_be(0).into();
 				let message = darwinia_account_migration::signable_message(b"?", &to);
 				let sig = from.sign(&message);
 
@@ -869,13 +869,12 @@ macro_rules! impl_maintenance_tests {
 			}
 
 			#[test]
-			fn tx_pause_origins_work_correctly() {
+			fn tx_pause_origins_should_work() {
 				ExtBuilder::default().build().execute_with(|| {
 					assert_ok!(TxPause::pause(
 						RuntimeOrigin::root(),
 						full_name(b"Balances", b"transfer")
 					));
-
 					assert_err!(
 						TxPause::pause(
 							RuntimeOrigin::signed(H160::default().into()),
@@ -883,58 +882,66 @@ macro_rules! impl_maintenance_tests {
 						),
 						DispatchError::BadOrigin
 					);
-				})
+				});
 			}
 
 			#[test]
-			fn tx_pause_pause_and_unpause_work_correctly() {
-				let from = H160::from_low_u64_be(555).into();
-				let to = H160::from_low_u64_be(333).into();
-				ExtBuilder::default()
-					.with_balances(vec![(from, 100), (to, 50)])
-					.build()
-					.execute_with(|| {
-						assert_ok!(TxPause::pause(
-							RuntimeOrigin::root(),
-							full_name(b"Balances", b"transfer")
-						));
-						assert_err!(
-							RuntimeCall::Balances(pallet_balances::Call::transfer {
-								dest: to,
-								value: 1,
-							})
-							.dispatch(RuntimeOrigin::signed(from)),
-							frame_system::Error::<Runtime>::CallFiltered
-						);
+			fn tx_pause_pause_and_unpause_should_work() {
+				let from = H160::from_low_u64_be(0).into();
+				let to = H160::from_low_u64_be(1).into();
 
-						assert_ok!(TxPause::unpause(
-							RuntimeOrigin::root(),
-							full_name(b"Balances", b"transfer")
-						));
-						assert_ok!(RuntimeCall::Balances(pallet_balances::Call::transfer {
+				ExtBuilder::default().with_balances(vec![(from, 100)]).build().execute_with(|| {
+					assert_ok!(TxPause::pause(
+						RuntimeOrigin::root(),
+						full_name(b"Balances", b"transfer")
+					));
+					assert_err!(
+						RuntimeCall::Balances(pallet_balances::Call::transfer {
 							dest: to,
 							value: 1,
 						})
-						.dispatch(RuntimeOrigin::signed(from)));
+						.dispatch(RuntimeOrigin::signed(from)),
+						<frame_system::Error<Runtime>>::CallFiltered
+					);
+
+					assert_ok!(TxPause::unpause(
+						RuntimeOrigin::root(),
+						full_name(b"Balances", b"transfer")
+					));
+					assert_ok!(RuntimeCall::Balances(pallet_balances::Call::transfer {
+						dest: to,
+						value: 1,
 					})
+					.dispatch(RuntimeOrigin::signed(from)));
+				});
 			}
 
 			#[test]
-			fn tx_pause_pause_calls_except_on_whitelist() {
-				let from = H160::from_low_u64_be(555).into();
-				ExtBuilder::default().with_balances(vec![(from, 100)]).build().execute_with(|| {
-					assert_ok!(System::remark_with_event(
-						RuntimeOrigin::signed(from),
-						b"hello world".to_vec()
-					));
-					assert_err!(
-						TxPause::pause(
-							RuntimeOrigin::root(),
-							full_name(b"System", b"remark_with_event")
-						),
-						pallet_tx_pause::Error::<Runtime>::Unpausable
-					);
-				})
+			fn tx_pause_whitelist_should_work() {
+				ExtBuilder::default().build().execute_with(|| {
+					let whitelist: &[(&[u8], &[&[u8]])] = &[
+						(b"System", &[b"*"]),
+						(b"ParachainSystem", &[b"*"]),
+						(b"Timestamp", &[b"*"]),
+						(b"Session", &[b"*"]),
+						(b"Scheduler", &[b"*"]),
+						(b"Preimage", &[b"*"]),
+						(b"TxPause", &[b"*"]),
+						(b"TechnicalCommittee", &[b"*"]),
+						(b"ConvictionVoting", &[b"*"]),
+						(b"Referenda", &[b"*"]),
+						(b"Whitelist", &[b"*"]),
+					];
+
+					whitelist.iter().for_each(|(p, cs)| {
+						cs.iter().for_each(|c| {
+							assert_err!(
+								TxPause::pause(RuntimeOrigin::root(), full_name(p, c)),
+								<pallet_tx_pause::Error<Runtime>>::Unpausable
+							);
+						});
+					});
+				});
 			}
 		}
 	};
