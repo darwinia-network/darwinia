@@ -3254,7 +3254,6 @@ dependencies = [
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-treasury",
- "pallet-tx-pause",
  "pallet-utility",
  "pallet-vesting",
  "pallet-whitelist",
