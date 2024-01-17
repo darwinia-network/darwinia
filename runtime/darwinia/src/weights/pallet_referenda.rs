@@ -21,7 +21,7 @@
 //! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 4.0.0-dev
 //! DATE: 2024-01-17, STEPS: `50`, REPEAT: `20`, LOW RANGE: `[]`, HIGH RANGE: `[]`
 //! WORST CASE MAP SIZE: `1000000`
-//! WASM-EXECUTION: `Compiled`, CHAIN: `Some("crab-dev")`, DB CACHE: 1024
+//! WASM-EXECUTION: `Compiled`, CHAIN: `Some("darwinia-dev")`, DB CACHE: 1024
 
 // Executed Command:
 // target/release/darwinia
@@ -32,9 +32,9 @@
 // --heap-pages
 // 4096
 // --chain
-// crab-dev
+// darwinia-dev
 // --output
-// runtime/crab/src/weights
+// runtime/darwinia/src/weights
 // --pallet
 // *
 // --extrinsic
@@ -63,10 +63,10 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Referenda::ReferendumInfoFor` (`max_values`: None, `max_size`: Some(912), added: 3387, mode: `MaxEncodedLen`)
 	fn submit() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `308`
+		//  Measured:  `275`
 		//  Estimated: `42428`
-		// Minimum execution time: 34_000_000 picoseconds.
-		Weight::from_parts(36_000_000, 0)
+		// Minimum execution time: 33_000_000 picoseconds.
+		Weight::from_parts(34_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 42428))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(3))
@@ -77,10 +77,10 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(38963), added: 41438, mode: `MaxEncodedLen`)
 	fn place_decision_deposit_preparing() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `549`
+		//  Measured:  `516`
 		//  Estimated: `83866`
-		// Minimum execution time: 43_000_000 picoseconds.
-		Weight::from_parts(44_000_000, 0)
+		// Minimum execution time: 44_000_000 picoseconds.
+		Weight::from_parts(53_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 83866))
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(3))
@@ -95,10 +95,10 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(38963), added: 41438, mode: `MaxEncodedLen`)
 	fn place_decision_deposit_queued() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `3342`
+		//  Measured:  `3314`
 		//  Estimated: `42428`
-		// Minimum execution time: 48_000_000 picoseconds.
-		Weight::from_parts(49_000_000, 0)
+		// Minimum execution time: 47_000_000 picoseconds.
+		Weight::from_parts(48_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 42428))
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(3))
@@ -113,9 +113,9 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(38963), added: 41438, mode: `MaxEncodedLen`)
 	fn place_decision_deposit_not_queued() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `3362`
+		//  Measured:  `3334`
 		//  Estimated: `42428`
-		// Minimum execution time: 48_000_000 picoseconds.
+		// Minimum execution time: 46_000_000 picoseconds.
 		Weight::from_parts(49_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 42428))
 			.saturating_add(T::DbWeight::get().reads(4))
@@ -129,7 +129,7 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(38963), added: 41438, mode: `MaxEncodedLen`)
 	fn place_decision_deposit_passing() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `549`
+		//  Measured:  `516`
 		//  Estimated: `83866`
 		// Minimum execution time: 52_000_000 picoseconds.
 		Weight::from_parts(53_000_000, 0)
@@ -145,9 +145,9 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(38963), added: 41438, mode: `MaxEncodedLen`)
 	fn place_decision_deposit_failing() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `549`
+		//  Measured:  `516`
 		//  Estimated: `83866`
-		// Minimum execution time: 50_000_000 picoseconds.
+		// Minimum execution time: 49_000_000 picoseconds.
 		Weight::from_parts(50_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 83866))
 			.saturating_add(T::DbWeight::get().reads(4))
@@ -157,10 +157,10 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Referenda::ReferendumInfoFor` (`max_values`: None, `max_size`: Some(912), added: 3387, mode: `MaxEncodedLen`)
 	fn refund_decision_deposit() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `458`
+		//  Measured:  `425`
 		//  Estimated: `4377`
-		// Minimum execution time: 27_000_000 picoseconds.
-		Weight::from_parts(28_000_000, 0)
+		// Minimum execution time: 26_000_000 picoseconds.
+		Weight::from_parts(27_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 4377))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
@@ -169,9 +169,9 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Referenda::ReferendumInfoFor` (`max_values`: None, `max_size`: Some(912), added: 3387, mode: `MaxEncodedLen`)
 	fn refund_submission_deposit() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `417`
+		//  Measured:  `384`
 		//  Estimated: `4377`
-		// Minimum execution time: 28_000_000 picoseconds.
+		// Minimum execution time: 27_000_000 picoseconds.
 		Weight::from_parts(28_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 4377))
 			.saturating_add(T::DbWeight::get().reads(1))
@@ -183,9 +183,9 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(38963), added: 41438, mode: `MaxEncodedLen`)
 	fn cancel() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `423`
+		//  Measured:  `390`
 		//  Estimated: `83866`
-		// Minimum execution time: 31_000_000 picoseconds.
+		// Minimum execution time: 30_000_000 picoseconds.
 		Weight::from_parts(31_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 83866))
 			.saturating_add(T::DbWeight::get().reads(3))
@@ -201,10 +201,10 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Referenda::MetadataOf` (`max_values`: None, `max_size`: Some(52), added: 2527, mode: `MaxEncodedLen`)
 	fn kill() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `879`
+		//  Measured:  `880`
 		//  Estimated: `83866`
-		// Minimum execution time: 96_000_000 picoseconds.
-		Weight::from_parts(97_000_000, 0)
+		// Minimum execution time: 94_000_000 picoseconds.
+		Weight::from_parts(96_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 83866))
 			.saturating_add(T::DbWeight::get().reads(5))
 			.saturating_add(T::DbWeight::get().writes(4))
@@ -215,7 +215,7 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Referenda::DecidingCount` (`max_values`: None, `max_size`: Some(14), added: 2489, mode: `MaxEncodedLen`)
 	fn one_fewer_deciding_queue_empty() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `240`
+		//  Measured:  `207`
 		//  Estimated: `5477`
 		// Minimum execution time: 7_000_000 picoseconds.
 		Weight::from_parts(8_000_000, 0)
@@ -231,9 +231,9 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(38963), added: 41438, mode: `MaxEncodedLen`)
 	fn one_fewer_deciding_failing() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `3242`
+		//  Measured:  `3179`
 		//  Estimated: `42428`
-		// Minimum execution time: 31_000_000 picoseconds.
+		// Minimum execution time: 30_000_000 picoseconds.
 		Weight::from_parts(32_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 42428))
 			.saturating_add(T::DbWeight::get().reads(3))
@@ -247,9 +247,9 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(38963), added: 41438, mode: `MaxEncodedLen`)
 	fn one_fewer_deciding_passing() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `3228`
+		//  Measured:  `3165`
 		//  Estimated: `42428`
-		// Minimum execution time: 33_000_000 picoseconds.
+		// Minimum execution time: 32_000_000 picoseconds.
 		Weight::from_parts(34_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 42428))
 			.saturating_add(T::DbWeight::get().reads(3))
@@ -261,7 +261,7 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Referenda::TrackQueue` (`max_values`: None, `max_size`: Some(2012), added: 4487, mode: `MaxEncodedLen`)
 	fn nudge_referendum_requeued_insertion() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `3053`
+		//  Measured:  `3020`
 		//  Estimated: `5477`
 		// Minimum execution time: 13_000_000 picoseconds.
 		Weight::from_parts(14_000_000, 0)
@@ -275,10 +275,10 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Referenda::TrackQueue` (`max_values`: None, `max_size`: Some(2012), added: 4487, mode: `MaxEncodedLen`)
 	fn nudge_referendum_requeued_slide() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `3053`
+		//  Measured:  `3020`
 		//  Estimated: `5477`
 		// Minimum execution time: 13_000_000 picoseconds.
-		Weight::from_parts(14_000_000, 0)
+		Weight::from_parts(13_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 5477))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))
@@ -291,10 +291,10 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Referenda::TrackQueue` (`max_values`: None, `max_size`: Some(2012), added: 4487, mode: `MaxEncodedLen`)
 	fn nudge_referendum_queued() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `3057`
+		//  Measured:  `3024`
 		//  Estimated: `5477`
 		// Minimum execution time: 17_000_000 picoseconds.
-		Weight::from_parts(19_000_000, 0)
+		Weight::from_parts(17_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 5477))
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(2))
@@ -307,7 +307,7 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Referenda::TrackQueue` (`max_values`: None, `max_size`: Some(2012), added: 4487, mode: `MaxEncodedLen`)
 	fn nudge_referendum_not_queued() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `3077`
+		//  Measured:  `3044`
 		//  Estimated: `5477`
 		// Minimum execution time: 16_000_000 picoseconds.
 		Weight::from_parts(17_000_000, 0)
@@ -321,10 +321,10 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(38963), added: 41438, mode: `MaxEncodedLen`)
 	fn nudge_referendum_no_deposit() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `387`
+		//  Measured:  `354`
 		//  Estimated: `42428`
-		// Minimum execution time: 19_000_000 picoseconds.
-		Weight::from_parts(20_000_000, 0)
+		// Minimum execution time: 20_000_000 picoseconds.
+		Weight::from_parts(21_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 42428))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(2))
@@ -335,7 +335,7 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(38963), added: 41438, mode: `MaxEncodedLen`)
 	fn nudge_referendum_preparing() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `423`
+		//  Measured:  `390`
 		//  Estimated: `42428`
 		// Minimum execution time: 19_000_000 picoseconds.
 		Weight::from_parts(20_000_000, 0)
@@ -347,10 +347,10 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Referenda::ReferendumInfoFor` (`max_values`: None, `max_size`: Some(912), added: 3387, mode: `MaxEncodedLen`)
 	fn nudge_referendum_timed_out() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `332`
+		//  Measured:  `299`
 		//  Estimated: `4377`
 		// Minimum execution time: 13_000_000 picoseconds.
-		Weight::from_parts(14_000_000, 0)
+		Weight::from_parts(13_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 4377))
 			.saturating_add(T::DbWeight::get().reads(1))
 			.saturating_add(T::DbWeight::get().writes(1))
@@ -363,9 +363,9 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(38963), added: 41438, mode: `MaxEncodedLen`)
 	fn nudge_referendum_begin_deciding_failing() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `423`
+		//  Measured:  `390`
 		//  Estimated: `42428`
-		// Minimum execution time: 26_000_000 picoseconds.
+		// Minimum execution time: 25_000_000 picoseconds.
 		Weight::from_parts(26_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 42428))
 			.saturating_add(T::DbWeight::get().reads(3))
@@ -379,9 +379,9 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(38963), added: 41438, mode: `MaxEncodedLen`)
 	fn nudge_referendum_begin_deciding_passing() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `423`
+		//  Measured:  `390`
 		//  Estimated: `42428`
-		// Minimum execution time: 29_000_000 picoseconds.
+		// Minimum execution time: 28_000_000 picoseconds.
 		Weight::from_parts(29_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 42428))
 			.saturating_add(T::DbWeight::get().reads(3))
@@ -393,9 +393,9 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(38963), added: 41438, mode: `MaxEncodedLen`)
 	fn nudge_referendum_begin_confirming() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `476`
+		//  Measured:  `443`
 		//  Estimated: `42428`
-		// Minimum execution time: 23_000_000 picoseconds.
+		// Minimum execution time: 22_000_000 picoseconds.
 		Weight::from_parts(23_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 42428))
 			.saturating_add(T::DbWeight::get().reads(2))
@@ -407,9 +407,9 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(38963), added: 41438, mode: `MaxEncodedLen`)
 	fn nudge_referendum_end_confirming() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `459`
+		//  Measured:  `426`
 		//  Estimated: `42428`
-		// Minimum execution time: 23_000_000 picoseconds.
+		// Minimum execution time: 22_000_000 picoseconds.
 		Weight::from_parts(23_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 42428))
 			.saturating_add(T::DbWeight::get().reads(2))
@@ -421,7 +421,7 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(38963), added: 41438, mode: `MaxEncodedLen`)
 	fn nudge_referendum_continue_not_confirming() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `476`
+		//  Measured:  `443`
 		//  Estimated: `42428`
 		// Minimum execution time: 20_000_000 picoseconds.
 		Weight::from_parts(20_000_000, 0)
@@ -435,9 +435,9 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(38963), added: 41438, mode: `MaxEncodedLen`)
 	fn nudge_referendum_continue_confirming() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `480`
+		//  Measured:  `447`
 		//  Estimated: `42428`
-		// Minimum execution time: 20_000_000 picoseconds.
+		// Minimum execution time: 19_000_000 picoseconds.
 		Weight::from_parts(20_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 42428))
 			.saturating_add(T::DbWeight::get().reads(2))
@@ -451,10 +451,10 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Scheduler::Lookup` (`max_values`: None, `max_size`: Some(48), added: 2523, mode: `MaxEncodedLen`)
 	fn nudge_referendum_approved() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `480`
+		//  Measured:  `447`
 		//  Estimated: `83866`
-		// Minimum execution time: 33_000_000 picoseconds.
-		Weight::from_parts(34_000_000, 0)
+		// Minimum execution time: 32_000_000 picoseconds.
+		Weight::from_parts(33_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 83866))
 			.saturating_add(T::DbWeight::get().reads(4))
 			.saturating_add(T::DbWeight::get().writes(4))
@@ -465,7 +465,7 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Scheduler::Agenda` (`max_values`: None, `max_size`: Some(38963), added: 41438, mode: `MaxEncodedLen`)
 	fn nudge_referendum_rejected() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `476`
+		//  Measured:  `443`
 		//  Estimated: `42428`
 		// Minimum execution time: 23_000_000 picoseconds.
 		Weight::from_parts(23_000_000, 0)
@@ -481,7 +481,7 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Referenda::MetadataOf` (`max_values`: None, `max_size`: Some(52), added: 2527, mode: `MaxEncodedLen`)
 	fn set_some_metadata() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `476`
+		//  Measured:  `443`
 		//  Estimated: `4377`
 		// Minimum execution time: 16_000_000 picoseconds.
 		Weight::from_parts(17_000_000, 0)
@@ -495,10 +495,10 @@ impl<T: frame_system::Config> pallet_referenda::WeightInfo for WeightInfo<T> {
 	/// Proof: `Referenda::MetadataOf` (`max_values`: None, `max_size`: Some(52), added: 2527, mode: `MaxEncodedLen`)
 	fn clear_metadata() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `409`
+		//  Measured:  `376`
 		//  Estimated: `4377`
 		// Minimum execution time: 14_000_000 picoseconds.
-		Weight::from_parts(14_000_000, 0)
+		Weight::from_parts(15_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 4377))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(1))

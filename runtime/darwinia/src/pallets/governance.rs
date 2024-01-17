@@ -50,7 +50,7 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
 	type SetMembersOrigin = RootOr<GeneralAdmin>;
-	type WeightInfo = weights::pallet_collective_council::WeightInfo<Self>;
+	type WeightInfo = weights::pallet_collective::WeightInfo<Self>;
 }
 impl pallet_collective::Config<TechnicalCollective> for Runtime {
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
@@ -62,7 +62,7 @@ impl pallet_collective::Config<TechnicalCollective> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
 	type SetMembersOrigin = RootOr<GeneralAdmin>;
-	type WeightInfo = weights::pallet_collective_technical_committee::WeightInfo<Self>;
+	type WeightInfo = weights::pallet_collective::WeightInfo<Self>;
 }
 
 impl pallet_conviction_voting::Config for Runtime {
@@ -72,8 +72,7 @@ impl pallet_conviction_voting::Config for Runtime {
 	type Polls = Referenda;
 	type RuntimeEvent = RuntimeEvent;
 	type VoteLockingPeriod = ConstU32<{ DAYS }>;
-	// type WeightInfo = weights::pallet_conviction_voting::WeightInfo<Self>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_conviction_voting::WeightInfo<Self>;
 }
 
 pallet_referenda::impl_tracksinfo_get!(TracksInfo, Balance, BlockNumber);
@@ -95,8 +94,7 @@ impl pallet_referenda::Config for Runtime {
 	type Tracks = TracksInfo;
 	type UndecidingTimeout = ConstU32<{ 28 * DAYS }>;
 	type Votes = pallet_conviction_voting::VotesOf<Self>;
-	// type WeightInfo = weights::pallet_referenda::WeightInfo<Self>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_referenda::WeightInfo<Self>;
 }
 
 impl custom_origins::Config for Runtime {}
@@ -108,8 +106,7 @@ impl pallet_whitelist::Config for Runtime {
 	type Preimages = Preimage;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
-	// type WeightInfo = weights::pallet_whitelist::WeightInfo<Self>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_whitelist::WeightInfo<Self>;
 	type WhitelistOrigin = RootOrAtLeastFourFifth<TechnicalCollective>;
 }
 

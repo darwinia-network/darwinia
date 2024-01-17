@@ -20,6 +20,15 @@
 use crate::*;
 
 pub struct TxPauseWhitelistedCalls;
+#[cfg(feature = "runtime-benchmarks")]
+impl frame_support::traits::Contains<pallet_tx_pause::RuntimeCallNameOf<Runtime>>
+	for TxPauseWhitelistedCalls
+{
+	fn contains(_: &pallet_tx_pause::RuntimeCallNameOf<Runtime>) -> bool {
+		false
+	}
+}
+#[cfg(not(feature = "runtime-benchmarks"))]
 impl frame_support::traits::Contains<pallet_tx_pause::RuntimeCallNameOf<Runtime>>
 	for TxPauseWhitelistedCalls
 {
@@ -50,7 +59,6 @@ impl pallet_tx_pause::Config for Runtime {
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type UnpauseOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
-	// TODO: Update the benchmark weight info
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_tx_pause::WeightInfo<Runtime>;
 	type WhitelistedCalls = TxPauseWhitelistedCalls;
 }

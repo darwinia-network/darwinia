@@ -195,6 +195,7 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_balances, Balances]
 	[pallet_collective, TechnicalCommittee]
 	[pallet_conviction_voting, ConvictionVoting]
+	[pallet_democracy, Democracy]
 	[pallet_identity, Identity]
 	[pallet_preimage, Preimage]
 	[pallet_proxy, Proxy]

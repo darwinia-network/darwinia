@@ -21,7 +21,7 @@
 //! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 4.0.0-dev
 //! DATE: 2024-01-17, STEPS: `50`, REPEAT: `20`, LOW RANGE: `[]`, HIGH RANGE: `[]`
 //! WORST CASE MAP SIZE: `1000000`
-//! WASM-EXECUTION: `Compiled`, CHAIN: `Some("pangolin-dev")`, DB CACHE: 1024
+//! WASM-EXECUTION: `Compiled`, CHAIN: `Some("darwinia-dev")`, DB CACHE: 1024
 
 // Executed Command:
 // target/release/darwinia
@@ -32,9 +32,9 @@
 // --heap-pages
 // 4096
 // --chain
-// pangolin-dev
+// darwinia-dev
 // --output
-// runtime/pangolin/src/weights
+// runtime/darwinia/src/weights
 // --pallet
 // *
 // --extrinsic
@@ -61,9 +61,9 @@ impl<T: frame_system::Config> pallet_whitelist::WeightInfo for WeightInfo<T> {
 	/// Proof: `Preimage::StatusFor` (`max_values`: None, `max_size`: Some(79), added: 2554, mode: `MaxEncodedLen`)
 	fn whitelist_call() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `48`
+		//  Measured:  `118`
 		//  Estimated: `3544`
-		// Minimum execution time: 16_000_000 picoseconds.
+		// Minimum execution time: 17_000_000 picoseconds.
 		Weight::from_parts(17_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 3544))
 			.saturating_add(T::DbWeight::get().reads(2))
@@ -75,7 +75,7 @@ impl<T: frame_system::Config> pallet_whitelist::WeightInfo for WeightInfo<T> {
 	/// Proof: `Preimage::StatusFor` (`max_values`: None, `max_size`: Some(79), added: 2554, mode: `MaxEncodedLen`)
 	fn remove_whitelisted_call() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `176`
+		//  Measured:  `247`
 		//  Estimated: `3544`
 		// Minimum execution time: 14_000_000 picoseconds.
 		Weight::from_parts(15_000_000, 0)
@@ -92,13 +92,13 @@ impl<T: frame_system::Config> pallet_whitelist::WeightInfo for WeightInfo<T> {
 	/// The range of component `n` is `[1, 4194294]`.
 	fn dispatch_whitelisted_call(n: u32, ) -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `252 + n * (1 ±0)`
-		//  Estimated: `3716 + n * (1 ±0)`
-		// Minimum execution time: 26_000_000 picoseconds.
-		Weight::from_parts(27_000_000, 0)
-			.saturating_add(Weight::from_parts(0, 3716))
+		//  Measured:  `323 + n * (1 ±0)`
+		//  Estimated: `3787 + n * (1 ±0)`
+		// Minimum execution time: 25_000_000 picoseconds.
+		Weight::from_parts(25_000_000, 0)
+			.saturating_add(Weight::from_parts(0, 3787))
 			// Standard Error: 2
-			.saturating_add(Weight::from_parts(506, 0).saturating_mul(n.into()))
+			.saturating_add(Weight::from_parts(459, 0).saturating_mul(n.into()))
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(3))
 			.saturating_add(Weight::from_parts(0, 1).saturating_mul(n.into()))
@@ -110,13 +110,13 @@ impl<T: frame_system::Config> pallet_whitelist::WeightInfo for WeightInfo<T> {
 	/// The range of component `n` is `[1, 10000]`.
 	fn dispatch_whitelisted_call_with_preimage(n: u32, ) -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `176`
+		//  Measured:  `247`
 		//  Estimated: `3544`
-		// Minimum execution time: 17_000_000 picoseconds.
-		Weight::from_parts(18_577_553, 0)
+		// Minimum execution time: 18_000_000 picoseconds.
+		Weight::from_parts(18_610_438, 0)
 			.saturating_add(Weight::from_parts(0, 3544))
-			// Standard Error: 22
-			.saturating_add(Weight::from_parts(953, 0).saturating_mul(n.into()))
+			// Standard Error: 20
+			.saturating_add(Weight::from_parts(1_038, 0).saturating_mul(n.into()))
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
