@@ -41,6 +41,20 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
+	let _ =
+		migration::clear_storage_prefix(b"MessageGadget", b"CommitmentContract", &[], None, None);
+	let _ = migration::clear_storage_prefix(b"EcdsaAuthority", b"Authorities", &[], None, None);
+	let _ = migration::clear_storage_prefix(b"EcdsaAuthority", b"NextAuthorities", &[], None, None);
+	let _ = migration::clear_storage_prefix(b"EcdsaAuthority", b"Nonce", &[], None, None);
+	let _ = migration::clear_storage_prefix(
+		b"EcdsaAuthority",
+		b"AuthoritiesChangeToSign",
+		&[],
+		None,
+		None,
+	);
+	let _ =
+		migration::clear_storage_prefix(b"EcdsaAuthority", b"MessageRootToSign", &[], None, None);
 	let _ = migration::clear_storage_prefix(b"Council", b"Proposals", &[], None, None);
 	let _ = migration::clear_storage_prefix(b"Council", b"ProposalOf", &[], None, None);
 	let _ = migration::clear_storage_prefix(b"Council", b"Voting", &[], None, None);
