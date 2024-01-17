@@ -53,7 +53,7 @@ fn migrate() -> frame_support::weights::Weight {
 		return RuntimeBlockWeights::get().max_block;
 	}
 
-	frame_support::weights::Weight::zero()
+	// frame_support::weights::Weight::zero()
 	// RuntimeBlockWeights::get().max_block
-	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 1)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 5)
 }
