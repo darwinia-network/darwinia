@@ -41,7 +41,8 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	// polkadot-sdk
+	// substrate
+	use frame_support::pallet_prelude::StorageVersion;
 	use sp_core::H160;
 	use sp_std::str::FromStr;
 
@@ -53,7 +54,8 @@ fn migrate() -> frame_support::weights::Weight {
 		return RuntimeBlockWeights::get().max_block;
 	}
 
+	StorageVersion::new(1).put::<pallet_referenda::Pallet<Runtime>>();
+
 	// frame_support::weights::Weight::zero()
-	// RuntimeBlockWeights::get().max_block
 	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 5)
 }
