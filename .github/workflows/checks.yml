@@ -59,7 +59,7 @@ jobs:
       - name: Setup build environment
         run: sudo apt install -y clang llvm protobuf-compiler
       - name: Cache cargo
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ./target
