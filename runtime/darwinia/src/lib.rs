@@ -79,7 +79,7 @@ pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia2"),
 	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
 	authoring_version: 0,
-	spec_version: 6_5_1_0,
+	spec_version: 6_6_0_0,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 0,
@@ -152,7 +152,7 @@ frame_support::construct_runtime! {
 		Scheduler: pallet_scheduler = 28,
 		Preimage: pallet_preimage = 29,
 		Proxy: pallet_proxy = 30,
-		TxPause: pallet_tx_pause = 52,
+		// TxPause: pallet_tx_pause = 52,
 
 		// XCM stuff.
 		XcmpQueue: cumulus_pallet_xcmp_queue = 32,
@@ -198,6 +198,7 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_balances, Balances]
 	[pallet_collective, TechnicalCommittee]
 	[pallet_conviction_voting, ConvictionVoting]
+	[pallet_democracy, Democracy]
 	[pallet_identity, Identity]
 	[pallet_preimage, Preimage]
 	[pallet_proxy, Proxy]
@@ -206,8 +207,9 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_session, SessionBench::<Runtime>]
 	[pallet_timestamp, Timestamp]
 	[pallet_treasury, Treasury]
-	[pallet_tx_pause, TxPause]
+	// [pallet_tx_pause, TxPause]
 	[pallet_utility, Utility]
+	[pallet_vesting, Vesting]
 	[pallet_whitelist, Whitelist]
 }
 

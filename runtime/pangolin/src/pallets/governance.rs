@@ -54,7 +54,7 @@ impl pallet_collective::Config<TechnicalCollective> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
 	type SetMembersOrigin = RootOr<GeneralAdmin>;
-	type WeightInfo = weights::pallet_collective_technical_committee::WeightInfo<Self>;
+	type WeightInfo = weights::pallet_collective::WeightInfo<Self>;
 }
 
 impl pallet_conviction_voting::Config for Runtime {
