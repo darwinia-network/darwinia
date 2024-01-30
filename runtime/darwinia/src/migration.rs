@@ -42,20 +42,27 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 
 fn migrate() -> frame_support::weights::Weight {
 	// substrate
-	use frame_support::pallet_prelude::StorageVersion;
-	use sp_core::H160;
-	use sp_std::str::FromStr;
+	use pallet_balances::Locks;
 
-	const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
-	// CONVICTION_VOTING_ADDRESS equals to the addr(1538) in the pallet-evm runtime.
-	const CONVICTION_VOTING_ADDRESS: &str = "0x0000000000000000000000000000000000000602";
-	if let Ok(addr) = H160::from_str(CONVICTION_VOTING_ADDRESS) {
-		EVM::create_account(addr, REVERT_BYTECODE.to_vec());
-		return RuntimeBlockWeights::get().max_block;
-	}
-
-	StorageVersion::new(1).put::<pallet_referenda::Pallet<Runtime>>();
+	[
+		("0xabcf7060a68f62624f7569ada9d78b5a5db0782a", b"phrelect"),
+		("0x88a39b052d477cfde47600a7c9950a441ce61cb4", b"phrelect"),
+		("0x9f33a4809aa708d7a399fedba514e0a0d15efa85", b"phrelect"),
+		("0x0a1287977578f888bdc1c7627781af1cc000e6ab", b"phrelect"),
+		("0xe59261f6d4088bcd69985a3d369ff14cc54ef1e5", b"phrelect"),
+		("0x7ae2a0914db8bfbdad538b0eac3fa473a0e07843", b"phrelect"),
+		("0x3e25247cff03f99a7d83b28f207112234fee73a6", b"phrelect"),
+		("0xb2960e11b253c107f973cd778bbe1520e35e8602", b"phrelect"),
+	]
+	.iter()
+	.for_each(|(acct, lid)| {
+		if let Ok(acct) = array_bytes::hex_n_into::<_, AccountId, 20>(acct) {
+			<Locks<Runtime>>::mutate(acct, |ls| {
+				ls.retain(|l| &l.id != *lid);
+			});
+		}
+	});
 
 	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 5)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 16)
 }
