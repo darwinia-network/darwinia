@@ -35,7 +35,8 @@ mod timestamp;
 mod parachain_info_;
 
 // Monetary stuff.
-mod balances;
+pub mod balances;
+pub use balances::*;
 
 mod transaction_payment;
 
