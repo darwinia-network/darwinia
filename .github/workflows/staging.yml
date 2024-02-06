@@ -65,7 +65,7 @@ jobs:
           mkdir -p dist
           tar -xvf darwinia/darwinia-x86_64-linux-gnu.tar.bz2 -C dist/
       - name: Sha
-        uses: benjlevesque/short-sha@v2.2
+        uses: benjlevesque/short-sha@v3.0
       - name: Docker login
         uses: docker/login-action@v3
         with:
