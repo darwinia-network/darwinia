@@ -186,7 +186,7 @@ jobs:
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
       - name: Sha
-        uses: benjlevesque/short-sha@v2.2
+        uses: benjlevesque/short-sha@v3.0
       - name: Docker login
         if: ${{ env.SKIP_BUILD != 'true' }}
         uses: docker/login-action@v3
@@ -235,7 +235,7 @@ jobs:
       - name: Tag
         uses: olegtarasov/get-tag@v2.1
       - name: Sha
-        uses: benjlevesque/short-sha@v2.2
+        uses: benjlevesque/short-sha@v3.0
       - name: Prepare note
         run: |
           export RELEASE_SCHEMA='{"tag":"'$GIT_TAG_NAME'","sha":"'$SHA'"}'
