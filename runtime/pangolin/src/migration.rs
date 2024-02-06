@@ -41,25 +41,17 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	let _ = migration::clear_storage_prefix(b"Council", b"Proposals", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"Council", b"ProposalOf", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"Council", b"Voting", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"Council", b"ProposalCount", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"Council", b"Members", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"Council", b"Prime", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"Democracy", b"PublicPropCount", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"Democracy", b"PublicProps", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"Democracy", b"DepositOf", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"Democracy", b"ReferendumCount", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"Democracy", b"LowestUnbaked", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"Democracy", b"ReferendumInfoOf", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"Democracy", b"VotingOf", &[], None, None);
-	let _ =
-		migration::clear_storage_prefix(b"Democracy", b"LastTabledWasExternal", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"Democracy", b"NextExternal", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"Democracy", b"Blacklist", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"Democracy", b"Cancellations", &[], None, None);
-	let _ = migration::clear_storage_prefix(b"Democracy", b"MetadataOf", &[], None, None);
+	// polkadot-sdk
+	use sp_core::H160;
+	use sp_std::str::FromStr;
+
+	const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
+	// KTON equals to the 0x402 in the pallet-evm runtime.
+	const KTON_ADDRESS: &str = "0x0000000000000000000000000000000000000402";
+	if let Ok(addr) = H160::from_str(KTON_ADDRESS) {
+		EVM::create_account(addr, REVERT_BYTECODE.to_vec());
+		return RuntimeBlockWeights::get().max_block;
+	}
 
 	// frame_support::weights::Weight::zero()
 	RuntimeBlockWeights::get().max_block
