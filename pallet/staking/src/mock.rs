@@ -158,6 +158,29 @@ impl darwinia_staking::Stake for RingStaking {
 		)
 	}
 }
+pub enum KtonStaking {}
+impl darwinia_staking::Stake for KtonStaking {
+	type AccountId = AccountId;
+	type Item = Balance;
+
+	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
+		Assets::transfer(
+			RuntimeOrigin::signed(*who),
+			0.into(),
+			darwinia_staking::account_id(),
+			item,
+		)
+	}
+
+	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
+		Assets::transfer(
+			RuntimeOrigin::signed(darwinia_staking::account_id()),
+			0.into(),
+			*who,
+			item,
+		)
+	}
+}
 
 frame_support::parameter_types! {
 	pub static SessionHandlerCollators: Vec<AccountId> = Vec::new();
@@ -233,29 +256,6 @@ impl pallet_treasury::Config for Runtime {
 frame_support::parameter_types! {
 	pub PayoutFraction: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(40);
 	pub static InflationType: u8 = 0;
-}
-pub enum KtonStaking {}
-impl darwinia_staking::Stake for KtonStaking {
-	type AccountId = AccountId;
-	type Item = Balance;
-
-	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		Assets::transfer(
-			RuntimeOrigin::signed(*who),
-			0.into(),
-			darwinia_staking::account_id(),
-			item,
-		)
-	}
-
-	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		Assets::transfer(
-			RuntimeOrigin::signed(darwinia_staking::account_id()),
-			0.into(),
-			*who,
-			item,
-		)
-	}
 }
 pub enum StatedOnSessionEnd {}
 impl darwinia_staking::IssuingManager<Runtime> for StatedOnSessionEnd {
@@ -383,10 +383,8 @@ impl ZeroDefault for darwinia_staking::Ledger<Runtime> {
 	fn default() -> Self {
 		Self {
 			staked_ring: Default::default(),
-			staked_kton: Default::default(),
 			staked_deposits: Default::default(),
 			unstaking_ring: Default::default(),
-			unstaking_kton: Default::default(),
 			unstaking_deposits: Default::default(),
 		}
 	}

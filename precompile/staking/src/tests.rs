@@ -25,7 +25,7 @@ use sp_runtime::Perbill;
 // moonbeam
 use precompile_utils::testing::PrecompileTesterExt;
 // substrate
-use sp_core::{H160, U256};
+use sp_core::H160;
 
 fn precompiles() -> TestPrecompiles<Runtime> {
 	PrecompilesValue::get()
@@ -52,11 +52,7 @@ fn stake_unstake_restake() {
 			.prepare_test(
 				alice,
 				Precompile,
-				PCall::stake {
-					ring_amount: 200.into(),
-					kton_amount: U256::zero(),
-					deposits: vec![],
-				},
+				PCall::stake { ring_amount: 200.into(), deposits: vec![] },
 			)
 			.execute_returns(true);
 		assert_eq!(Staking::ledger_of(alice).unwrap().staked_ring, 200);
@@ -66,11 +62,7 @@ fn stake_unstake_restake() {
 			.prepare_test(
 				alice,
 				Precompile,
-				PCall::unstake {
-					ring_amount: 200.into(),
-					kton_amount: U256::zero(),
-					deposits: vec![],
-				},
+				PCall::unstake { ring_amount: 200.into(), deposits: vec![] },
 			)
 			.execute_returns(true);
 		assert_eq!(Staking::ledger_of(alice).unwrap().staked_ring, 0);
@@ -81,11 +73,7 @@ fn stake_unstake_restake() {
 			.prepare_test(
 				alice,
 				Precompile,
-				PCall::restake {
-					ring_amount: 200.into(),
-					kton_amount: U256::zero(),
-					deposits: vec![],
-				},
+				PCall::restake { ring_amount: 200.into(), deposits: vec![] },
 			)
 			.execute_returns(true);
 		assert_eq!(Staking::ledger_of(alice).unwrap().staked_ring, 200);
@@ -102,11 +90,7 @@ fn claim() {
 			.prepare_test(
 				alice,
 				Precompile,
-				PCall::stake {
-					ring_amount: 200.into(),
-					kton_amount: U256::zero(),
-					deposits: vec![],
-				},
+				PCall::stake { ring_amount: 200.into(), deposits: vec![] },
 			)
 			.execute_returns(true);
 
@@ -115,11 +99,7 @@ fn claim() {
 			.prepare_test(
 				alice,
 				Precompile,
-				PCall::unstake {
-					ring_amount: 200.into(),
-					kton_amount: U256::zero(),
-					deposits: vec![],
-				},
+				PCall::unstake { ring_amount: 200.into(), deposits: vec![] },
 			)
 			.execute_returns(true);
 
@@ -141,11 +121,7 @@ fn nominate() {
 				.prepare_test(
 					alice,
 					Precompile,
-					PCall::stake {
-						ring_amount: 200.into(),
-						kton_amount: U256::zero(),
-						deposits: vec![],
-					},
+					PCall::stake { ring_amount: 200.into(), deposits: vec![] },
 				)
 				.execute_returns(true);
 
@@ -160,11 +136,7 @@ fn nominate() {
 				.prepare_test(
 					bob,
 					Precompile,
-					PCall::stake {
-						ring_amount: 200.into(),
-						kton_amount: U256::zero(),
-						deposits: vec![],
-					},
+					PCall::stake { ring_amount: 200.into(), deposits: vec![] },
 				)
 				.execute_returns(true);
 

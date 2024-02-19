@@ -25,7 +25,6 @@
 //!
 //! ### Acceptable stakes:
 //! - RING: Darwinia's native token
-//! - KTON: Darwinia's commitment token
 //! - Deposit: Locking RINGs' ticket
 
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -58,7 +57,7 @@ use frame_support::{
 use frame_system::{pallet_prelude::*, RawOrigin};
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, One, Zero},
-	Perbill, Perquintill,
+	Perbill,
 };
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
@@ -96,7 +95,7 @@ pub mod pallet {
 	#[cfg(feature = "runtime-benchmarks")]
 	use darwinia_deposit::Config as DepositConfig;
 
-	const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(2);
 
 	/// Empty trait acts as a place holder to satisfy the `#[pallet::config]` macro.
 	#[cfg(not(feature = "runtime-benchmarks"))]
@@ -113,6 +112,7 @@ pub mod pallet {
 		/// RING [`Stake`] interface.
 		type Ring: Stake<AccountId = Self::AccountId, Item = Balance>;
 
+		// TODO: Remove.
 		/// KTON [`Stake`] interface.
 		type Kton: Stake<AccountId = Self::AccountId, Item = Balance>;
 
@@ -139,44 +139,28 @@ pub mod pallet {
 		/// Maximum unstaking/unbonding count.
 		#[pallet::constant]
 		type MaxUnstakings: Get<u32>;
+
+		/// KTON staker contract address.
+		#[pallet::constant]
+		type KtonStaker: Get<Self::AccountId>;
 	}
 
 	#[allow(missing_docs)]
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// An account has staked.
-		Staked {
-			staker: T::AccountId,
-			ring_amount: Balance,
-			kton_amount: Balance,
-			deposits: Vec<DepositId<T>>,
-		},
-		/// An account has unstaked.
-		Unstaked {
-			staker: T::AccountId,
-			ring_amount: Balance,
-			kton_amount: Balance,
-			deposits: Vec<DepositId<T>>,
-		},
-		CommissionUpdated {
-			who: T::AccountId,
-			commission: Perbill,
-		},
+		/// An account has staked some assets.
+		Staked { who: T::AccountId, ring_amount: Balance, deposits: Vec<DepositId<T>> },
+		/// An account has unstaked assets.
+		Unstaked { who: T::AccountId, ring_amount: Balance, deposits: Vec<DepositId<T>> },
+		/// A collator has updated their commission.
+		CommissionUpdated { who: T::AccountId, commission: Perbill },
 		/// A payout has been made for the staker.
-		Payout {
-			staker: T::AccountId,
-			amount: Balance,
-		},
+		Payout { who: T::AccountId, amount: Balance },
 		/// Unable to pay the staker's reward.
-		Unpaid {
-			staker: T::AccountId,
-			amount: Balance,
-		},
+		Unpaid { who: T::AccountId, amount: Balance },
 		/// A new collator set has been elected.
-		Elected {
-			collators: Vec<T::AccountId>,
-		},
+		Elected { collators: Vec<T::AccountId> },
 	}
 
 	#[pallet::error]
@@ -201,18 +185,6 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn ledger_of)]
 	pub type Ledgers<T: Config> = StorageMap<_, Blake2_128Concat, T::AccountId, Ledger<T>>;
-
-	/// Total staked RING.
-	///
-	/// This will count RING + deposit(locking RING).
-	#[pallet::storage]
-	#[pallet::getter(fn ring_pool)]
-	pub type RingPool<T: Config> = StorageValue<_, Balance, ValueQuery>;
-
-	/// Total staked KTON.
-	#[pallet::storage]
-	#[pallet::getter(fn kton_pool)]
-	pub type KtonPool<T: Config> = StorageValue<_, Balance, ValueQuery>;
 
 	/// The map from (wannabe) collator to the preferences of that collator.
 	#[pallet::storage]
@@ -335,9 +307,13 @@ pub mod pallet {
 			<ElapsedTime<T>>::put(self.elapsed_time);
 			<CollatorCount<T>>::put(self.collator_count);
 
-			self.collators.iter().for_each(|(who, stake)| {
-				<Pallet<T>>::stake(RawOrigin::Signed(who.to_owned()).into(), *stake, 0, Vec::new())
-					.expect("[pallet::staking] 0, genesis must be built; qed");
+			self.collators.iter().for_each(|(who, ring_amount)| {
+				<Pallet<T>>::stake(
+					RawOrigin::Signed(who.to_owned()).into(),
+					*ring_amount,
+					Vec::new(),
+				)
+				.expect("[pallet::staking] 0, genesis must be built; qed");
 				<Pallet<T>>::collect(RawOrigin::Signed(who.to_owned()).into(), Default::default())
 					.expect("[pallet::staking] 1, genesis must be built; qed");
 				<Pallet<T>>::nominate(RawOrigin::Signed(who.to_owned()).into(), who.to_owned())
@@ -376,12 +352,11 @@ pub mod pallet {
 		pub fn stake(
 			origin: OriginFor<T>,
 			ring_amount: Balance,
-			kton_amount: Balance,
 			deposits: Vec<DepositId<T>>,
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
-			if ring_amount == 0 && kton_amount == 0 && deposits.is_empty() {
+			if ring_amount == 0 && deposits.is_empty() {
 				return Ok(());
 			}
 
@@ -393,10 +368,8 @@ pub mod pallet {
 
 					*l = Some(Ledger {
 						staked_ring: Default::default(),
-						staked_kton: Default::default(),
 						staked_deposits: Default::default(),
 						unstaking_ring: Default::default(),
-						unstaking_kton: Default::default(),
 						unstaking_deposits: Default::default(),
 					});
 
@@ -404,18 +377,7 @@ pub mod pallet {
 				};
 
 				if ring_amount != 0 {
-					Self::stake_token::<<T as Config>::Ring, RingPool<T>>(
-						&who,
-						&mut l.staked_ring,
-						ring_amount,
-					)?;
-				}
-				if kton_amount != 0 {
-					Self::stake_token::<<T as Config>::Kton, KtonPool<T>>(
-						&who,
-						&mut l.staked_kton,
-						kton_amount,
-					)?;
+					Self::stake_ring(&who, &mut l.staked_ring, ring_amount)?;
 				}
 
 				for d in deposits.clone() {
@@ -425,7 +387,7 @@ pub mod pallet {
 				DispatchResult::Ok(())
 			})?;
 
-			Self::deposit_event(Event::Staked { staker: who, ring_amount, kton_amount, deposits });
+			Self::deposit_event(Event::Staked { who, ring_amount, deposits });
 
 			Ok(())
 		}
@@ -436,12 +398,11 @@ pub mod pallet {
 		pub fn unstake(
 			origin: OriginFor<T>,
 			ring_amount: Balance,
-			kton_amount: Balance,
 			deposits: Vec<DepositId<T>>,
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
-			if ring_amount == 0 && kton_amount == 0 && deposits.is_empty() {
+			if ring_amount == 0 && deposits.is_empty() {
 				return Ok(());
 			}
 
@@ -449,22 +410,11 @@ pub mod pallet {
 				let l = l.as_mut().ok_or(<Error<T>>::NotStaker)?;
 
 				if ring_amount != 0 {
-					Self::unstake_token::<RingPool<T>>(
-						&mut l.staked_ring,
-						&mut l.unstaking_ring,
-						ring_amount,
-					)?;
-				}
-				if kton_amount != 0 {
-					Self::unstake_token::<KtonPool<T>>(
-						&mut l.staked_kton,
-						&mut l.unstaking_kton,
-						kton_amount,
-					)?;
+					Self::unstake_ring(&mut l.staked_ring, &mut l.unstaking_ring, ring_amount)?;
 				}
 
 				for d in deposits {
-					Self::unstake_deposit(&who, l, d)?;
+					Self::unstake_deposit(l, d)?;
 				}
 
 				DispatchResult::Ok(())
@@ -481,12 +431,11 @@ pub mod pallet {
 		pub fn restake(
 			origin: OriginFor<T>,
 			ring_amount: Balance,
-			kton_amount: Balance,
 			deposits: Vec<DepositId<T>>,
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
-			if ring_amount == 0 && kton_amount == 0 && deposits.is_empty() {
+			if ring_amount == 0 && deposits.is_empty() {
 				return Ok(());
 			}
 
@@ -494,22 +443,11 @@ pub mod pallet {
 				let l = l.as_mut().ok_or(<Error<T>>::NotStaker)?;
 
 				if ring_amount != 0 {
-					Self::restake_token::<RingPool<T>>(
-						&mut l.staked_ring,
-						&mut l.unstaking_ring,
-						ring_amount,
-					)?;
-				}
-				if kton_amount != 0 {
-					Self::restake_token::<KtonPool<T>>(
-						&mut l.staked_kton,
-						&mut l.unstaking_kton,
-						kton_amount,
-					)?;
+					Self::restake_ring(&mut l.staked_ring, &mut l.unstaking_ring, ring_amount)?;
 				}
 
 				for d in deposits {
-					Self::restake_deposit(&who, l, d)?;
+					Self::restake_deposit(l, d)?;
 				}
 
 				DispatchResult::Ok(())
@@ -616,39 +554,12 @@ pub mod pallet {
 	where
 		T: Config,
 	{
-		fn update_pool<P>(increase: bool, amount: Balance) -> DispatchResult
-		where
-			P: frame_support::StorageValue<Balance, Query = Balance>,
-		{
-			P::try_mutate(|p| {
-				*p = if increase {
-					p.checked_add(amount)
-						.ok_or("[pallet::staking] `u128` must not be overflowed; qed")?
-				} else {
-					p.checked_sub(amount)
-						.ok_or("[pallet::staking] `u128` must not be overflowed; qed")?
-				};
+		fn stake_ring(who: &T::AccountId, staked: &mut Balance, amount: Balance) -> DispatchResult {
+			<T as Config>::Ring::stake(who, amount)?;
 
-				Ok(())
-			})
-		}
-
-		fn stake_token<S, P>(
-			who: &T::AccountId,
-			record: &mut Balance,
-			amount: Balance,
-		) -> DispatchResult
-		where
-			S: Stake<AccountId = T::AccountId, Item = Balance>,
-			P: frame_support::StorageValue<Balance, Query = Balance>,
-		{
-			S::stake(who, amount)?;
-
-			*record = record
+			*staked = staked
 				.checked_add(amount)
 				.ok_or("[pallet::staking] `u128` must not be overflowed; qed")?;
-
-			Self::update_pool::<P>(true, amount)?;
 
 			Ok(())
 		}
@@ -662,19 +573,14 @@ pub mod pallet {
 
 			ledger.staked_deposits.try_push(deposit).map_err(|_| <Error<T>>::ExceedMaxDeposits)?;
 
-			Self::update_pool::<RingPool<T>>(true, T::Deposit::amount(who, deposit)?)?;
-
 			Ok(())
 		}
 
-		fn unstake_token<P>(
+		fn unstake_ring(
 			staked: &mut Balance,
 			unstaking: &mut BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>,
 			amount: Balance,
-		) -> DispatchResult
-		where
-			P: frame_support::StorageValue<Balance, Query = Balance>,
-		{
+		) -> DispatchResult {
 			*staked = staked
 				.checked_sub(amount)
 				.ok_or("[pallet::staking] `u128` must not be overflowed; qed")?;
@@ -686,16 +592,10 @@ pub mod pallet {
 				))
 				.map_err(|_| <Error<T>>::ExceedMaxUnstakings)?;
 
-			Self::update_pool::<P>(false, amount)?;
-
 			Ok(())
 		}
 
-		fn unstake_deposit(
-			who: &T::AccountId,
-			ledger: &mut Ledger<T>,
-			deposit: DepositId<T>,
-		) -> DispatchResult {
+		fn unstake_deposit(ledger: &mut Ledger<T>, deposit: DepositId<T>) -> DispatchResult {
 			ledger
 				.unstaking_deposits
 				.try_push((
@@ -710,19 +610,14 @@ pub mod pallet {
 				))
 				.map_err(|_| <Error<T>>::ExceedMaxUnstakings)?;
 
-			Self::update_pool::<RingPool<T>>(false, T::Deposit::amount(who, deposit)?)?;
-
 			Ok(())
 		}
 
-		fn restake_token<P>(
+		fn restake_ring(
 			staked: &mut Balance,
 			unstaking: &mut BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>,
 			mut amount: Balance,
-		) -> DispatchResult
-		where
-			P: frame_support::StorageValue<Balance, Query = Balance>,
-		{
+		) -> DispatchResult {
 			let mut actual_restake = 0;
 
 			// Cancel the latest `unstake` first.
@@ -750,16 +645,10 @@ pub mod pallet {
 
 			*staked += actual_restake;
 
-			Self::update_pool::<P>(true, actual_restake)?;
-
 			Ok(())
 		}
 
-		fn restake_deposit(
-			who: &T::AccountId,
-			ledger: &mut Ledger<T>,
-			deposit: DepositId<T>,
-		) -> DispatchResult {
+		fn restake_deposit(ledger: &mut Ledger<T>, deposit: DepositId<T>) -> DispatchResult {
 			ledger
 				.staked_deposits
 				.try_push(
@@ -776,8 +665,6 @@ pub mod pallet {
 				)
 				.map_err(|_| <Error<T>>::ExceedMaxDeposits)?;
 
-			Self::update_pool::<RingPool<T>>(true, T::Deposit::amount(who, deposit)?)?;
-
 			Ok(())
 		}
 
@@ -785,26 +672,18 @@ pub mod pallet {
 			<Ledgers<T>>::try_mutate(who, |l| {
 				let l = l.as_mut().ok_or(<Error<T>>::NotStaker)?;
 				let now = <frame_system::Pallet<T>>::block_number();
-				let claim = |u: &mut BoundedVec<_, _>, c: &mut Balance| {
-					u.retain(|(a, t)| {
-						if t <= &now {
-							*c += a;
-
-							false
-						} else {
-							true
-						}
-					});
-				};
 				let mut r_claimed = 0;
 
-				claim(&mut l.unstaking_ring, &mut r_claimed);
+				l.unstaking_ring.retain(|(a, t)| {
+					if t <= &now {
+						r_claimed += a;
+
+						false
+					} else {
+						true
+					}
+				});
 				<T as Config>::Ring::unstake(who, r_claimed)?;
-
-				let mut k_claimed = 0;
-
-				claim(&mut l.unstaking_kton, &mut k_claimed);
-				<T as Config>::Kton::unstake(who, k_claimed)?;
 
 				let mut d_claimed = Vec::new();
 
@@ -853,72 +732,56 @@ pub mod pallet {
 			});
 		}
 
-		/// Calculate the power of the given account.
-		#[cfg(any(feature = "runtime-benchmarks", test))]
-		pub fn quick_power_of(who: &T::AccountId) -> Power {
-			Self::power_of(who, <RingPool<T>>::get(), <KtonPool<T>>::get())
-		}
-
-		/// Calculate the power of the given account.
-		///
-		/// This is an optimized version of [`Self::quick_power_of`].
-		/// Avoiding read the pools' storage multiple times.
-		pub fn power_of(who: &T::AccountId, ring_pool: Balance, kton_pool: Balance) -> Power {
-			// Power is a mixture of RING and KTON.
-			// - `total_ring_power = (amount / total_staked_ring) * HALF_POWER`
-			// - `total_kton_power = (amount / total_staked_kton) * HALF_POWER`
-
-			const HALF_POWER: u128 = 500_000_000;
-
+		/// Calculate the stakes of the given account.
+		pub fn stake_of(who: &T::AccountId) -> Balance {
 			<Ledgers<T>>::get(who)
 				.map(|l| {
-					(Perquintill::from_rational(
-						l.staked_ring
-							+ l.staked_deposits
-								.into_iter()
-								// We don't care if the deposit exists here.
-								// It was guaranteed by the `stake`/`unstake`/`restake` functions.
-								.fold(0, |r, d| r + T::Deposit::amount(who, d).unwrap_or_default()),
-						ring_pool.max(1),
-					) * HALF_POWER)
-						.saturating_add(
-							Perquintill::from_rational(l.staked_kton, kton_pool.max(1))
-								* HALF_POWER,
-						) as _
+					l.staked_ring
+						+ l.staked_deposits
+							.into_iter()
+							// We don't care if the deposit exists here.
+							// It was guaranteed by the `stake`/`unstake`/`restake` functions.
+							.fold(0, |r, d| r + T::Deposit::amount(who, d).unwrap_or_default())
 				})
 				.unwrap_or_default()
 		}
 
 		/// Distribute the session reward to staking pot and update the stakers' reward record.
-		pub fn distribute_session_reward(amount: Balance) -> Balance {
+		pub fn distribute_session_reward(amount: Balance) {
+			let reward_to_ring = amount.saturating_div(2);
+			let reward_to_kton = amount.saturating_sub(reward_to_ring);
+			let kton_staker = T::KtonStaker::get();
+
+			if T::IssuingManager::reward(&kton_staker, reward_to_kton).is_err() {
+				Self::deposit_event(Event::Unpaid {
+					who: kton_staker,
+					amount: reward_to_kton,
+				});
+			}
+
 			let (sum, map) = <AuthoredBlocksCount<T>>::take();
 			let staking_pot = account_id();
-			let mut actual_reward = 0;
-			let mut unpaid = 0;
+			let mut actual_reward_to_ring = 0;
+			let mut unpaid_reward_to_ring = 0;
 
 			map.into_iter().for_each(|(c, p)| {
-				let r = Perbill::from_rational(p, sum) * amount;
+				let r = Perbill::from_rational(p, sum) * reward_to_ring;
 
 				<PendingRewards<T>>::mutate(&c, |u| *u = u.map(|u| u + r).or(Some(r)));
 
-				// TODO: merge into one call
 				if T::IssuingManager::reward(&staking_pot, r).is_ok() {
-					actual_reward += r;
+					actual_reward_to_ring += amount;
 				} else {
-					unpaid += r;
+					unpaid_reward_to_ring += amount;
 				}
 			});
 
-			Self::deposit_event(Event::Payout {
-				staker: staking_pot.clone(),
-				amount: actual_reward,
-			});
-
 			if unpaid != 0 {
-				Self::deposit_event(Event::Unpaid { staker: staking_pot, amount: unpaid });
+				Self::deposit_event(Event::Unpaid {
+					who: staking_pot,
+					amount: unpaid_reward_to_ring,
+				});
 			}
-
-			actual_reward
 		}
 
 		/// Pay the reward to the collator and its nominators.
@@ -937,16 +800,16 @@ pub mod pallet {
 
 					c_payout += n_payout;
 				} else if T::IssuingManager::reward(&n_exposure.who, n_payout).is_ok() {
-					Self::deposit_event(Event::Payout { staker: n_exposure.who, amount: n_payout });
+					Self::deposit_event(Event::Payout { who: n_exposure.who, amount: n_payout });
 				} else {
-					Self::deposit_event(Event::Unpaid { staker: n_exposure.who, amount: n_payout });
+					Self::deposit_event(Event::Unpaid { who: n_exposure.who, amount: n_payout });
 				}
 			}
 
 			if T::IssuingManager::reward(&collator, c_payout).is_ok() {
-				Self::deposit_event(Event::Payout { staker: collator, amount: c_payout });
+				Self::deposit_event(Event::Payout { who: collator, amount: c_payout });
 			} else {
-				Self::deposit_event(Event::Unpaid { staker: collator, amount: c_payout });
+				Self::deposit_event(Event::Unpaid { who: collator, amount: c_payout });
 			}
 
 			Ok(<T as Config>::WeightInfo::payout())
@@ -967,15 +830,16 @@ pub mod pallet {
 				"[pallet::staking] assembling new collators for new session {index} at #{bn:?}",
 			);
 
-			if let Ok(collators) = Self::elect() {
-				if !collators.is_empty() {
+			if let Ok(cs) = Self::elect() {
+				if !cs.is_empty() {
 					// TODO?: if we really need this event
-					Self::deposit_event(Event::Elected { collators: collators.clone() });
+					Self::deposit_event(Event::Elected { collators: cs.clone() });
 
-					return Some(collators);
+					return Some(cs);
 				}
 			}
 
+			// This error log is acceptable when testing with `genesis_collator = false`.
 			log::error!(
 				"[pallet::staking] fail to elect collators for new session {index} at #{bn:?}"
 			);
@@ -1007,8 +871,6 @@ pub mod pallet {
 		/// This should only be called by the [`pallet_session::SessionManager::new_session`].
 		pub fn elect() -> Result<Vec<T::AccountId>, DispatchError> {
 			let nominators = <Nominators<T>>::iter().collect::<Vec<_>>();
-			let ring_pool = <RingPool<T>>::get();
-			let kton_pool = <KtonPool<T>>::get();
 			let mut collators = <Collators<T>>::iter()
 				.map(|(c, cm)| {
 					let scaler = Perbill::one() - cm;
@@ -1017,7 +879,7 @@ pub mod pallet {
 						.iter()
 						.filter_map(|(n, c_)| {
 							if c_ == &c {
-								let nominator_v = scaler * Self::power_of(n, ring_pool, kton_pool);
+								let nominator_v = scaler * Self::stake_of(n);
 
 								collator_v += nominator_v;
 
@@ -1050,9 +912,6 @@ pub mod pallet {
 }
 pub use pallet::*;
 
-type Power = u32;
-type Vote = u32;
-
 type DepositId<T> = <<T as Config>::Deposit as Stake>::Item;
 
 /// Issuing and reward manager.
@@ -1064,11 +923,8 @@ where
 	fn on_session_end() {
 		let inflation = Self::inflate();
 		let reward = Self::calculate_reward(inflation);
-		let actual_reward = <Pallet<T>>::distribute_session_reward(reward);
 
-		if inflation != 0 {
-			Self::clear(inflation.saturating_sub(actual_reward));
-		}
+		<Pallet<T>>::distribute_session_reward(reward);
 	}
 
 	/// Inflation settings.
@@ -1081,9 +937,6 @@ where
 
 	/// The reward function.
 	fn reward(who: &T::AccountId, amount: Balance) -> DispatchResult;
-
-	/// Clear the remaining inflation.
-	fn clear(_remaining: Balance) {}
 }
 impl<T> IssuingManager<T> for ()
 where
@@ -1126,14 +979,10 @@ where
 {
 	/// Staked RING.
 	pub staked_ring: Balance,
-	/// Staked KTON.
-	pub staked_kton: Balance,
 	/// Staked deposits.
 	pub staked_deposits: BoundedVec<DepositId<T>, <T as Config>::MaxDeposits>,
 	/// The RING in unstaking process.
 	pub unstaking_ring: BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>,
-	/// The KTON in unstaking process.
-	pub unstaking_kton: BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>,
 	/// The deposit in unstaking process.
 	pub unstaking_deposits: BoundedVec<(DepositId<T>, BlockNumberFor<T>), T::MaxUnstakings>,
 }
@@ -1143,10 +992,8 @@ where
 {
 	fn is_empty(&self) -> bool {
 		self.staked_ring == 0
-			&& self.staked_kton == 0
 			&& self.staked_deposits.is_empty()
 			&& self.unstaking_ring.is_empty()
-			&& self.unstaking_kton.is_empty()
 			&& self.unstaking_deposits.is_empty()
 	}
 }
@@ -1158,7 +1005,7 @@ pub struct Exposure<AccountId> {
 	/// The commission of this collator.
 	pub commission: Perbill,
 	/// The total vote backing this collator.
-	pub vote: Vote,
+	pub vote: Balance,
 	/// Nominator staking map.
 	pub nominators: Vec<IndividualExposure<AccountId>>,
 }
@@ -1169,7 +1016,7 @@ pub struct IndividualExposure<AccountId> {
 	/// Nominator.
 	pub who: AccountId,
 	/// Nominator's staking vote.
-	pub vote: Vote,
+	pub vote: Balance,
 }
 
 // Add reward points to block authors:
