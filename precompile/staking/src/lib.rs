@@ -97,11 +97,10 @@ where
 		Ok(true)
 	}
 
-	#[precompile::public("restake(uint256,uint256,uint8[])")]
+	#[precompile::public("restake(uint256,uint8[])")]
 	fn restake(
 		handle: &mut impl PrecompileHandle,
 		ring_amount: U256,
-		kton_amount: U256,
 		deposits: Vec<u8>,
 	) -> EvmResult<bool> {
 		let origin = handle.context().caller.into();
@@ -112,7 +111,6 @@ where
 			Some(origin).into(),
 			darwinia_staking::Call::<Runtime>::restake {
 				ring_amount: ring_amount.as_u128(),
-				kton_amount: kton_amount.as_u128(),
 				deposits,
 			},
 		)?;

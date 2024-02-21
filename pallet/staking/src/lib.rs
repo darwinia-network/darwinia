@@ -47,9 +47,12 @@ pub use weights::WeightInfo;
 
 pub use darwinia_staking_traits::*;
 
+// core
+use core::mem;
 // crates.io
 use codec::FullCodec;
 // darwinia
+use darwinia_message_transact as _;
 use dc_types::{Balance, Moment};
 // substrate
 use frame_support::{
@@ -125,6 +128,9 @@ pub mod pallet {
 		/// Inflation and reward manager.
 		type IssuingManager: IssuingManager<Self>;
 
+		/// KTON staker notifier.
+		type KtonStakerNotifier: KtonStakerNotification;
+
 		/// Pass [`pallet_session::Config::ShouldEndSession`]'s result to here.
 		type ShouldEndSession: Get<bool>;
 
@@ -139,6 +145,14 @@ pub mod pallet {
 		/// Maximum unstaking/unbonding count.
 		#[pallet::constant]
 		type MaxUnstakings: Get<u32>;
+
+		#[pallet::constant]
+		/// The curve of migration.
+		type MigrationCurve: Get<Perquintill>;
+
+		/// The address of KTON staker contract.
+		#[pallet::constant]
+		type KtonStakerAddress: Get<Self::AccountId>;
 	}
 
 	#[allow(missing_docs)]
@@ -311,6 +325,11 @@ pub mod pallet {
 	#[pallet::getter(fn elapsed_time)]
 	pub type ElapsedTime<T: Config> = StorageValue<_, Moment, ValueQuery>;
 
+	/// Migration starting block.
+	#[pallet::storage]
+	#[pallet::getter(fn migration_start_block)]
+	pub type MigrationStartBlock<T: Config> = StorageValue<_, BlockNumberFor<T>, ValueQuery>;
+
 	#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
@@ -351,6 +370,12 @@ pub mod pallet {
 	pub struct Pallet<T>(_);
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		fn on_runtime_upgrade() -> Weight {
+			<MigrationStartBlock<T>>::put(<frame_system::Pallet<T>>::block_number());
+
+			T::DbWeight::get().reads_writes(0, 1)
+		}
+
 		fn on_initialize(_: BlockNumberFor<T>) -> Weight {
 			// There are already plenty of tasks to handle during the new session,
 			// so refrain from assigning any additional ones here.
@@ -451,16 +476,12 @@ pub mod pallet {
 				if ring_amount != 0 {
 					Self::unstake_token::<RingPool<T>>(
 						&mut l.staked_ring,
-						&mut l.unstaking_ring,
+						Some(&mut l.unstaking_ring),
 						ring_amount,
 					)?;
 				}
 				if kton_amount != 0 {
-					Self::unstake_token::<KtonPool<T>>(
-						&mut l.staked_kton,
-						&mut l.unstaking_kton,
-						kton_amount,
-					)?;
+					Self::unstake_token::<KtonPool<T>>(&mut l.staked_kton, None, kton_amount)?;
 				}
 
 				for d in deposits {
@@ -481,12 +502,11 @@ pub mod pallet {
 		pub fn restake(
 			origin: OriginFor<T>,
 			ring_amount: Balance,
-			kton_amount: Balance,
 			deposits: Vec<DepositId<T>>,
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
-			if ring_amount == 0 && kton_amount == 0 && deposits.is_empty() {
+			if ring_amount == 0 && deposits.is_empty() {
 				return Ok(());
 			}
 
@@ -498,13 +518,6 @@ pub mod pallet {
 						&mut l.staked_ring,
 						&mut l.unstaking_ring,
 						ring_amount,
-					)?;
-				}
-				if kton_amount != 0 {
-					Self::restake_token::<KtonPool<T>>(
-						&mut l.staked_kton,
-						&mut l.unstaking_kton,
-						kton_amount,
 					)?;
 				}
 
@@ -669,7 +682,7 @@ pub mod pallet {
 
 		fn unstake_token<P>(
 			staked: &mut Balance,
-			unstaking: &mut BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>,
+			unstaking: Option<&mut BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>>,
 			amount: Balance,
 		) -> DispatchResult
 		where
@@ -679,12 +692,13 @@ pub mod pallet {
 				.checked_sub(amount)
 				.ok_or("[pallet::staking] `u128` must not be overflowed; qed")?;
 
-			unstaking
-				.try_push((
+			if let Some(u) = unstaking {
+				u.try_push((
 					amount,
 					<frame_system::Pallet<T>>::block_number() + T::MinStakingDuration::get(),
 				))
 				.map_err(|_| <Error<T>>::ExceedMaxUnstakings)?;
+			}
 
 			Self::update_pool::<P>(false, amount)?;
 
@@ -785,26 +799,22 @@ pub mod pallet {
 			<Ledgers<T>>::try_mutate(who, |l| {
 				let l = l.as_mut().ok_or(<Error<T>>::NotStaker)?;
 				let now = <frame_system::Pallet<T>>::block_number();
-				let claim = |u: &mut BoundedVec<_, _>, c: &mut Balance| {
-					u.retain(|(a, t)| {
-						if t <= &now {
-							*c += a;
-
-							false
-						} else {
-							true
-						}
-					});
-				};
 				let mut r_claimed = 0;
 
-				claim(&mut l.unstaking_ring, &mut r_claimed);
+				l.unstaking_ring.retain(|(a, t)| {
+					if t <= &now {
+						r_claimed += a;
+
+						false
+					} else {
+						true
+					}
+				});
 				<T as Config>::Ring::unstake(who, r_claimed)?;
-
-				let mut k_claimed = 0;
-
-				claim(&mut l.unstaking_kton, &mut k_claimed);
-				<T as Config>::Kton::unstake(who, k_claimed)?;
+				<T as Config>::Kton::unstake(
+					who,
+					mem::take(&mut l.unstaking_kton).into_iter().fold(0, |s, (a, _)| s + a),
+				)?;
 
 				let mut d_claimed = Vec::new();
 
@@ -856,14 +866,24 @@ pub mod pallet {
 		/// Calculate the power of the given account.
 		#[cfg(any(feature = "runtime-benchmarks", test))]
 		pub fn quick_power_of(who: &T::AccountId) -> Power {
-			Self::power_of(who, <RingPool<T>>::get(), <KtonPool<T>>::get())
+			Self::power_of(
+				who,
+				<RingPool<T>>::get(),
+				<KtonPool<T>>::get(),
+				T::MigrationCurve::get(),
+			)
 		}
 
 		/// Calculate the power of the given account.
 		///
 		/// This is an optimized version of [`Self::quick_power_of`].
 		/// Avoiding read the pools' storage multiple times.
-		pub fn power_of(who: &T::AccountId, ring_pool: Balance, kton_pool: Balance) -> Power {
+		pub fn power_of(
+			who: &T::AccountId,
+			ring_pool: Balance,
+			kton_pool: Balance,
+			migration_ratio: Perquintill,
+		) -> Power {
 			// Power is a mixture of RING and KTON.
 			// - `total_ring_power = (amount / total_staked_ring) * HALF_POWER`
 			// - `total_kton_power = (amount / total_staked_kton) * HALF_POWER`
@@ -883,42 +903,43 @@ pub mod pallet {
 					) * HALF_POWER)
 						.saturating_add(
 							Perquintill::from_rational(l.staked_kton, kton_pool.max(1))
-								* HALF_POWER,
+								* (migration_ratio * HALF_POWER),
 						) as _
 				})
 				.unwrap_or_default()
 		}
 
 		/// Distribute the session reward to staking pot and update the stakers' reward record.
-		pub fn distribute_session_reward(amount: Balance) -> Balance {
+		pub fn distribute_session_reward(amount: Balance) {
+			let (reward_to_v1, reward_to_v2) = {
+				let reward_to_ring = amount / 2;
+				let reward_to_kton = amount - reward_to_ring;
+				let reward_to_kton_v1 = T::MigrationCurve::get() * reward_to_kton;
+				let reward_to_kton_v2 = reward_to_kton - reward_to_kton_v1;
+
+				(reward_to_ring + reward_to_kton_v1, reward_to_kton_v2)
+			};
 			let (sum, map) = <AuthoredBlocksCount<T>>::take();
 			let staking_pot = account_id();
-			let mut actual_reward = 0;
-			let mut unpaid = 0;
+			let actual_reward_v1 = map.into_iter().fold(0, |s, (c, p)| {
+				let r = Perbill::from_rational(p, sum) * reward_to_v1;
 
-			map.into_iter().for_each(|(c, p)| {
-				let r = Perbill::from_rational(p, sum) * amount;
+				<PendingRewards<T>>::mutate(c, |u| *u = u.map(|u| u + r).or(Some(r)));
 
-				<PendingRewards<T>>::mutate(&c, |u| *u = u.map(|u| u + r).or(Some(r)));
-
-				// TODO: merge into one call
-				if T::IssuingManager::reward(&staking_pot, r).is_ok() {
-					actual_reward += r;
+				s + r
+			});
+			let reward = |who, amount| {
+				if T::IssuingManager::reward(&who, amount).is_ok() {
+					Self::deposit_event(Event::Payout { staker: who, amount });
 				} else {
-					unpaid += r;
+					Self::deposit_event(Event::Unpaid { staker: who, amount });
 				}
-			});
+			};
 
-			Self::deposit_event(Event::Payout {
-				staker: staking_pot.clone(),
-				amount: actual_reward,
-			});
+			reward(staking_pot, actual_reward_v1);
+			reward(T::KtonStakerAddress::get(), reward_to_v2);
 
-			if unpaid != 0 {
-				Self::deposit_event(Event::Unpaid { staker: staking_pot, amount: unpaid });
-			}
-
-			actual_reward
+			T::KtonStakerNotifier::notify();
 		}
 
 		/// Pay the reward to the collator and its nominators.
@@ -1009,6 +1030,7 @@ pub mod pallet {
 			let nominators = <Nominators<T>>::iter().collect::<Vec<_>>();
 			let ring_pool = <RingPool<T>>::get();
 			let kton_pool = <KtonPool<T>>::get();
+			let migration_ratio = T::MigrationCurve::get();
 			let mut collators = <Collators<T>>::iter()
 				.map(|(c, cm)| {
 					let scaler = Perbill::one() - cm;
@@ -1017,7 +1039,8 @@ pub mod pallet {
 						.iter()
 						.filter_map(|(n, c_)| {
 							if c_ == &c {
-								let nominator_v = scaler * Self::power_of(n, ring_pool, kton_pool);
+								let nominator_v = scaler
+									* Self::power_of(n, ring_pool, kton_pool, migration_ratio);
 
 								collator_v += nominator_v;
 
@@ -1064,11 +1087,8 @@ where
 	fn on_session_end() {
 		let inflation = Self::inflate();
 		let reward = Self::calculate_reward(inflation);
-		let actual_reward = <Pallet<T>>::distribute_session_reward(reward);
 
-		if inflation != 0 {
-			Self::clear(inflation.saturating_sub(actual_reward));
-		}
+		<Pallet<T>>::distribute_session_reward(reward);
 	}
 
 	/// Inflation settings.
@@ -1081,9 +1101,6 @@ where
 
 	/// The reward function.
 	fn reward(who: &T::AccountId, amount: Balance) -> DispatchResult;
-
-	/// Clear the remaining inflation.
-	fn clear(_remaining: Balance) {}
 }
 impl<T> IssuingManager<T> for ()
 where
@@ -1153,7 +1170,7 @@ where
 
 /// A snapshot of the stake backing a single collator in the system.
 #[cfg_attr(test, derive(Clone))]
-#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+#[derive(Encode, Decode, TypeInfo, RuntimeDebug)]
 pub struct Exposure<AccountId> {
 	/// The commission of this collator.
 	pub commission: Perbill,
@@ -1164,7 +1181,7 @@ pub struct Exposure<AccountId> {
 }
 /// A snapshot of the staker's state.
 #[cfg_attr(test, derive(Clone))]
-#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+#[derive(Encode, Decode, TypeInfo, RuntimeDebug)]
 pub struct IndividualExposure<AccountId> {
 	/// Nominator.
 	pub who: AccountId,
@@ -1207,4 +1224,66 @@ where
 	A: FullCodec,
 {
 	PalletId(*b"da/staki").into_account_truncating()
+}
+
+/// The address of the KTON staker contract.
+/// ```
+/// b"sc/ktstk"
+/// ```
+pub struct KtonStakerAddress;
+impl<T> Get<T> for KtonStakerAddress
+where
+	T: From<[u8; 20]>,
+{
+	fn get() -> T {
+		[115, 99, 47, 107, 116, 115, 116, 107, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0].into()
+	}
+}
+
+/// A curve helps to migrate to staking v2 smoothly.
+pub struct MigrationCurve<T>(PhantomData<T>);
+#[cfg(not(any(feature = "runtime-benchmarks", test)))]
+impl<T> Get<Perquintill> for MigrationCurve<T>
+where
+	T: Config,
+{
+	fn get() -> Perquintill {
+		// substrate
+		use sp_runtime::traits::SaturatedConversion;
+
+		let x = (<frame_system::Pallet<T>>::block_number() - <MigrationStartBlock<T>>::get())
+			.saturated_into::<u64>()
+			.max(1);
+		let month_in_blocks = 30 * 24 * 60 * 60 / 12;
+
+		Perquintill::one() - Perquintill::from_rational(x, month_in_blocks)
+	}
+}
+#[cfg(any(feature = "runtime-benchmarks", test))]
+impl<T> Get<Perquintill> for MigrationCurve<T>
+where
+	T: Config,
+{
+	fn get() -> Perquintill {
+		Perquintill::one()
+	}
+}
+
+/// KTON staker contact notification interface.
+pub trait KtonStakerNotification {
+	/// Notify the KTON staker contract.
+	fn notify() {}
+}
+impl KtonStakerNotification for () {}
+/// KTON staker contact notifier.
+pub struct KtonStakerNotifier<T>(PhantomData<T>);
+impl<T> KtonStakerNotification for KtonStakerNotifier<T>
+where
+	T: darwinia_message_transact::Config,
+{
+	fn notify() {
+		// if let Err(e) = darwinia_message_transact::Pallet::message_transact() {
+		// 	log::error!("[pallet::staking] failed to notify KTON staker contract due to {:?}", e);
+		// }
+	}
 }

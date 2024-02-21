@@ -83,7 +83,6 @@ fn stake_unstake_restake() {
 				Precompile,
 				PCall::restake {
 					ring_amount: 200.into(),
-					kton_amount: U256::zero(),
 					deposits: vec![],
 				},
 			)

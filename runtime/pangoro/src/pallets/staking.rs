@@ -93,10 +93,6 @@ impl darwinia_staking::IssuingManager<Runtime> for OnPangoroSessionEnd {
 
 		Ok(())
 	}
-
-	fn clear(remaining: Balance) {
-		let _ = Balances::deposit_into_existing(&Treasury::account_id(), remaining);
-	}
 }
 
 pub enum ShouldEndSession {}
@@ -116,8 +112,11 @@ impl darwinia_staking::Config for Runtime {
 	type Deposit = Deposit;
 	type IssuingManager = OnPangoroSessionEnd;
 	type Kton = KtonStaking;
+	type KtonStakerAddress = darwinia_staking::KtonStakerAddress;
+	type KtonStakerNotifier = darwinia_staking::KtonStakerNotifier<Self>;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = ConstU32<16>;
+	type MigrationCurve = darwinia_staking::MigrationCurve<Self>;
 	type MinStakingDuration = ConstU32<{ 10 * MINUTES }>;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;

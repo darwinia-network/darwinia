@@ -95,14 +95,12 @@ frame_support::parameter_types! {
 	pub const BlockGasLimit: sp_core::U256 = sp_core::U256::MAX;
 	pub const WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(20_000, 0);
 }
-
 pub struct FixedGasPrice;
 impl fp_evm::FeeCalculator for FixedGasPrice {
 	fn min_gas_price() -> (sp_core::U256, frame_support::weights::Weight) {
 		(sp_core::U256::from(5), frame_support::weights::Weight::zero())
 	}
 }
-
 impl pallet_evm::Config for Runtime {
 	type AddressMapping = pallet_evm::IdentityAddressMapping;
 	type BlockGasLimit = BlockGasLimit;
@@ -129,7 +127,6 @@ impl pallet_evm::Config for Runtime {
 frame_support::parameter_types! {
 	pub const PostBlockAndTxnHashes: pallet_ethereum::PostLogContent = pallet_ethereum::PostLogContent::BlockAndTxnHashes;
 }
-
 impl pallet_ethereum::Config for Runtime {
 	type ExtraDataLength = ();
 	type PostLogContent = PostBlockAndTxnHashes;

@@ -13,8 +13,9 @@ log        = { workspace = true }
 scale-info = { workspace = true }
 
 # darwinia
-darwinia-staking-traits = { workspace = true }
-dc-types                = { workspace = true }
+darwinia-message-transact = { workspace = true }
+darwinia-staking-traits   = { workspace = true }
+dc-types                  = { workspace = true }
 # darwinia optional
 darwinia-deposit = { workspace = true, optional = true }
 
@@ -30,7 +31,7 @@ frame-benchmarking = { workspace = true, optional = true }
 
 [dev-dependencies]
 # crates.io
-pretty_env_logger = { version = "0.4" }
+pretty_env_logger = { version = "0.5" }
 
 # darwinia
 darwinia-deposit = { workspace = true, features = ["std"] }
@@ -55,6 +56,7 @@ std = [
 	"scale-info/std",
 
 	# darwinia
+	"darwinia-message-transact/std",
 	"darwinia-staking-traits/std",
 	# darwinia optional
 	"darwinia-deposit?/std",
@@ -74,6 +76,7 @@ std = [
 runtime-benchmarks = [
 	# darwinia
 	"darwinia-deposit",
+	"darwinia-message-transact/runtime-benchmarks",
 	"darwinia-staking-traits/runtime-benchmarks",
 
 	# substrate
