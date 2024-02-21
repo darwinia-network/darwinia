@@ -1242,7 +1242,6 @@ where
 
 /// A curve helps to migrate to staking v2 smoothly.
 pub struct MigrationCurve<T>(PhantomData<T>);
-#[cfg(not(any(feature = "runtime-benchmarks", test)))]
 impl<T> Get<Perquintill> for MigrationCurve<T>
 where
 	T: Config,
@@ -1257,15 +1256,6 @@ where
 		let month_in_blocks = 30 * 24 * 60 * 60 / 12;
 
 		Perquintill::one() - Perquintill::from_rational(x, month_in_blocks)
-	}
-}
-#[cfg(any(feature = "runtime-benchmarks", test))]
-impl<T> Get<Perquintill> for MigrationCurve<T>
-where
-	T: Config,
-{
-	fn get() -> Perquintill {
-		Perquintill::one()
 	}
 }
 
