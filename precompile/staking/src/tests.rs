@@ -81,10 +81,7 @@ fn stake_unstake_restake() {
 			.prepare_test(
 				alice,
 				Precompile,
-				PCall::restake {
-					ring_amount: 200.into(),
-					deposits: vec![],
-				},
+				PCall::restake { ring_amount: 200.into(), deposits: vec![] },
 			)
 			.execute_returns(true);
 		assert_eq!(Staking::ledger_of(alice).unwrap().staked_ring, 200);
