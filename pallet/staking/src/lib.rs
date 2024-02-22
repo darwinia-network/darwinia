@@ -51,7 +51,7 @@ pub use darwinia_staking_traits::*;
 use core::mem;
 // crates.io
 use codec::FullCodec;
-use ethabi::Token;
+use ethabi::{Function, Param, ParamType, StateMutability, Token};
 use ethereum::{
 	LegacyTransaction, TransactionAction, TransactionSignature, TransactionV2 as Transaction,
 };
@@ -1304,6 +1304,31 @@ where
 		let reward_distr = H160([
 			0, 0, 0, 0, 10, 229, 219, 123, 218, 248, 208, 113, 230, 128, 69, 46, 51, 217, 29, 213,
 		]);
+		// https://github.com/darwinia-network/kton-staker/blob/175f0ec131d4aef3bf64cfb2fce1d262e7ce9140/src/RewardsDistribution.sol#L11
+		#[allow(deprecated)]
+		let function = Function {
+			name: "distributeRewards".to_string(),
+			inputs: vec![
+				Param {
+					name: "ktonStakingRewards".to_string(),
+					kind: ParamType::Address,
+					internal_type: None,
+				},
+				Param {
+					name: "reward".to_string(),
+					kind: ParamType::Uint(256),
+					internal_type: None,
+				},
+			],
+			outputs: vec![Param {
+				name: "success or not".to_string(),
+				kind: ParamType::Bool,
+				internal_type: None,
+			}],
+			constant: None,
+			state_mutability: StateMutability::Payable,
+		};
+
 		let notify_transaction = LegacyTransaction {
 			nonce: U256::zero(),     // Will be reset in the message transact call
 			gas_price: U256::zero(), // Will be reset in the message transact call
@@ -1311,9 +1336,9 @@ where
 			                          * transaction, otherwise it will out of gas. */
 			action: TransactionAction::Call(reward_distr),
 			value: U256::zero(),
-			// The selector: distributeRewards(address ktonStakingRewards, uint256 reward)
-			// https://github.com/darwinia-network/kton-staker/blob/175f0ec131d4aef3bf64cfb2fce1d262e7ce9140/src/RewardsDistribution.sol#L11
-			input: ethabi::encode(&[Token::Address(staking_reward), Token::Uint(amount.into())]),
+			input: function
+				.encode_input(&[Token::Address(staking_reward.into()), Token::Uint(amount.into())])
+				.unwrap_or_default(),
 			signature,
 		};
 		let sender = <T as Config>::KtonStakerAddress::get();
