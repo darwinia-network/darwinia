@@ -482,6 +482,7 @@ pub mod pallet {
 				}
 				if kton_amount != 0 {
 					Self::unstake_token::<KtonPool<T>>(&mut l.staked_kton, None, kton_amount)?;
+					T::Kton::unstake(&who, kton_amount)?;
 				}
 
 				for d in deposits {

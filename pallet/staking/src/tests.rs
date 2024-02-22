@@ -258,7 +258,7 @@ fn unstake_should_work() {
 
 		// Keep the stakes for at least `MinStakingDuration`.
 		assert_eq!(Balances::free_balance(1), 994 * UNIT);
-		assert_eq!(Assets::balance(0, 1), 997 * UNIT + 22_842_639_593_907);
+		assert_eq!(Assets::balance(0, 1), 1_000 * UNIT + 22_842_639_593_907);
 	});
 }
 
@@ -275,7 +275,7 @@ fn restake_should_work() {
 		Efflux::block(1);
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), UNIT, UNIT, Vec::new()));
 		assert_eq!(Balances::free_balance(1), 994 * UNIT);
-		assert_eq!(Assets::balance(0, 1), 997 * UNIT + 22_842_639_593_907);
+		assert_eq!(Assets::balance(0, 1), 1_000 * UNIT + 22_842_639_593_907);
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
@@ -346,7 +346,7 @@ fn claim_should_work() {
 		Efflux::block(1);
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), UNIT, UNIT, vec![1, 2]));
 		assert_eq!(Balances::free_balance(1), 995 * UNIT);
-		assert_eq!(Assets::balance(0, 1), 998 * UNIT + 22_842_639_593_907);
+		assert_eq!(Assets::balance(0, 1), 1_000 * UNIT + 22_842_639_593_907);
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
@@ -373,7 +373,6 @@ fn claim_should_work() {
 		Efflux::block(1);
 		assert_ok!(Staking::claim(RuntimeOrigin::signed(1)));
 		assert_eq!(System::account(1).consumers, 2);
-		assert_eq!(Assets::balance(0, 1), 998 * UNIT + 22_842_639_593_907);
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
@@ -387,7 +386,6 @@ fn claim_should_work() {
 		Efflux::block(1);
 		assert_ok!(Staking::claim(RuntimeOrigin::signed(1)));
 		assert_eq!(System::account(1).consumers, 2);
-		assert_eq!(Assets::balance(0, 1), 998 * UNIT + 22_842_639_593_907);
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
@@ -402,7 +400,6 @@ fn claim_should_work() {
 		assert_ok!(Staking::claim(RuntimeOrigin::signed(1)));
 		assert_eq!(System::account(1).consumers, 1);
 		assert_eq!(Balances::free_balance(1), 997 * UNIT);
-		assert_eq!(Assets::balance(0, 1), 998 * UNIT + 22_842_639_593_907);
 		assert!(Staking::ledger_of(1).is_none());
 	});
 }
