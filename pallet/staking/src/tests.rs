@@ -871,7 +871,7 @@ fn migration_curve_should_work() {
 		<MigrationStartBlock<Runtime>>::put(10);
 
 		assert_eq!(
-			vec![1, 7, 14, 21, 29, 30]
+			vec![0, 1, 7, 14, 21, 29, 30, 31, 999]
 				.into_iter()
 				.map(|x| {
 					System::set_block_number(10 + x * 24 * 60 * 60 / 12);
@@ -880,12 +880,15 @@ fn migration_curve_should_work() {
 				})
 				.collect::<Vec<_>>(),
 			[
+				"99.9995370370370371%",
 				"96.6666666666666667%",
 				"76.6666666666666667%",
 				"53.3333333333333334%",
 				"30%",
 				"3.3333333333333334%",
-				"0%"
+				"0%",
+				"0%",
+				"0%",
 			]
 		);
 	});
