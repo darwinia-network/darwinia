@@ -8,6 +8,8 @@ version.workspace = true
 
 [dependencies]
 # crates.io
+array-bytes  = { workspace = true }
+ethereum   = { workspace = true }
 codec      = { workspace = true, package = "parity-scale-codec" }
 log        = { workspace = true }
 scale-info = { workspace = true }
@@ -26,6 +28,7 @@ pallet-authorship = { workspace = true }
 pallet-session    = { workspace = true }
 sp-runtime        = { workspace = true }
 sp-std            = { workspace = true }
+sp-core           = { workspace = true }
 # substrate optional
 frame-benchmarking = { workspace = true, optional = true }
 
@@ -43,7 +46,6 @@ pallet-balances      = { workspace = true, features = ["std"] }
 pallet-session       = { workspace = true, features = ["std"] }
 pallet-timestamp     = { workspace = true, features = ["std"] }
 pallet-treasury      = { workspace = true, features = ["std"] }
-sp-core              = { workspace = true, features = ["std"] }
 sp-io                = { workspace = true, features = ["std"] }
 substrate-test-utils = { workspace = true }
 
@@ -69,6 +71,7 @@ std = [
 	"pallet-session/std",
 	"sp-runtime/std",
 	"sp-std/std",
+	"sp-core/std",
 	# substrate optional
 	"frame-benchmarking?/std",
 ]

@@ -1270,10 +1270,43 @@ pub struct KtonStakerNotifier<T>(PhantomData<T>);
 impl<T> KtonStakerNotification for KtonStakerNotifier<T>
 where
 	T: darwinia_message_transact::Config,
+	T::RuntimeOrigin: Into<Result<darwinia_message_transact::LcmpEthOrigin, T::RuntimeOrigin>>,
+	<T as frame_system::Config>::RuntimeOrigin: From<darwinia_message_transact::LcmpEthOrigin>,
 {
 	fn notify() {
-		// if let Err(e) = darwinia_message_transact::Pallet::message_transact() {
-		// 	log::error!("[pallet::staking] failed to notify KTON staker contract due to {:?}", e);
-		// }
+		use darwinia_message_transact::LcmpEthOrigin;
+		use ethereum::{
+			LegacyTransaction, TransactionAction, TransactionSignature,
+			TransactionV2 as Transaction,
+		};
+		use sp_core::{H160, U256};
+
+		let transaction = LegacyTransaction {
+			nonce: U256::zero(),
+			gas_price: U256::zero(),
+			gas_limit: U256::from(100_000_000),
+			action: TransactionAction::Call(H160::default()),
+			value: U256::zero(),
+			input: vec![],
+			signature: TransactionSignature::new(
+				38,
+				array_bytes::hex_n_into::<_, _, 32>(
+					"be67e0a07db67da8d446f76add590e54b6e92cb6b8f9835aeb67540579a27717",
+				)
+				.unwrap(),
+				array_bytes::hex_n_into::<_, _, 32>(
+					"2d690516512020171c1ec870f6ff45398cc8609250326be89915fb538e7bd718",
+				)
+				.unwrap(),
+			)
+			.unwrap(),
+		};
+
+		if let Err(e) = darwinia_message_transact::Pallet::<T>::message_transact(
+			LcmpEthOrigin::MessageTransact(H160::default()).into(),
+			Box::new(Transaction::Legacy(transaction)),
+		) {
+			log::error!("[pallet::staking] failed to notify KTON staker contract due to {:?}", e);
+		}
 	}
 }
