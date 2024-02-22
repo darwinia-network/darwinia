@@ -3292,7 +3292,6 @@ dependencies = [
 name = "darwinia-staking"
 version = "6.6.0"
 dependencies = [
- "array-bytes",
  "darwinia-deposit",
  "darwinia-message-transact",
  "darwinia-staking-traits",

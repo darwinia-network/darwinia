@@ -8,12 +8,11 @@ version.workspace = true
 
 [dependencies]
 # crates.io
-array-bytes  = { workspace = true }
-ethereum   = { workspace = true }
 codec      = { workspace = true, package = "parity-scale-codec" }
+ethabi     = { version = "18.0", default-features = false }
+ethereum   = { workspace = true }
 log        = { workspace = true }
 scale-info = { workspace = true }
-ethabi     = { version = "18.0", default-features = false }
 
 # darwinia
 darwinia-message-transact = { workspace = true }
@@ -27,9 +26,9 @@ frame-support     = { workspace = true }
 frame-system      = { workspace = true }
 pallet-authorship = { workspace = true }
 pallet-session    = { workspace = true }
+sp-core           = { workspace = true }
 sp-runtime        = { workspace = true }
 sp-std            = { workspace = true }
-sp-core           = { workspace = true }
 # substrate optional
 frame-benchmarking = { workspace = true, optional = true }
 
@@ -55,8 +54,8 @@ default = ["std"]
 std = [
 	# crates.io
 	"codec/std",
-	"log/std",
 	"ethabi/std",
+	"log/std",
 	"scale-info/std",
 
 	# darwinia
@@ -71,9 +70,9 @@ std = [
 	"pallet-authorship/std",
 	"pallet-balances/std",
 	"pallet-session/std",
+	"sp-core/std",
 	"sp-runtime/std",
 	"sp-std/std",
-	"sp-core/std",
 	# substrate optional
 	"frame-benchmarking?/std",
 ]
@@ -93,6 +92,8 @@ runtime-benchmarks = [
 ]
 
 try-runtime = [
+	# darwinia
+	"darwinia-message-transact/try-runtime",
 	# substrate
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",

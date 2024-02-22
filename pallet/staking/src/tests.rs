@@ -18,8 +18,6 @@
 
 // core
 use core::time::Duration;
-// crates.io
-use ethereum::TransactionSignature;
 // darwinia
 use crate::{mock::*, MigrationCurve, *};
 use darwinia_deposit::Error as DepositError;
@@ -897,15 +895,6 @@ fn migration_curves_should_work() {
 }
 
 #[test]
-fn test_notify_mocked_signature_alway_valid() {
-	assert!(TransactionSignature::new(
-		38,
-		array_bytes::hex_n_into_unchecked::<_, _, 32>(
-			"be67e0a07db67da8d446f76add590e54b6e92cb6b8f9835aeb67540579a27717",
-		),
-		array_bytes::hex_n_into_unchecked::<_, _, 32>(
-			"2d690516512020171c1ec870f6ff45398cc8609250326be89915fb538e7bd718",
-		),
-	)
-	.is_some());
+fn mock_sig_should_work() {
+	assert!(mock_sig().is_some());
 }

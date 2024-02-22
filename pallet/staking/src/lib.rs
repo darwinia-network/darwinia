@@ -63,7 +63,7 @@ use frame_support::{
 	pallet_prelude::*, traits::Currency, DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound,
 };
 use frame_system::{pallet_prelude::*, RawOrigin};
-use sp_core::{H160, U256};
+use sp_core::{H160, H256, U256};
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, One, Zero},
 	Perbill, Perquintill,
@@ -949,7 +949,7 @@ pub mod pallet {
 			reward(staking_pot, actual_reward_v1);
 			reward(T::KtonStakerAddress::get(), reward_to_v2);
 
-			T::KtonStakerNotifier::notify();
+			T::KtonStakerNotifier::notify(reward_to_v2);
 		}
 
 		/// Pay the reward to the collator and its nominators.
@@ -1278,63 +1278,68 @@ pub fn migration_curve_kton_reward(x: Perquintill) -> Perquintill {
 /// KTON staker contact notification interface.
 pub trait KtonStakerNotification {
 	/// Notify the KTON staker contract.
-	fn notify() {}
+	fn notify(_: Balance) {}
 }
 impl KtonStakerNotification for () {}
 /// KTON staker contact notifier.
 pub struct KtonStakerNotifier<T>(PhantomData<T>);
 impl<T> KtonStakerNotification for KtonStakerNotifier<T>
 where
-	T: darwinia_message_transact::Config + Config,
+	T: Config + darwinia_message_transact::Config,
 	T::RuntimeOrigin: Into<Result<LcmpEthOrigin, T::RuntimeOrigin>> + From<LcmpEthOrigin>,
 	<T as frame_system::Config>::AccountId: Into<H160>,
 {
-	fn notify() {
-		// Should be a valid mock signature, copied from https://github.com/rust-ethereum/ethereum/blob/master/src/transaction/mod.rs#L230
-		let Some(signature)= TransactionSignature::new(
-			38,
-			array_bytes::hex_n_into_unchecked::<_, _, 32>(
-				"be67e0a07db67da8d446f76add590e54b6e92cb6b8f9835aeb67540579a27717",
-			),
-			array_bytes::hex_n_into_unchecked::<_, _, 32>(
-				"2d690516512020171c1ec870f6ff45398cc8609250326be89915fb538e7bd718",
-			),
-		) else {
+	fn notify(amount: Balance) {
+		let Some(signature)= mock_sig() else {
 			log::error!("[pallet::staking] Invalid mock signature for the staking notify transaction.");
+
 			return;
 		};
-
 		// KTONStakingRewards
-		let staking_reward = array_bytes::hex_n_into_unchecked::<_, H160, 20>(
-			"0x000000000419683a1a03AbC21FC9da25fd2B4dD7",
-		);
+		// 0x000000000419683a1a03AbC21FC9da25fd2B4dD7
+		let staking_reward =
+			H160([0, 0, 0, 0, 4, 25, 104, 58, 26, 3, 171, 194, 31, 201, 218, 37, 253, 43, 77, 215]);
 		// RewardsDistribution Contract
-		let reward_distr = array_bytes::hex_n_into_unchecked::<_, H160, 20>(
-			"0x000000000Ae5DB7BDAf8D071e680452e33d91Dd5",
-		);
-
+		// 0x000000000Ae5DB7BDAf8D071e680452e33d91Dd5
+		let reward_distr = H160([
+			0, 0, 0, 0, 10, 229, 219, 123, 218, 248, 208, 113, 230, 128, 69, 46, 51, 217, 29, 213,
+		]);
 		let notify_transaction = LegacyTransaction {
 			nonce: U256::zero(),     // Will be reset in the message transact call
 			gas_price: U256::zero(), // Will be reset in the message transact call
 			gas_limit: U256::from(10_000_000), /* It should be big enough for the evm
 			                          * transaction, otherwise it will out of gas. */
-			action: TransactionAction::Call(reward_distr.into()),
+			action: TransactionAction::Call(reward_distr),
 			value: U256::zero(),
 			// The selector: distributeRewards(address ktonStakingRewards, uint256 reward)
 			// https://github.com/darwinia-network/kton-staker/blob/175f0ec131d4aef3bf64cfb2fce1d262e7ce9140/src/RewardsDistribution.sol#L11
-			input: ethabi::encode(&[
-				Token::Address(staking_reward.into()),
-				Token::Uint(U256::one()), // TODO
-			]),
+			input: ethabi::encode(&[Token::Address(staking_reward), Token::Uint(amount.into())]),
 			signature,
 		};
-
 		let sender = <T as Config>::KtonStakerAddress::get();
+
 		if let Err(e) = darwinia_message_transact::Pallet::<T>::message_transact(
 			LcmpEthOrigin::MessageTransact(sender.into()).into(),
 			Box::new(Transaction::Legacy(notify_transaction)),
 		) {
-			log::error!("[pallet::staking] failed to notify KTON staker contract due to {:?}", e);
+			log::error!("[pallet::staking] failed to notify KTON staker contract due to {e:?}");
 		}
 	}
+}
+/// Mock a valid signature, copied from:
+/// https://github.com/rust-ethereum/ethereum/blob/master/src/transaction/mod.rs#L230
+pub fn mock_sig() -> Option<TransactionSignature> {
+	TransactionSignature::new(
+		38,
+		// be67e0a07db67da8d446f76add590e54b6e92cb6b8f9835aeb67540579a27717
+		H256([
+			190, 103, 224, 160, 125, 182, 125, 168, 212, 70, 247, 106, 221, 89, 14, 84, 182, 233,
+			44, 182, 184, 249, 131, 90, 235, 103, 84, 5, 121, 162, 119, 23,
+		]),
+		// 2d690516512020171c1ec870f6ff45398cc8609250326be89915fb538e7bd718
+		H256([
+			45, 105, 5, 22, 81, 32, 32, 23, 28, 30, 200, 112, 246, 255, 69, 57, 140, 200, 96, 146,
+			80, 50, 107, 232, 153, 21, 251, 83, 142, 123, 215, 24,
+		]),
+	)
 }
