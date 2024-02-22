@@ -1309,6 +1309,8 @@ where
 			                          * transaction, otherwise it will out of gas. */
 			action: TransactionAction::Call(reward_distr.into()),
 			value: U256::zero(),
+			// The selector: distributeRewards(address ktonStakingRewards, uint256 reward)
+			// https://github.com/darwinia-network/kton-staker/blob/175f0ec131d4aef3bf64cfb2fce1d262e7ce9140/src/RewardsDistribution.sol#L11
 			input: ethabi::encode(&[
 				Token::Address(staking_reward.into()),
 				Token::Uint(U256::one()), // TODO
