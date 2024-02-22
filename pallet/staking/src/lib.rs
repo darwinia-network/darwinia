@@ -51,14 +51,18 @@ pub use darwinia_staking_traits::*;
 use core::mem;
 // crates.io
 use codec::FullCodec;
+use ethereum::{
+	LegacyTransaction, TransactionAction, TransactionSignature, TransactionV2 as Transaction,
+};
 // darwinia
-use darwinia_message_transact as _;
+use darwinia_message_transact::LcmpEthOrigin;
 use dc_types::{Balance, Moment};
 // substrate
 use frame_support::{
 	pallet_prelude::*, traits::Currency, DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound,
 };
 use frame_system::{pallet_prelude::*, RawOrigin};
+use sp_core::{H160, U256};
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, One, Zero},
 	Perbill, Perquintill,
@@ -1269,42 +1273,40 @@ impl KtonStakerNotification for () {}
 pub struct KtonStakerNotifier<T>(PhantomData<T>);
 impl<T> KtonStakerNotification for KtonStakerNotifier<T>
 where
-	T: darwinia_message_transact::Config,
-	T::RuntimeOrigin: Into<Result<darwinia_message_transact::LcmpEthOrigin, T::RuntimeOrigin>>,
-	<T as frame_system::Config>::RuntimeOrigin: From<darwinia_message_transact::LcmpEthOrigin>,
+	T: darwinia_message_transact::Config + Config,
+	T::RuntimeOrigin: Into<Result<LcmpEthOrigin, T::RuntimeOrigin>> + From<LcmpEthOrigin>,
+	<T as frame_system::Config>::AccountId: Into<H160>,
 {
 	fn notify() {
-		use darwinia_message_transact::LcmpEthOrigin;
-		use ethereum::{
-			LegacyTransaction, TransactionAction, TransactionSignature,
-			TransactionV2 as Transaction,
-		};
-		use sp_core::{H160, U256};
-
-		let transaction = LegacyTransaction {
-			nonce: U256::zero(),
-			gas_price: U256::zero(),
-			gas_limit: U256::from(100_000_000),
-			action: TransactionAction::Call(H160::default()),
-			value: U256::zero(),
-			input: vec![],
-			signature: TransactionSignature::new(
-				38,
-				array_bytes::hex_n_into::<_, _, 32>(
-					"be67e0a07db67da8d446f76add590e54b6e92cb6b8f9835aeb67540579a27717",
-				)
-				.unwrap(),
-				array_bytes::hex_n_into::<_, _, 32>(
-					"2d690516512020171c1ec870f6ff45398cc8609250326be89915fb538e7bd718",
-				)
-				.unwrap(),
-			)
-			.unwrap(),
+		// Should be a valid mock signature, copied from https://github.com/rust-ethereum/ethereum/blob/master/src/transaction/mod.rs#L230
+		let Some(signature)= TransactionSignature::new(
+			38,
+			array_bytes::hex_n_into_unchecked::<_, _, 32>(
+				"be67e0a07db67da8d446f76add590e54b6e92cb6b8f9835aeb67540579a27717",
+			),
+			array_bytes::hex_n_into_unchecked::<_, _, 32>(
+				"2d690516512020171c1ec870f6ff45398cc8609250326be89915fb538e7bd718",
+			),
+		) else {
+			log::error!("[pallet::staking] Invalid mock signature for the staking notify transaction.");
+			return;
 		};
 
+		let notify_transaction = LegacyTransaction {
+			nonce: U256::zero(),     // Will be reset in the message transact call
+			gas_price: U256::zero(), // Will be reset in the message transact call
+			gas_limit: U256::from(10_000_000), /* It should be big enough for the evm
+			* transaction, otherwise it will out of gas. */
+			action: TransactionAction::Call(H160::default()), // TODO
+			value: U256::zero(), // TO BE CHECKED
+			input: vec![], // TODO
+			signature,
+		};
+
+		let sender = <T as Config>::KtonStakerAddress::get();
 		if let Err(e) = darwinia_message_transact::Pallet::<T>::message_transact(
-			LcmpEthOrigin::MessageTransact(H160::default()).into(),
-			Box::new(Transaction::Legacy(transaction)),
+			LcmpEthOrigin::MessageTransact(sender.into()).into(),
+			Box::new(Transaction::Legacy(notify_transaction)),
 		) {
 			log::error!("[pallet::staking] failed to notify KTON staker contract due to {:?}", e);
 		}
