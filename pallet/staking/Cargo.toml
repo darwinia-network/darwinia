@@ -13,6 +13,7 @@ ethereum   = { workspace = true }
 codec      = { workspace = true, package = "parity-scale-codec" }
 log        = { workspace = true }
 scale-info = { workspace = true }
+ethabi     = { version = "18.0", default-features = false }
 
 # darwinia
 darwinia-message-transact = { workspace = true }
@@ -55,6 +56,7 @@ std = [
 	# crates.io
 	"codec/std",
 	"log/std",
+	"ethabi/std",
 	"scale-info/std",
 
 	# darwinia

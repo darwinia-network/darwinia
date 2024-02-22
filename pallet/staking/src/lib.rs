@@ -51,6 +51,7 @@ pub use darwinia_staking_traits::*;
 use core::mem;
 // crates.io
 use codec::FullCodec;
+use ethabi::Token;
 use ethereum::{
 	LegacyTransaction, TransactionAction, TransactionSignature, TransactionV2 as Transaction,
 };
@@ -1292,20 +1293,26 @@ where
 			return;
 		};
 
+		// KTONStakingRewards
+		let staking_reward = array_bytes::hex_n_into_unchecked::<_, H160, 20>(
+			"0x000000000419683a1a03AbC21FC9da25fd2B4dD7",
+		);
+		// RewardsDistribution Contract
+		let reward_distr = array_bytes::hex_n_into_unchecked::<_, H160, 20>(
+			"0x000000000Ae5DB7BDAf8D071e680452e33d91Dd5",
+		);
+
 		let notify_transaction = LegacyTransaction {
 			nonce: U256::zero(),     // Will be reset in the message transact call
 			gas_price: U256::zero(), // Will be reset in the message transact call
 			gas_limit: U256::from(10_000_000), /* It should be big enough for the evm
 			                          * transaction, otherwise it will out of gas. */
-			action: TransactionAction::Call(
-				// RewardsDistribution Contract
-				array_bytes::hex_n_into_unchecked::<_, H160, 20>(
-					"0x000000000Ae5DB7BDAf8D071e680452e33d91Dd5",
-				)
-				.into(),
-			),
-			value: U256::zero(), // TO BE CHECKED
-			input: vec![],       // TODO
+			action: TransactionAction::Call(reward_distr.into()),
+			value: U256::zero(),
+			input: ethabi::encode(&[
+				Token::Address(staking_reward.into()),
+				Token::Uint(U256::one()), // TODO
+			]),
 			signature,
 		};
 

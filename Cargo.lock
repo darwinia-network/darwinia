@@ -3298,6 +3298,7 @@ dependencies = [
  "darwinia-staking-traits",
  "dc-inflation",
  "dc-types",
+ "ethabi",
  "ethereum",
  "frame-benchmarking",
  "frame-support",
