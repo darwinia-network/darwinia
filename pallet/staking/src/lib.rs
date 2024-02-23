@@ -921,7 +921,7 @@ pub mod pallet {
 				let reward_to_ring = amount / 2;
 				let reward_to_kton = amount - reward_to_ring;
 				#[cfg(not(any(test, feature = "runtime-benchmarks")))]
-				let ratio = migration_curve_kton_reward(T::MigrationCurve::get());
+				let ratio = T::MigrationCurve::get();
 				#[cfg(any(test, feature = "runtime-benchmarks"))]
 				let ratio = Perquintill::one();
 				let reward_to_kton_v1 = ratio * reward_to_kton;
@@ -1267,12 +1267,6 @@ where
 
 		Perquintill::one() - Perquintill::from_rational(x, month_in_blocks)
 	}
-}
-/// The KTON reward curve during migrating to staking v2.
-pub fn migration_curve_kton_reward(x: Perquintill) -> Perquintill {
-	let x = x.deconstruct();
-
-	Perquintill::from_rational(x, x + Perquintill::one().deconstruct())
 }
 
 /// KTON staker contact notification interface.
