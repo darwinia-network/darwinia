@@ -106,7 +106,7 @@ mod benchmarks {
 		//
 		// The total number of deposit items has reached `Config::MaxUnstakings`.
 		#[extrinsic_call]
-		_(RawOrigin::Signed(a), UNIT, UNIT, deposits);
+		_(RawOrigin::Signed(a), UNIT, deposits);
 	}
 
 	#[benchmark]

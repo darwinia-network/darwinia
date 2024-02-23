@@ -9,12 +9,15 @@ version.workspace = true
 [dependencies]
 # crates.io
 codec      = { workspace = true, package = "parity-scale-codec" }
+ethabi     = { version = "18.0", default-features = false }
+ethereum   = { workspace = true }
 log        = { workspace = true }
 scale-info = { workspace = true }
 
 # darwinia
-darwinia-staking-traits = { workspace = true }
-dc-types                = { workspace = true }
+darwinia-message-transact = { workspace = true }
+darwinia-staking-traits   = { workspace = true }
+dc-types                  = { workspace = true }
 # darwinia optional
 darwinia-deposit = { workspace = true, optional = true }
 
@@ -23,6 +26,7 @@ frame-support     = { workspace = true }
 frame-system      = { workspace = true }
 pallet-authorship = { workspace = true }
 pallet-session    = { workspace = true }
+sp-core           = { workspace = true }
 sp-runtime        = { workspace = true }
 sp-std            = { workspace = true }
 # substrate optional
@@ -30,7 +34,7 @@ frame-benchmarking = { workspace = true, optional = true }
 
 [dev-dependencies]
 # crates.io
-pretty_env_logger = { version = "0.4" }
+pretty_env_logger = { version = "0.5" }
 
 # darwinia
 darwinia-deposit = { workspace = true, features = ["std"] }
@@ -42,7 +46,6 @@ pallet-balances      = { workspace = true, features = ["std"] }
 pallet-session       = { workspace = true, features = ["std"] }
 pallet-timestamp     = { workspace = true, features = ["std"] }
 pallet-treasury      = { workspace = true, features = ["std"] }
-sp-core              = { workspace = true, features = ["std"] }
 sp-io                = { workspace = true, features = ["std"] }
 substrate-test-utils = { workspace = true }
 
@@ -51,10 +54,13 @@ default = ["std"]
 std = [
 	# crates.io
 	"codec/std",
+	"ethabi/std",
+	"ethereum/std",
 	"log/std",
 	"scale-info/std",
 
 	# darwinia
+	"darwinia-message-transact/std",
 	"darwinia-staking-traits/std",
 	# darwinia optional
 	"darwinia-deposit?/std",
@@ -65,6 +71,7 @@ std = [
 	"pallet-authorship/std",
 	"pallet-balances/std",
 	"pallet-session/std",
+	"sp-core/std",
 	"sp-runtime/std",
 	"sp-std/std",
 	# substrate optional
@@ -74,6 +81,7 @@ std = [
 runtime-benchmarks = [
 	# darwinia
 	"darwinia-deposit",
+	"darwinia-message-transact/runtime-benchmarks",
 	"darwinia-staking-traits/runtime-benchmarks",
 
 	# substrate
@@ -85,6 +93,8 @@ runtime-benchmarks = [
 ]
 
 try-runtime = [
+	# darwinia
+	"darwinia-message-transact/try-runtime",
 	# substrate
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",

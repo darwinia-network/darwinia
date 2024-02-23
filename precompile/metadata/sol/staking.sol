@@ -51,12 +51,10 @@ interface Staking {
 
     /// @dev Re-stake the unstaking assets immediately.
 	/// @param ringAmount The amount of staking RING asset
-	/// @param ktonAmount The amount of staking KTON asset
 	/// @param depositIds The deposit ids list
 	/// @return true on success, false otherwise.
 	function restake(
 		uint256 ringAmount,
-		uint256 ktonAmount,
 		uint8[] memory depositIds
 	) external returns (bool);
 

@@ -105,11 +105,6 @@
               "type": "uint256"
             },
             {
-              "internalType": "uint256",
-              "name": "ktonAmount",
-              "type": "uint256"
-            },
-            {
               "internalType": "uint8[]",
               "name": "depositIds",
               "type": "uint8[]"
@@ -247,13 +242,12 @@
               "_0": "returns true on success, false otherwise."
             }
           },
-          "restake(uint256,uint256,uint8[])":
+          "restake(uint256,uint8[])":
           {
             "details": "Re-stake the unstaking assets immediately.",
             "params":
             {
               "depositIds": "The deposit ids list",
-              "ktonAmount": "The amount of staking KTON asset",
               "ringAmount": "The amount of staking RING asset"
             },
             "returns":
@@ -300,7 +294,7 @@
         "collect(uint32)": "10a66536",
         "nominate(address)": "b332180b",
         "payout(address)": "0b7e9c44",
-        "restake(uint256,uint256,uint8[])": "17092fcb",
+        "restake(uint256,uint8[])": "6dbcd550",
         "stake(uint256,uint256,uint8[])": "757f9b3b",
         "unstake(uint256,uint256,uint8[])": "ef20fcb3"
       }

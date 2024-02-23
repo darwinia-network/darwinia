@@ -232,6 +232,7 @@ impl pallet_treasury::Config for Runtime {
 
 frame_support::parameter_types! {
 	pub PayoutFraction: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(40);
+	pub MigrationCurve: sp_runtime::Perquintill = sp_runtime::Perquintill::one();
 	pub static InflationType: u8 = 0;
 }
 pub enum KtonStaking {}
@@ -282,14 +283,6 @@ impl darwinia_staking::IssuingManager<Runtime> for StatedOnSessionEnd {
 			OnCrabSessionEnd::reward(who, amount)
 		}
 	}
-
-	fn clear(remaining: Balance) {
-		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
-			OnDarwiniaSessionEnd::clear(remaining)
-		} else {
-			OnCrabSessionEnd::clear(remaining)
-		}
-	}
 }
 pub enum OnDarwiniaSessionEnd {}
 impl darwinia_staking::IssuingManager<Runtime> for OnDarwiniaSessionEnd {
@@ -315,10 +308,6 @@ impl darwinia_staking::IssuingManager<Runtime> for OnDarwiniaSessionEnd {
 		let _ = Balances::deposit_into_existing(who, amount);
 
 		Ok(())
-	}
-
-	fn clear(remaining: Balance) {
-		let _ = Balances::deposit_into_existing(&Treasury::account_id(), remaining);
 	}
 }
 pub enum OnCrabSessionEnd {}
@@ -352,8 +341,11 @@ impl darwinia_staking::Config for Runtime {
 	type Deposit = Deposit;
 	type IssuingManager = StatedOnSessionEnd;
 	type Kton = KtonStaking;
+	type KtonRewardDistributionContract = ();
+	type KtonStakerNotifier = ();
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = frame_support::traits::ConstU32<16>;
+	type MigrationCurve = MigrationCurve;
 	type MinStakingDuration = frame_support::traits::ConstU64<3>;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
