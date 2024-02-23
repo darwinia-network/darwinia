@@ -48,30 +48,6 @@ impl darwinia_staking::Stake for RingStaking {
 		)
 	}
 }
-pub enum KtonStaking {}
-impl darwinia_staking::Stake for KtonStaking {
-	type AccountId = AccountId;
-	type Item = Balance;
-
-	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		Assets::transfer(
-			RuntimeOrigin::signed(*who),
-			(AssetIds::CKton as AssetId).into(),
-			darwinia_staking::account_id(),
-			item,
-		)
-	}
-
-	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		Assets::transfer(
-			RuntimeOrigin::signed(darwinia_staking::account_id()),
-			(AssetIds::CKton as AssetId).into(),
-			*who,
-			item,
-		)
-	}
-}
-
 pub enum OnCrabSessionEnd {}
 impl darwinia_staking::IssuingManager<Runtime> for OnCrabSessionEnd {
 	fn calculate_reward(_inflation: Balance) -> Balance {
@@ -104,7 +80,6 @@ impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
 	type IssuingManager = OnCrabSessionEnd;
-	type Kton = KtonStaking;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = ConstU32<16>;
 	type MinStakingDuration = MinStakingDuration;

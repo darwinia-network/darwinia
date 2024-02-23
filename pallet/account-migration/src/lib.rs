@@ -66,7 +66,7 @@ use frame_support::{
 	traits::{Currency, ExistenceRequirement::AllowDeath},
 	StorageHasher,
 };
-use frame_system::{pallet_prelude::*, AccountInfo, RawOrigin};
+use frame_system::{pallet_prelude::*, AccountInfo};
 use pallet_balances::AccountData;
 use pallet_identity::{Judgement, Registration};
 use sp_core::{
@@ -480,7 +480,6 @@ pub mod pallet {
 				let now = <frame_system::Pallet<T>>::block_number();
 
 				l.unstaking_ring.retain(|(_, t)| t > &now);
-				l.unstaking_kton.retain(|(_, t)| t > &now);
 
 				let staking_pot = darwinia_staking::account_id();
 				let r = l.staked_ring + l.unstaking_ring.iter().map(|(r, _)| r).sum::<Balance>();
@@ -494,20 +493,6 @@ pub mod pallet {
 						&staking_pot,
 						r,
 						AllowDeath,
-					)?;
-				}
-
-				let k = l.staked_kton + l.unstaking_kton.iter().map(|(k, _)| k).sum::<Balance>();
-
-				// To calculated the worst case in benchmark.
-				debug_assert!(k > 0);
-
-				if k != 0 {
-					<pallet_assets::Pallet<T>>::transfer(
-						RawOrigin::Signed(*to).into(),
-						KTON_ID.into(),
-						staking_pot,
-						k,
 					)?;
 				}
 
