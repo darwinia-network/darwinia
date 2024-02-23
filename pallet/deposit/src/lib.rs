@@ -282,6 +282,7 @@ pub mod pallet {
 				.max(1) * 3;
 
 			T::Kton::burn(&who, kton_penalty)?;
+			T::Ring::transfer(&account_id(), &who, d.value, AllowDeath)?;
 			Self::deposit_event(Event::DepositClaimedWithPenalty {
 				owner: who,
 				deposit_id: id,
