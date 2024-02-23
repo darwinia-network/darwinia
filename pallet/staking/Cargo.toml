@@ -55,6 +55,7 @@ std = [
 	# crates.io
 	"codec/std",
 	"ethabi/std",
+	"ethereum/std",
 	"log/std",
 	"scale-info/std",
 
