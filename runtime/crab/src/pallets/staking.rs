@@ -105,7 +105,7 @@ impl darwinia_staking::Config for Runtime {
 	type Deposit = Deposit;
 	type IssuingManager = OnCrabSessionEnd;
 	type Kton = KtonStaking;
-	type KtonRewardDistributionOwner = darwinia_staking::KtonRewardDistributionOwner;
+	type KtonRewardDistributionContract = darwinia_staking::KtonRewardDistributionContract;
 	type KtonStakerNotifier = darwinia_staking::KtonStakerNotifier<Self>;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = ConstU32<16>;

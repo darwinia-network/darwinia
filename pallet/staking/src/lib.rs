@@ -155,9 +155,9 @@ pub mod pallet {
 		/// The curve of migration.
 		type MigrationCurve: Get<Perquintill>;
 
-		/// The address of KTON staker contract.
+		/// The address of KTON reward distribution contract.
 		#[pallet::constant]
-		type KtonRewardDistributionOwner: Get<Self::AccountId>;
+		type KtonRewardDistributionContract: Get<Self::AccountId>;
 	}
 
 	#[allow(missing_docs)]
@@ -947,7 +947,7 @@ pub mod pallet {
 			};
 
 			reward(staking_pot, actual_reward_v1);
-			reward(T::KtonRewardDistributionOwner::get(), reward_to_v2);
+			reward(T::KtonRewardDistributionContract::get(), reward_to_v2);
 
 			T::KtonStakerNotifier::notify(reward_to_v2);
 		}
@@ -1236,17 +1236,16 @@ where
 	PalletId(*b"da/staki").into_account_truncating()
 }
 
-/// The address of the KTON staker contract.
-/// ```
-/// b"sc/ktstk"
-/// ```
-pub struct KtonRewardDistributionOwner;
-impl<T> Get<T> for KtonRewardDistributionOwner
+/// The address of the RewardsDistribution.
+/// 0x000000000Ae5DB7BDAf8D071e680452e33d91Dd5.
+pub struct KtonRewardDistributionContract;
+impl<T> Get<T> for KtonRewardDistributionContract
 where
 	T: From<[u8; 20]>,
 {
 	fn get() -> T {
-		[115, 99, 47, 107, 116, 115, 116, 107, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0].into()
+		[0, 0, 0, 0, 10, 229, 219, 123, 218, 248, 208, 113, 230, 128, 69, 46, 51, 217, 29, 213]
+			.into()
 	}
 }
 
@@ -1293,11 +1292,8 @@ where
 		// 0x000000000419683a1a03AbC21FC9da25fd2B4dD7
 		let staking_reward =
 			H160([0, 0, 0, 0, 4, 25, 104, 58, 26, 3, 171, 194, 31, 201, 218, 37, 253, 43, 77, 215]);
-		// RewardsDistribution Contract
-		// 0x000000000Ae5DB7BDAf8D071e680452e33d91Dd5
-		let reward_distr = H160([
-			0, 0, 0, 0, 10, 229, 219, 123, 218, 248, 208, 113, 230, 128, 69, 46, 51, 217, 29, 213,
-		]);
+
+		let reward_distr = T::KtonRewardDistributionContract::get().into();
 		// https://github.com/darwinia-network/kton-staker/blob/175f0ec131d4aef3bf64cfb2fce1d262e7ce9140/src/RewardsDistribution.sol#L11
 		#[allow(deprecated)]
 		let function = Function {
@@ -1327,14 +1323,16 @@ where
 			action: TransactionAction::Call(reward_distr),
 			value: U256::zero(),
 			input: function
-				.encode_input(&[Token::Address(staking_reward.into()), Token::Uint(amount.into())])
+				.encode_input(&[Token::Address(staking_reward), Token::Uint(amount.into())])
 				.unwrap_or_default(),
 			signature,
 		};
-		let sender = <T as Config>::KtonRewardDistributionOwner::get();
+		// b"sc/ktstk"
+		let sender =
+			H160([115, 99, 47, 107, 116, 115, 116, 107, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
-		if let Err(e) = darwinia_message_transact::Pallet::<T>::message_transact(
-			LcmpEthOrigin::MessageTransact(sender.into()).into(),
+		if let Err(e) = <darwinia_message_transact::Pallet<T>>::message_transact(
+			LcmpEthOrigin::MessageTransact(sender).into(),
 			Box::new(Transaction::Legacy(notify_transaction)),
 		) {
 			log::error!("[pallet::staking] failed to notify KTON staker contract due to {e:?}");
