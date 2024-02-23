@@ -1322,7 +1322,7 @@ where
 		let notify_transaction = LegacyTransaction {
 			nonce: U256::zero(),     // Will be reset in the message transact call
 			gas_price: U256::zero(), // Will be reset in the message transact call
-			gas_limit: U256::from(10_000_000), /* It should be big enough for the evm
+			gas_limit: U256::from(1_000_000), /* It should be big enough for the evm
 			                          * transaction, otherwise it will out of gas. */
 			action: TransactionAction::Call(reward_distr),
 			value: U256::zero(),
