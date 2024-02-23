@@ -157,7 +157,7 @@ pub mod pallet {
 
 		/// The address of KTON staker contract.
 		#[pallet::constant]
-		type KtonStakerAddress: Get<Self::AccountId>;
+		type KtonRewardDistributionOwner: Get<Self::AccountId>;
 	}
 
 	#[allow(missing_docs)]
@@ -947,7 +947,7 @@ pub mod pallet {
 			};
 
 			reward(staking_pot, actual_reward_v1);
-			reward(T::KtonStakerAddress::get(), reward_to_v2);
+			reward(T::KtonRewardDistributionOwner::get(), reward_to_v2);
 
 			T::KtonStakerNotifier::notify(reward_to_v2);
 		}
@@ -1240,8 +1240,8 @@ where
 /// ```
 /// b"sc/ktstk"
 /// ```
-pub struct KtonStakerAddress;
-impl<T> Get<T> for KtonStakerAddress
+pub struct KtonRewardDistributionOwner;
+impl<T> Get<T> for KtonRewardDistributionOwner
 where
 	T: From<[u8; 20]>,
 {
@@ -1341,7 +1341,7 @@ where
 				.unwrap_or_default(),
 			signature,
 		};
-		let sender = <T as Config>::KtonStakerAddress::get();
+		let sender = <T as Config>::KtonRewardDistributionOwner::get();
 
 		if let Err(e) = darwinia_message_transact::Pallet::<T>::message_transact(
 			LcmpEthOrigin::MessageTransact(sender.into()).into(),

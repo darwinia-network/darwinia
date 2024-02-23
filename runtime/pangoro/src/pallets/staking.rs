@@ -112,7 +112,7 @@ impl darwinia_staking::Config for Runtime {
 	type Deposit = Deposit;
 	type IssuingManager = OnPangoroSessionEnd;
 	type Kton = KtonStaking;
-	type KtonStakerAddress = darwinia_staking::KtonStakerAddress;
+	type KtonRewardDistributionOwner = darwinia_staking::KtonRewardDistributionOwner;
 	type KtonStakerNotifier = darwinia_staking::KtonStakerNotifier<Self>;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = ConstU32<16>;
