@@ -1307,21 +1307,21 @@ where
 		// https://github.com/darwinia-network/kton-staker/blob/175f0ec131d4aef3bf64cfb2fce1d262e7ce9140/src/RewardsDistribution.sol#L11
 		#[allow(deprecated)]
 		let function = Function {
-			name: "distributeRewards".to_string(),
+			name: "distributeRewards".into(),
 			inputs: vec![
 				Param {
-					name: "ktonStakingRewards".to_string(),
+					name: "ktonStakingRewards".into(),
 					kind: ParamType::Address,
 					internal_type: None,
 				},
 				Param {
-					name: "reward".to_string(),
+					name: "reward".into(),
 					kind: ParamType::Uint(256),
 					internal_type: None,
 				},
 			],
 			outputs: vec![Param {
-				name: "success or not".to_string(),
+				name: "success or not".into(),
 				kind: ParamType::Bool,
 				internal_type: None,
 			}],
