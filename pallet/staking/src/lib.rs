@@ -1314,11 +1314,7 @@ where
 					kind: ParamType::Address,
 					internal_type: None,
 				},
-				Param {
-					name: "reward".into(),
-					kind: ParamType::Uint(256),
-					internal_type: None,
-				},
+				Param { name: "reward".into(), kind: ParamType::Uint(256), internal_type: None },
 			],
 			outputs: vec![Param {
 				name: "success or not".into(),
