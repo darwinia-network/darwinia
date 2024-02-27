@@ -48,7 +48,7 @@ where
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> [sp_core::H160; 17] {
+	pub fn used_addresses() -> [sp_core::H160; 18] {
 		[
 			addr(0x01),
 			addr(0x02),
