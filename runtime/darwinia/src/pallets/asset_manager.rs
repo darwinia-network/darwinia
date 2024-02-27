@@ -108,6 +108,8 @@ impl From<AssetType> for crate::AssetId {
 			AssetType::Xcm(id) =>
 				if id == UsdtLocation::get() {
 					1027
+				} else if id == PinkLocation::get() {
+					1028
 				} else {
 					let mut result: [u8; 8] = [0_u8; 8];
 					let hash: sp_core::H256 = id.using_encoded(dc_primitives::Hashing::hash);
@@ -131,10 +133,16 @@ impl Into<Option<MultiLocation>> for AssetType {
 frame_support::parameter_types! {
 	/// 1000 is AssetHub paraId.
 	/// 50 is pallet-assets index on AssetHub.
-	/// 1984 is the id of Test USDT on AssetHub(Polkadot).
+	/// 1984 is the id of USDT on AssetHub(Polkadot).
 	pub UsdtLocation: MultiLocation = MultiLocation::new(
 		1,
 		X3(Parachain(1000), PalletInstance(50), GeneralIndex(1984))
+	);
+
+	/// 23 is the id of PINK on AssetHub(Polkadot).
+	pub PinkLocation: MultiLocation = MultiLocation::new(
+		1,
+		X3(Parachain(1000), PalletInstance(50), GeneralIndex(23))
 	);
 }
 
