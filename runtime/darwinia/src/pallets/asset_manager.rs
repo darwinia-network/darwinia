@@ -102,22 +102,18 @@ impl From<MultiLocation> for AssetType {
 // We simply hash the `AssetType` and take the lowest 128 bits.
 impl From<AssetType> for crate::AssetId {
 	fn from(asset: AssetType) -> crate::AssetId {
-		use sp_runtime::traits::Hash;
-
 		match asset {
-			AssetType::Xcm(id) =>
-				if id == UsdtLocation::get() {
-					1027
-				} else if id == PinkLocation::get() {
-					1028
-				} else {
-					let mut result: [u8; 8] = [0_u8; 8];
-					let hash: sp_core::H256 = id.using_encoded(dc_primitives::Hashing::hash);
+			AssetType::Xcm(id) if id == UsdtLocation::get() => 1027,
+			AssetType::Xcm(id) if id == PinkLocation::get() => 1028,
+			AssetType::Xcm(id) => {
+				use sp_runtime::traits::Hash;
 
-					result.copy_from_slice(&hash.as_fixed_bytes()[0..8]);
+				let mut result: [u8; 8] = [0_u8; 8];
+				let hash: sp_core::H256 = id.using_encoded(dc_primitives::Hashing::hash);
+				result.copy_from_slice(&hash.as_fixed_bytes()[0..8]);
 
-					u64::from_le_bytes(result)
-				},
+				u64::from_le_bytes(result)
+			},
 		}
 	}
 }
