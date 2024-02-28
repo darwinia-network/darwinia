@@ -43,6 +43,8 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 fn migrate() -> frame_support::weights::Weight {
 	// substrate
 	use pallet_balances::Locks;
+	use sp_core::H160;
+	use sp_std::str::FromStr;
 
 	[
 		("0xabcf7060a68f62624f7569ada9d78b5a5db0782a", b"phrelect"),
@@ -63,6 +65,13 @@ fn migrate() -> frame_support::weights::Weight {
 		}
 	});
 
+	const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
+	// PINK equals to the 0x404 in the pallet-evm runtime.
+	const ADDRESS: &str = "0x0000000000000000000000000000000000000404";
+	if let Ok(addr) = H160::from_str(ADDRESS) {
+		EVM::create_account(addr, REVERT_BYTECODE.to_vec());
+	}
+
 	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 16)
+	RuntimeBlockWeights::get().max_block
 }
