@@ -44,9 +44,9 @@ pub mod custom_origins {
 		ReferendumCanceller,
 		/// Origin able to kill referenda.
 		ReferendumKiller,
-		/// Origin able to spend up to 4M RING from the treasury at once.
+		/// Origin able to spend up to 4M CRAB from the treasury at once.
 		MediumSpender,
-		/// Origin able to spend up to 20M RING from the treasury at once.
+		/// Origin able to spend up to 20M CRAB from the treasury at once.
 		BigSpender,
 	}
 
@@ -80,6 +80,13 @@ pub mod custom_origins {
 		};
 		() => {}
 	}
-	decl_unit_ensures!(WhitelistedCaller, GeneralAdmin, ReferendumCanceller, ReferendumKiller, MediumSpender, BigSpender);
+	decl_unit_ensures!(
+		WhitelistedCaller,
+		GeneralAdmin,
+		ReferendumCanceller,
+		ReferendumKiller,
+		MediumSpender,
+		BigSpender
+	);
 }
 pub use custom_origins::*;

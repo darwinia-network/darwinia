@@ -169,7 +169,13 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 7]
 			confirm_period: TIME_1,
 			min_enactment_period: TIME_1,
 			min_approval: pallet_referenda::Curve::make_linear(1, 2, percent(50), percent(100)),
-			min_support: pallet_referenda::Curve::make_reciprocal(1, 2, percent(1), percent(0), percent(50)),
+			min_support: pallet_referenda::Curve::make_reciprocal(
+				1,
+				2,
+				percent(1),
+				percent(0),
+				percent(50),
+			),
 		},
 	),
 	(
@@ -183,7 +189,13 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 7]
 			confirm_period: TIME_1,
 			min_enactment_period: TIME_1,
 			min_approval: pallet_referenda::Curve::make_linear(1, 2, percent(50), percent(100)),
-			min_support: pallet_referenda::Curve::make_reciprocal(1, 2, percent(1), percent(0), percent(50)),
+			min_support: pallet_referenda::Curve::make_reciprocal(
+				1,
+				2,
+				percent(1),
+				percent(0),
+				percent(50),
+			),
 		},
 	),
 ];

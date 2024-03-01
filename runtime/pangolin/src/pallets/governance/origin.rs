@@ -44,9 +44,9 @@ pub mod custom_origins {
 		ReferendumCanceller,
 		/// Origin able to kill referenda.
 		ReferendumKiller,
-		/// Origin able to spend up to 4M RING from the treasury at once.
+		/// Origin able to spend up to 4M PRING from the treasury at once.
 		MediumSpender,
-		/// Origin able to spend up to 20M RING from the treasury at once.
+		/// Origin able to spend up to 20M PRING from the treasury at once.
 		BigSpender,
 	}
 
