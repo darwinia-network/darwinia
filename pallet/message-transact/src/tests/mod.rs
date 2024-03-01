@@ -18,7 +18,7 @@
 
 // mod eip1559;
 // mod eip2930;
-// mod legacy;
+mod legacy;
 
 // crates.io
 use codec::Encode;

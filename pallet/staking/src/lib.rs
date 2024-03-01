@@ -1281,11 +1281,6 @@ where
 	<T as frame_system::Config>::AccountId: Into<H160>,
 {
 	fn notify(amount: Balance) {
-		let Some(signature)= mock_sig() else {
-			log::error!("[pallet::staking] Invalid mock signature for the staking notify transaction.");
-
-			return;
-		};
 		// KTONStakingRewards
 		// 0x000000000419683a1a03AbC21FC9da25fd2B4dD7
 		let staking_reward =

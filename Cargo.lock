@@ -2867,6 +2867,7 @@ dependencies = [
 name = "darwinia-message-transact"
 version = "6.6.0"
 dependencies = [
+ "array-bytes",
  "ethereum",
  "fp-ethereum",
  "fp-evm",
