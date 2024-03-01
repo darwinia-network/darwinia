@@ -126,25 +126,17 @@ pub mod pallet {
 			mut transaction: Box<Transaction>,
 		) -> DispatchResultWithPostInfo {
 			let source = ensure_message_transact(origin)?;
+			let transaction_mut = transaction.borrow_mut();
+			let Transaction::EIP1559(tx) = transaction_mut else {
+				Err(<Error::<T>>::MessageTransactError(EvmTxErrorWrapper::OnlyEIP1559TxAllowed))?
+			};
+
 			let (who, _) = pallet_evm::Pallet::<T>::account_basic(&source);
 			let base_fee = T::FeeCalculator::min_gas_price().0;
-
-			let transaction_mut = transaction.borrow_mut();
-			match transaction_mut {
-				Transaction::Legacy(tx) => {
-					tx.nonce = who.nonce;
-					tx.gas_price = base_fee;
-				},
-				Transaction::EIP2930(tx) => {
-					tx.nonce = who.nonce;
-					tx.gas_price = base_fee;
-				},
-				Transaction::EIP1559(tx) => {
-					tx.nonce = who.nonce;
-					tx.max_fee_per_gas = base_fee;
-					tx.max_priority_fee_per_gas = U256::zero();
-				},
-			};
+			tx.chain_id = T::ChainId::get();
+			tx.nonce = who.nonce;
+			tx.max_fee_per_gas = base_fee;
+			tx.max_priority_fee_per_gas = U256::zero();
 
 			let transaction_data: TransactionData = (&*transaction).into();
 			let (weight_limit, proof_size_base_cost) =
@@ -194,6 +186,7 @@ pub enum EvmTxErrorWrapper {
 	InvalidChainId,
 	InvalidSignature,
 	UnknownError,
+	OnlyEIP1559TxAllowed,
 }
 
 impl From<TransactionValidationError> for EvmTxErrorWrapper {

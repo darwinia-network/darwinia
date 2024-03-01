@@ -52,9 +52,7 @@ use core::mem;
 // crates.io
 use codec::FullCodec;
 use ethabi::{Function, Param, ParamType, StateMutability, Token};
-use ethereum::{
-	LegacyTransaction, TransactionAction, TransactionSignature, TransactionV2 as Transaction,
-};
+use ethereum::{EIP1559Transaction, TransactionAction, TransactionV2 as Transaction};
 // darwinia
 use darwinia_message_transact::LcmpEthOrigin;
 use dc_types::{Balance, Moment};
@@ -1315,17 +1313,32 @@ where
 			state_mutability: StateMutability::Payable,
 		};
 
-		let notify_transaction = LegacyTransaction {
-			nonce: U256::zero(),     // Will be reset in the message transact call
-			gas_price: U256::zero(), // Will be reset in the message transact call
-			gas_limit: U256::from(1_000_000), /* It should be big enough for the evm
-			                          * transaction, otherwise it will out of gas. */
+		let notify_transaction = EIP1559Transaction {
+			chain_id: 0,                            // Will be reset in the message transact call
+			nonce: U256::zero(),                    // Will be reset in the message transact call
+			max_fee_per_gas: U256::zero(),          // Will be reset in the message transact call
+			max_priority_fee_per_gas: U256::zero(), // Will be reset in the message transact call
+			gas_limit: U256::from(1_000_000),       /* It should be big enough for the evm
+			                                         * transaction, otherwise it will out of gas. */
 			action: TransactionAction::Call(reward_distr),
 			value: U256::zero(),
 			input: function
 				.encode_input(&[Token::Address(staking_reward), Token::Uint(amount.into())])
 				.unwrap_or_default(),
-			signature,
+			access_list: vec![],
+			// copied from:
+			// https://github.com/rust-ethereum/ethereum/blob/24739cc8ba6e9d8ee30ada8ec92161e4c48d578e/src/transaction.rs#L873-L875
+			odd_y_parity: false,
+			// 36b241b061a36a32ab7fe86c7aa9eb592dd59018cd0443adc0903590c16b02b0
+			r: H256([
+				54, 178, 65, 176, 97, 163, 106, 50, 171, 127, 232, 108, 122, 169, 235, 89, 45, 213,
+				144, 24, 205, 4, 67, 173, 192, 144, 53, 144, 193, 107, 2, 176,
+			]),
+			// 5edcc541b4741c5cc6dd347c5ed9577ef293a62787b4510465fadbfe39ee4094
+			s: H256([
+				54, 178, 65, 176, 97, 163, 106, 50, 171, 127, 232, 108, 122, 169, 235, 89, 45, 213,
+				144, 24, 205, 4, 67, 173, 192, 144, 53, 144, 193, 107, 2, 176,
+			]),
 		};
 		// b"sc/ktstk"
 		let sender =
@@ -1333,26 +1346,9 @@ where
 
 		if let Err(e) = <darwinia_message_transact::Pallet<T>>::message_transact(
 			LcmpEthOrigin::MessageTransact(sender).into(),
-			Box::new(Transaction::Legacy(notify_transaction)),
+			Box::new(Transaction::EIP1559(notify_transaction)),
 		) {
 			log::error!("[pallet::staking] failed to notify KTON staker contract due to {e:?}");
 		}
 	}
-}
-/// Mock a valid signature, copied from:
-/// https://github.com/rust-ethereum/ethereum/blob/master/src/transaction/mod.rs#L230
-pub fn mock_sig() -> Option<TransactionSignature> {
-	TransactionSignature::new(
-		38,
-		// be67e0a07db67da8d446f76add590e54b6e92cb6b8f9835aeb67540579a27717
-		H256([
-			190, 103, 224, 160, 125, 182, 125, 168, 212, 70, 247, 106, 221, 89, 14, 84, 182, 233,
-			44, 182, 184, 249, 131, 90, 235, 103, 84, 5, 121, 162, 119, 23,
-		]),
-		// 2d690516512020171c1ec870f6ff45398cc8609250326be89915fb538e7bd718
-		H256([
-			45, 105, 5, 22, 81, 32, 32, 23, 28, 30, 200, 112, 246, 255, 69, 57, 140, 200, 96, 146,
-			80, 50, 107, 232, 153, 21, 251, 83, 142, 123, 215, 24,
-		]),
-	)
 }
