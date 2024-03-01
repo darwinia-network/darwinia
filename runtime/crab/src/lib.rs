@@ -182,11 +182,6 @@ frame_benchmarking::define_benchmarks! {
 	[darwinia_account_migration, AccountMigration]
 	[darwinia_deposit, Deposit]
 	[darwinia_staking, DarwiniaStaking]
-	// darwinia-messages-substrate
-	[pallet_bridge_grandpa, BridgePolkadotGrandpa]
-	[pallet_bridge_parachains, ParachainsBench::<Runtime, WithPolkadotParachainsInstance>]
-	[pallet_bridge_messages, MessagesBench::<Runtime, WithDarwiniaMessages>]
-	[pallet_fee_market, DarwiniaFeeMarket]
 	// substrate
 	[frame_system, SystemBench::<Runtime>]
 	[pallet_assets, Assets]
@@ -674,9 +669,6 @@ sp_api::impl_runtime_apis! {
 			use frame_support::traits::StorageInfoTrait;
 			use frame_system_benchmarking::Pallet as SystemBench;
 			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
-			// darwinia-messages-substrate
-			use pallet_bridge_parachains::benchmarking::Pallet as ParachainsBench;
-			use pallet_bridge_messages::benchmarking::Pallet as MessagesBench;
 
 			let mut list = Vec::<BenchmarkList>::new();
 
@@ -690,31 +682,9 @@ sp_api::impl_runtime_apis! {
 		fn dispatch_benchmark(
 			config: frame_benchmarking::BenchmarkConfig
 		) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
-			// darwinia
-			use crate::darwinia::{ToDarwiniaMessagesDeliveryProof, FromDarwiniaMessagesProof, WithDarwiniaMessageBridge};
-			// darwinia-messages-substrate
-			use pallet_bridge_parachains::benchmarking::{
-				Pallet as ParachainsBench,
-				Config as ParachainsConfig,
-			};
-			use pallet_bridge_messages::benchmarking::{
-				Pallet as MessagesBench,
-				Config as MessagesConfig,
-				MessageDeliveryProofParams,
-				MessageProofParams,
-				MessageParams,
-			};
-			use bridge_runtime_common::messages_benchmarking::{
-				prepare_message_proof,
-				prepare_message_delivery_proof,
-				prepare_outbound_message,
-			};
-			use bp_messages::MessageNonce;
 			// substrate
 			use frame_benchmarking::*;
-			use frame_support::pallet_prelude::Weight;
-			use frame_support::traits::Currency;
-			use frame_support::traits::TrackedStorageKey;
+			use frame_support::{pallet_prelude::Weight, traits::{Currency, TrackedStorageKey}};
 
 			use frame_system_benchmarking::Pallet as SystemBench;
 			impl frame_system_benchmarking::Config for Runtime {

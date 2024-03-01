@@ -30,11 +30,6 @@ libsecp256k1 = { workspace = true, features = ["std"] }
 rlp          = { version = "0.5" }
 sha3         = { workspace = true }
 
-# darwinia
-bp-message-dispatch    = { workspace = true, features = ["std"] }
-bp-runtime             = { workspace = true, features = ["std"] }
-pallet-bridge-dispatch = { workspace = true, features = ["std"] }
-
 # frontier
 fp-self-contained = { workspace = true, features = ["std"] }
 pallet-ethereum   = { workspace = true, features = ["std"] }
