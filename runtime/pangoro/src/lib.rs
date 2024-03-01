@@ -27,9 +27,6 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 mod pallets;
 pub use pallets::*;
 
-mod bridges_message;
-pub use bridges_message::*;
-
 mod migration;
 pub mod weights;
 
@@ -55,7 +52,6 @@ pub type SignedExtra = (
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
-	BridgeRejectObsoleteHeadersAndMessages,
 );
 
 /// Unchecked extrinsic type as expected by this runtime.
@@ -166,12 +162,12 @@ frame_support::construct_runtime! {
 		EVM: pallet_evm = 37,
 		MessageTransact: darwinia_message_transact = 38,
 
-		// Pangoro <> Pangolin
-		BridgeRococoGrandpa: pallet_bridge_grandpa::<Instance1> = 39,
-		BridgeRococoParachain: pallet_bridge_parachains::<Instance1> = 40,
-		BridgePangolinMessages: pallet_bridge_messages::<Instance1> = 41,
-		BridgePangolinDispatch: pallet_bridge_dispatch::<Instance1> = 42,
-		PangolinFeeMarket: pallet_fee_market::<Instance1> = 43
+		// // Pangoro <> Pangolin
+		// BridgeRococoGrandpa: pallet_bridge_grandpa::<Instance1> = 39,
+		// BridgeRococoParachain: pallet_bridge_parachains::<Instance1> = 40,
+		// BridgePangolinMessages: pallet_bridge_messages::<Instance1> = 41,
+		// BridgePangolinDispatch: pallet_bridge_dispatch::<Instance1> = 42,
+		// PangolinFeeMarket: pallet_fee_market::<Instance1> = 43
 	}
 }
 
@@ -205,16 +201,6 @@ frame_benchmarking::define_benchmarks! {
 }
 
 impl_self_contained_call!();
-
-bridge_runtime_common::generate_bridge_reject_obsolete_headers_and_messages! {
-	RuntimeCall, AccountId,
-	// Grandpa
-	BridgeRococoGrandpa,
-	// Messages
-	BridgePangolinMessages,
-	// Parachain
-	BridgeRococoParachain
-}
 
 sp_api::impl_runtime_apis! {
 	impl sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId> for Runtime {
@@ -703,66 +689,6 @@ sp_api::impl_runtime_apis! {
 
 			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 			impl cumulus_pallet_session_benchmarking::Config for Runtime {}
-
-			impl ParachainsConfig<WithRococoParachainsInstance> for Runtime {
-				fn prepare_parachain_heads_proof(
-					parachains: &[bp_polkadot_core::parachains::ParaId],
-					parachain_head_size: u32,
-					proof_size: bp_runtime::StorageProofSize,
-				) -> (
-					pallet_bridge_parachains::RelayBlockNumber,
-					pallet_bridge_parachains::RelayBlockHash,
-					bp_polkadot_core::parachains::ParaHeadsProof,
-					Vec<(bp_polkadot_core::parachains::ParaId, bp_polkadot_core::parachains::ParaHash)>,
-				) {
-					bridge_runtime_common::parachains_benchmarking::prepare_parachain_heads_proof::<Runtime, WithRococoParachainsInstance>(parachains, parachain_head_size, proof_size)
-				}
-			}
-
-			impl MessagesConfig<WithPangolinMessages> for Runtime {
-				fn maximal_message_size() -> u32 {
-					bridge_runtime_common::messages::source::maximal_message_size::<WithPangolinMessageBridge>()
-				}
-
-				fn bridged_relayer_id() -> Self::InboundRelayer {
-					sp_core::H160::default().into()
-				}
-
-				fn account_balance(account: &Self::AccountId) -> Self::OutboundMessageFee {
-					pallet_balances::Pallet::<Runtime>::free_balance(account)
-				}
-
-				fn endow_account(account: &Self::AccountId) {
-					pallet_balances::Pallet::<Runtime>::make_free_balance_be(
-						account,
-						Balance::MAX / 100,
-					);
-				}
-
-				fn prepare_outbound_message(params: MessageParams<Self::AccountId>) -> (Self::OutboundPayload, Self::OutboundMessageFee) {
-					(prepare_outbound_message::<WithPangolinMessageBridge>(params), Self::message_fee())
-				}
-
-				fn prepare_message_proof(params: MessageProofParams) -> (FromPangolinMessagesProof, Weight) {
-					prepare_message_proof::<Runtime, (), WithRococoGrandpa, WithPangolinMessageBridge, bp_pangolin::Header, bp_pangolin::Hashing>(params)
-				}
-
-				fn prepare_message_delivery_proof(params: MessageDeliveryProofParams<Self::AccountId>) -> ToPangolinMessagesDeliveryProof {
-					prepare_message_delivery_proof::<Runtime, WithRococoGrandpa, WithPangolinMessageBridge, bp_pangolin::Header, bp_pangolin::Hashing>(params)
-				}
-
-				fn is_message_dispatched(nonce: MessageNonce) -> bool {
-					frame_system::Pallet::<Runtime>::events()
-						.into_iter()
-						.map(|event_record| event_record.event)
-						.any(|event| matches!(
-							event,
-							RuntimeEvent::BridgePangolinDispatch(pallet_bridge_dispatch::Event::<Runtime, _>::MessageDispatched(
-								_, ([0, 0, 0, 0], nonce_from_event), _,
-							)) if nonce_from_event == nonce
-						))
-				}
-			}
 
 			let whitelist: Vec<TrackedStorageKey> = vec![
 				// Block Number

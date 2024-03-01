@@ -242,12 +242,6 @@ pub fn genesis_config() -> ChainSpec {
 					},
 					..Default::default()
 				},
-
-				// S2S stuff.
-				bridge_moonbase_grandpa: Default::default(),
-				bridge_moonbase_parachain: Default::default(),
-				bridge_pangoro_messages: Default::default(),
-				pangoro_fee_market: Default::default(),
 			}
 		},
 		vec![
@@ -373,11 +367,5 @@ fn testnet_genesis(
 			},
 			..Default::default()
 		},
-
-		// S2S stuff.
-		bridge_moonbase_grandpa: Default::default(),
-		bridge_moonbase_parachain: Default::default(),
-		bridge_pangoro_messages: Default::default(),
-		pangoro_fee_market: Default::default(),
 	}
 }

@@ -94,19 +94,3 @@ mod evm;
 pub use evm::*;
 
 mod message_transact;
-
-// S2S stuff.
-mod bridge_dispatch;
-pub use bridge_dispatch::*;
-
-mod bridge_grandpa;
-pub use bridge_grandpa::*;
-
-mod bridge_messages;
-pub use bridge_messages::*;
-
-mod bridge_parachains;
-pub use bridge_parachains::*;
-
-mod fee_market;
-pub use fee_market::*;
