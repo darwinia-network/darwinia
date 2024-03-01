@@ -21,7 +21,7 @@ use core::str::FromStr;
 // darwinia
 use super::*;
 
-const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 5] = [
+const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 7] = [
 	(
 		0,
 		pallet_referenda::TrackInfo {
@@ -156,6 +156,34 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 5]
 				percent(0),
 				percent(10),
 			),
+		},
+	),
+	(
+		5,
+		pallet_referenda::TrackInfo {
+			name: "medium_spender",
+			max_deciding: 50,
+			decision_deposit: DARWINIA_PROPOSAL_REQUIREMENT,
+			prepare_period: TIME_1,
+			decision_period: TIME_1,
+			confirm_period: TIME_1,
+			min_enactment_period: TIME_1,
+			min_approval: pallet_referenda::Curve::make_linear(1, 2, percent(50), percent(100)),
+			min_support: pallet_referenda::Curve::make_reciprocal(1, 2, percent(1), percent(0), percent(50)),
+		},
+	),
+	(
+		6,
+		pallet_referenda::TrackInfo {
+			name: "big_spender",
+			max_deciding: 50,
+			decision_deposit: DARWINIA_PROPOSAL_REQUIREMENT,
+			prepare_period: TIME_1,
+			decision_period: TIME_1,
+			confirm_period: TIME_1,
+			min_enactment_period: TIME_1,
+			min_approval: pallet_referenda::Curve::make_linear(1, 2, percent(50), percent(100)),
+			min_support: pallet_referenda::Curve::make_reciprocal(1, 2, percent(1), percent(0), percent(50)),
 		},
 	),
 ];
