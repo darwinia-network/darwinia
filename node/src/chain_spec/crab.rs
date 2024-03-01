@@ -251,12 +251,6 @@ pub fn genesis_config() -> ChainSpec {
 					},
 					..Default::default()
 				},
-
-				// S2S stuff.
-				bridge_polkadot_grandpa: Default::default(),
-				bridge_polkadot_parachain: Default::default(),
-				bridge_darwinia_messages: Default::default(),
-				darwinia_fee_market: Default::default(),
 			}
 		},
 		vec![
@@ -374,11 +368,5 @@ fn testnet_genesis(
 			},
 			..Default::default()
 		},
-
-		// S2S stuff.
-		bridge_polkadot_grandpa: Default::default(),
-		bridge_polkadot_parachain: Default::default(),
-		bridge_darwinia_messages: Default::default(),
-		darwinia_fee_market: Default::default(),
 	}
 }

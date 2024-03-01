@@ -46,8 +46,9 @@ pub enum ProxyType {
 	IdentityJudgement,
 	#[codec(index = 5)]
 	CancelProxy,
-	// #[codec(index = 6)]
-	// EcdsaBridge,
+	// TODO: Migration.
+	#[codec(index = 6)]
+	EcdsaBridge,
 	#[codec(index = 7)]
 	SubstrateBridge,
 }
@@ -92,16 +93,7 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 			ProxyType::CancelProxy => {
 				matches!(c, RuntimeCall::Proxy(pallet_proxy::Call::reject_announcement { .. }))
 			},
-			ProxyType::SubstrateBridge => {
-				matches!(
-					c,
-					RuntimeCall::BridgePolkadotGrandpa(..)
-						| RuntimeCall::BridgePolkadotParachain(..)
-						| RuntimeCall::BridgeDarwiniaMessages(..)
-						| RuntimeCall::BridgeDarwiniaDispatch(..)
-						| RuntimeCall::DarwiniaFeeMarket(..)
-				)
-			},
+			_ => false,
 		}
 	}
 
