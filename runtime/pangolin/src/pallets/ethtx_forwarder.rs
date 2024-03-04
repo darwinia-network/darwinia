@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 // darwinia
 use crate::*;
 
-impl darwinia_runtime_transact::Config for Runtime {
-	type RuntimeEthOrigin = darwinia_runtime_transact::EnsureRuntimeEthOrigin;
+impl darwinia_ethtx_forwarder::Config for Runtime {
+	type ForwardEthOrigin = darwinia_ethtx_forwarder::EnsureRuntimeEthOrigin;
 	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
 }

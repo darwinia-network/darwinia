@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -43,12 +43,7 @@ impl frame_support::traits::Contains<pallet_tx_pause::RuntimeCallNameOf<Runtime>
 				| b"Deposit" | b"AccountMigration"
 				| b"DarwiniaStaking"
 				| b"Ethereum" | b"EVM"
-				| b"RuntimeTransact"
-				| b"BridgePolkadotGrandpa"
-				| b"BridgePolkadotParachain"
-				| b"BridgeDarwiniaMessages"
-				| b"BridgeDarwiniaDispatch"
-				| b"DarwiniaFeeMarket"
+				| b"EthTxForwarder"
 		)
 	}
 }

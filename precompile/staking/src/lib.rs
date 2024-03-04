@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -51,14 +51,14 @@ where
 	<Runtime::RuntimeCall as Dispatchable>::RuntimeOrigin: From<Option<Runtime::AccountId>>,
 	<Runtime as frame_system::Config>::AccountId: From<H160>,
 	<<Runtime as frame_system::Config>::RuntimeCall as Dispatchable>::RuntimeOrigin: OriginTrait,
-	<<Runtime as darwinia_staking::Config>::Deposit as Stake>::Item: From<u8>,
+	<<Runtime as darwinia_staking::Config>::Deposit as Stake>::Item: From<u16>,
 {
-	#[precompile::public("stake(uint256,uint256,uint8[])")]
+	#[precompile::public("stake(uint256,uint256,uint16[])")]
 	fn stake(
 		handle: &mut impl PrecompileHandle,
 		ring_amount: U256,
 		kton_amount: U256,
-		deposits: Vec<u8>,
+		deposits: Vec<u16>,
 	) -> EvmResult<bool> {
 		let origin = handle.context().caller.into();
 		let deposits = deposits.into_iter().map(|i| i.into()).collect();
@@ -75,12 +75,12 @@ where
 		Ok(true)
 	}
 
-	#[precompile::public("unstake(uint256,uint256,uint8[])")]
+	#[precompile::public("unstake(uint256,uint256,uint16[])")]
 	fn unstake(
 		handle: &mut impl PrecompileHandle,
 		ring_amount: U256,
 		kton_amount: U256,
-		deposits: Vec<u8>,
+		deposits: Vec<u16>,
 	) -> EvmResult<bool> {
 		let origin = handle.context().caller.into();
 		let deposits = deposits.into_iter().map(|i| i.into()).collect();
@@ -97,11 +97,11 @@ where
 		Ok(true)
 	}
 
-	#[precompile::public("restake(uint256,uint8[])")]
+	#[precompile::public("restake(uint256,uint16[])")]
 	fn restake(
 		handle: &mut impl PrecompileHandle,
 		ring_amount: U256,
-		deposits: Vec<u8>,
+		deposits: Vec<u16>,
 	) -> EvmResult<bool> {
 		let origin = handle.context().caller.into();
 		let deposits = deposits.into_iter().map(|i| i.into()).collect();

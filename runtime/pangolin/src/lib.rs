@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -164,7 +164,7 @@ frame_support::construct_runtime! {
 		// EVM stuff.
 		Ethereum: pallet_ethereum = 36,
 		EVM: pallet_evm = 37,
-		RuntimeTransact: darwinia_runtime_transact = 38,
+		EthTxForwarder: darwinia_ethtx_forwarder = 38,
 
 		// // Pangolin <> Pangoro
 		// BridgeMoonbaseGrandpa: pallet_bridge_grandpa::<Instance1> = 39,

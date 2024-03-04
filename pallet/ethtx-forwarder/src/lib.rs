@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -44,22 +44,22 @@ use sp_std::boxed::Box;
 pub use pallet::*;
 
 #[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, MaxEncodedLen, TypeInfo)]
-pub enum RuntimeEthOrigin {
-	RuntimeTransact(H160),
+pub enum ForwardEthOrigin {
+	ForwardEth(H160),
 }
 
-pub fn ensure_runtime_transact<OuterOrigin>(o: OuterOrigin) -> Result<H160, &'static str>
+pub fn ensure_forward_transact<OuterOrigin>(o: OuterOrigin) -> Result<H160, &'static str>
 where
-	OuterOrigin: Into<Result<RuntimeEthOrigin, OuterOrigin>>,
+	OuterOrigin: Into<Result<ForwardEthOrigin, OuterOrigin>>,
 {
 	match o.into() {
-		Ok(RuntimeEthOrigin::RuntimeTransact(n)) => Ok(n),
+		Ok(ForwardEthOrigin::ForwardEth(n)) => Ok(n),
 		_ => Err("bad origin: expected to be an runtime eth origin"),
 	}
 }
 
 pub struct EnsureRuntimeEthOrigin;
-impl<O: Into<Result<RuntimeEthOrigin, O>> + From<RuntimeEthOrigin>> EnsureOrigin<O>
+impl<O: Into<Result<ForwardEthOrigin, O>> + From<ForwardEthOrigin>> EnsureOrigin<O>
 	for EnsureRuntimeEthOrigin
 {
 	type Success = H160;
@@ -70,13 +70,13 @@ impl<O: Into<Result<RuntimeEthOrigin, O>> + From<RuntimeEthOrigin>> EnsureOrigin
 
 	fn try_origin(o: O) -> Result<Self::Success, O> {
 		o.into().map(|o| match o {
-			RuntimeEthOrigin::RuntimeTransact(id) => id,
+			ForwardEthOrigin::ForwardEth(id) => id,
 		})
 	}
 
 	#[cfg(feature = "runtime-benchmarks")]
 	fn try_successful_origin() -> Result<O, ()> {
-		Ok(O::from(RuntimeEthOrigin::RuntimeTransact(Default::default())))
+		Ok(O::from(ForwardEthOrigin::ForwardEth(Default::default())))
 	}
 }
 
@@ -90,14 +90,14 @@ pub mod pallet {
 	pub struct Pallet<T>(_);
 
 	#[pallet::origin]
-	pub type Origin = RuntimeEthOrigin;
+	pub type Origin = ForwardEthOrigin;
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config + pallet_evm::Config {
 		/// Handler for applying an already validated transaction
 		type ValidatedTransaction: ValidatedTransaction;
-		/// Origin for the runtime transact
-		type RuntimeEthOrigin: EnsureOrigin<Self::RuntimeOrigin, Success = H160>;
+		/// Origin for the forward eth transaction
+		type ForwardEthOrigin: EnsureOrigin<Self::RuntimeOrigin, Success = H160>;
 	}
 
 	#[pallet::error]
@@ -109,7 +109,7 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T>
 	where
-		OriginFor<T>: Into<Result<RuntimeEthOrigin, OriginFor<T>>>,
+		OriginFor<T>: Into<Result<ForwardEthOrigin, OriginFor<T>>>,
 	{
 		//This call can only be used at runtime and is not available to EOA users.
 		#[pallet::call_index(0)]
@@ -119,11 +119,11 @@ pub mod pallet {
 				transaction_data.gas_limit.unique_saturated_into()
 			}, true)
 		})]
-		pub fn runtime_transact(
+		pub fn forward_transact(
 			origin: OriginFor<T>,
 			mut transaction: Box<Transaction>,
 		) -> DispatchResultWithPostInfo {
-			let source = ensure_runtime_transact(origin)?;
+			let source = ensure_forward_transact(origin)?;
 			let (who, _) = pallet_evm::Pallet::<T>::account_basic(&source);
 			let base_fee = T::FeeCalculator::min_gas_price().0;
 

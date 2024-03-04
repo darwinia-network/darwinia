@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -114,7 +114,7 @@ impl darwinia_deposit::SimpleAsset for KtonMinting {
 
 impl darwinia_deposit::Config for Runtime {
 	type Kton = KtonMinting;
-	type MaxDeposits = frame_support::traits::ConstU32<16>;
+	type MaxDeposits = frame_support::traits::ConstU32<512>;
 	type MinLockingAmount = frame_support::traits::ConstU128<100>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;

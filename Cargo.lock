@@ -1645,12 +1645,12 @@ dependencies = [
  "darwinia-account-migration",
  "darwinia-common-runtime",
  "darwinia-deposit",
+ "darwinia-ethtx-forwarder",
  "darwinia-precompile-assets",
  "darwinia-precompile-bls12-381",
  "darwinia-precompile-deposit",
  "darwinia-precompile-staking",
  "darwinia-precompile-state-storage",
- "darwinia-runtime-transact",
  "darwinia-staking",
  "dc-primitives",
  "fp-evm",
@@ -2844,6 +2844,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "darwinia-ethtx-forwarder"
+version = "6.6.0"
+dependencies = [
+ "array-bytes",
+ "ethereum",
+ "fp-ethereum",
+ "fp-evm",
+ "fp-self-contained",
+ "frame-support",
+ "frame-system",
+ "libsecp256k1",
+ "pallet-balances",
+ "pallet-ethereum",
+ "pallet-evm",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "rlp",
+ "scale-info",
+ "sha3",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "darwinia-message-gadget"
 version = "6.6.0"
 dependencies = [
@@ -2979,13 +3005,13 @@ dependencies = [
  "darwinia-common-runtime",
  "darwinia-deposit",
  "darwinia-ecdsa-authority",
+ "darwinia-ethtx-forwarder",
  "darwinia-message-gadget",
  "darwinia-precompile-assets",
  "darwinia-precompile-bls12-381",
  "darwinia-precompile-deposit",
  "darwinia-precompile-staking",
  "darwinia-precompile-state-storage",
- "darwinia-runtime-transact",
  "darwinia-staking",
  "dc-inflation",
  "dc-primitives",
@@ -3066,37 +3092,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-runtime-transact"
-version = "6.6.0"
-dependencies = [
- "array-bytes",
- "ethereum",
- "fp-ethereum",
- "fp-evm",
- "fp-self-contained",
- "frame-support",
- "frame-system",
- "libsecp256k1",
- "pallet-balances",
- "pallet-ethereum",
- "pallet-evm",
- "pallet-timestamp",
- "parity-scale-codec",
- "rlp",
- "scale-info",
- "sha3",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "darwinia-staking"
 version = "6.6.0"
 dependencies = [
  "darwinia-deposit",
- "darwinia-runtime-transact",
+ "darwinia-ethtx-forwarder",
  "darwinia-staking-traits",
  "dc-inflation",
  "dc-types",
@@ -8955,13 +8955,13 @@ dependencies = [
  "darwinia-common-runtime",
  "darwinia-deposit",
  "darwinia-ecdsa-authority",
+ "darwinia-ethtx-forwarder",
  "darwinia-message-gadget",
  "darwinia-precompile-assets",
  "darwinia-precompile-bls12-381",
  "darwinia-precompile-deposit",
  "darwinia-precompile-staking",
  "darwinia-precompile-state-storage",
- "darwinia-runtime-transact",
  "darwinia-staking",
  "dc-primitives",
  "fp-evm",
