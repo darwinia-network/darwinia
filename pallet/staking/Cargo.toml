@@ -15,7 +15,7 @@ log        = { workspace = true }
 scale-info = { workspace = true }
 
 # darwinia
-darwinia-message-transact = { workspace = true }
+darwinia-runtime-transact = { workspace = true }
 darwinia-staking-traits   = { workspace = true }
 dc-types                  = { workspace = true }
 # darwinia optional
@@ -60,7 +60,7 @@ std = [
 	"scale-info/std",
 
 	# darwinia
-	"darwinia-message-transact/std",
+	"darwinia-runtime-transact/std",
 	"darwinia-staking-traits/std",
 	# darwinia optional
 	"darwinia-deposit?/std",
@@ -81,7 +81,7 @@ std = [
 runtime-benchmarks = [
 	# darwinia
 	"darwinia-deposit",
-	"darwinia-message-transact/runtime-benchmarks",
+	"darwinia-runtime-transact/runtime-benchmarks",
 	"darwinia-staking-traits/runtime-benchmarks",
 
 	# substrate
@@ -94,7 +94,7 @@ runtime-benchmarks = [
 
 try-runtime = [
 	# darwinia
-	"darwinia-message-transact/try-runtime",
+	"darwinia-runtime-transact/try-runtime",
 	# substrate
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",
