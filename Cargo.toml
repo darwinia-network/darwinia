@@ -71,7 +71,6 @@ dc-inflation                      = { path = "core/inflation", default-features 
 dc-primitives                     = { path = "core/primitives", default-features = false }
 dc-types                          = { path = "core/types" }
 pangolin-runtime                  = { path = "runtime/pangolin" }
-pangoro-runtime                   = { path = "runtime/pangoro" }
 
 # frontier
 fc-api                         = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
