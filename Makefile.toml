@@ -65,19 +65,6 @@ command = "target/release/darwinia"
 env     = { "FLAGS" = "--chain crab-dev" }
 extend  = "common-run"
 
-[tasks.build-pangoro]
-command = "cargo"
-env     = { "FEATURES" = "pangoro-native" }
-extend  = "common-build"
-[tasks.cbuild-pangoro]
-command = "cross"
-env     = { "FEATURES" = "pangoro-native" }
-extend  = "common-build"
-[tasks.run-pangoro]
-command = "target/release/darwinia"
-env     = { "FLAGS" = "--chain pangoro-dev" }
-extend  = "common-run"
-
 [tasks.build-pangolin]
 command = "cargo"
 env     = { "FEATURES" = "pangolin-native" }
@@ -124,11 +111,11 @@ extend  = "common-build"
 # Build for testnets.
 [tasks.build-tns]
 command = "cargo"
-env     = { "FEATURES" = "pangolin-native,pangoro-native" }
+env     = { "FEATURES" = "pangolin-native" }
 extend  = "common-build"
 [tasks.cbuild-tns]
 command = "cross"
-env     = { "FEATURES" = "pangolin-native,pangoro-native" }
+env     = { "FEATURES" = "pangolin-native" }
 extend  = "common-build"
 
 # Build for mainnets.

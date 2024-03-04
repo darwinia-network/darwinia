@@ -266,17 +266,7 @@ pub fn run() -> Result<()> {
 				return $code;
 			}
 
-			#[cfg(feature = "pangoro-native")]
-			if $config.chain_spec.is_pangoro() {
-				let $partials = service::new_partial::<PangoroRuntimeApi, PangoroRuntimeExecutor>(
-					&$config,
-					&$cli.eth_args.build_eth_rpc_config(),
-				)?;
-
-				return $code;
-			}
-
-			panic!("No feature(crab-native, darwinia-native, pangolin-native, pangoro-native) is enabled!");
+			panic!("No feature(crab-native, darwinia-native, pangolin-native) is enabled!");
 		}};
 	}
 
@@ -326,20 +316,7 @@ pub fn run() -> Result<()> {
 				});
 			}
 
-			#[cfg(feature = "pangoro-native")]
-			if chain_spec.is_pangoro() {
-				return runner.async_run(|$config| {
-					let $components = service::new_partial::<PangoroRuntimeApi, PangoroRuntimeExecutor>(
-						&$config,
-						&$cli.eth_args.build_eth_rpc_config()
-					)?;
-					let task_manager = $components.task_manager;
-
-					{ $( $code )* }.map(|v| (v, task_manager))
-				});
-			}
-
-			panic!("No feature(crab-native, darwinia-native, pangolin-native, pangoro-native) is enabled!");
+			panic!("No feature(crab-native, darwinia-native, pangolin-native) is enabled!");
 		}}
 	}
 
@@ -551,15 +528,6 @@ pub fn run() -> Result<()> {
 						)
 						.map_err(Into::into)
 					}
-
-					#[cfg(feature = "pangoro-native")]
-					if chain_spec.is_pangoro() {
-						return service::start_dev_node::<PangoroRuntimeApi, PangoroRuntimeExecutor>(
-							config,
-							&eth_rpc_config,
-						)
-						.map_err(Into::into)
-					}
 				}
 
 				let polkadot_config =
@@ -611,22 +579,7 @@ pub fn run() -> Result<()> {
 					.map_err(Into::into);
 				}
 
-				#[cfg(feature = "pangoro-native")]
-				if chain_spec.is_pangoro() {
-					return service::start_parachain_node::<PangoroRuntimeApi, PangoroRuntimeExecutor>(
-						config,
-						polkadot_config,
-						collator_options,
-						id,
-						hwbench,
-						&eth_rpc_config,
-					)
-					.await
-					.map(|r| r.0)
-					.map_err(Into::into);
-				}
-
-				panic!("No feature(crab-native, darwinia-native, pangolin-native, pangoro-native) is enabled!");
+				panic!("No feature(crab-native, darwinia-native, pangolin-native) is enabled!");
 			})
 		},
 	}
@@ -669,14 +622,6 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		"pangolin-dev" => Box::new(pangolin_chain_spec::development_config()),
 		#[cfg(feature = "pangolin-native")]
 		"pangolin-local" => Box::new(pangolin_chain_spec::local_config()),
-		#[cfg(feature = "pangoro-native")]
-		"pangoro" => Box::new(pangoro_chain_spec::config()),
-		#[cfg(feature = "pangoro-native")]
-		"pangoro-genesis" => Box::new(pangoro_chain_spec::genesis_config()),
-		#[cfg(feature = "pangoro-native")]
-		"pangoro-dev" => Box::new(pangoro_chain_spec::development_config()),
-		#[cfg(feature = "pangoro-native")]
-		"pangoro-local" => Box::new(pangoro_chain_spec::local_config()),
 		_ => {
 			let path = PathBuf::from(id);
 			let chain_spec =
@@ -694,11 +639,7 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 				return Ok(Box::new(PangolinChainSpec::from_json_file(path)?));
 			}
 
-			if chain_spec.is_pangoro() {
-				return Ok(Box::new(PangoroChainSpec::from_json_file(path)?));
-			}
-
-			panic!("No feature(crab-native, darwinia-native, pangolin-native, pangoro-native) is enabled!")
+			panic!("No feature(crab-native, darwinia-native, pangolin-native) is enabled!")
 		},
 	})
 }
