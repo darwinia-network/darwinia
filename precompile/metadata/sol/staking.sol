@@ -35,7 +35,7 @@ interface Staking {
 	function stake(
 		uint256 ringAmount,
 		uint256 ktonAmount,
-		uint8[] memory depositIds
+		uint16[] memory depositIds
 	) external returns (bool);
 
 	/// @dev Withdraw stakes to the staking pool.
@@ -46,7 +46,7 @@ interface Staking {
 	function unstake(
 		uint256 ringAmount,
 		uint256 ktonAmount,
-		uint8[] memory depositIds
+		uint16[] memory depositIds
 	) external returns (bool);
 
     /// @dev Re-stake the unstaking assets immediately.
@@ -55,7 +55,7 @@ interface Staking {
 	/// @return true on success, false otherwise.
 	function restake(
 		uint256 ringAmount,
-		uint8[] memory depositIds
+		uint16[] memory depositIds
 	) external returns (bool);
 
     /// @dev Claim the stakes from the pallet/contract account.
