@@ -56,7 +56,7 @@ use ethereum::{
 	LegacyTransaction, TransactionAction, TransactionSignature, TransactionV2 as Transaction,
 };
 // darwinia
-use darwinia_ethtx_forwarder::RuntimeEthOrigin;
+use darwinia_ethtx_forwarder::ForwardEthOrigin;
 use dc_types::{Balance, Moment};
 // substrate
 use frame_support::{
@@ -1279,7 +1279,7 @@ pub struct KtonStakerNotifier<T>(PhantomData<T>);
 impl<T> KtonStakerNotification for KtonStakerNotifier<T>
 where
 	T: Config + darwinia_ethtx_forwarder::Config,
-	T::RuntimeOrigin: Into<Result<RuntimeEthOrigin, T::RuntimeOrigin>> + From<RuntimeEthOrigin>,
+	T::RuntimeOrigin: Into<Result<ForwardEthOrigin, T::RuntimeOrigin>> + From<ForwardEthOrigin>,
 	<T as frame_system::Config>::AccountId: Into<H160>,
 {
 	fn notify(amount: Balance) {
@@ -1331,8 +1331,8 @@ where
 		let sender =
 			H160([115, 99, 47, 107, 116, 115, 116, 107, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
-		if let Err(e) = <darwinia_ethtx_forwarder::Pallet<T>>::runtime_transact(
-			RuntimeEthOrigin::RuntimeTransact(sender).into(),
+		if let Err(e) = <darwinia_ethtx_forwarder::Pallet<T>>::forward_transact(
+			ForwardEthOrigin::RuntimeTransact(sender).into(),
 			Box::new(Transaction::Legacy(notify_transaction)),
 		) {
 			log::error!("[pallet::staking] failed to notify KTON staker contract due to {e:?}");

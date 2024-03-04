@@ -17,7 +17,7 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // darwinia
-use crate::{mock::*, tests::*, RuntimeEthOrigin};
+use crate::{mock::*, tests::*, ForwardEthOrigin};
 use ethereum::EIP2930Transaction;
 // frontier
 use fp_evm::FeeCalculator;
@@ -48,8 +48,8 @@ fn test_eip2930_transaction_works() {
 			let unsigned_tx = eip2930_erc20_creation_unsigned_transaction();
 			let t = unsigned_tx.sign(&alice.private_key, None);
 
-			assert_ok!(EthTxForwarder::runtime_transact(
-				RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
+			assert_ok!(EthTxForwarder::forward_transact(
+				ForwardEthOrigin::RuntimeTransact(alice.address).into(),
 				Box::new(t)
 			));
 			assert!(System::events()
@@ -70,8 +70,8 @@ fn test_eip2930_transaction_with_auto_nonce() {
 			unsigned_tx.nonce = U256::MAX;
 			let t = unsigned_tx.sign(&alice.private_key, None);
 
-			assert_ok!(EthTxForwarder::runtime_transact(
-				RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
+			assert_ok!(EthTxForwarder::forward_transact(
+				ForwardEthOrigin::RuntimeTransact(alice.address).into(),
 				Box::new(t)
 			));
 			assert!(System::events()
@@ -92,8 +92,8 @@ fn test_eip2930_transaction_with_auto_gas_price() {
 			unsigned_tx.gas_price =
 				<Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0 - 1;
 			let t = unsigned_tx.sign(&alice.private_key, None);
-			assert_ok!(EthTxForwarder::runtime_transact(
-				RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
+			assert_ok!(EthTxForwarder::forward_transact(
+				ForwardEthOrigin::RuntimeTransact(alice.address).into(),
 				Box::new(t)
 			));
 			assert!(System::events()
@@ -110,8 +110,8 @@ fn test_eip2930_transaction_with_sufficient_balance() {
 		let t = unsigned_tx.sign(&alice.private_key, None);
 
 		assert_err!(
-			EthTxForwarder::runtime_transact(
-				RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
+			EthTxForwarder::forward_transact(
+				ForwardEthOrigin::RuntimeTransact(alice.address).into(),
 				Box::new(t.clone())
 			),
 			DispatchError::Module(ModuleError {
@@ -123,8 +123,8 @@ fn test_eip2930_transaction_with_sufficient_balance() {
 
 		let fee = EthTxForwarder::total_payment((&t).into());
 		let _ = Balances::deposit_creating(&alice.address, fee.as_u64());
-		assert_ok!(EthTxForwarder::runtime_transact(
-			RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
+		assert_ok!(EthTxForwarder::forward_transact(
+			ForwardEthOrigin::RuntimeTransact(alice.address).into(),
 			Box::new(t)
 		));
 		assert!(System::events()
@@ -163,8 +163,8 @@ fn test_eip2930_transaction_with_valid_signature() {
 					213, 144, 24, 205, 4, 67, 173, 192, 144, 53, 144, 193, 107, 2, 176,
 				]),
 			};
-			assert_ok!(EthTxForwarder::runtime_transact(
-				RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
+			assert_ok!(EthTxForwarder::forward_transact(
+				ForwardEthOrigin::RuntimeTransact(alice.address).into(),
 				Box::new(Transaction::EIP2930(t))
 			));
 

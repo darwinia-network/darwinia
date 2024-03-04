@@ -17,7 +17,7 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // darwinia
-use crate::{mock::*, tests::*, RuntimeEthOrigin};
+use crate::{mock::*, tests::*, ForwardEthOrigin};
 use ethereum::LegacyTransaction;
 // frontier
 use fp_evm::FeeCalculator;
@@ -46,8 +46,8 @@ fn test_legacy_transaction_works() {
 		.execute_with(|| {
 			let t = legacy_erc20_creation_unsigned_transaction().sign(&alice.private_key);
 
-			assert_ok!(EthTxForwarder::runtime_transact(
-				RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
+			assert_ok!(EthTxForwarder::forward_transact(
+				ForwardEthOrigin::RuntimeTransact(alice.address).into(),
 				Box::new(t)
 			));
 			assert!(System::events()
@@ -67,8 +67,8 @@ fn test_legacy_transaction_with_auto_nonce() {
 			unsigned_tx.nonce = U256::MAX;
 			let t = unsigned_tx.sign(&alice.private_key);
 
-			assert_ok!(EthTxForwarder::runtime_transact(
-				RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
+			assert_ok!(EthTxForwarder::forward_transact(
+				ForwardEthOrigin::RuntimeTransact(alice.address).into(),
 				Box::new(t)
 			));
 			assert!(System::events()
@@ -89,8 +89,8 @@ fn test_legacy_transaction_with_auto_gas_price() {
 				<Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0 - 1;
 			let t = unsigned_tx.sign(&alice.private_key);
 
-			assert_ok!(EthTxForwarder::runtime_transact(
-				RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
+			assert_ok!(EthTxForwarder::forward_transact(
+				ForwardEthOrigin::RuntimeTransact(alice.address).into(),
 				Box::new(t)
 			));
 			assert!(System::events()
@@ -105,8 +105,8 @@ fn test_legacy_transaction_with_sufficient_balance() {
 	ExtBuilder::default().build().execute_with(|| {
 		let t = legacy_erc20_creation_unsigned_transaction().sign(&alice.private_key);
 		assert_err!(
-			EthTxForwarder::runtime_transact(
-				RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
+			EthTxForwarder::forward_transact(
+				ForwardEthOrigin::RuntimeTransact(alice.address).into(),
 				Box::new(t.clone())
 			),
 			DispatchError::Module(ModuleError {
@@ -118,8 +118,8 @@ fn test_legacy_transaction_with_sufficient_balance() {
 
 		let fee = EthTxForwarder::total_payment((&t).into());
 		let _ = Balances::deposit_creating(&alice.address, fee.as_u64());
-		assert_ok!(EthTxForwarder::runtime_transact(
-			RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
+		assert_ok!(EthTxForwarder::forward_transact(
+			ForwardEthOrigin::RuntimeTransact(alice.address).into(),
 			Box::new(t)
 		));
 		assert!(System::events()
@@ -155,8 +155,8 @@ fn test_legacy_transaction_with_valid_signature() {
 				)
 				.unwrap(),
 			};
-			assert_ok!(EthTxForwarder::runtime_transact(
-				RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
+			assert_ok!(EthTxForwarder::forward_transact(
+				ForwardEthOrigin::RuntimeTransact(alice.address).into(),
 				Box::new(Transaction::Legacy(t))
 			));
 
