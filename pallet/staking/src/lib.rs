@@ -56,7 +56,7 @@ use ethereum::{
 	LegacyTransaction, TransactionAction, TransactionSignature, TransactionV2 as Transaction,
 };
 // darwinia
-use darwinia_runtime_transact::RuntimeEthOrigin;
+use darwinia_ethtx_forwarder::RuntimeEthOrigin;
 use dc_types::{Balance, Moment};
 // substrate
 use frame_support::{
@@ -1278,7 +1278,7 @@ impl KtonStakerNotification for () {}
 pub struct KtonStakerNotifier<T>(PhantomData<T>);
 impl<T> KtonStakerNotification for KtonStakerNotifier<T>
 where
-	T: Config + darwinia_runtime_transact::Config,
+	T: Config + darwinia_ethtx_forwarder::Config,
 	T::RuntimeOrigin: Into<Result<RuntimeEthOrigin, T::RuntimeOrigin>> + From<RuntimeEthOrigin>,
 	<T as frame_system::Config>::AccountId: Into<H160>,
 {
@@ -1331,7 +1331,7 @@ where
 		let sender =
 			H160([115, 99, 47, 107, 116, 115, 116, 107, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
-		if let Err(e) = <darwinia_runtime_transact::Pallet<T>>::runtime_transact(
+		if let Err(e) = <darwinia_ethtx_forwarder::Pallet<T>>::runtime_transact(
 			RuntimeEthOrigin::RuntimeTransact(sender).into(),
 			Box::new(Transaction::Legacy(notify_transaction)),
 		) {

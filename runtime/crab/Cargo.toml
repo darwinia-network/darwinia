@@ -42,7 +42,7 @@ darwinia-precompile-bls12-381     = { workspace = true }
 darwinia-precompile-deposit       = { workspace = true }
 darwinia-precompile-staking       = { workspace = true }
 darwinia-precompile-state-storage = { workspace = true }
-darwinia-runtime-transact         = { workspace = true }
+darwinia-ethtx-forwarder         = { workspace = true }
 darwinia-staking                  = { workspace = true }
 dc-primitives                     = { workspace = true }
 
@@ -155,7 +155,7 @@ std = [
 	"darwinia-precompile-deposit/std",
 	"darwinia-precompile-staking/std",
 	"darwinia-precompile-state-storage/std",
-	"darwinia-runtime-transact/std",
+	"darwinia-ethtx-forwarder/std",
 	"darwinia-staking/std",
 	"dc-primitives/std",
 
@@ -263,7 +263,7 @@ runtime-benchmarks = [
 	"darwinia-deposit/runtime-benchmarks",
 	"darwinia-precompile-assets/runtime-benchmarks",
 	"darwinia-precompile-staking/runtime-benchmarks",
-	"darwinia-runtime-transact/runtime-benchmarks",
+	"darwinia-ethtx-forwarder/runtime-benchmarks",
 	"darwinia-staking/runtime-benchmarks",
 
 	# frontier
@@ -318,7 +318,7 @@ try-runtime = [
 	# darwinia
 	"darwinia-account-migration/try-runtime",
 	"darwinia-deposit/try-runtime",
-	"darwinia-runtime-transact/try-runtime",
+	"darwinia-ethtx-forwarder/try-runtime",
 	"darwinia-staking/try-runtime",
 
 	# frontier

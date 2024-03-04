@@ -18,7 +18,7 @@
 
 //! Test utilities
 
-pub use crate as darwinia_runtime_transact;
+pub use crate as darwinia_ethtx_forwarder;
 
 // crates.io
 use sha3::Digest;
@@ -142,7 +142,7 @@ frame_support::construct_runtime! {
 		Balances: pallet_balances,
 		EVM: pallet_evm,
 		Ethereum: pallet_ethereum,
-		RuntimeTransact: darwinia_runtime_transact,
+		EthTxForwarder: darwinia_ethtx_forwarder,
 	}
 }
 

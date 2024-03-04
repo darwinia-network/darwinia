@@ -64,7 +64,7 @@ darwinia-precompile-deposit       = { path = "precompile/deposit", default-featu
 darwinia-precompile-staking       = { path = "precompile/staking", default-features = false }
 darwinia-precompile-state-storage = { path = "precompile/state-storage", default-features = false }
 darwinia-runtime                  = { path = "runtime/darwinia" }
-darwinia-runtime-transact         = { path = "pallet/runtime-transact", default-features = false }
+darwinia-ethtx-forwarder         = { path = "pallet/runtime-transact", default-features = false }
 darwinia-staking                  = { path = "pallet/staking", default-features = false }
 darwinia-staking-traits           = { path = "pallet/staking/traits", default-features = false }
 dc-inflation                      = { path = "core/inflation", default-features = false }

@@ -2,7 +2,7 @@
 authors.workspace = true
 description       = "EVM transaction from the runtime."
 edition.workspace = true
-name              = "darwinia-runtime-transact"
+name              = "darwinia-ethtx-forwarder"
 readme            = "README.md"
 version.workspace = true
 

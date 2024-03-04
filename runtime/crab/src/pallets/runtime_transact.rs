@@ -19,7 +19,7 @@
 // darwinia
 use crate::*;
 
-impl darwinia_runtime_transact::Config for Runtime {
-	type RuntimeEthOrigin = darwinia_runtime_transact::EnsureRuntimeEthOrigin;
+impl darwinia_ethtx_forwarder::Config for Runtime {
+	type RuntimeEthOrigin = darwinia_ethtx_forwarder::EnsureRuntimeEthOrigin;
 	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
 }
