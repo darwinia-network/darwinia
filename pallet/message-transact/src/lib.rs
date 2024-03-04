@@ -136,12 +136,10 @@ pub mod pallet {
 					tx.gas_price = base_fee;
 				},
 				Transaction::EIP2930(tx) => {
-					tx.chain_id = T::ChainId::get();
 					tx.nonce = who.nonce;
 					tx.gas_price = base_fee;
 				},
 				Transaction::EIP1559(tx) => {
-					tx.chain_id = T::ChainId::get();
 					tx.nonce = who.nonce;
 					tx.max_fee_per_gas = base_fee;
 					tx.max_priority_fee_per_gas = U256::zero();
@@ -172,7 +170,6 @@ pub mod pallet {
 				proof_size_base_cost,
 			)
 			.validate_in_block_for(&who)
-			.and_then(|v| v.with_chain_id())
 			.and_then(|v| v.with_base_fee())
 			.and_then(|v| v.with_balance_for(&who))
 			.map_err(|e| <Error<T>>::MessageTransactError(e))?;

@@ -21,11 +21,7 @@
 pub use crate as darwinia_message_transact;
 
 // crates.io
-use codec::{Decode, Encode};
-use scale_info::TypeInfo;
 use sha3::Digest;
-// darwinia
-use darwinia_message_transact::LcmpEthOrigin;
 // substrate
 use sp_core::H160;
 use sp_runtime::BuildStorage;

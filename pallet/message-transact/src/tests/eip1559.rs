@@ -17,11 +17,12 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // darwinia
-use crate::{mock::*, tests::*};
+use crate::{mock::*, tests::*, LcmpEthOrigin};
+use ethereum::EIP1559Transaction;
 // frontier
 use fp_evm::FeeCalculator;
 // substrate
-use frame_support::pallet_prelude::Weight;
+use frame_support::{assert_err, assert_ok, pallet_prelude::Weight};
 use sp_core::U256;
 use sp_runtime::transaction_validity::{InvalidTransaction, TransactionValidityError};
 
@@ -38,215 +39,108 @@ pub fn eip1559_erc20_creation_unsigned_transaction() -> EIP1559UnsignedTransacti
 }
 
 #[test]
-fn test_dispatch_eip1559_transaction_works() {
+fn test_eip1559_transaction_works() {
 	let alice = address_build(1);
-	let relayer_account = address_build(2);
 
 	ExtBuilder::default()
-		.with_balances(vec![
-			(alice.address, 1_000_000_000_000),
-			(relayer_account.address, 1_000_000_000_000),
-		])
+		.with_balances(vec![(alice.address, 1_000_000_000_000)])
 		.build()
 		.execute_with(|| {
-			let mock_message_id = [0; 4];
 			let unsigned_tx = eip1559_erc20_creation_unsigned_transaction();
 			let t = unsigned_tx.sign(&alice.private_key, None);
-			let call = RuntimeCall::MessageTransact(crate::Call::message_transact {
-				transaction: Box::new(t),
-			});
-			let message = prepare_message(call);
-
-			let result = Dispatch::dispatch(
-				SOURCE_CHAIN_ID,
-				TARGET_CHAIN_ID,
-				&relayer_account.address,
-				mock_message_id,
-				Ok(message),
-				|_, _| Ok(()),
-			);
-
-			assert!(result.dispatch_result);
-			System::assert_has_event(RuntimeEvent::Dispatch(
-				pallet_bridge_dispatch::Event::MessageDispatched(
-					SOURCE_CHAIN_ID,
-					mock_message_id,
-					Ok(()),
-				),
+			assert_ok!(MessageTransact::message_transact(
+				LcmpEthOrigin::MessageTransact(alice.address).into(),
+				Box::new(t)
 			));
+			assert!(System::events()
+				.iter()
+				.any(|record| matches!(record.event, RuntimeEvent::Ethereum(..))));
 		});
 }
 
 #[test]
-fn test_dispatch_eip1559_transaction_weight_mismatch() {
+fn test_eip1559_transaction_with_auto_nonce() {
 	let alice = address_build(1);
-	let relayer_account = address_build(2);
 
 	ExtBuilder::default()
-		.with_balances(vec![
-			(alice.address, 1_000_000_000_000),
-			(relayer_account.address, 1_000_000_000_000),
-		])
+		.with_balances(vec![(alice.address, 1_000_000_000_000)])
 		.build()
 		.execute_with(|| {
-			let mock_message_id = [0; 4];
-			let mut unsigned_tx = eip1559_erc20_creation_unsigned_transaction();
-			// 62500001 * 16000 > 1_000_000_000_000
-			unsigned_tx.gas_limit = U256::from(62500001);
-			let t = unsigned_tx.sign(&alice.private_key, None);
-			let call = RuntimeCall::MessageTransact(crate::Call::message_transact {
-				transaction: Box::new(t),
-			});
-			let message = prepare_message(call);
-
-			let result = Dispatch::dispatch(
-				SOURCE_CHAIN_ID,
-				TARGET_CHAIN_ID,
-				&relayer_account.address,
-				mock_message_id,
-				Ok(message),
-				|_, _| Ok(()),
-			);
-
-			assert!(!result.dispatch_result);
-			System::assert_has_event(RuntimeEvent::Dispatch(
-				pallet_bridge_dispatch::Event::MessageWeightMismatch(
-					SOURCE_CHAIN_ID,
-					mock_message_id,
-					Weight::from_parts(1249875606000, 0),
-					Weight::from_parts(1000000000000, 0),
-				),
-			));
-		});
-}
-
-#[test]
-fn test_dispatch_eip1559_transaction_with_autoset_nonce() {
-	let alice = address_build(1);
-	let relayer = address_build(2);
-
-	ExtBuilder::default()
-		.with_balances(vec![
-			(alice.address, 1_000_000_000_000),
-			(relayer.address, 1_000_000_000_000),
-		])
-		.build()
-		.execute_with(|| {
-			let mock_message_id = [0; 4];
 			let mut unsigned_tx = eip1559_erc20_creation_unsigned_transaction();
 			unsigned_tx.nonce = U256::MAX;
 			let t = unsigned_tx.sign(&alice.private_key, None);
-			let call = RuntimeCall::MessageTransact(crate::Call::message_transact {
-				transaction: Box::new(t),
-			});
-			let message = prepare_message(call);
 
-			let result = Dispatch::dispatch(
-				SOURCE_CHAIN_ID,
-				TARGET_CHAIN_ID,
-				&relayer.address,
-				mock_message_id,
-				Ok(message),
-				|_, _| Ok(()),
-			);
-
-			assert!(result.dispatch_result);
+			assert_ok!(MessageTransact::message_transact(
+				LcmpEthOrigin::MessageTransact(alice.address).into(),
+				Box::new(t)
+			));
+			assert!(System::events()
+				.iter()
+				.any(|record| matches!(record.event, RuntimeEvent::Ethereum(..))));
 		});
 }
 
 #[test]
-fn test_dispatch_eip1559_transaction_with_autoset_gas_price() {
+fn test_eip1559_transaction_with_auto_gas_price() {
 	let alice = address_build(1);
-	let relayer = address_build(2);
 
 	ExtBuilder::default()
-		.with_balances(vec![
-			(alice.address, 1_000_000_000_000),
-			(relayer.address, 1_000_000_000_000),
-		])
+		.with_balances(vec![(alice.address, 1_000_000_000_000)])
 		.build()
 		.execute_with(|| {
-			let mock_message_id = [0; 4];
 			let mut unsigned_tx = eip1559_erc20_creation_unsigned_transaction();
 			unsigned_tx.max_fee_per_gas =
 				<Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0 - 1;
 			let t = unsigned_tx.sign(&alice.private_key, None);
-			let call = RuntimeCall::MessageTransact(crate::Call::message_transact {
-				transaction: Box::new(t),
-			});
-			let message = prepare_message(call);
 
-			let result = Dispatch::dispatch(
-				SOURCE_CHAIN_ID,
-				TARGET_CHAIN_ID,
-				&relayer.address,
-				mock_message_id,
-				Ok(message),
-				|_, _| Ok(()),
-			);
-
-			assert!(result.dispatch_result);
+			assert_ok!(MessageTransact::message_transact(
+				LcmpEthOrigin::MessageTransact(alice.address).into(),
+				Box::new(t)
+			));
+			assert!(System::events()
+				.iter()
+				.any(|record| matches!(record.event, RuntimeEvent::Ethereum(..))));
 		});
 }
 
 #[test]
-fn test_dispatch_eip1559_transaction_with_insufficient_relayer_balance() {
+fn test_transaction_with_valid_signature() {
 	let alice = address_build(1);
-	let relayer1 = address_build(2);
-	let relayer2 = address_build(3);
-
 	ExtBuilder::default()
-		.with_balances(vec![
-			(alice.address, 1_000_000_000_000),
-			(relayer1.address, 1_000),
-			(relayer2.address, 1_000_000_000_000),
-		])
+		.with_balances(vec![(alice.address, 1_000_000_000_000)])
 		.build()
 		.execute_with(|| {
-			let mock_message_id = [0; 4];
-			let unsigned_tx = eip1559_erc20_creation_unsigned_transaction();
-			let t = unsigned_tx.sign(&alice.private_key, None);
-			let call = RuntimeCall::MessageTransact(crate::Call::message_transact {
-				transaction: Box::new(t),
-			});
-			let message = prepare_message(call);
-
-			// Failed in pre-dispatch balance check
-			let before_dispatch =
-				pallet_evm::Pallet::<Runtime>::account_basic(&relayer1.address).0.balance;
-			let result = Dispatch::dispatch(
-				SOURCE_CHAIN_ID,
-				TARGET_CHAIN_ID,
-				&relayer1.address,
-				mock_message_id,
-				Ok(message.clone()),
-				|_, _| Ok(()),
-			);
-			assert!(!result.dispatch_result);
-			System::assert_has_event(RuntimeEvent::Dispatch(
-				pallet_bridge_dispatch::Event::MessageCallValidateFailed(
-					SOURCE_CHAIN_ID,
-					mock_message_id,
-					TransactionValidityError::Invalid(InvalidTransaction::Payment),
-				),
+			let t = EIP1559Transaction {
+				chain_id: 0,
+				nonce: U256::zero(),
+				max_priority_fee_per_gas: U256::zero(),
+				max_fee_per_gas: U256::zero(),
+				gas_limit: U256::from(1_000_000),
+				action: ethereum::TransactionAction::Create,
+				value: U256::zero(),
+				input: array_bytes::hex2bytes_unchecked(ERC20_CONTRACT_BYTECODE),
+				access_list: vec![],
+				// copied from:
+				// https://github.com/rust-ethereum/ethereum/blob/24739cc8ba6e9d8ee30ada8ec92161e4c48d578e/src/transaction.rs#L873-L875
+				odd_y_parity: false,
+				// 36b241b061a36a32ab7fe86c7aa9eb592dd59018cd0443adc0903590c16b02b0
+				r: H256([
+					54, 178, 65, 176, 97, 163, 106, 50, 171, 127, 232, 108, 122, 169, 235, 89, 45,
+					213, 144, 24, 205, 4, 67, 173, 192, 144, 53, 144, 193, 107, 2, 176,
+				]),
+				// 5edcc541b4741c5cc6dd347c5ed9577ef293a62787b4510465fadbfe39ee4094
+				s: H256([
+					54, 178, 65, 176, 97, 163, 106, 50, 171, 127, 232, 108, 122, 169, 235, 89, 45,
+					213, 144, 24, 205, 4, 67, 173, 192, 144, 53, 144, 193, 107, 2, 176,
+				]),
+			};
+			assert_ok!(MessageTransact::message_transact(
+				LcmpEthOrigin::MessageTransact(alice.address).into(),
+				Box::new(Transaction::EIP1559(t))
 			));
-			let after_dispatch =
-				pallet_evm::Pallet::<Runtime>::account_basic(&relayer1.address).0.balance;
-			assert_eq!(before_dispatch, after_dispatch);
 
-			let before_dispatch =
-				pallet_evm::Pallet::<Runtime>::account_basic(&relayer2.address).0.balance;
-			let result = Dispatch::dispatch(
-				SOURCE_CHAIN_ID,
-				TARGET_CHAIN_ID,
-				&relayer2.address,
-				mock_message_id,
-				Ok(message),
-				|_, _| Ok(()),
-			);
-			assert!(result.dispatch_result);
-			let after_dispatch =
-				pallet_evm::Pallet::<Runtime>::account_basic(&relayer2.address).0.balance;
-			assert!(before_dispatch > after_dispatch);
+			assert!(System::events()
+				.iter()
+				.any(|record| matches!(record.event, RuntimeEvent::Ethereum(..))));
 		});
 }

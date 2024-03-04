@@ -22,10 +22,12 @@ use ethereum::LegacyTransaction;
 // frontier
 use fp_evm::FeeCalculator;
 // substrate
-use frame_support::{assert_ok, pallet_prelude::Weight};
+use frame_support::{assert_err, assert_ok, pallet_prelude::Weight};
 use sp_core::{H160, U256};
-use sp_runtime::transaction_validity::{InvalidTransaction, TransactionValidityError};
-use sp_std::str::FromStr;
+use sp_runtime::{
+	transaction_validity::{InvalidTransaction, TransactionValidityError},
+	DispatchError, ModuleError,
+};
 
 pub fn legacy_erc20_creation_unsigned_transaction() -> LegacyUnsignedTransaction {
 	LegacyUnsignedTransaction {
@@ -58,7 +60,7 @@ fn test_legacy_transaction_works() {
 }
 
 #[test]
-fn test_legacy_transaction_with_autoset_nonce() {
+fn test_legacy_transaction_with_auto_nonce() {
 	let alice = address_build(1);
 	ExtBuilder::default()
 		.with_balances(vec![(alice.address, 1_000_000_000_000)])
@@ -79,7 +81,7 @@ fn test_legacy_transaction_with_autoset_nonce() {
 }
 
 #[test]
-fn test_legacy_transaction_with_autoset_gas_price() {
+fn test_legacy_transaction_with_auto_gas_price() {
 	let alice = address_build(1);
 	ExtBuilder::default()
 		.with_balances(vec![(alice.address, 1_000_000_000_000)])
@@ -101,7 +103,7 @@ fn test_legacy_transaction_with_autoset_gas_price() {
 }
 
 #[test]
-fn test_transact_with_invalid_signature() {
+fn test_transaction_with_valid_signature() {
 	let alice = address_build(1);
 	ExtBuilder::default()
 		.with_balances(vec![(alice.address, 1_000_000_000_000)])
@@ -116,12 +118,10 @@ fn test_transact_with_invalid_signature() {
 				input: array_bytes::hex2bytes_unchecked(ERC20_CONTRACT_BYTECODE),
 				signature: TransactionSignature::new(
 					38,
-					// be67e0a07db67da8d446f76add590e54b6e92cb6b8f9835aeb67540579a27717
 					H256([
 						190, 103, 224, 160, 125, 182, 125, 168, 212, 70, 247, 106, 221, 89, 14, 84,
 						182, 233, 44, 182, 184, 249, 131, 90, 235, 103, 84, 5, 121, 162, 119, 23,
 					]),
-					// 2d690516512020171c1ec870f6ff45398cc8609250326be89915fb538e7bd718
 					H256([
 						45, 105, 5, 22, 81, 32, 32, 23, 28, 30, 200, 112, 246, 255, 69, 57, 140,
 						200, 96, 146, 80, 50, 107, 232, 153, 21, 251, 83, 142, 123, 215, 24,
@@ -129,11 +129,11 @@ fn test_transact_with_invalid_signature() {
 				)
 				.unwrap(),
 			};
-
 			assert_ok!(MessageTransact::message_transact(
 				LcmpEthOrigin::MessageTransact(alice.address).into(),
-				Box::new(Transaction::Legacy(t)),
+				Box::new(Transaction::Legacy(t))
 			));
+
 			assert!(System::events()
 				.iter()
 				.any(|record| matches!(record.event, RuntimeEvent::Ethereum(..))));
