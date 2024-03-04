@@ -218,7 +218,7 @@ impl DispatchValidateT<AccountId, RuntimeCall> for DarwiniaDispatchValidator {
 			RuntimeCall::Assets(..)
 				| RuntimeCall::Ethereum(..)
 				| RuntimeCall::EVM(..)
-				| RuntimeCall::RuntimeTransact(..)
+				| RuntimeCall::EthTxForwarder(..)
 		) {
 			Some(fp_evm::PrecompileFailure::Error {
 				exit_status: ExitError::Other(
