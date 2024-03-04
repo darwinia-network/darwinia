@@ -22,7 +22,7 @@ use ethereum::EIP1559Transaction;
 // frontier
 use fp_evm::FeeCalculator;
 // substrate
-use frame_support::{assert_err, assert_ok};
+use frame_support::{assert_err, assert_ok, traits::Currency};
 use sp_core::U256;
 use sp_runtime::{DispatchError, ModuleError};
 
@@ -104,7 +104,7 @@ fn test_eip1559_transaction_with_auto_gas_price() {
 }
 
 #[test]
-fn test_eip1559_transaction_with_insufficient_balance() {
+fn test_eip1559_transaction_with_sufficient_balance() {
 	let alice = address_build(1);
 	ExtBuilder::default().build().execute_with(|| {
 		let unsigned_tx = eip1559_erc20_creation_unsigned_transaction();
@@ -113,7 +113,7 @@ fn test_eip1559_transaction_with_insufficient_balance() {
 		assert_err!(
 			RuntimeTransact::runtime_transact(
 				RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
-				Box::new(t)
+				Box::new(t.clone())
 			),
 			DispatchError::Module(ModuleError {
 				index: 5,
@@ -121,6 +121,16 @@ fn test_eip1559_transaction_with_insufficient_balance() {
 				message: Some("MessageTransactError",)
 			})
 		);
+
+		let fee = RuntimeTransact::total_payment((&t).into());
+		let _ = Balances::deposit_creating(&alice.address, fee.as_u64());
+		assert_ok!(RuntimeTransact::runtime_transact(
+			RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
+			Box::new(t)
+		));
+		assert!(System::events()
+			.iter()
+			.any(|record| matches!(record.event, RuntimeEvent::Ethereum(..))));
 	});
 }
 
