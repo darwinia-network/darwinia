@@ -27,9 +27,6 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 mod pallets;
 pub use pallets::*;
 
-mod bridges_message;
-pub use bridges_message::*;
-
 mod migration;
 pub mod weights;
 
@@ -55,7 +52,6 @@ pub type SignedExtra = (
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
-	BridgeRejectObsoleteHeadersAndMessages,
 );
 
 /// Unchecked extrinsic type as expected by this runtime.
@@ -165,12 +161,12 @@ frame_support::construct_runtime! {
 		EVM: pallet_evm = 37,
 		MessageTransact: darwinia_message_transact = 38,
 
-		// Crab <> Darwinia
-		BridgePolkadotGrandpa: pallet_bridge_grandpa::<Instance1> = 39,
-		BridgePolkadotParachain: pallet_bridge_parachains::<Instance1> = 40,
-		BridgeDarwiniaMessages: pallet_bridge_messages::<Instance1> = 41,
-		BridgeDarwiniaDispatch: pallet_bridge_dispatch::<Instance1> = 42,
-		DarwiniaFeeMarket: pallet_fee_market::<Instance1> = 43
+		// // Crab <> Darwinia
+		// BridgePolkadotGrandpa: pallet_bridge_grandpa::<Instance1> = 39,
+		// BridgePolkadotParachain: pallet_bridge_parachains::<Instance1> = 40,
+		// BridgeDarwiniaMessages: pallet_bridge_messages::<Instance1> = 41,
+		// BridgeDarwiniaDispatch: pallet_bridge_dispatch::<Instance1> = 42,
+		// DarwiniaFeeMarket: pallet_fee_market::<Instance1> = 43
 	}
 }
 
@@ -182,11 +178,6 @@ frame_benchmarking::define_benchmarks! {
 	[darwinia_account_migration, AccountMigration]
 	[darwinia_deposit, Deposit]
 	[darwinia_staking, DarwiniaStaking]
-	// darwinia-messages-substrate
-	[pallet_bridge_grandpa, BridgePolkadotGrandpa]
-	[pallet_bridge_parachains, ParachainsBench::<Runtime, WithPolkadotParachainsInstance>]
-	[pallet_bridge_messages, MessagesBench::<Runtime, WithDarwiniaMessages>]
-	[pallet_fee_market, DarwiniaFeeMarket]
 	// substrate
 	[frame_system, SystemBench::<Runtime>]
 	[pallet_assets, Assets]
@@ -208,16 +199,6 @@ frame_benchmarking::define_benchmarks! {
 }
 
 impl_self_contained_call!();
-
-bridge_runtime_common::generate_bridge_reject_obsolete_headers_and_messages! {
-	RuntimeCall, AccountId,
-	// Grandpa
-	BridgePolkadotGrandpa,
-	// Messages
-	BridgeDarwiniaMessages,
-	// Parachain
-	BridgePolkadotParachain
-}
 
 sp_api::impl_runtime_apis! {
 	impl sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId> for Runtime {
@@ -674,9 +655,6 @@ sp_api::impl_runtime_apis! {
 			use frame_support::traits::StorageInfoTrait;
 			use frame_system_benchmarking::Pallet as SystemBench;
 			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
-			// darwinia-messages-substrate
-			use pallet_bridge_parachains::benchmarking::Pallet as ParachainsBench;
-			use pallet_bridge_messages::benchmarking::Pallet as MessagesBench;
 
 			let mut list = Vec::<BenchmarkList>::new();
 
@@ -690,31 +668,9 @@ sp_api::impl_runtime_apis! {
 		fn dispatch_benchmark(
 			config: frame_benchmarking::BenchmarkConfig
 		) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
-			// darwinia
-			use crate::darwinia::{ToDarwiniaMessagesDeliveryProof, FromDarwiniaMessagesProof, WithDarwiniaMessageBridge};
-			// darwinia-messages-substrate
-			use pallet_bridge_parachains::benchmarking::{
-				Pallet as ParachainsBench,
-				Config as ParachainsConfig,
-			};
-			use pallet_bridge_messages::benchmarking::{
-				Pallet as MessagesBench,
-				Config as MessagesConfig,
-				MessageDeliveryProofParams,
-				MessageProofParams,
-				MessageParams,
-			};
-			use bridge_runtime_common::messages_benchmarking::{
-				prepare_message_proof,
-				prepare_message_delivery_proof,
-				prepare_outbound_message,
-			};
-			use bp_messages::MessageNonce;
 			// substrate
 			use frame_benchmarking::*;
-			use frame_support::pallet_prelude::Weight;
-			use frame_support::traits::Currency;
-			use frame_support::traits::TrackedStorageKey;
+			use frame_support::{pallet_prelude::Weight, traits::{Currency, TrackedStorageKey}};
 
 			use frame_system_benchmarking::Pallet as SystemBench;
 			impl frame_system_benchmarking::Config for Runtime {
@@ -730,66 +686,6 @@ sp_api::impl_runtime_apis! {
 
 			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 			impl cumulus_pallet_session_benchmarking::Config for Runtime {}
-
-			impl ParachainsConfig<WithPolkadotParachainsInstance> for Runtime {
-				fn prepare_parachain_heads_proof(
-					parachains: &[bp_polkadot_core::parachains::ParaId],
-					parachain_head_size: u32,
-					proof_size: bp_runtime::StorageProofSize,
-				) -> (
-					pallet_bridge_parachains::RelayBlockNumber,
-					pallet_bridge_parachains::RelayBlockHash,
-					bp_polkadot_core::parachains::ParaHeadsProof,
-					Vec<(bp_polkadot_core::parachains::ParaId, bp_polkadot_core::parachains::ParaHash)>,
-				) {
-					bridge_runtime_common::parachains_benchmarking::prepare_parachain_heads_proof::<Runtime, WithPolkadotParachainsInstance>(parachains, parachain_head_size, proof_size)
-				}
-			}
-
-			impl MessagesConfig<WithDarwiniaMessages> for Runtime {
-				fn maximal_message_size() -> u32 {
-					bridge_runtime_common::messages::source::maximal_message_size::<WithDarwiniaMessageBridge>()
-				}
-
-				fn bridged_relayer_id() -> Self::InboundRelayer {
-					sp_core::H160::default().into()
-				}
-
-				fn account_balance(account: &Self::AccountId) -> Self::OutboundMessageFee {
-					pallet_balances::Pallet::<Runtime>::free_balance(account)
-				}
-
-				fn endow_account(account: &Self::AccountId) {
-					pallet_balances::Pallet::<Runtime>::make_free_balance_be(
-						account,
-						Balance::MAX / 100,
-					);
-				}
-
-				fn prepare_outbound_message(params: MessageParams<Self::AccountId>) -> (Self::OutboundPayload, Self::OutboundMessageFee) {
-					(prepare_outbound_message::<WithDarwiniaMessageBridge>(params), Self::message_fee())
-				}
-
-				fn prepare_message_proof(params: MessageProofParams) -> (FromDarwiniaMessagesProof, Weight) {
-					prepare_message_proof::<Runtime, (), WithPolkadotGrandpa, WithDarwiniaMessageBridge, bp_darwinia::Header, bp_darwinia::Hashing>(params)
-				}
-
-				fn prepare_message_delivery_proof(params: MessageDeliveryProofParams<Self::AccountId>) -> ToDarwiniaMessagesDeliveryProof {
-					prepare_message_delivery_proof::<Runtime, WithPolkadotGrandpa, WithDarwiniaMessageBridge, bp_darwinia::Header, bp_darwinia::Hashing>(params)
-				}
-
-				fn is_message_dispatched(nonce: MessageNonce) -> bool {
-					frame_system::Pallet::<Runtime>::events()
-						.into_iter()
-						.map(|event_record| event_record.event)
-						.any(|event| matches!(
-							event,
-							RuntimeEvent::BridgeDarwiniaDispatch(pallet_bridge_dispatch::Event::<Runtime, _>::MessageDispatched(
-								_, ([0, 0, 0, 0], nonce_from_event), _,
-							)) if nonce_from_event == nonce
-						))
-				}
-			}
 
 			let whitelist: Vec<TrackedStorageKey> = vec![
 				// Block Number

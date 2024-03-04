@@ -251,12 +251,6 @@ pub fn genesis_config() -> ChainSpec {
 					},
 					..Default::default()
 				},
-
-				// S2S stuff.
-				bridge_kusama_grandpa: Default::default(),
-				bridge_kusama_parachain: Default::default(),
-				bridge_crab_messages: Default::default(),
-				crab_fee_market: Default::default(),
 			}
 		},
 		vec![
@@ -378,11 +372,5 @@ fn testnet_genesis(
 			},
 			..Default::default()
 		},
-
-		// S2S stuff.
-		bridge_kusama_grandpa: Default::default(),
-		bridge_kusama_parachain: Default::default(),
-		bridge_crab_messages: Default::default(),
-		crab_fee_market: Default::default(),
 	}
 }

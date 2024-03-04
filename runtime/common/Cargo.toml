@@ -17,9 +17,6 @@ smallvec   = { version = "1.10" }
 darwinia-precompile-assets = { workspace = true }
 dc-primitives              = { workspace = true }
 
-# darwinia-messages-substrate
-bp-darwinia-core = { workspace = true }
-
 # frontier
 fp-account = { workspace = true }
 pallet-evm = { workspace = true }
@@ -52,9 +49,6 @@ std = [
 	# darwinia
 	"darwinia-precompile-assets/std",
 	"dc-primitives/std",
-
-	# darwinia-messages-substrate
-	"bp-darwinia-core/std",
 
 	# frontier
 	"fp-account/std",

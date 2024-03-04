@@ -22,5 +22,4 @@ darwinia_common_runtime::impl_weight_tests! {}
 darwinia_common_runtime::impl_fee_tests! {}
 darwinia_common_runtime::impl_evm_tests! {}
 darwinia_common_runtime::impl_account_migration_tests! {}
-darwinia_common_runtime::impl_messages_bridge_tests! {}
 // darwinia_common_runtime::impl_maintenance_tests! {}

@@ -46,18 +46,6 @@ darwinia-precompile-state-storage = { workspace = true }
 darwinia-staking                  = { workspace = true }
 dc-primitives                     = { workspace = true }
 
-# darwinia-messages-substrate
-bp-message-dispatch      = { workspace = true }
-bp-messages              = { workspace = true }
-bp-polkadot-core         = { workspace = true }
-bp-runtime               = { workspace = true }
-bridge-runtime-common    = { workspace = true }
-pallet-bridge-dispatch   = { workspace = true }
-pallet-bridge-grandpa    = { workspace = true }
-pallet-bridge-messages   = { workspace = true }
-pallet-bridge-parachains = { workspace = true }
-pallet-fee-market        = { workspace = true }
-
 # frontier
 fp-evm                         = { workspace = true }
 fp-rpc                         = { workspace = true }
@@ -131,8 +119,6 @@ frame-try-runtime         = { workspace = true, optional = true }
 [dev-dependencies]
 # darwinia
 darwinia-common-runtime = { workspace = true, features = ["std", "test"] }
-# darwinia-messages-substrate
-bp-darwinia-core = { workspace = true, features = ["std"] }
 # polkadot
 polkadot-primitives = { workspace = true, features = ["std"] }
 # substrate
@@ -172,18 +158,6 @@ std = [
 	"darwinia-precompile-state-storage/std",
 	"darwinia-staking/std",
 	"dc-primitives/std",
-
-	# darwinia-messages-substrate
-	"bp-message-dispatch/std",
-	"bp-messages/std",
-	"bp-polkadot-core/std",
-	"bp-runtime/std",
-	"bridge-runtime-common/std",
-	"pallet-bridge-dispatch/std",
-	"pallet-bridge-grandpa/std",
-	"pallet-bridge-messages/std",
-	"pallet-bridge-parachains/std",
-	"pallet-fee-market/std",
 
 	# frontier
 	"fp-evm/std",
@@ -292,13 +266,6 @@ runtime-benchmarks = [
 	"darwinia-precompile-staking/runtime-benchmarks",
 	"darwinia-staking/runtime-benchmarks",
 
-	# darwinia-messages-substrate
-	"bridge-runtime-common/runtime-benchmarks",
-	"pallet-bridge-grandpa/runtime-benchmarks",
-	"pallet-bridge-messages/runtime-benchmarks",
-	"pallet-bridge-parachains/runtime-benchmarks",
-	"pallet-fee-market/runtime-benchmarks",
-
 	# frontier
 	"pallet-ethereum/runtime-benchmarks",
 	"pallet-evm/runtime-benchmarks",
@@ -353,13 +320,6 @@ try-runtime = [
 	"darwinia-deposit/try-runtime",
 	"darwinia-message-transact/try-runtime",
 	"darwinia-staking/try-runtime",
-
-	# darwinia-messages-substrate
-	"pallet-bridge-dispatch/try-runtime",
-	"pallet-bridge-grandpa/try-runtime",
-	"pallet-bridge-messages/try-runtime",
-	"pallet-bridge-parachains/try-runtime",
-	"pallet-fee-market/try-runtime",
 
 	# frontier
 	"fp-self-contained/try-runtime",
