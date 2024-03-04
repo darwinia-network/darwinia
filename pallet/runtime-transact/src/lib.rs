@@ -96,7 +96,7 @@ pub mod pallet {
 	pub trait Config: frame_system::Config + pallet_evm::Config {
 		/// Handler for applying an already validated transaction
 		type ValidatedTransaction: ValidatedTransaction;
-		/// Origin for message transact
+		/// Origin for the runtime transact
 		type RuntimeEthOrigin: EnsureOrigin<Self::RuntimeOrigin, Success = H160>;
 	}
 
@@ -111,15 +111,13 @@ pub mod pallet {
 	where
 		OriginFor<T>: Into<Result<RuntimeEthOrigin, OriginFor<T>>>,
 	{
-		/// This call can only be called by the lcmp message layer and is not available to normal
-		/// users.
+		//This call can only be used at runtime and is not available to EOA users.
 		#[pallet::call_index(0)]
 		#[pallet::weight({
-			let without_base_extrinsic_weight = true;
 			<T as pallet_evm::Config>::GasWeightMapping::gas_to_weight({
 				let transaction_data: TransactionData = (&**transaction).into();
 				transaction_data.gas_limit.unique_saturated_into()
-			}, without_base_extrinsic_weight)
+			}, true)
 		})]
 		pub fn runtime_transact(
 			origin: OriginFor<T>,
@@ -213,9 +211,9 @@ impl From<TransactionValidationError> for EvmTxErrorWrapper {
 	}
 }
 
-/// Calculates the fee for a relayer to submit an LCMP EVM transaction.
+/// Calculates the fee for submitting such an EVM transaction.
 ///
-/// The gas_price of an LCMP EVM transaction is always the min_gas_price(), which is a fixed value.
+/// The gas_price of an EVM transaction is always the min_gas_price(), which is a fixed value.
 /// Therefore, only the gas_limit and value of the transaction should be considered in the
 /// calculation of the fee, and the gas_price of the transaction itself can be ignored.
 pub fn total_payment<T: pallet_evm::Config>(tx_data: TransactionData) -> U256 {
