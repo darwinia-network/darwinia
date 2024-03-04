@@ -73,19 +73,6 @@ dc-types                          = { path = "core/types" }
 pangolin-runtime                  = { path = "runtime/pangolin" }
 pangoro-runtime                   = { path = "runtime/pangoro" }
 
-# darwinia-messages-substrate
-bp-darwinia-core         = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-bp-message-dispatch      = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-bp-messages              = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-bp-polkadot-core         = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-bp-runtime               = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-bridge-runtime-common    = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-pallet-bridge-dispatch   = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-pallet-bridge-grandpa    = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-pallet-bridge-messages   = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-pallet-bridge-parachains = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-pallet-fee-market        = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-
 # frontier
 fc-api                         = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
 fc-consensus                   = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }

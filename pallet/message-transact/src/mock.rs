@@ -134,118 +134,6 @@ impl pallet_ethereum::Config for Runtime {
 	type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
 }
 
-pub struct MockAccountIdConverter;
-impl sp_runtime::traits::Convert<sp_core::H256, AccountId> for MockAccountIdConverter {
-	fn convert(hash: sp_core::H256) -> AccountId {
-		hash.into()
-	}
-}
-
-#[derive(Decode, Encode, Clone)]
-pub struct MockEncodedCall(pub Vec<u8>);
-impl From<MockEncodedCall> for Result<RuntimeCall, ()> {
-	fn from(call: MockEncodedCall) -> Result<RuntimeCall, ()> {
-		RuntimeCall::decode(&mut &call.0[..]).map_err(drop)
-	}
-}
-
-pub struct MockCallValidator;
-impl bp_message_dispatch::CallValidate<AccountId, RuntimeOrigin, RuntimeCall>
-	for MockCallValidator
-{
-	fn check_receiving_before_dispatch(
-		relayer_account: &AccountId,
-		call: &RuntimeCall,
-	) -> Result<(), &'static str> {
-		match call {
-			RuntimeCall::MessageTransact(crate::Call::message_transact { transaction: tx }) => {
-				let total_payment = crate::total_payment::<Runtime>((&**tx).into());
-				let relayer = pallet_evm::Pallet::<Runtime>::account_basic(relayer_account).0;
-
-				frame_support::ensure!(relayer.balance >= total_payment, "Insufficient balance");
-				Ok(())
-			},
-			_ => Ok(()),
-		}
-	}
-
-	fn call_validate(
-		relayer_account: &AccountId,
-		origin: &RuntimeOrigin,
-		call: &RuntimeCall,
-	) -> Result<(), sp_runtime::transaction_validity::TransactionValidityError> {
-		match call {
-			RuntimeCall::MessageTransact(crate::Call::message_transact { transaction: tx }) =>
-				match origin.caller {
-					OriginCaller::MessageTransact(LcmpEthOrigin::MessageTransact(id)) => {
-						let total_payment = crate::total_payment::<Runtime>((&**tx).into());
-						pallet_balances::Pallet::<Runtime>::transfer(
-							frame_system::RawOrigin::Signed(*relayer_account).into(),
-							id,
-							total_payment.as_u64(),
-						)
-						.map_err(|_| {
-							sp_runtime::transaction_validity::TransactionValidityError::Invalid(
-								sp_runtime::transaction_validity::InvalidTransaction::Payment,
-							)
-						})?;
-
-						Ok(())
-					},
-					_ => Err(sp_runtime::transaction_validity::TransactionValidityError::Invalid(
-						sp_runtime::transaction_validity::InvalidTransaction::BadSigner,
-					)),
-				},
-			_ => Ok(()),
-		}
-	}
-}
-pub struct MockIntoDispatchOrigin;
-impl bp_message_dispatch::IntoDispatchOrigin<AccountId, RuntimeCall, RuntimeOrigin>
-	for MockIntoDispatchOrigin
-{
-	fn into_dispatch_origin(id: &AccountId, call: &RuntimeCall) -> RuntimeOrigin {
-		match call {
-			RuntimeCall::MessageTransact(crate::Call::message_transact { .. }) =>
-				crate::LcmpEthOrigin::MessageTransact(*id).into(),
-			_ => frame_system::RawOrigin::Signed(*id).into(),
-		}
-	}
-}
-#[derive(Debug, Encode, Decode, Clone, PartialEq, Eq, TypeInfo)]
-pub struct MockAccountPublic(AccountId);
-impl sp_runtime::traits::IdentifyAccount for MockAccountPublic {
-	type AccountId = AccountId;
-
-	fn into_account(self) -> AccountId {
-		self.0
-	}
-}
-#[derive(Debug, Encode, Decode, Clone, PartialEq, Eq, TypeInfo)]
-pub struct MockSignature(AccountId);
-impl sp_runtime::traits::Verify for MockSignature {
-	type Signer = MockAccountPublic;
-
-	fn verify<L: sp_runtime::traits::Lazy<[u8]>>(&self, _msg: L, signer: &AccountId) -> bool {
-		self.0 == *signer
-	}
-}
-
-pub(crate) type MockBridgeMessageId = [u8; 4];
-
-impl pallet_bridge_dispatch::Config for Runtime {
-	type AccountIdConverter = MockAccountIdConverter;
-	type BridgeMessageId = MockBridgeMessageId;
-	type CallValidator = MockCallValidator;
-	type EncodedCall = MockEncodedCall;
-	type IntoDispatchOrigin = MockIntoDispatchOrigin;
-	type RuntimeCall = RuntimeCall;
-	type RuntimeEvent = RuntimeEvent;
-	type SourceChainAccountId = AccountId;
-	type TargetChainAccountPublic = MockAccountPublic;
-	type TargetChainSignature = MockSignature;
-}
-
 impl crate::Config for Runtime {
 	type LcmpEthOrigin = crate::EnsureLcmpEthOrigin;
 	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
@@ -259,7 +147,6 @@ frame_support::construct_runtime! {
 		EVM: pallet_evm,
 		Ethereum: pallet_ethereum,
 		MessageTransact: darwinia_message_transact,
-		Dispatch: pallet_bridge_dispatch,
 	}
 }
 

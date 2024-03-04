@@ -25,11 +25,6 @@ pub mod gov_origin;
 pub mod pallet_config;
 pub mod xcm_configs;
 
-pub use bp_darwinia_core as bp_crab;
-pub use bp_darwinia_core as bp_darwinia;
-pub use bp_darwinia_core as bp_pangolin;
-pub use bp_darwinia_core as bp_pangoro;
-
 #[cfg(feature = "test")]
 pub mod test;
 

@@ -22,7 +22,7 @@
 Implementation of a **https://darwinia.network** node in **Rust** based on the **Substrate** framework.
 
 This repo contains the following networks:
- 
+
 1. the **Darwinia main network**, the parachain on the Polkadot, and its test network **Pangoro**.
 2. the **Crab main network**, the parachain on the Kusama, and its test network **Pangolin**.
 
@@ -30,7 +30,6 @@ This repo contains the following networks:
 
 | Project | Introduction | Code | Activity |
 | :-----: | :----------: | :--: | :------: |
-| [darwinia-messages-substrate](https://github.com/darwinia-network/darwinia-messages-substrate) | Darwinia LCMP integration SDK for substrate chains | ![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/darwinia-messages-substrate) | ![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/darwinia-messages-substrate) |
 | [darwinia-messages-sol](https://github.com/darwinia-network/darwinia-messages-sol) | Darwinia cross-chain messages SDK for solidity developers | ![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/darwinia-messages-sol) | ![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/darwinia-messages-sol) |
 | [darwinia-bridger](https://github.com/darwinia-network/bridger) | Client for header and message relayers in Darwinia cross-chain messaging network. | ![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/bridger) | ![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/bridger) |
 
