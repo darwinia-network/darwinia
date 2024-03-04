@@ -114,7 +114,10 @@ impl pallet_treasury::Config for Runtime {
 	type RejectOrigin = RootOr<GeneralAdmin>;
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
-	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
+	type SpendOrigin = EitherOf<
+		frame_system::EnsureRootWithSuccess<AccountId, pallet_config::MaxBalance>,
+		Spender,
+	>;
 	type SpendPeriod = ConstU32<{ 14 * DAYS }>;
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Self>;
 }
