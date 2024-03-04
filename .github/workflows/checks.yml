@@ -108,7 +108,7 @@ jobs:
     strategy:
       matrix:
         runtime:
-          [runtime/darwinia, runtime/crab, runtime/pangoro, runtime/pangolin]
+          [runtime/darwinia, runtime/crab, runtime/pangolin]
     runs-on: ubuntu-latest
     steps:
       - name: Fetch latest code
@@ -134,10 +134,6 @@ jobs:
             {
               chain: crab-dev,
               compare-with: "https://crab-rpc.darwiniacommunitydao.xyz",
-            },
-            {
-              chain: pangoro-dev,
-              compare-with: "https://pangoro-rpc.darwinia.network",
             },
             {
               chain: pangolin-dev,

@@ -37,7 +37,6 @@ crab-runtime     = { workspace = true, optional = true }
 darwinia-runtime = { workspace = true, optional = true }
 dc-primitives    = { workspace = true, features = ["std"] }
 pangolin-runtime = { workspace = true, optional = true }
-pangoro-runtime  = { workspace = true, optional = true }
 
 # frontier
 fc-api          = { workspace = true }
@@ -114,7 +113,6 @@ evm-tracing = [
 	"crab-runtime?/evm-tracing",
 	"darwinia-runtime?/evm-tracing",
 	"pangolin-runtime?/evm-tracing",
-	"pangoro-runtime?/evm-tracing",
 
 	# moonbeam
 	"moonbeam-primitives-ext",
@@ -125,7 +123,6 @@ runtime-benchmarks = [
 	"crab-runtime?/runtime-benchmarks",
 	"darwinia-runtime?/runtime-benchmarks",
 	"pangolin-runtime?/runtime-benchmarks",
-	"pangoro-runtime?/runtime-benchmarks",
 
 	# polkadot
 	"polkadot-cli/runtime-benchmarks",
@@ -143,7 +140,6 @@ try-runtime = [
 	"crab-runtime?/try-runtime",
 	"darwinia-runtime?/try-runtime",
 	"pangolin-runtime?/try-runtime",
-	"pangoro-runtime?/try-runtime",
 
 	# polkadot
 	"polkadot-cli/try-runtime",
@@ -157,7 +153,6 @@ all-natives = [
 	"crab-native",
 	"darwinia-native",
 	"pangolin-native",
-	"pangoro-native",
 ]
 crab-native = [
 	# darwinia
@@ -179,11 +174,4 @@ pangolin-native = [
 
 	# polkadot
 	"polkadot-cli/rococo-native",
-]
-pangoro-native = [
-	# darwinia
-	"pangoro-runtime",
-
-	# polkadot
-	"polkadot-cli/westend-native",
 ]

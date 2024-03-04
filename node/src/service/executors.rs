@@ -78,19 +78,3 @@ impl NativeExecutionDispatch for PangolinRuntimeExecutor {
 		pangolin_runtime::native_version()
 	}
 }
-
-/// Pangoro native executor instance.
-#[cfg(feature = "pangoro-native")]
-pub struct PangoroRuntimeExecutor;
-#[cfg(feature = "pangoro-native")]
-impl NativeExecutionDispatch for PangoroRuntimeExecutor {
-	type ExtendHostFunctions = HostFunctions;
-
-	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-		pangoro_runtime::api::dispatch(method, data)
-	}
-
-	fn native_version() -> NativeVersion {
-		pangoro_runtime::native_version()
-	}
-}

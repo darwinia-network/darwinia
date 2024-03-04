@@ -9,7 +9,7 @@ done
 
 # ---
 
-for r in darwinia crab pangoro pangolin
+for r in darwinia crab pangolin
 do
   rm -rf target/${PROFILE}/wbuild/${r}-runtime 2> /dev/null || true
 done
