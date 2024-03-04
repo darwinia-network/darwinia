@@ -58,9 +58,9 @@ where
 	}
 }
 
-pub struct RuntimeRuntimeEthOrigin;
+pub struct EnsureRuntimeEthOrigin;
 impl<O: Into<Result<RuntimeEthOrigin, O>> + From<RuntimeEthOrigin>> EnsureOrigin<O>
-	for RuntimeRuntimeEthOrigin
+	for EnsureRuntimeEthOrigin
 {
 	type Success = H160;
 

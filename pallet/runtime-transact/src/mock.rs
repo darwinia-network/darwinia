@@ -131,7 +131,7 @@ impl pallet_ethereum::Config for Runtime {
 }
 
 impl crate::Config for Runtime {
-	type RuntimeEthOrigin = crate::RuntimeRuntimeEthOrigin;
+	type RuntimeEthOrigin = crate::EnsureRuntimeEthOrigin;
 	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
 }
 

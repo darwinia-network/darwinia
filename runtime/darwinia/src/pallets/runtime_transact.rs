@@ -20,6 +20,6 @@
 use crate::*;
 
 impl darwinia_runtime_transact::Config for Runtime {
-	type RuntimeEthOrigin = darwinia_runtime_transact::RuntimeRuntimeEthOrigin;
+	type RuntimeEthOrigin = darwinia_runtime_transact::EnsureRuntimeEthOrigin;
 	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
 }
