@@ -160,7 +160,7 @@ frame_support::construct_runtime! {
 		// EVM stuff.
 		Ethereum: pallet_ethereum = 36,
 		EVM: pallet_evm = 37,
-		MessageTransact: darwinia_message_transact = 38,
+		RuntimeTransact: darwinia_runtime_transact = 38,
 
 		// // Pangoro <> Pangolin
 		// BridgeRococoGrandpa: pallet_bridge_grandpa::<Instance1> = 39,

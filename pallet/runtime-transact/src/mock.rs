@@ -18,14 +18,10 @@
 
 //! Test utilities
 
-pub use crate as darwinia_message_transact;
+pub use crate as darwinia_runtime_transact;
 
 // crates.io
-use codec::{Decode, Encode};
-use scale_info::TypeInfo;
 use sha3::Digest;
-// darwinia
-use darwinia_message_transact::LcmpEthOrigin;
 // substrate
 use sp_core::H160;
 use sp_runtime::BuildStorage;
@@ -135,7 +131,7 @@ impl pallet_ethereum::Config for Runtime {
 }
 
 impl crate::Config for Runtime {
-	type LcmpEthOrigin = crate::EnsureLcmpEthOrigin;
+	type RuntimeEthOrigin = crate::EnsureRuntimeEthOrigin;
 	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
 }
 
@@ -146,7 +142,7 @@ frame_support::construct_runtime! {
 		Balances: pallet_balances,
 		EVM: pallet_evm,
 		Ethereum: pallet_ethereum,
-		MessageTransact: darwinia_message_transact,
+		RuntimeTransact: darwinia_runtime_transact,
 	}
 }
 
