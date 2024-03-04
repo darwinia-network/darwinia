@@ -44,23 +44,23 @@ use sp_std::boxed::Box;
 pub use pallet::*;
 
 #[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, MaxEncodedLen, TypeInfo)]
-pub enum LcmpEthOrigin {
-	MessageTransact(H160),
+pub enum RuntimeEthOrigin {
+	RuntimeTransact(H160),
 }
 
-pub fn ensure_message_transact<OuterOrigin>(o: OuterOrigin) -> Result<H160, &'static str>
+pub fn ensure_runtime_transact<OuterOrigin>(o: OuterOrigin) -> Result<H160, &'static str>
 where
-	OuterOrigin: Into<Result<LcmpEthOrigin, OuterOrigin>>,
+	OuterOrigin: Into<Result<RuntimeEthOrigin, OuterOrigin>>,
 {
 	match o.into() {
-		Ok(LcmpEthOrigin::MessageTransact(n)) => Ok(n),
-		_ => Err("bad origin: expected to be an Lcmp Ethereum transaction"),
+		Ok(RuntimeEthOrigin::RuntimeTransact(n)) => Ok(n),
+		_ => Err("bad origin: expected to be an runtime eth origin"),
 	}
 }
 
-pub struct EnsureLcmpEthOrigin;
-impl<O: Into<Result<LcmpEthOrigin, O>> + From<LcmpEthOrigin>> EnsureOrigin<O>
-	for EnsureLcmpEthOrigin
+pub struct RuntimeRuntimeEthOrigin;
+impl<O: Into<Result<RuntimeEthOrigin, O>> + From<RuntimeEthOrigin>> EnsureOrigin<O>
+	for RuntimeRuntimeEthOrigin
 {
 	type Success = H160;
 
@@ -70,13 +70,13 @@ impl<O: Into<Result<LcmpEthOrigin, O>> + From<LcmpEthOrigin>> EnsureOrigin<O>
 
 	fn try_origin(o: O) -> Result<Self::Success, O> {
 		o.into().map(|o| match o {
-			LcmpEthOrigin::MessageTransact(id) => id,
+			RuntimeEthOrigin::RuntimeTransact(id) => id,
 		})
 	}
 
 	#[cfg(feature = "runtime-benchmarks")]
 	fn try_successful_origin() -> Result<O, ()> {
-		Ok(O::from(LcmpEthOrigin::MessageTransact(Default::default())))
+		Ok(O::from(RuntimeEthOrigin::RuntimeTransact(Default::default())))
 	}
 }
 
@@ -90,14 +90,14 @@ pub mod pallet {
 	pub struct Pallet<T>(_);
 
 	#[pallet::origin]
-	pub type Origin = LcmpEthOrigin;
+	pub type Origin = RuntimeEthOrigin;
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config + pallet_evm::Config {
 		/// Handler for applying an already validated transaction
 		type ValidatedTransaction: ValidatedTransaction;
 		/// Origin for message transact
-		type LcmpEthOrigin: EnsureOrigin<Self::RuntimeOrigin, Success = H160>;
+		type RuntimeEthOrigin: EnsureOrigin<Self::RuntimeOrigin, Success = H160>;
 	}
 
 	#[pallet::error]
@@ -109,7 +109,7 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T>
 	where
-		OriginFor<T>: Into<Result<LcmpEthOrigin, OriginFor<T>>>,
+		OriginFor<T>: Into<Result<RuntimeEthOrigin, OriginFor<T>>>,
 	{
 		/// This call can only be called by the lcmp message layer and is not available to normal
 		/// users.
@@ -121,11 +121,11 @@ pub mod pallet {
 				transaction_data.gas_limit.unique_saturated_into()
 			}, without_base_extrinsic_weight)
 		})]
-		pub fn message_transact(
+		pub fn runtime_transact(
 			origin: OriginFor<T>,
 			mut transaction: Box<Transaction>,
 		) -> DispatchResultWithPostInfo {
-			let source = ensure_message_transact(origin)?;
+			let source = ensure_runtime_transact(origin)?;
 			let (who, _) = pallet_evm::Pallet::<T>::account_basic(&source);
 			let base_fee = T::FeeCalculator::min_gas_price().0;
 

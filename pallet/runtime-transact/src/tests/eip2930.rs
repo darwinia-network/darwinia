@@ -17,20 +17,19 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // darwinia
-use crate::{mock::*, tests::*, LcmpEthOrigin};
-use ethereum::EIP1559Transaction;
+use crate::{mock::*, tests::*, RuntimeEthOrigin};
+use ethereum::EIP2930Transaction;
 // frontier
 use fp_evm::FeeCalculator;
 // substrate
-use frame_support::{assert_err, assert_ok, pallet_prelude::Weight};
+use frame_support::{assert_err, assert_ok};
 use sp_core::U256;
-use sp_runtime::transaction_validity::{InvalidTransaction, TransactionValidityError};
+use sp_runtime::{DispatchError, ModuleError};
 
-pub fn eip1559_erc20_creation_unsigned_transaction() -> EIP1559UnsignedTransaction {
-	EIP1559UnsignedTransaction {
+fn eip2930_erc20_creation_unsigned_transaction() -> EIP2930UnsignedTransaction {
+	EIP2930UnsignedTransaction {
 		nonce: U256::zero(),
-		max_priority_fee_per_gas: U256::from(1),
-		max_fee_per_gas: U256::from(1),
+		gas_price: U256::from(1),
 		gas_limit: U256::from(1_000_000),
 		action: ethereum::TransactionAction::Create,
 		value: U256::zero(),
@@ -39,17 +38,18 @@ pub fn eip1559_erc20_creation_unsigned_transaction() -> EIP1559UnsignedTransacti
 }
 
 #[test]
-fn test_eip1559_transaction_works() {
+fn test_eip2930_transaction_works() {
 	let alice = address_build(1);
 
 	ExtBuilder::default()
 		.with_balances(vec![(alice.address, 1_000_000_000_000)])
 		.build()
 		.execute_with(|| {
-			let unsigned_tx = eip1559_erc20_creation_unsigned_transaction();
+			let unsigned_tx = eip2930_erc20_creation_unsigned_transaction();
 			let t = unsigned_tx.sign(&alice.private_key, None);
-			assert_ok!(MessageTransact::message_transact(
-				LcmpEthOrigin::MessageTransact(alice.address).into(),
+
+			assert_ok!(RuntimeTransact::runtime_transact(
+				RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
 				Box::new(t)
 			));
 			assert!(System::events()
@@ -59,19 +59,19 @@ fn test_eip1559_transaction_works() {
 }
 
 #[test]
-fn test_eip1559_transaction_with_auto_nonce() {
+fn test_eip2930_transaction_with_auto_nonce() {
 	let alice = address_build(1);
 
 	ExtBuilder::default()
 		.with_balances(vec![(alice.address, 1_000_000_000_000)])
 		.build()
 		.execute_with(|| {
-			let mut unsigned_tx = eip1559_erc20_creation_unsigned_transaction();
+			let mut unsigned_tx = eip2930_erc20_creation_unsigned_transaction();
 			unsigned_tx.nonce = U256::MAX;
 			let t = unsigned_tx.sign(&alice.private_key, None);
 
-			assert_ok!(MessageTransact::message_transact(
-				LcmpEthOrigin::MessageTransact(alice.address).into(),
+			assert_ok!(RuntimeTransact::runtime_transact(
+				RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
 				Box::new(t)
 			));
 			assert!(System::events()
@@ -81,20 +81,19 @@ fn test_eip1559_transaction_with_auto_nonce() {
 }
 
 #[test]
-fn test_eip1559_transaction_with_auto_gas_price() {
+fn test_eip2930_transaction_with_auto_gas_price() {
 	let alice = address_build(1);
 
 	ExtBuilder::default()
 		.with_balances(vec![(alice.address, 1_000_000_000_000)])
 		.build()
 		.execute_with(|| {
-			let mut unsigned_tx = eip1559_erc20_creation_unsigned_transaction();
-			unsigned_tx.max_fee_per_gas =
+			let mut unsigned_tx = eip2930_erc20_creation_unsigned_transaction();
+			unsigned_tx.gas_price =
 				<Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0 - 1;
 			let t = unsigned_tx.sign(&alice.private_key, None);
-
-			assert_ok!(MessageTransact::message_transact(
-				LcmpEthOrigin::MessageTransact(alice.address).into(),
+			assert_ok!(RuntimeTransact::runtime_transact(
+				RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
 				Box::new(t)
 			));
 			assert!(System::events()
@@ -104,17 +103,37 @@ fn test_eip1559_transaction_with_auto_gas_price() {
 }
 
 #[test]
-fn test_transaction_with_valid_signature() {
+fn test_eip2930_transaction_with_insufficient_balance() {
+	let alice = address_build(1);
+	ExtBuilder::default().build().execute_with(|| {
+		let unsigned_tx = eip2930_erc20_creation_unsigned_transaction();
+		let t = unsigned_tx.sign(&alice.private_key, None);
+
+		assert_err!(
+			RuntimeTransact::runtime_transact(
+				RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
+				Box::new(t)
+			),
+			DispatchError::Module(ModuleError {
+				index: 5,
+				error: [0, 4, 0, 0],
+				message: Some("MessageTransactError",)
+			})
+		);
+	});
+}
+
+#[test]
+fn test_eip2930_transaction_with_valid_signature() {
 	let alice = address_build(1);
 	ExtBuilder::default()
 		.with_balances(vec![(alice.address, 1_000_000_000_000)])
 		.build()
 		.execute_with(|| {
-			let t = EIP1559Transaction {
+			let t = EIP2930Transaction {
 				chain_id: 0,
 				nonce: U256::zero(),
-				max_priority_fee_per_gas: U256::zero(),
-				max_fee_per_gas: U256::zero(),
+				gas_price: U256::from(1),
 				gas_limit: U256::from(1_000_000),
 				action: ethereum::TransactionAction::Create,
 				value: U256::zero(),
@@ -134,9 +153,9 @@ fn test_transaction_with_valid_signature() {
 					213, 144, 24, 205, 4, 67, 173, 192, 144, 53, 144, 193, 107, 2, 176,
 				]),
 			};
-			assert_ok!(MessageTransact::message_transact(
-				LcmpEthOrigin::MessageTransact(alice.address).into(),
-				Box::new(Transaction::EIP1559(t))
+			assert_ok!(RuntimeTransact::runtime_transact(
+				RuntimeEthOrigin::RuntimeTransact(alice.address).into(),
+				Box::new(Transaction::EIP2930(t))
 			));
 
 			assert!(System::events()

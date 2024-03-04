@@ -43,7 +43,7 @@ impl frame_support::traits::Contains<pallet_tx_pause::RuntimeCallNameOf<Runtime>
 				| b"Deposit" | b"AccountMigration"
 				| b"DarwiniaStaking"
 				| b"Ethereum" | b"EVM"
-				| b"MessageTransact"
+				| b"RuntimeTransact"
 				| b"BridgePolkadotGrandpa"
 				| b"BridgePolkadotParachain"
 				| b"BridgeDarwiniaMessages"

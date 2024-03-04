@@ -1,8 +1,8 @@
 [package]
 authors.workspace = true
-description       = "LCMP evm message execution."
+description       = "EVM transaction from the runtime."
 edition.workspace = true
-name              = "darwinia-message-transact"
+name              = "darwinia-runtime-transact"
 readme            = "README.md"
 version.workspace = true
 

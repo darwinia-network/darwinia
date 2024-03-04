@@ -18,7 +18,7 @@
 
 //! Test utilities
 
-pub use crate as darwinia_message_transact;
+pub use crate as darwinia_runtime_transact;
 
 // crates.io
 use sha3::Digest;
@@ -131,7 +131,7 @@ impl pallet_ethereum::Config for Runtime {
 }
 
 impl crate::Config for Runtime {
-	type LcmpEthOrigin = crate::EnsureLcmpEthOrigin;
+	type RuntimeEthOrigin = crate::RuntimeRuntimeEthOrigin;
 	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
 }
 
@@ -142,7 +142,7 @@ frame_support::construct_runtime! {
 		Balances: pallet_balances,
 		EVM: pallet_evm,
 		Ethereum: pallet_ethereum,
-		MessageTransact: darwinia_message_transact,
+		RuntimeTransact: darwinia_runtime_transact,
 	}
 }
 

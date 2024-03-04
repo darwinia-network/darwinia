@@ -39,7 +39,7 @@ darwinia-common-runtime           = { workspace = true }
 darwinia-deposit                  = { workspace = true }
 darwinia-ecdsa-authority          = { workspace = true }
 darwinia-message-gadget           = { workspace = true }
-darwinia-message-transact         = { workspace = true }
+darwinia-runtime-transact         = { workspace = true }
 darwinia-precompile-assets        = { workspace = true }
 darwinia-precompile-bls12-381     = { workspace = true }
 darwinia-precompile-deposit       = { workspace = true }
@@ -162,7 +162,7 @@ std = [
 	"darwinia-deposit/std",
 	"darwinia-ecdsa-authority/std",
 	"darwinia-message-gadget/std",
-	"darwinia-message-transact/std",
+	"darwinia-runtime-transact/std",
 	"darwinia-precompile-assets/std",
 	"darwinia-precompile-bls12-381/std",
 	"darwinia-precompile-deposit/std",
@@ -280,7 +280,7 @@ runtime-benchmarks = [
 	"darwinia-common-runtime/runtime-benchmarks",
 	"darwinia-deposit/runtime-benchmarks",
 	"darwinia-ecdsa-authority/runtime-benchmarks",
-	"darwinia-message-transact/runtime-benchmarks",
+	"darwinia-runtime-transact/runtime-benchmarks",
 	"darwinia-precompile-assets/runtime-benchmarks",
 	"darwinia-precompile-staking/runtime-benchmarks",
 	"darwinia-staking/runtime-benchmarks",
@@ -345,7 +345,7 @@ try-runtime = [
 	"darwinia-deposit/try-runtime",
 	"darwinia-ecdsa-authority/try-runtime",
 	"darwinia-message-gadget/try-runtime",
-	"darwinia-message-transact/try-runtime",
+	"darwinia-runtime-transact/try-runtime",
 	"darwinia-staking/try-runtime",
 
 	# moonbeam

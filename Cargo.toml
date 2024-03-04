@@ -58,7 +58,7 @@ darwinia-common-runtime           = { path = "runtime/common", default-features 
 darwinia-deposit                  = { path = "pallet/deposit", default-features = false }
 darwinia-ecdsa-authority          = { path = "pallet/ecdsa-authority", default-features = false }
 darwinia-message-gadget           = { path = "pallet/message-gadget", default-features = false }
-darwinia-message-transact         = { path = "pallet/message-transact", default-features = false }
+darwinia-runtime-transact         = { path = "pallet/runtime-transact", default-features = false }
 darwinia-precompile-assets        = { path = "precompile/assets", default-features = false }
 darwinia-precompile-bls12-381     = { path = "precompile/bls12-381", default-features = false }
 darwinia-precompile-deposit       = { path = "precompile/deposit", default-features = false }

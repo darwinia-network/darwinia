@@ -890,3 +890,8 @@ fn migration_curves_should_work() {
 		);
 	});
 }
+
+#[test]
+fn mock_sig_should_work() {
+	assert!(mock_sig().is_some());
+}
