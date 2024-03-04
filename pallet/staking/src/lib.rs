@@ -1332,7 +1332,7 @@ where
 			H160([115, 99, 47, 107, 116, 115, 116, 107, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
 		if let Err(e) = <darwinia_ethtx_forwarder::Pallet<T>>::forward_transact(
-			ForwardEthOrigin::RuntimeTransact(sender).into(),
+			ForwardEthOrigin::ForwardEth(sender).into(),
 			Box::new(Transaction::Legacy(notify_transaction)),
 		) {
 			log::error!("[pallet::staking] failed to notify KTON staker contract due to {e:?}");

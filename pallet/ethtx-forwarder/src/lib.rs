@@ -45,7 +45,7 @@ pub use pallet::*;
 
 #[derive(Clone, Eq, PartialEq, RuntimeDebug, Encode, Decode, MaxEncodedLen, TypeInfo)]
 pub enum ForwardEthOrigin {
-	RuntimeTransact(H160),
+	ForwardEth(H160),
 }
 
 pub fn ensure_forward_transact<OuterOrigin>(o: OuterOrigin) -> Result<H160, &'static str>
@@ -53,7 +53,7 @@ where
 	OuterOrigin: Into<Result<ForwardEthOrigin, OuterOrigin>>,
 {
 	match o.into() {
-		Ok(ForwardEthOrigin::RuntimeTransact(n)) => Ok(n),
+		Ok(ForwardEthOrigin::ForwardEth(n)) => Ok(n),
 		_ => Err("bad origin: expected to be an runtime eth origin"),
 	}
 }
@@ -70,13 +70,13 @@ impl<O: Into<Result<ForwardEthOrigin, O>> + From<ForwardEthOrigin>> EnsureOrigin
 
 	fn try_origin(o: O) -> Result<Self::Success, O> {
 		o.into().map(|o| match o {
-			ForwardEthOrigin::RuntimeTransact(id) => id,
+			ForwardEthOrigin::ForwardEth(id) => id,
 		})
 	}
 
 	#[cfg(feature = "runtime-benchmarks")]
 	fn try_successful_origin() -> Result<O, ()> {
-		Ok(O::from(ForwardEthOrigin::RuntimeTransact(Default::default())))
+		Ok(O::from(ForwardEthOrigin::ForwardEth(Default::default())))
 	}
 }
 
@@ -96,7 +96,7 @@ pub mod pallet {
 	pub trait Config: frame_system::Config + pallet_evm::Config {
 		/// Handler for applying an already validated transaction
 		type ValidatedTransaction: ValidatedTransaction;
-		/// Origin for the runtime transact
+		/// Origin for the forward eth transaction
 		type ForwardEthOrigin: EnsureOrigin<Self::RuntimeOrigin, Success = H160>;
 	}
 
