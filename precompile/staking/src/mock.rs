@@ -114,7 +114,7 @@ impl darwinia_deposit::SimpleAsset for KtonMinting {
 
 impl darwinia_deposit::Config for Runtime {
 	type Kton = KtonMinting;
-	type MaxDeposits = frame_support::traits::ConstU32<16>;
+	type MaxDeposits = frame_support::traits::ConstU32<512>;
 	type MinLockingAmount = frame_support::traits::ConstU128<100>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
