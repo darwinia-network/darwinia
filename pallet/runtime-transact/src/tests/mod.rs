@@ -16,12 +16,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-// mod eip1559;
-// mod eip2930;
-// mod legacy;
+mod eip1559;
+mod eip2930;
+mod legacy;
 
 // crates.io
-use codec::Encode;
 use ethereum::{TransactionAction, TransactionSignature};
 use rlp::RlpStream;
 use sha3::{Digest, Keccak256};
@@ -31,12 +30,6 @@ use fp_ethereum::Transaction;
 use crate::mock::*;
 // substrate
 use sp_core::{H256, U256};
-
-pub(crate) type SubChainId = [u8; 4];
-pub(crate) const SOURCE_CHAIN_ID: SubChainId = *b"srce";
-pub(crate) const TARGET_CHAIN_ID: SubChainId = *b"trgt";
-pub(crate) const TEST_WEIGHT: frame_support::weights::Weight =
-	frame_support::weights::Weight::from_parts(1_000_000_000_000, 0);
 
 // This ERC-20 contract mints the maximum amount of tokens to the contract creator.
 // pragma solidity ^0.5.0;
@@ -204,36 +197,3 @@ impl EIP1559UnsignedTransaction {
 		})
 	}
 }
-
-// #[test]
-// fn test_dispatch_basic_system_call_works() {
-// 	let relayer_account = address_build(1);
-
-// 	ExtBuilder::default()
-// 		.with_balances(vec![(relayer_account.address, 1000)])
-// 		.build()
-// 		.execute_with(|| {
-// 			let mock_message_id = [0; 4];
-// 			let call = RuntimeCall::System(frame_system::Call::remark { remark: vec![] });
-// 			let message = prepare_message(call);
-// 			System::set_block_number(1);
-// 			let result = Dispatch::dispatch(
-// 				SOURCE_CHAIN_ID,
-// 				TARGET_CHAIN_ID,
-// 				&relayer_account.address,
-// 				mock_message_id,
-// 				Ok(message),
-// 				|_, _| Ok(()),
-// 			);
-// 			assert!(!result.dispatch_fee_paid_during_dispatch);
-// 			assert!(result.dispatch_result);
-
-// 			System::assert_has_event(RuntimeEvent::Dispatch(
-// 				pallet_bridge_dispatch::Event::MessageDispatched(
-// 					SOURCE_CHAIN_ID,
-// 					mock_message_id,
-// 					Ok(()),
-// 				),
-// 			));
-// 		});
-// }

@@ -19,7 +19,7 @@
 // darwinia
 use crate::*;
 
-impl darwinia_message_transact::Config for Runtime {
-	type LcmpEthOrigin = darwinia_message_transact::EnsureLcmpEthOrigin;
+impl darwinia_runtime_transact::Config for Runtime {
+	type RuntimeEthOrigin = darwinia_runtime_transact::EnsureRuntimeEthOrigin;
 	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
 }
