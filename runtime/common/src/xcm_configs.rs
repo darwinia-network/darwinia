@@ -38,7 +38,7 @@ use frame_support::{
 use sp_core::Get;
 use sp_io::hashing::blake2_256;
 use sp_runtime::traits::{SaturatedConversion, Saturating, Zero};
-use sp_std::{borrow::Borrow, prelude::*, result::Result};
+use sp_std::{prelude::*, result::Result};
 
 /// Base balance required for the XCM unit weight.
 pub type XcmBaseWeightFee = ConstU128<GWEI>;
