@@ -85,15 +85,9 @@ fn migrate() -> frame_support::weights::Weight {
 	}
 	.remove_all();
 	w += migration_helper::PalletCleaner {
-		name: b"BridgePolkadotGrandpa",
-		values: &[b"PalletOwner", b"PalletOperatingMode"],
-		maps: &[b"ParasInfo", b"ImportedParaHeads", b"ImportedParaHashes"],
-	}
-	.remove_all();
-	w += migration_helper::PalletCleaner {
 		name: b"BridgePolkadotParachain",
 		values: &[b"PalletOwner", b"PalletOperatingMode"],
-		maps: &[b"InboundLanes", b"OutboundLanes", b"OutboundMessages"],
+		maps: &[b"ParasInfo", b"ImportedParaHeads", b"ImportedParaHashes"],
 	}
 	.remove_all();
 	w += migration_helper::PalletCleaner {
