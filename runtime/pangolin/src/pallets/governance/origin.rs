@@ -20,6 +20,8 @@
 pub mod custom_origins {
 	// crates.io
 	use strum::EnumString;
+	// darwinia
+	use dc_primitives::{Balance, UNIT};
 	// substrate
 	use frame_support::pallet_prelude::*;
 	use sp_runtime::RuntimeDebug;
@@ -44,6 +46,10 @@ pub mod custom_origins {
 		ReferendumCanceller,
 		/// Origin able to kill referenda.
 		ReferendumKiller,
+		/// Origin able to spend up to 4M PRING from the treasury at once.
+		MediumSpender,
+		/// Origin able to spend up to 20M PRING from the treasury at once.
+		BigSpender,
 	}
 
 	macro_rules! decl_unit_ensures {
@@ -76,6 +82,52 @@ pub mod custom_origins {
 		};
 		() => {}
 	}
-	decl_unit_ensures!(ReferendumCanceller, ReferendumKiller, WhitelistedCaller, GeneralAdmin);
+	decl_unit_ensures!(
+		WhitelistedCaller,
+		GeneralAdmin,
+		ReferendumCanceller,
+		ReferendumKiller,
+		MediumSpender,
+		BigSpender
+	);
+
+	macro_rules! decl_ensure {
+		(
+			$vis:vis type $name:ident: EnsureOrigin<Success = $success_type:ty> {
+				$( $item:ident = $success:expr, )*
+			}
+		) => {
+			$vis struct $name;
+			impl<O: Into<Result<Origin, O>> + From<Origin>>
+				EnsureOrigin<O> for $name
+			{
+				type Success = $success_type;
+				fn try_origin(o: O) -> Result<Self::Success, O> {
+					o.into().and_then(|o| match o {
+						$(
+							Origin::$item => Ok($success),
+						)*
+						r => Err(O::from(r)),
+					})
+				}
+				#[cfg(feature = "runtime-benchmarks")]
+				fn try_successful_origin() -> Result<O, ()> {
+					// By convention the more privileged origins go later, so for greatest chance
+					// of success, we want the last one.
+					let _result: Result<O, ()> = Err(());
+					$(
+						let _result: Result<O, ()> = Ok(O::from(Origin::$item));
+					)*
+					_result
+				}
+			}
+		}
+	}
+	decl_ensure! {
+		pub type Spender: EnsureOrigin<Success = Balance> {
+			MediumSpender = 4_000_000 * UNIT,
+			BigSpender = 20_000_000 * UNIT,
+		}
+	}
 }
 pub use custom_origins::*;
