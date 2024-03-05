@@ -61,7 +61,7 @@ impl<AccountId: From<[u8; 20]> + Into<[u8; 20]> + Clone> ConvertLocation<Account
 	for Account20Hash<AccountId>
 {
 	fn convert_location(location: &MultiLocation) -> Option<AccountId> {
-		let hash: [u8; 32] = ("multiloc", location.borrow()).using_encoded(blake2_256);
+		let hash: [u8; 32] = ("multiloc", location).using_encoded(blake2_256);
 		let mut account_id = [0u8; 20];
 
 		account_id.copy_from_slice(&hash[0..20]);
