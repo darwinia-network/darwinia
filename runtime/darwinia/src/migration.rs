@@ -47,14 +47,21 @@ fn migrate() -> frame_support::weights::Weight {
 	use sp_std::str::FromStr;
 
 	[
+		("0x71571c42067900bfb7ca8b51fccc07ef77074aea", b"democrac"),
 		("0xabcf7060a68f62624f7569ada9d78b5a5db0782a", b"phrelect"),
 		("0x88a39b052d477cfde47600a7c9950a441ce61cb4", b"phrelect"),
 		("0x9f33a4809aa708d7a399fedba514e0a0d15efa85", b"phrelect"),
 		("0x0a1287977578f888bdc1c7627781af1cc000e6ab", b"phrelect"),
+		("0xb96b4429d522a210ecc3d1b2d3b0f4026588c340", b"democrac"),
 		("0xe59261f6d4088bcd69985a3d369ff14cc54ef1e5", b"phrelect"),
 		("0x7ae2a0914db8bfbdad538b0eac3fa473a0e07843", b"phrelect"),
+		("0xfa5727be643dba6599fc7f812fe60da3264a8205", b"democrac"),
 		("0x3e25247cff03f99a7d83b28f207112234fee73a6", b"phrelect"),
 		("0xb2960e11b253c107f973cd778bbe1520e35e8602", b"phrelect"),
+		("0xc1c8f6ef43b39c279417e361969d535f2a20b92e", b"democrac"),
+		("0x5dd68958e07cec3f65489db8983ad737c37e0646", b"democrac"),
+		("0xf11d8d9412fc6b90242e17af259cf7bd1eaa416b", b"democrac"),
+		("0xdca962b899641d60ccf7268a2260f20b6c01c06d", b"democrac"),
 	]
 	.iter()
 	.for_each(|(acct, lid)| {
@@ -72,6 +79,52 @@ fn migrate() -> frame_support::weights::Weight {
 		EVM::create_account(addr, REVERT_BYTECODE.to_vec());
 	}
 
+	let mut w = 32;
+
+	w += migration_helper::PalletCleaner {
+		name: b"BridgeKusamaGrandpa",
+		values: &[
+			b"RequestCount",
+			b"InitialHash",
+			b"BestFinalized",
+			b"ImportedHashesPointer",
+			b"CurrentAuthoritySet",
+			b"PalletOwner",
+			b"PalletOperatingMode",
+		],
+		maps: &[b"ImportedHashes", b"ImportedHeaders"],
+	}
+	.remove_all();
+	w += migration_helper::PalletCleaner {
+		name: b"BridgeKusamaParachain",
+		values: &[b"PalletOwner", b"PalletOperatingMode"],
+		maps: &[b"ParasInfo", b"ImportedParaHeads", b"ImportedParaHashes"],
+	}
+	.remove_all();
+	w += migration_helper::PalletCleaner {
+		name: b"BridgeCrabMessages",
+		values: &[b"PalletOwner", b"PalletOperatingMode"],
+		maps: &[b"InboundLanes", b"OutboundLanes", b"OutboundMessages"],
+	}
+	.remove_all();
+	w += migration_helper::PalletCleaner {
+		name: b"BridgeCrabMessages",
+		values: &[b"PalletOwner", b"PalletOperatingMode"],
+		maps: &[b"InboundLanes", b"OutboundLanes", b"OutboundMessages"],
+	}
+	.remove_all();
+	w += migration_helper::PalletCleaner {
+		name: b"CrabFeeMarket",
+		values: &[
+			b"Relayers",
+			b"AssignedRelayers",
+			b"CollateralSlashProtect",
+			b"AssignedRelayersNumber",
+		],
+		maps: &[b"Orders", b"RelayersMap"],
+	}
+	.remove_all();
+
 	// frame_support::weights::Weight::zero()
-	RuntimeBlockWeights::get().max_block
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, w as _)
 }

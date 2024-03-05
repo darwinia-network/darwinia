@@ -41,19 +41,52 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	// polkadot-sdk
-	use sp_core::H160;
-	use sp_std::str::FromStr;
+	let mut w = 0;
 
-	const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
-	// KTON equals to the 0x402 in the pallet-evm runtime.
-	const KTON_ADDRESS: &str = "0x0000000000000000000000000000000000000402";
-	if let Ok(addr) = H160::from_str(KTON_ADDRESS) {
-		EVM::create_account(addr, REVERT_BYTECODE.to_vec());
-		return RuntimeBlockWeights::get().max_block;
+	w += migration_helper::PalletCleaner {
+		name: b"BridgeMoonbaseGrandpa",
+		values: &[
+			b"RequestCount",
+			b"InitialHash",
+			b"BestFinalized",
+			b"ImportedHashesPointer",
+			b"CurrentAuthoritySet",
+			b"PalletOwner",
+			b"PalletOperatingMode",
+		],
+		maps: &[b"ImportedHashes", b"ImportedHeaders"],
 	}
+	.remove_all();
+	w += migration_helper::PalletCleaner {
+		name: b"BridgeMoonbaseParachain",
+		values: &[b"PalletOwner", b"PalletOperatingMode"],
+		maps: &[b"ParasInfo", b"ImportedParaHeads", b"ImportedParaHashes"],
+	}
+	.remove_all();
+	w += migration_helper::PalletCleaner {
+		name: b"BridgePangoroMessages",
+		values: &[b"PalletOwner", b"PalletOperatingMode"],
+		maps: &[b"InboundLanes", b"OutboundLanes", b"OutboundMessages"],
+	}
+	.remove_all();
+	w += migration_helper::PalletCleaner {
+		name: b"BridgePangoroDispatch",
+		values: &[b"PalletOwner", b"PalletOperatingMode"],
+		maps: &[b"InboundLanes", b"OutboundLanes", b"OutboundMessages"],
+	}
+	.remove_all();
+	w += migration_helper::PalletCleaner {
+		name: b"PangoroFeeMarket",
+		values: &[
+			b"Relayers",
+			b"AssignedRelayers",
+			b"CollateralSlashProtect",
+			b"AssignedRelayersNumber",
+		],
+		maps: &[b"Orders", b"RelayersMap"],
+	}
+	.remove_all();
 
 	// frame_support::weights::Weight::zero()
-	RuntimeBlockWeights::get().max_block
-	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(5, 5)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, w as _)
 }

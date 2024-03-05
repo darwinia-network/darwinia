@@ -22,6 +22,7 @@
 // #![deny(missing_docs)]
 
 pub mod gov_origin;
+pub mod migration_helper;
 pub mod pallet_config;
 pub mod xcm_configs;
 
