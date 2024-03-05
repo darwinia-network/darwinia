@@ -71,7 +71,7 @@ fn migrate() -> frame_support::weights::Weight {
 	let mut w = 26;
 
 	w += migration_helper::PalletCleaner {
-		name: b"BridgeKusamaGrandpa",
+		name: b"BridgePolkadotGrandpa",
 		values: &[
 			b"RequestCount",
 			b"InitialHash",
@@ -85,15 +85,9 @@ fn migrate() -> frame_support::weights::Weight {
 	}
 	.remove_all();
 	w += migration_helper::PalletCleaner {
-		name: b"BridgePolkadotGrandpa",
-		values: &[b"PalletOwner", b"PalletOperatingMode"],
-		maps: &[b"ParasInfo", b"ImportedParaHeads", b"ImportedParaHashes"],
-	}
-	.remove_all();
-	w += migration_helper::PalletCleaner {
 		name: b"BridgePolkadotParachain",
 		values: &[b"PalletOwner", b"PalletOperatingMode"],
-		maps: &[b"InboundLanes", b"OutboundLanes", b"OutboundMessages"],
+		maps: &[b"ParasInfo", b"ImportedParaHeads", b"ImportedParaHashes"],
 	}
 	.remove_all();
 	w += migration_helper::PalletCleaner {

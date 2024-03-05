@@ -108,12 +108,6 @@ fn migrate() -> frame_support::weights::Weight {
 	}
 	.remove_all();
 	w += migration_helper::PalletCleaner {
-		name: b"BridgeCrabMessages",
-		values: &[b"PalletOwner", b"PalletOperatingMode"],
-		maps: &[b"InboundLanes", b"OutboundLanes", b"OutboundMessages"],
-	}
-	.remove_all();
-	w += migration_helper::PalletCleaner {
 		name: b"CrabFeeMarket",
 		values: &[
 			b"Relayers",
