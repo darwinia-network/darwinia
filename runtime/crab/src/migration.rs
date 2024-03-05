@@ -71,7 +71,7 @@ fn migrate() -> frame_support::weights::Weight {
 	let mut w = 26;
 
 	w += migration_helper::PalletCleaner {
-		name: b"BridgeKusamaGrandpa",
+		name: b"BridgePolkadotGrandpa",
 		values: &[
 			b"RequestCount",
 			b"InitialHash",
