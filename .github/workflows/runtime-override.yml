@@ -7,30 +7,30 @@ on:
       - "pango*"
 
 jobs:
-  runtime-override-mainnets:
-    name: Runtime override
+  notify-mainnet:
+    name: Notify mainnet
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
-      - name: Runtime override
+      - name: Notify
         run: |
           TAG=$(echo ${{ github.ref }} | sed 's!.*/\(.*\)!\1!')
           curl -XPOST \
             -H "Authorization:Bearer ${{ secrets.GH_TKN_DARWINIA }}" \
             -H "Accept:application/vnd.github+json" \
             "https://api.github.com/repos/darwinia-network/wasm-runtime-overrides/dispatches" \
-            -d '{"event_type":"create","client_payload":{"release":"mainnets","ref":"'"${TAG}"'"}}'
+            -d '{"event_type":"create","client_payload":{"network":"mainnet","tag":"'"${TAG}"'"}}'
 
-  runtime-override-testnets:
-    name: Runtime override
+  notify-testnet:
+    name: Notify testnet
     if: startsWith(github.ref, 'refs/tags/pango')
     runs-on: ubuntu-latest
     steps:
-      - name: Runtime override
+      - name: Notify
         run: |
           TAG=$(echo ${{ github.ref }} | sed 's!.*/\(.*\)!\1!')
           curl -XPOST \
             -H "Authorization:Bearer ${{ secrets.GH_TKN_DARWINIA }}" \
             -H "Accept:application/vnd.github+json" \
             "https://api.github.com/repos/darwinia-network/wasm-runtime-overrides/dispatches" \
-            -d '{"event_type":"create","client_payload":{"release":"testnets","ref":"'"${TAG}"'"}}'
+            -d '{"event_type":"create","client_payload":{"network":"testnet","tag":"'"${TAG}"'"}}'
