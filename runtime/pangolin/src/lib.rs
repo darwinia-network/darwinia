@@ -663,7 +663,7 @@ sp_api::impl_runtime_apis! {
 		) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
 			// substrate
 			use frame_benchmarking::*;
-			use frame_support::{pallet_prelude::Weight, traits::{Currency, TrackedStorageKey}};
+			use frame_support::traits::TrackedStorageKey;
 
 			use frame_system_benchmarking::Pallet as SystemBench;
 			impl frame_system_benchmarking::Config for Runtime {
@@ -693,7 +693,7 @@ sp_api::impl_runtime_apis! {
 				array_bytes::hex_into_unchecked("26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7"),
 			];
 
-			let mut batches = Vec::<BenchmarkBatch>::new();
+			let mut batches = <Vec<BenchmarkBatch>>::new();
 			let params = (&config, &whitelist);
 
 			add_benchmarks!(params, batches);
