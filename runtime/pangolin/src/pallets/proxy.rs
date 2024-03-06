@@ -85,8 +85,9 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 						| RuntimeCall::DarwiniaStaking(..)
 				)
 			},
-			ProxyType::IdentityJudgement =>
-				matches!(c, RuntimeCall::Identity(pallet_identity::Call::provide_judgement { .. })),
+			ProxyType::IdentityJudgement => {
+				matches!(c, RuntimeCall::Identity(pallet_identity::Call::provide_judgement { .. }))
+			},
 			ProxyType::CancelProxy => {
 				matches!(c, RuntimeCall::Proxy(pallet_proxy::Call::reject_announcement { .. }))
 			},

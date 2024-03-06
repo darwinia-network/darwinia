@@ -10,6 +10,7 @@ members = [
 	"precompile/*",
 	"runtime/*",
 ]
+resolver = "2"
 
 [workspace.package]
 authors    = ["Darwinia Network <hello@darwinia.network>"]
@@ -29,7 +30,7 @@ log               = { version = "0.4" }
 scale-info        = { version = "2.10", default-features = false }
 sha3              = { version = "0.10" }
 static_assertions = { version = "1.1" }
-strum             = { version = "0.25", default-features = false }
+strum             = { version = "0.26", default-features = false }
 
 # cumulus
 cumulus-client-cli                    = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }

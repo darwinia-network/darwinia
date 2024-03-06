@@ -17,7 +17,7 @@ env:
   GOMPLATE_URL: https://github.com/hairyhenderson/gomplate/releases/download
 
   RUST_BACKTRACE: full
-  RUST_TOOLCHAIN: nightly-2023-05-22
+  RUST_TOOLCHAIN: 1.74.0
 
   # Set this to true for CI testing purposes only.
   # SKIP_BUILD: true
@@ -128,7 +128,7 @@ jobs:
         uses: chevdor/srtool-actions@v0.9.2
         with:
           image: paritytech/srtool
-          tag: "1.70.0"
+          tag: "1.74.0"
           chain: ${{ matrix.runtime.name }}
       - name: Prepare runtime
         run: |

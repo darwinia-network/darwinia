@@ -1283,8 +1283,10 @@ where
 	<T as frame_system::Config>::AccountId: Into<H160>,
 {
 	fn notify(amount: Balance) {
-		let Some(signature)= mock_sig() else {
-			log::error!("[pallet::staking] Invalid mock signature for the staking notify transaction.");
+		let Some(signature) = mock_sig() else {
+			log::error!(
+				"[pallet::staking] Invalid mock signature for the staking notify transaction."
+			);
 
 			return;
 		};
