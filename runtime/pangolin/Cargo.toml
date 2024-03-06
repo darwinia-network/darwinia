@@ -38,13 +38,13 @@ darwinia-asset-limit              = { workspace = true }
 darwinia-common-runtime           = { workspace = true }
 darwinia-deposit                  = { workspace = true }
 darwinia-ecdsa-authority          = { workspace = true }
+darwinia-ethtx-forwarder          = { workspace = true }
 darwinia-message-gadget           = { workspace = true }
 darwinia-precompile-assets        = { workspace = true }
 darwinia-precompile-bls12-381     = { workspace = true }
 darwinia-precompile-deposit       = { workspace = true }
 darwinia-precompile-staking       = { workspace = true }
 darwinia-precompile-state-storage = { workspace = true }
-darwinia-ethtx-forwarder         = { workspace = true }
 darwinia-staking                  = { workspace = true }
 dc-primitives                     = { workspace = true }
 
@@ -112,6 +112,7 @@ sp-api                                     = { workspace = true }
 sp-block-builder                           = { workspace = true }
 sp-consensus-aura                          = { workspace = true }
 sp-core                                    = { workspace = true }
+sp-debug-derive                            = { workspace = true, optional = true, features = ["force-debug"] }
 sp-inherents                               = { workspace = true }
 sp-offchain                                = { workspace = true }
 sp-runtime                                 = { workspace = true }
@@ -161,13 +162,13 @@ std = [
 	"darwinia-common-runtime/std",
 	"darwinia-deposit/std",
 	"darwinia-ecdsa-authority/std",
+	"darwinia-ethtx-forwarder/std",
 	"darwinia-message-gadget/std",
 	"darwinia-precompile-assets/std",
 	"darwinia-precompile-bls12-381/std",
 	"darwinia-precompile-deposit/std",
 	"darwinia-precompile-staking/std",
 	"darwinia-precompile-state-storage/std",
-	"darwinia-ethtx-forwarder/std",
 	"darwinia-staking/std",
 	"dc-primitives/std",
 
@@ -235,6 +236,7 @@ std = [
 	"sp-block-builder/std",
 	"sp-consensus-aura/std",
 	"sp-core/std",
+	"sp-debug-derive?/std",
 	"sp-inherents/std",
 	"sp-offchain/std",
 	"sp-runtime/std",
@@ -253,6 +255,11 @@ std = [
 evm-tracing = [
 	# moonbeam
 	"moonbeam-evm-tracer",
+]
+
+force-debug = [
+	# substrate
+	"sp-debug-derive",
 ]
 
 fast-runtime = []
@@ -280,9 +287,9 @@ runtime-benchmarks = [
 	"darwinia-common-runtime/runtime-benchmarks",
 	"darwinia-deposit/runtime-benchmarks",
 	"darwinia-ecdsa-authority/runtime-benchmarks",
+	"darwinia-ethtx-forwarder/runtime-benchmarks",
 	"darwinia-precompile-assets/runtime-benchmarks",
 	"darwinia-precompile-staking/runtime-benchmarks",
-	"darwinia-ethtx-forwarder/runtime-benchmarks",
 	"darwinia-staking/runtime-benchmarks",
 
 	# frontier
@@ -344,8 +351,8 @@ try-runtime = [
 	"darwinia-asset-limit/try-runtime",
 	"darwinia-deposit/try-runtime",
 	"darwinia-ecdsa-authority/try-runtime",
-	"darwinia-message-gadget/try-runtime",
 	"darwinia-ethtx-forwarder/try-runtime",
+	"darwinia-message-gadget/try-runtime",
 	"darwinia-staking/try-runtime",
 
 	# moonbeam
