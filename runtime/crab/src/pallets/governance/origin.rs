@@ -95,6 +95,7 @@ pub mod custom_origins {
 				EnsureOrigin<O> for $name
 			{
 				type Success = $success_type;
+
 				fn try_origin(o: O) -> Result<Self::Success, O> {
 					o.into().and_then(|o| match o {
 						$(
@@ -103,6 +104,7 @@ pub mod custom_origins {
 						r => Err(O::from(r)),
 					})
 				}
+
 				#[cfg(feature = "runtime-benchmarks")]
 				fn try_successful_origin() -> Result<O, ()> {
 					// By convention the more privileged origins go later, so for greatest chance
