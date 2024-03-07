@@ -82,14 +82,7 @@ pub mod custom_origins {
 		};
 		() => {}
 	}
-	decl_unit_ensures!(
-		WhitelistedCaller,
-		GeneralAdmin,
-		ReferendumCanceller,
-		ReferendumKiller,
-		MediumSpender,
-		BigSpender
-	);
+	decl_unit_ensures!(ReferendumCanceller, ReferendumKiller, WhitelistedCaller, GeneralAdmin);
 
 	macro_rules! decl_ensure {
 		(
