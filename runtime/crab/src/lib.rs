@@ -69,25 +69,12 @@ pub type Executive = frame_executive::Executive<
 >;
 
 /// Runtime version.
-#[cfg(not(feature = "runtime-benchmarks"))]
 #[sp_version::runtime_version]
 pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Crab2"),
 	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
 	authoring_version: 0,
-	spec_version: 6_6_0_0,
-	impl_version: 0,
-	apis: RUNTIME_API_VERSIONS,
-	transaction_version: 0,
-	state_version: 0,
-};
-#[cfg(feature = "runtime-benchmarks")]
-#[sp_version::runtime_version]
-pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
-	spec_name: sp_runtime::create_runtime_str!("Benchmark"),
-	impl_name: sp_runtime::create_runtime_str!("Benchmark"),
-	authoring_version: 0,
-	spec_version: 0,
+	spec_version: 6_6_1_0,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 0,
@@ -670,7 +657,7 @@ sp_api::impl_runtime_apis! {
 		) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
 			// substrate
 			use frame_benchmarking::*;
-			use frame_support::{pallet_prelude::Weight, traits::{Currency, TrackedStorageKey}};
+			use frame_support::traits::TrackedStorageKey;
 
 			use frame_system_benchmarking::Pallet as SystemBench;
 			impl frame_system_benchmarking::Config for Runtime {
@@ -700,7 +687,7 @@ sp_api::impl_runtime_apis! {
 				array_bytes::hex_into_unchecked("26aa394eea5630e07c48ae0c9558cef780d41e5e16056765bc8461851072c9d7"),
 			];
 
-			let mut batches = Vec::<BenchmarkBatch>::new();
+			let mut batches = <Vec<BenchmarkBatch>>::new();
 			let params = (&config, &whitelist);
 
 			add_benchmarks!(params, batches);
