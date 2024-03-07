@@ -1330,8 +1330,9 @@ where
 			signature,
 		};
 		// Treasury account.
-		let sender =
-			H160([109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0]);
+		let sender = H160([
+			109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0,
+		]);
 
 		if let Err(e) = <darwinia_ethtx_forwarder::Pallet<T>>::forward_transact(
 			ForwardEthOrigin::ForwardEth(sender).into(),
