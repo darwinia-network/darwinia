@@ -38,10 +38,7 @@ impl pallet_assets::Config for Runtime {
 	type BenchmarkHelper = AssetsBenchmarkHelper;
 	type CallbackHandle = ();
 	type CreateOrigin = frame_support::traits::AsEnsureOriginWithArg<
-		frame_system::EnsureSignedBy<
-			frame_support::traits::IsInVec<pallet_config::AssetCreators>,
-			AccountId,
-		>,
+		frame_system::EnsureSignedBy<frame_support::traits::IsInVec<AssetCreators>, AccountId>,
 	>;
 	type Currency = Balances;
 	type Extra = ();

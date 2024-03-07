@@ -28,7 +28,7 @@ use std::{
 use cumulus_primitives_core::ParaId;
 // darwinia
 use super::*;
-use pangolin_runtime::*;
+use dr_pangolin::*;
 // frontier
 use fp_evm::GenesisAccount;
 // substrate

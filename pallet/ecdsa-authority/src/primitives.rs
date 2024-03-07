@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-//! Primitives of the darwinia-ecdsa-authority.
+//! Primitives of the dp-ecdsa-authority.
 
 pub use sp_core::{ecdsa::Signature, H160 as Address, H256 as Hash};
 
@@ -131,7 +131,7 @@ impl<A> Operation<A> {
 	}
 }
 
-/// The darwinia-ecdsa-authority commitment.
+/// The dp-ecdsa-authority commitment.
 #[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
 pub struct Commitment<Bn> {
 	pub(crate) block_number: Bn,

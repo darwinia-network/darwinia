@@ -2,7 +2,7 @@
 authors.workspace = true
 description       = "Darwinia runtime."
 edition.workspace = true
-name              = "darwinia-runtime"
+name              = "dr-darwinia"
 readme            = "README.md"
 version.workspace = true
 
@@ -34,21 +34,22 @@ parachain-info                  = { workspace = true }
 cumulus-pallet-session-benchmarking = { workspace = true, optional = true }
 
 # darwinia
-darwinia-account-migration        = { workspace = true }
-darwinia-asset-limit              = { workspace = true }
-darwinia-common-runtime           = { workspace = true }
-darwinia-deposit                  = { workspace = true }
-darwinia-ecdsa-authority          = { workspace = true }
-darwinia-ethtx-forwarder          = { workspace = true }
-darwinia-message-gadget           = { workspace = true }
-darwinia-precompile-assets        = { workspace = true }
-darwinia-precompile-bls12-381     = { workspace = true }
-darwinia-precompile-deposit       = { workspace = true }
-darwinia-precompile-staking       = { workspace = true }
-darwinia-precompile-state-storage = { workspace = true }
-darwinia-staking                  = { workspace = true }
-dc-inflation                      = { workspace = true }
-dc-primitives                     = { workspace = true }
+dc-inflation         = { workspace = true }
+dc-primitives        = { workspace = true }
+dp-account-migration = { workspace = true }
+dp-asset-limit       = { workspace = true }
+dp-deposit           = { workspace = true }
+dp-ecdsa-authority   = { workspace = true }
+dp-ethtx-forwarder   = { workspace = true }
+dp-message-gadget    = { workspace = true }
+dp-staking           = { workspace = true }
+dpc-assets           = { workspace = true }
+dpc-bls12-381        = { workspace = true }
+dpc-deposit          = { workspace = true }
+dpc-staking          = { workspace = true }
+dpc-state-storage    = { workspace = true }
+dr-common            = { workspace = true }
+dr-constant          = { workspace = true }
 
 # frontier
 fp-evm                         = { workspace = true }
@@ -129,7 +130,7 @@ frame-try-runtime         = { workspace = true, optional = true }
 
 [dev-dependencies]
 # darwinia
-darwinia-common-runtime = { workspace = true, features = ["std", "test"] }
+dr-common = { workspace = true, features = ["std", "test"] }
 # polkadot
 polkadot-primitives = { workspace = true, features = ["std"] }
 # substrate
@@ -158,21 +159,22 @@ std = [
 	"cumulus-pallet-session-benchmarking?/std",
 
 	# darwinia
-	"darwinia-account-migration/std",
-	"darwinia-asset-limit/std",
-	"darwinia-common-runtime/std",
-	"darwinia-deposit/std",
-	"darwinia-ecdsa-authority/std",
-	"darwinia-ethtx-forwarder/std",
-	"darwinia-message-gadget/std",
-	"darwinia-precompile-assets/std",
-	"darwinia-precompile-bls12-381/std",
-	"darwinia-precompile-deposit/std",
-	"darwinia-precompile-staking/std",
-	"darwinia-precompile-state-storage/std",
-	"darwinia-staking/std",
 	"dc-inflation/std",
 	"dc-primitives/std",
+	"dp-account-migration/std",
+	"dp-asset-limit/std",
+	"dp-deposit/std",
+	"dp-ecdsa-authority/std",
+	"dp-ethtx-forwarder/std",
+	"dp-message-gadget/std",
+	"dp-staking/std",
+	"dpc-assets/std",
+	"dpc-bls12-381/std",
+	"dpc-deposit/std",
+	"dpc-staking/std",
+	"dpc-state-storage/std",
+	"dr-common/std",
+	"dr-constant/std",
 
 	# frontier
 	"fp-evm/std",
@@ -285,14 +287,14 @@ runtime-benchmarks = [
 	"cumulus-pallet-session-benchmarking/runtime-benchmarks",
 
 	# darwinia
-	"darwinia-account-migration/runtime-benchmarks",
-	"darwinia-common-runtime/runtime-benchmarks",
-	"darwinia-deposit/runtime-benchmarks",
-	"darwinia-ecdsa-authority/runtime-benchmarks",
-	"darwinia-ethtx-forwarder/runtime-benchmarks",
-	"darwinia-precompile-assets/runtime-benchmarks",
-	"darwinia-precompile-staking/runtime-benchmarks",
-	"darwinia-staking/runtime-benchmarks",
+	"dp-account-migration/runtime-benchmarks",
+	"dp-deposit/runtime-benchmarks",
+	"dp-ecdsa-authority/runtime-benchmarks",
+	"dp-ethtx-forwarder/runtime-benchmarks",
+	"dp-staking/runtime-benchmarks",
+	"dpc-assets/runtime-benchmarks",
+	"dpc-staking/runtime-benchmarks",
+	"dr-common/runtime-benchmarks",
 
 	# frontier
 	"pallet-ethereum/runtime-benchmarks",
@@ -349,13 +351,13 @@ try-runtime = [
 	"parachain-info/try-runtime",
 
 	# darwinia
-	"darwinia-account-migration/try-runtime",
-	"darwinia-asset-limit/try-runtime",
-	"darwinia-deposit/try-runtime",
-	"darwinia-ecdsa-authority/try-runtime",
-	"darwinia-ethtx-forwarder/try-runtime",
-	"darwinia-message-gadget/try-runtime",
-	"darwinia-staking/try-runtime",
+	"dp-account-migration/try-runtime",
+	"dp-asset-limit/try-runtime",
+	"dp-deposit/try-runtime",
+	"dp-ecdsa-authority/try-runtime",
+	"dp-ethtx-forwarder/try-runtime",
+	"dp-message-gadget/try-runtime",
+	"dp-staking/try-runtime",
 
 	# frontier
 	"fp-self-contained/try-runtime",

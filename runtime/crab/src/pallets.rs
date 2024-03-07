@@ -18,7 +18,7 @@
 
 mod shared_imports {
 	// darwinia
-	pub use darwinia_common_runtime::gov_origin::*;
+	pub use dr_common::gov_origin::*;
 	// substrate
 	pub use sp_runtime::traits::{ConstBool, ConstU128, ConstU16, ConstU32, ConstU64, ConstU8};
 }

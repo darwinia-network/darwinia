@@ -17,7 +17,7 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // TODO: move to mock later.
-use crate as darwinia_message_gadget;
+use crate as dp_message_gadget;
 
 // std
 use std::str::FromStr;
@@ -101,7 +101,7 @@ impl pallet_evm::Config for Runtime {
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<sp_core::H160>;
 }
 
-impl darwinia_message_gadget::Config for Runtime {}
+impl dp_message_gadget::Config for Runtime {}
 
 frame_support::construct_runtime! {
 	pub enum Runtime {
@@ -109,7 +109,7 @@ frame_support::construct_runtime! {
 		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
 		EVM: pallet_evm,
-		MessageGadget: darwinia_message_gadget,
+		MessageGadget: dp_message_gadget,
 	}
 }
 

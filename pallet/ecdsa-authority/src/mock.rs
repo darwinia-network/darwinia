@@ -16,11 +16,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-pub use crate::{self as darwinia_ecdsa_authority};
+pub use crate::{self as dp_ecdsa_authority};
 pub use dc_primitives::AccountId;
 
 // darwinia
-use darwinia_ecdsa_authority::{primitives::*, *};
+use dp_ecdsa_authority::{primitives::*, *};
 // substrate
 use frame_support::traits::OnInitialize;
 use sp_io::TestExternalities;
@@ -62,7 +62,7 @@ impl frame_system::Config for Runtime {
 
 frame_support::parameter_types! {
 	pub const SignThreshold: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(60);
-	pub static MessageRoot: Option<darwinia_ecdsa_authority::primitives::Hash> = Some(Default::default());
+	pub static MessageRoot: Option<dp_ecdsa_authority::primitives::Hash> = Some(Default::default());
 }
 impl Config for Runtime {
 	type ChainId = frame_support::traits::ConstU64<46>;
@@ -78,7 +78,7 @@ impl Config for Runtime {
 frame_support::construct_runtime! {
 	pub enum Runtime {
 		System: frame_system,
-		EcdsaAuthority: darwinia_ecdsa_authority,
+		EcdsaAuthority: dp_ecdsa_authority,
 	}
 }
 
@@ -98,7 +98,7 @@ impl ExtBuilder {
 		let mut storage =
 			<frame_system::GenesisConfig<Runtime>>::default().build_storage().unwrap();
 
-		darwinia_ecdsa_authority::GenesisConfig::<Runtime> { authorities }
+		dp_ecdsa_authority::GenesisConfig::<Runtime> { authorities }
 			.assimilate_storage(&mut storage)
 			.unwrap();
 

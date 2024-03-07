@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-pub use pangolin_runtime::*;
+pub use dr_pangolin::*;
 
 // substrate
 use sp_io::TestExternalities;

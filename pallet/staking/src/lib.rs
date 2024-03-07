@@ -45,7 +45,7 @@ mod benchmarking;
 mod weights;
 pub use weights::WeightInfo;
 
-pub use darwinia_staking_traits::*;
+pub use dp_staking_traits::*;
 
 // core
 use core::mem;
@@ -56,8 +56,8 @@ use ethereum::{
 	LegacyTransaction, TransactionAction, TransactionSignature, TransactionV2 as Transaction,
 };
 // darwinia
-use darwinia_ethtx_forwarder::ForwardEthOrigin;
 use dc_types::{Balance, Moment};
+use dp_ethtx_forwarder::ForwardEthOrigin;
 // substrate
 use frame_support::{
 	pallet_prelude::*, traits::Currency, DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound,
@@ -102,7 +102,7 @@ pub mod pallet {
 
 	// Deposit helper for runtime benchmark.
 	#[cfg(feature = "runtime-benchmarks")]
-	use darwinia_deposit::Config as DepositConfig;
+	use dp_deposit::Config as DepositConfig;
 
 	const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
@@ -1278,7 +1278,7 @@ impl KtonStakerNotification for () {}
 pub struct KtonStakerNotifier<T>(PhantomData<T>);
 impl<T> KtonStakerNotification for KtonStakerNotifier<T>
 where
-	T: Config + darwinia_ethtx_forwarder::Config,
+	T: Config + dp_ethtx_forwarder::Config,
 	T::RuntimeOrigin: Into<Result<ForwardEthOrigin, T::RuntimeOrigin>> + From<ForwardEthOrigin>,
 	<T as frame_system::Config>::AccountId: Into<H160>,
 {
@@ -1333,7 +1333,7 @@ where
 		let sender =
 			H160([115, 99, 47, 107, 116, 115, 116, 107, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
-		if let Err(e) = <darwinia_ethtx_forwarder::Pallet<T>>::forward_transact(
+		if let Err(e) = <dp_ethtx_forwarder::Pallet<T>>::forward_transact(
 			ForwardEthOrigin::ForwardEth(sender).into(),
 			Box::new(Transaction::Legacy(notify_transaction)),
 		) {

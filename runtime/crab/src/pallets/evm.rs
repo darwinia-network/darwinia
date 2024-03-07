@@ -79,7 +79,7 @@ where
 		handle: &mut impl pallet_evm::PrecompileHandle,
 	) -> Option<pallet_evm::PrecompileResult> {
 		// darwinia
-		use darwinia_precompile_assets::AccountToAssetId;
+		use dpc_assets::AccountToAssetId;
 
 		let (code_addr, context_addr) = (handle.code_address(), handle.context().address);
 		// Filter known precompile addresses except Ethereum officials
@@ -104,9 +104,9 @@ where
 			a if a == addr(0x08) => Some(pallet_evm_precompile_bn128::Bn128Pairing::execute(handle)),
 			a if a == addr(0x09) => Some(pallet_evm_precompile_blake2::Blake2F::execute(handle)),
 			// Darwinia precompiles: [0x400, 0x800) for stable precompiles.
-			a if a == addr(0x400) => Some(<darwinia_precompile_state_storage::StateStorage<
+			a if a == addr(0x400) => Some(<dpc_state_storage::StateStorage<
 				Runtime,
-				darwinia_precompile_state_storage::StateStorageFilter,
+				dpc_state_storage::StateStorageFilter,
 			>>::execute(handle)),
 			a if a == addr(0x401) => Some(<pallet_evm_precompile_dispatch::Dispatch<
 				Runtime,
@@ -114,19 +114,19 @@ where
 			>>::execute(handle)),
 			// [0x402, 0x600) reserved for assets precompiles.
 			a if (0x402..0x600).contains(&AssetIdConverter::account_to_asset_id(a.into())) =>
-				Some(<darwinia_precompile_assets::ERC20Assets<Runtime, AssetIdConverter>>::execute(
+				Some(<dpc_assets::ERC20Assets<Runtime, AssetIdConverter>>::execute(
 					handle,
 				)),
 			// [0x600, 0x800) reserved for other stable precompiles.
 			a if a == addr(0x600) =>
-				Some(<darwinia_precompile_deposit::Deposit<Runtime>>::execute(handle)),
+				Some(<dpc_deposit::Deposit<Runtime>>::execute(handle)),
 			a if a == addr(0x601) =>
-				Some(<darwinia_precompile_staking::Staking<Runtime>>::execute(handle)),
+				Some(<dpc_staking::Staking<Runtime>>::execute(handle)),
 			a if a == addr(0x602) =>
 				Some(<pallet_evm_precompile_conviction_voting::ConvictionVotingPrecompile<Runtime>>::execute(handle)),
 			// [0x800..) reserved for the experimental precompiles.
 			a if a == addr(0x800) =>
-				Some(<darwinia_precompile_bls12_381::BLS12381<Runtime>>::execute(handle)),
+				Some(<dpc_bls12_381::BLS12381<Runtime>>::execute(handle)),
 			_ => None,
 		}
 	}

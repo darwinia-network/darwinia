@@ -2,7 +2,7 @@
 authors.workspace = true
 description       = "Arkworks BLS12-381 based precompile for EVM pallet."
 edition.workspace = true
-name              = "darwinia-precompile-bls12-381"
+name              = "dpc-bls12-381"
 readme            = "README.md"
 version.workspace = true
 
@@ -26,22 +26,22 @@ frame-support = { workspace = true }
 sp-std        = { workspace = true }
 
 [dev-dependencies]
-rand    = { version = "0.8.5" }
 ark-std = { version = "0.4.0" }
+rand    = { version = "0.8.5" }
 
 [features]
 default = ["std"]
 std = [
 	# crates.io
 	"ark-bls12-381/std",
-	"ark-serialize/std",
 	"ark-ec/std",
 	"ark-ff/std",
+	"ark-serialize/std",
 	"sha2/std",
 
 	# frontier
-	"pallet-evm/std",
 	"fp-evm/std",
+	"pallet-evm/std",
 
 	# moonbeam
 	"precompile-utils/std",

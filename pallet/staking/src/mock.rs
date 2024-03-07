@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-pub use crate as darwinia_staking;
+pub use crate as dp_staking;
 
 // darwinia
 use dc_types::{AssetId, Balance, Moment, UNIT};
@@ -111,7 +111,7 @@ impl pallet_assets::Config for Runtime {
 }
 
 pub enum KtonMinting {}
-impl darwinia_deposit::SimpleAsset for KtonMinting {
+impl dp_deposit::SimpleAsset for KtonMinting {
 	type AccountId = AccountId;
 
 	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
@@ -126,7 +126,7 @@ impl darwinia_deposit::SimpleAsset for KtonMinting {
 		Assets::burn(RuntimeOrigin::signed(0), 0.into(), *who, amount)
 	}
 }
-impl darwinia_deposit::Config for Runtime {
+impl dp_deposit::Config for Runtime {
 	type Kton = KtonMinting;
 	type MaxDeposits = frame_support::traits::ConstU32<16>;
 	type MinLockingAmount = frame_support::traits::ConstU128<UNIT>;
@@ -136,14 +136,14 @@ impl darwinia_deposit::Config for Runtime {
 }
 
 pub enum RingStaking {}
-impl darwinia_staking::Stake for RingStaking {
+impl dp_staking::Stake for RingStaking {
 	type AccountId = AccountId;
 	type Item = Balance;
 
 	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
 		<Balances as frame_support::traits::Currency<_>>::transfer(
 			who,
-			&darwinia_staking::account_id(),
+			&dp_staking::account_id(),
 			item,
 			frame_support::traits::ExistenceRequirement::AllowDeath,
 		)
@@ -151,7 +151,7 @@ impl darwinia_staking::Stake for RingStaking {
 
 	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
 		<Balances as frame_support::traits::Currency<_>>::transfer(
-			&darwinia_staking::account_id(),
+			&dp_staking::account_id(),
 			who,
 			item,
 			frame_support::traits::ExistenceRequirement::AllowDeath,
@@ -204,7 +204,7 @@ impl pallet_session::Config for Runtime {
 	type SessionManager = Staking;
 	type ShouldEndSession = pallet_session::PeriodicSessions<Period, ()>;
 	type ValidatorId = Self::AccountId;
-	type ValidatorIdOf = darwinia_staking::IdentityCollator;
+	type ValidatorIdOf = dp_staking::IdentityCollator;
 	type WeightInfo = ();
 }
 
@@ -236,30 +236,20 @@ frame_support::parameter_types! {
 	pub static InflationType: u8 = 0;
 }
 pub enum KtonStaking {}
-impl darwinia_staking::Stake for KtonStaking {
+impl dp_staking::Stake for KtonStaking {
 	type AccountId = AccountId;
 	type Item = Balance;
 
 	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		Assets::transfer(
-			RuntimeOrigin::signed(*who),
-			0.into(),
-			darwinia_staking::account_id(),
-			item,
-		)
+		Assets::transfer(RuntimeOrigin::signed(*who), 0.into(), dp_staking::account_id(), item)
 	}
 
 	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		Assets::transfer(
-			RuntimeOrigin::signed(darwinia_staking::account_id()),
-			0.into(),
-			*who,
-			item,
-		)
+		Assets::transfer(RuntimeOrigin::signed(dp_staking::account_id()), 0.into(), *who, item)
 	}
 }
 pub enum StatedOnSessionEnd {}
-impl darwinia_staking::IssuingManager<Runtime> for StatedOnSessionEnd {
+impl dp_staking::IssuingManager<Runtime> for StatedOnSessionEnd {
 	fn inflate() -> Balance {
 		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
 			OnDarwiniaSessionEnd::inflate()
@@ -285,17 +275,17 @@ impl darwinia_staking::IssuingManager<Runtime> for StatedOnSessionEnd {
 	}
 }
 pub enum OnDarwiniaSessionEnd {}
-impl darwinia_staking::IssuingManager<Runtime> for OnDarwiniaSessionEnd {
+impl dp_staking::IssuingManager<Runtime> for OnDarwiniaSessionEnd {
 	fn inflate() -> Balance {
 		let now = Timestamp::now();
-		let session_duration = now - <darwinia_staking::SessionStartTime<Runtime>>::get();
-		let elapsed_time = <darwinia_staking::ElapsedTime<Runtime>>::mutate(|t| {
+		let session_duration = now - <dp_staking::SessionStartTime<Runtime>>::get();
+		let elapsed_time = <dp_staking::ElapsedTime<Runtime>>::mutate(|t| {
 			*t = t.saturating_add(session_duration);
 
 			*t
 		});
 
-		<darwinia_staking::SessionStartTime<Runtime>>::put(now);
+		<dp_staking::SessionStartTime<Runtime>>::put(now);
 
 		dc_inflation::issuing_in_period(session_duration, elapsed_time).unwrap_or_default()
 	}
@@ -311,7 +301,7 @@ impl darwinia_staking::IssuingManager<Runtime> for OnDarwiniaSessionEnd {
 	}
 }
 pub enum OnCrabSessionEnd {}
-impl darwinia_staking::IssuingManager<Runtime> for OnCrabSessionEnd {
+impl dp_staking::IssuingManager<Runtime> for OnCrabSessionEnd {
 	fn calculate_reward(_inflation: Balance) -> Balance {
 		10_000 * UNIT
 	}
@@ -336,14 +326,14 @@ impl frame_support::traits::Get<bool> for ShouldEndSession {
 		)
 	}
 }
-impl darwinia_staking::Config for Runtime {
+impl dp_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
 	type IssuingManager = StatedOnSessionEnd;
 	type Kton = KtonStaking;
 	type KtonRewardDistributionContract = ();
 	type KtonStakerNotifier = ();
-	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
+	type MaxDeposits = <Self as dp_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = frame_support::traits::ConstU32<16>;
 	type MigrationCurve = MigrationCurve;
 	type MinStakingDuration = frame_support::traits::ConstU64<3>;
@@ -353,7 +343,7 @@ impl darwinia_staking::Config for Runtime {
 	type WeightInfo = ();
 }
 #[cfg(not(feature = "runtime-benchmarks"))]
-impl darwinia_staking::DepositConfig for Runtime {}
+impl dp_staking::DepositConfig for Runtime {}
 
 frame_support::construct_runtime! {
 	pub enum Runtime {
@@ -361,17 +351,17 @@ frame_support::construct_runtime! {
 		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
 		Assets: pallet_assets,
-		Deposit: darwinia_deposit,
+		Deposit: dp_deposit,
 		Session: pallet_session,
 		Treasury: pallet_treasury,
-		Staking: darwinia_staking,
+		Staking: dp_staking,
 	}
 }
 
 pub trait ZeroDefault {
 	fn default() -> Self;
 }
-impl ZeroDefault for darwinia_staking::Ledger<Runtime> {
+impl ZeroDefault for dp_staking::Ledger<Runtime> {
 	fn default() -> Self {
 		Self {
 			staked_ring: Default::default(),
@@ -443,7 +433,7 @@ impl ExtBuilder {
 		}
 		.assimilate_storage(&mut storage)
 		.unwrap();
-		darwinia_staking::GenesisConfig::<Runtime> {
+		dp_staking::GenesisConfig::<Runtime> {
 			collator_count: self.collator_count,
 			collators: if self.genesis_collator {
 				(1..=self.collator_count).map(|i| (i, UNIT)).collect()
@@ -495,7 +485,7 @@ pub fn new_session() {
 }
 
 pub fn payout() {
-	darwinia_staking::call_on_exposure!(<Previous<Runtime>>::iter_keys().for_each(|c| {
+	dp_staking::call_on_exposure!(<Previous<Runtime>>::iter_keys().for_each(|c| {
 		let _ = Staking::payout_inner(c);
 	}))
 	.unwrap();

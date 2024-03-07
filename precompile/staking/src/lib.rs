@@ -27,7 +27,7 @@ mod tests;
 // core
 use core::marker::PhantomData;
 // darwinia
-use darwinia_staking::Stake;
+use dp_staking::Stake;
 // moonbeam
 use precompile_utils::prelude::*;
 // substrate
@@ -44,14 +44,14 @@ pub struct Staking<Runtime>(PhantomData<Runtime>);
 #[precompile_utils::precompile]
 impl<Runtime> Staking<Runtime>
 where
-	Runtime: darwinia_staking::Config + pallet_evm::Config,
+	Runtime: dp_staking::Config + pallet_evm::Config,
 	Runtime::RuntimeCall: GetDispatchInfo
 		+ Dispatchable<PostInfo = PostDispatchInfo>
-		+ From<darwinia_staking::Call<Runtime>>,
+		+ From<dp_staking::Call<Runtime>>,
 	<Runtime::RuntimeCall as Dispatchable>::RuntimeOrigin: From<Option<Runtime::AccountId>>,
 	<Runtime as frame_system::Config>::AccountId: From<H160>,
 	<<Runtime as frame_system::Config>::RuntimeCall as Dispatchable>::RuntimeOrigin: OriginTrait,
-	<<Runtime as darwinia_staking::Config>::Deposit as Stake>::Item: From<u16>,
+	<<Runtime as dp_staking::Config>::Deposit as Stake>::Item: From<u16>,
 {
 	#[precompile::public("stake(uint256,uint256,uint16[])")]
 	fn stake(
@@ -66,7 +66,7 @@ where
 		RuntimeHelper::<Runtime>::try_dispatch(
 			handle,
 			Some(origin).into(),
-			darwinia_staking::Call::<Runtime>::stake {
+			dp_staking::Call::<Runtime>::stake {
 				ring_amount: ring_amount.as_u128(),
 				kton_amount: kton_amount.as_u128(),
 				deposits,
@@ -88,7 +88,7 @@ where
 		RuntimeHelper::<Runtime>::try_dispatch(
 			handle,
 			Some(origin).into(),
-			darwinia_staking::Call::<Runtime>::unstake {
+			dp_staking::Call::<Runtime>::unstake {
 				ring_amount: ring_amount.as_u128(),
 				kton_amount: kton_amount.as_u128(),
 				deposits,
@@ -109,10 +109,7 @@ where
 		RuntimeHelper::<Runtime>::try_dispatch(
 			handle,
 			Some(origin).into(),
-			darwinia_staking::Call::<Runtime>::restake {
-				ring_amount: ring_amount.as_u128(),
-				deposits,
-			},
+			dp_staking::Call::<Runtime>::restake { ring_amount: ring_amount.as_u128(), deposits },
 		)?;
 		Ok(true)
 	}
@@ -124,7 +121,7 @@ where
 		RuntimeHelper::<Runtime>::try_dispatch(
 			handle,
 			Some(origin).into(),
-			darwinia_staking::Call::<Runtime>::claim {},
+			dp_staking::Call::<Runtime>::claim {},
 		)?;
 		Ok(true)
 	}
@@ -136,9 +133,7 @@ where
 		RuntimeHelper::<Runtime>::try_dispatch(
 			handle,
 			Some(origin).into(),
-			darwinia_staking::Call::<Runtime>::collect {
-				commission: Perbill::from_percent(commission),
-			},
+			dp_staking::Call::<Runtime>::collect { commission: Perbill::from_percent(commission) },
 		)?;
 		Ok(true)
 	}
@@ -151,7 +146,7 @@ where
 		RuntimeHelper::<Runtime>::try_dispatch(
 			handle,
 			Some(origin).into(),
-			darwinia_staking::Call::<Runtime>::nominate { target: target.into() },
+			dp_staking::Call::<Runtime>::nominate { target: target.into() },
 		)?;
 		Ok(true)
 	}
@@ -163,7 +158,7 @@ where
 		RuntimeHelper::<Runtime>::try_dispatch(
 			handle,
 			Some(origin).into(),
-			darwinia_staking::Call::<Runtime>::chill {},
+			dp_staking::Call::<Runtime>::chill {},
 		)?;
 		Ok(true)
 	}
@@ -176,7 +171,7 @@ where
 		RuntimeHelper::<Runtime>::try_dispatch(
 			handle,
 			Some(origin).into(),
-			darwinia_staking::Call::<Runtime>::payout { who: who.into() },
+			dp_staking::Call::<Runtime>::payout { who: who.into() },
 		)?;
 		Ok(true)
 	}

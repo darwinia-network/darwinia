@@ -44,9 +44,9 @@ pub struct Deposit<Runtime>(PhantomData<Runtime>);
 #[precompile_utils::precompile]
 impl<Runtime> Deposit<Runtime>
 where
-	Runtime: darwinia_deposit::Config + pallet_evm::Config,
+	Runtime: dp_deposit::Config + pallet_evm::Config,
 	Runtime::RuntimeCall: Dispatchable<PostInfo = PostDispatchInfo> + GetDispatchInfo,
-	Runtime::RuntimeCall: From<darwinia_deposit::Call<Runtime>>,
+	Runtime::RuntimeCall: From<dp_deposit::Call<Runtime>>,
 	<<Runtime as frame_system::Config>::RuntimeCall as Dispatchable>::RuntimeOrigin: OriginTrait,
 	<Runtime::RuntimeCall as Dispatchable>::RuntimeOrigin: From<Option<Runtime::AccountId>>,
 	AccountIdOf<Runtime>: From<H160>,
@@ -58,7 +58,7 @@ where
 		RuntimeHelper::<Runtime>::try_dispatch(
 			handle,
 			Some(origin).into(),
-			darwinia_deposit::Call::<Runtime>::lock { amount: amount.as_u128(), months },
+			dp_deposit::Call::<Runtime>::lock { amount: amount.as_u128(), months },
 		)?;
 
 		Ok(true)
@@ -71,7 +71,7 @@ where
 		RuntimeHelper::<Runtime>::try_dispatch(
 			handle,
 			Some(origin).into(),
-			darwinia_deposit::Call::<Runtime>::claim {},
+			dp_deposit::Call::<Runtime>::claim {},
 		)?;
 
 		Ok(true)
@@ -84,7 +84,7 @@ where
 		RuntimeHelper::<Runtime>::try_dispatch(
 			handle,
 			Some(origin).into(),
-			darwinia_deposit::Call::<Runtime>::claim_with_penalty { id: id.into() },
+			dp_deposit::Call::<Runtime>::claim_with_penalty { id: id.into() },
 		)?;
 
 		Ok(true)

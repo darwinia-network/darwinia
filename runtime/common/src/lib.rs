@@ -23,7 +23,6 @@
 
 pub mod gov_origin;
 pub mod migration_helper;
-pub mod pallet_config;
 pub mod xcm_configs;
 
 #[cfg(feature = "test")]
@@ -129,7 +128,7 @@ pub const DARWINIA_PROPOSAL_REQUIREMENT: Balance = 5_000 * UNIT;
 
 /// Deposit calculator for Darwinia.
 /// 100 UNIT for the base fee, 102.4 UNIT/MB.
-pub const fn darwinia_deposit(items: u32, bytes: u32) -> Balance {
+pub const fn dp_deposit(items: u32, bytes: u32) -> Balance {
 	// First try.
 	items as Balance * 100 * UNIT + (bytes as Balance) * 100 * MICROUNIT
 	// items as Balance * 100 * UNIT + (bytes as Balance) * 100 * MILLIUNIT
@@ -257,7 +256,7 @@ impl pallet_evm::FeeCalculator for FixedGasPrice {
 }
 
 pub struct AssetIdConverter;
-impl darwinia_precompile_assets::AccountToAssetId<AccountId, AssetId> for AssetIdConverter {
+impl dpc_assets::AccountToAssetId<AccountId, AssetId> for AssetIdConverter {
 	fn account_to_asset_id(account_id: AccountId) -> AssetId {
 		let addr: sp_core::H160 = account_id.into();
 		addr.to_low_u64_be()

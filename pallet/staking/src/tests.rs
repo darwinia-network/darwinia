@@ -20,8 +20,8 @@
 use core::time::Duration;
 // darwinia
 use crate::{mock::*, MigrationCurve, *};
-use darwinia_deposit::Error as DepositError;
 use dc_types::UNIT;
+use dp_deposit::Error as DepositError;
 // substrate
 use frame_support::{assert_noop, assert_ok, BoundedVec};
 use sp_runtime::{assert_eq_error_rate, DispatchError, Perbill};
@@ -772,18 +772,17 @@ fn auto_payout_should_work() {
 fn on_new_session_should_work() {
 	ExtBuilder::default().collator_count(2).genesis_collator().build().execute_with(|| {
 		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(
-				<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()
-			)
-			.unwrap(),
+			dp_staking::call_on_exposure!(<Previous<Runtime>>::iter_keys().collect::<Vec<_>>())
+				.unwrap(),
 			[1, 2]
 		);
 		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			dp_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>())
+				.unwrap(),
 			[1, 2]
 		);
 		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
+			dp_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
 				.unwrap(),
 			[1, 2]
 		);
@@ -795,18 +794,17 @@ fn on_new_session_should_work() {
 
 		new_session();
 		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(
-				<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()
-			)
-			.unwrap(),
+			dp_staking::call_on_exposure!(<Previous<Runtime>>::iter_keys().collect::<Vec<_>>())
+				.unwrap(),
 			[1, 2]
 		);
 		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			dp_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>())
+				.unwrap(),
 			[1, 2]
 		);
 		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
+			dp_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
 				.unwrap(),
 			[1, 3]
 		);
@@ -819,18 +817,17 @@ fn on_new_session_should_work() {
 
 		new_session();
 		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(
-				<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()
-			)
-			.unwrap(),
+			dp_staking::call_on_exposure!(<Previous<Runtime>>::iter_keys().collect::<Vec<_>>())
+				.unwrap(),
 			[1, 2]
 		);
 		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			dp_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>())
+				.unwrap(),
 			[1, 3]
 		);
 		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
+			dp_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
 				.unwrap(),
 			[1, 4]
 		);
@@ -843,18 +840,17 @@ fn on_new_session_should_work() {
 
 		new_session();
 		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(
-				<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()
-			)
-			.unwrap(),
+			dp_staking::call_on_exposure!(<Previous<Runtime>>::iter_keys().collect::<Vec<_>>())
+				.unwrap(),
 			[1, 3]
 		);
 		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			dp_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>())
+				.unwrap(),
 			[1, 4]
 		);
 		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
+			dp_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
 				.unwrap(),
 			[1, 5]
 		);

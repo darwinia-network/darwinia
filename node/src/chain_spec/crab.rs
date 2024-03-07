@@ -28,7 +28,7 @@ use std::{
 use cumulus_primitives_core::ParaId;
 // darwinia
 use super::*;
-use crab_runtime::*;
+use dr_crab::*;
 // frontier
 use fp_evm::GenesisAccount;
 // substrate

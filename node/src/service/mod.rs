@@ -26,11 +26,11 @@ pub mod frontier;
 mod instant_finalize;
 
 #[cfg(feature = "crab-native")]
-pub use crab_runtime::RuntimeApi as CrabRuntimeApi;
+pub use dr_crab::RuntimeApi as CrabRuntimeApi;
 #[cfg(feature = "darwinia-native")]
-pub use darwinia_runtime::RuntimeApi as DarwiniaRuntimeApi;
+pub use dr_darwinia::RuntimeApi as DarwiniaRuntimeApi;
 #[cfg(feature = "pangolin-native")]
-pub use pangolin_runtime::RuntimeApi as PangolinRuntimeApi;
+pub use dr_pangolin::RuntimeApi as PangolinRuntimeApi;
 
 // std
 use std::{

@@ -2,7 +2,7 @@
 authors.workspace = true
 description       = "State storage precompile for EVM pallet."
 edition.workspace = true
-name              = "darwinia-precompile-state-storage"
+name              = "dpc-state-storage"
 readme            = "README.md"
 version.workspace = true
 

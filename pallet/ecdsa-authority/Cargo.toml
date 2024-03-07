@@ -1,8 +1,8 @@
 [package]
 authors.workspace = true
-description       = "Relayer Authorities Protocal Implementation"
+description       = "Relayer authorities protocal pallet implementation."
 edition.workspace = true
-name              = "darwinia-ecdsa-authority"
+name              = "dp-ecdsa-authority"
 readme            = "README.md"
 version.workspace = true
 

@@ -107,16 +107,16 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 }
 
 impl pallet_proxy::Config for Runtime {
-	type AnnouncementDepositBase = ConstU128<{ darwinia_deposit(1, 8) }>;
-	type AnnouncementDepositFactor = ConstU128<{ darwinia_deposit(0, 66) }>;
+	type AnnouncementDepositBase = ConstU128<{ dp_deposit(1, 8) }>;
+	type AnnouncementDepositFactor = ConstU128<{ dp_deposit(0, 66) }>;
 	type CallHasher = Hashing;
 	type Currency = Balances;
 	type MaxPending = ConstU32<32>;
 	type MaxProxies = ConstU32<32>;
 	// One storage item; key size 32, value size 8; .
-	type ProxyDepositBase = ConstU128<{ darwinia_deposit(1, 8) }>;
+	type ProxyDepositBase = ConstU128<{ dp_deposit(1, 8) }>;
 	// Additional storage item size of 33 bytes.
-	type ProxyDepositFactor = ConstU128<{ darwinia_deposit(0, 33) }>;
+	type ProxyDepositFactor = ConstU128<{ dp_deposit(0, 33) }>;
 	type ProxyType = ProxyType;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;

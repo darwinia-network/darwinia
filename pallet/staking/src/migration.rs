@@ -34,7 +34,7 @@ pub mod v1 {
 		nominators: Vec<IndividualExposure<AccountId>>,
 	}
 
-	/// Migrate darwinia-staking from v0 to v1.
+	/// Migrate dp-staking from v0 to v1.
 	pub struct MigrateToV1<T>(PhantomData<T>);
 	impl<T> OnRuntimeUpgrade for MigrateToV1<T>
 	where

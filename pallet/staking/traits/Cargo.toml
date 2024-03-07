@@ -2,7 +2,7 @@
 authors.workspace = true
 description       = "Darwinia parachain staking's traits."
 edition.workspace = true
-name              = "darwinia-staking-traits"
+name              = "dp-staking-traits"
 readme            = "README.md"
 version.workspace = true
 

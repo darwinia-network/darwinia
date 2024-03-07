@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-pub use crate as darwinia_deposit;
+pub use crate as dp_deposit;
 pub use dc_types::{AssetId, Balance, Moment, UNIT};
 
 // substrate
@@ -106,7 +106,7 @@ impl pallet_assets::Config for Runtime {
 }
 
 pub enum KtonMinting {}
-impl darwinia_deposit::SimpleAsset for KtonMinting {
+impl dp_deposit::SimpleAsset for KtonMinting {
 	type AccountId = u32;
 
 	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
@@ -121,7 +121,7 @@ impl darwinia_deposit::SimpleAsset for KtonMinting {
 		Assets::burn(RuntimeOrigin::signed(0), 0.into(), *who, amount)
 	}
 }
-impl darwinia_deposit::Config for Runtime {
+impl dp_deposit::Config for Runtime {
 	type Kton = KtonMinting;
 	type MaxDeposits = frame_support::traits::ConstU32<16>;
 	type MinLockingAmount = frame_support::traits::ConstU128<UNIT>;
@@ -136,7 +136,7 @@ frame_support::construct_runtime! {
 		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
 		Assets: pallet_assets,
-		Deposit: darwinia_deposit,
+		Deposit: dp_deposit,
 	}
 }
 

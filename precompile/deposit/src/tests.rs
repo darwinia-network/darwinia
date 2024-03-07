@@ -21,7 +21,7 @@ use crate::mock::{
 	Account::{Alice, Precompile},
 	Deposit, *,
 };
-use darwinia_deposit::MILLISECS_PER_MONTH;
+use dp_deposit::MILLISECS_PER_MONTH;
 // moonbeam
 use precompile_utils::testing::PrecompileTesterExt;
 // substrate

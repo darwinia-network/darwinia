@@ -97,7 +97,7 @@ impl pallet_timestamp::Config for Runtime {
 }
 
 pub enum KtonMinting {}
-impl darwinia_deposit::SimpleAsset for KtonMinting {
+impl dp_deposit::SimpleAsset for KtonMinting {
 	type AccountId = AccountId;
 
 	fn mint(_: &Self::AccountId, _: Balance) -> sp_runtime::DispatchResult {
@@ -109,7 +109,7 @@ impl darwinia_deposit::SimpleAsset for KtonMinting {
 	}
 }
 
-impl darwinia_deposit::Config for Runtime {
+impl dp_deposit::Config for Runtime {
 	type Kton = KtonMinting;
 	type MaxDeposits = frame_support::traits::ConstU32<16>;
 	type MinLockingAmount = frame_support::traits::ConstU128<100>;
@@ -189,7 +189,7 @@ frame_support::construct_runtime! {
 		System: frame_system,
 		Balances: pallet_balances,
 		Timestamp: pallet_timestamp,
-		Deposit: darwinia_deposit,
+		Deposit: dp_deposit,
 		EVM: pallet_evm,
 	}
 }

@@ -100,7 +100,7 @@ impl pallet_timestamp::Config for Runtime {
 }
 
 pub enum KtonMinting {}
-impl darwinia_deposit::SimpleAsset for KtonMinting {
+impl dp_deposit::SimpleAsset for KtonMinting {
 	type AccountId = AccountId;
 
 	fn mint(_: &Self::AccountId, _: Balance) -> sp_runtime::DispatchResult {
@@ -112,7 +112,7 @@ impl darwinia_deposit::SimpleAsset for KtonMinting {
 	}
 }
 
-impl darwinia_deposit::Config for Runtime {
+impl dp_deposit::Config for Runtime {
 	type Kton = KtonMinting;
 	type MaxDeposits = frame_support::traits::ConstU32<512>;
 	type MinLockingAmount = frame_support::traits::ConstU128<100>;
@@ -194,14 +194,14 @@ frame_support::parameter_types! {
 }
 
 pub enum RingStaking {}
-impl darwinia_staking::Stake for RingStaking {
+impl dp_staking::Stake for RingStaking {
 	type AccountId = AccountId;
 	type Item = Balance;
 
 	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
 		<Balances as frame_support::traits::Currency<_>>::transfer(
 			who,
-			&darwinia_staking::account_id(),
+			&dp_staking::account_id(),
 			item,
 			frame_support::traits::ExistenceRequirement::AllowDeath,
 		)
@@ -209,7 +209,7 @@ impl darwinia_staking::Stake for RingStaking {
 
 	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
 		<Balances as frame_support::traits::Currency<_>>::transfer(
-			&darwinia_staking::account_id(),
+			&dp_staking::account_id(),
 			who,
 			item,
 			frame_support::traits::ExistenceRequirement::AllowDeath,
@@ -218,7 +218,7 @@ impl darwinia_staking::Stake for RingStaking {
 }
 
 pub enum KtonStaking {}
-impl darwinia_staking::Stake for KtonStaking {
+impl dp_staking::Stake for KtonStaking {
 	type AccountId = AccountId;
 	type Item = Balance;
 
@@ -231,14 +231,14 @@ impl darwinia_staking::Stake for KtonStaking {
 	}
 }
 
-impl darwinia_staking::Config for Runtime {
+impl dp_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
 	type IssuingManager = ();
 	type Kton = KtonStaking;
 	type KtonRewardDistributionContract = ();
 	type KtonStakerNotifier = ();
-	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
+	type MaxDeposits = <Self as dp_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = frame_support::traits::ConstU32<16>;
 	type MigrationCurve = ();
 	type MinStakingDuration = frame_support::traits::ConstU64<3>;
@@ -248,16 +248,16 @@ impl darwinia_staking::Config for Runtime {
 	type WeightInfo = ();
 }
 #[cfg(not(feature = "runtime-benchmarks"))]
-impl darwinia_staking::DepositConfig for Runtime {}
+impl dp_staking::DepositConfig for Runtime {}
 
 frame_support::construct_runtime! {
 	pub enum Runtime {
 		System: frame_system,
 		Balances: pallet_balances,
 		Timestamp: pallet_timestamp,
-		Deposit: darwinia_deposit,
+		Deposit: dp_deposit,
 		EVM: pallet_evm,
-		Staking: darwinia_staking,
+		Staking: dp_staking,
 	}
 }
 

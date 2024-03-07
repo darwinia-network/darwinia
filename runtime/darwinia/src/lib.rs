@@ -22,7 +22,7 @@
 #![recursion_limit = "256"]
 
 #[cfg(feature = "std")]
-include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
+include!(concat!(env!("OUT_DIR"), "/darwinia"));
 
 mod pallets;
 pub use pallets::*;
@@ -30,8 +30,9 @@ pub use pallets::*;
 mod migration;
 pub mod weights;
 
-pub use darwinia_common_runtime::*;
 pub use dc_primitives::*;
+pub use dr_common::*;
+pub use dr_constant::*;
 
 // substrate
 use sp_std::prelude::*;
@@ -103,17 +104,17 @@ frame_support::construct_runtime! {
 		TransactionPayment: pallet_transaction_payment = 6,
 		Assets: pallet_assets = 7,
 		Vesting: pallet_vesting = 8,
-		Deposit: darwinia_deposit = 9,
-		AccountMigration: darwinia_account_migration = 10,
+		Deposit: dp_deposit = 9,
+		AccountMigration: dp_account_migration = 10,
 
 		// Consensus stuff.
 		Authorship: pallet_authorship = 11,
-		DarwiniaStaking: darwinia_staking = 12,
+		DarwiniaStaking: dp_staking = 12,
 		Session: pallet_session = 13,
 		Aura: pallet_aura = 14,
 		AuraExt: cumulus_pallet_aura_ext = 15,
-		MessageGadget: darwinia_message_gadget = 16,
-		EcdsaAuthority: darwinia_ecdsa_authority = 17,
+		MessageGadget: dp_message_gadget = 16,
+		EcdsaAuthority: dp_ecdsa_authority = 17,
 
 		// Governance stuff.
 		// PhragmenElection: pallet_elections_phragmen = 21,
@@ -145,12 +146,12 @@ frame_support::construct_runtime! {
 		DmpQueue: cumulus_pallet_dmp_queue = 35,
 		AssetManager: pallet_asset_manager = 45,
 		XTokens: orml_xtokens = 46,
-		AssetLimit: darwinia_asset_limit = 47,
+		AssetLimit: dp_asset_limit = 47,
 
 		// EVM stuff.
 		Ethereum: pallet_ethereum = 36,
 		EVM: pallet_evm = 37,
-		EthTxForwarder: darwinia_ethtx_forwarder = 38,
+		EthTxForwarder: dp_ethtx_forwarder = 38,
 
 		// // Darwinia <> Crab
 		// BridgeKusamaGrandpa: pallet_bridge_grandpa::<Instance1> = 39,
@@ -166,10 +167,10 @@ frame_benchmarking::define_benchmarks! {
 	// cumulus
 	[cumulus_pallet_xcmp_queue, XcmpQueue]
 	// darwinia
-	[darwinia_account_migration, AccountMigration]
-	[darwinia_deposit, Deposit]
-	[darwinia_ecdsa_authority, EcdsaAuthority]
-	[darwinia_staking, DarwiniaStaking]
+	[dp_account_migration, AccountMigration]
+	[dp_deposit, Deposit]
+	[dp_ecdsa_authority, EcdsaAuthority]
+	[dp_staking, DarwiniaStaking]
 	// substrate
 	[frame_system, SystemBench::<Runtime>]
 	[pallet_assets, Assets]

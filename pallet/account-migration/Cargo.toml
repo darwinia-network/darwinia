@@ -1,8 +1,8 @@
 [package]
 authors.workspace = true
-description       = "Darwinia SR25519 to ECDSA account migration."
+description       = "Darwinia SR25519 to ECDSA account migration pallet."
 edition.workspace = true
-name              = "darwinia-account-migration"
+name              = "dp-account-migration"
 readme            = "README.md"
 version.workspace = true
 
@@ -13,9 +13,9 @@ codec       = { workspace = true, package = "parity-scale-codec" }
 scale-info  = { workspace = true }
 
 # darwinia
-darwinia-deposit = { workspace = true }
-darwinia-staking = { workspace = true }
-dc-primitives    = { workspace = true }
+dc-primitives = { workspace = true }
+dp-deposit    = { workspace = true }
+dp-staking    = { workspace = true }
 
 # substrate
 frame-support   = { workspace = true }
@@ -43,9 +43,9 @@ std = [
 	"scale-info/std",
 
 	# darwinia
-	"darwinia-deposit/std",
-	"darwinia-staking/std",
 	"dc-primitives/std",
+	"dp-deposit/std",
+	"dp-staking/std",
 
 	# substrate
 	"frame-support/std",
@@ -63,8 +63,8 @@ std = [
 
 runtime-benchmarks = [
 	# darwinia
-	"darwinia-deposit/runtime-benchmarks",
-	"darwinia-staking/runtime-benchmarks",
+	"dp-deposit/runtime-benchmarks",
+	"dp-staking/runtime-benchmarks",
 
 	# substrate
 	"frame-benchmarking/runtime-benchmarks",
@@ -78,8 +78,8 @@ runtime-benchmarks = [
 
 try-runtime = [
 	# darwinia
-	"darwinia-deposit/try-runtime",
-	"darwinia-staking/try-runtime",
+	"dp-deposit/try-runtime",
+	"dp-staking/try-runtime",
 
 	# substrate
 	"frame-support/try-runtime",

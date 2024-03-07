@@ -19,6 +19,6 @@
 // darwinia
 use crate::*;
 
-impl darwinia_asset_limit::Config for Runtime {
+impl dp_asset_limit::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 }

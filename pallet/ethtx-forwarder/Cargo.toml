@@ -1,8 +1,8 @@
 [package]
 authors.workspace = true
-description       = "EVM transaction from the runtime."
+description       = "Ethereum transaction forwarded pallet."
 edition.workspace = true
-name              = "darwinia-ethtx-forwarder"
+name              = "dp-ethtx-forwarder"
 readme            = "README.md"
 version.workspace = true
 

@@ -22,10 +22,10 @@ use crate::*;
 impl pallet_identity::Config for Runtime {
 	// Minimum 100 bytes/UNIT deposited (1 MILLIUNIT/byte).
 	// 258 bytes on-chain.
-	type BasicDeposit = ConstU128<{ darwinia_deposit(1, 258) }>;
+	type BasicDeposit = ConstU128<{ dp_deposit(1, 258) }>;
 	type Currency = Balances;
 	// 66 bytes on-chain.
-	type FieldDeposit = ConstU128<{ darwinia_deposit(0, 66) }>;
+	type FieldDeposit = ConstU128<{ dp_deposit(0, 66) }>;
 	type ForceOrigin = RootOrMoreThanHalf<CouncilCollective>;
 	type MaxAdditionalFields = ConstU32<100>;
 	type MaxRegistrars = ConstU32<20>;
@@ -34,6 +34,6 @@ impl pallet_identity::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Slashed = Treasury;
 	// 53 bytes on-chain.
-	type SubAccountDeposit = ConstU128<{ darwinia_deposit(1, 53) }>;
+	type SubAccountDeposit = ConstU128<{ dp_deposit(1, 53) }>;
 	type WeightInfo = weights::pallet_identity::WeightInfo<Self>;
 }
