@@ -81,6 +81,14 @@ fn migrate() -> frame_support::weights::Weight {
 
 	let mut w = 32;
 
+	w += migration::clear_storage_prefix(
+		b"BridgeKusamaGrandpa",
+		b"ImportedHeaders",
+		&[],
+		Some(100),
+		None,
+	)
+	.backend;
 	w += migration_helper::PalletCleaner {
 		name: b"BridgeKusamaGrandpa",
 		values: &[
@@ -92,7 +100,8 @@ fn migrate() -> frame_support::weights::Weight {
 			b"PalletOwner",
 			b"PalletOperatingMode",
 		],
-		maps: &[b"ImportedHashes", b"ImportedHeaders"],
+		maps: &[b"ImportedHashes"],
+		// maps: &[b"ImportedHashes", b"ImportedHeaders"],
 	}
 	.remove_all();
 	w += migration_helper::PalletCleaner {
