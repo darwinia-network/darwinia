@@ -18,7 +18,7 @@
 
 // darwinia
 use crate::{mock::*, tests::*, ForwardEthOrigin};
-use ethereum::EIP1559Transaction;
+use ethereum::{EIP1559Transaction, EIP2930Transaction, LegacyTransaction};
 // frontier
 use fp_evm::FeeCalculator;
 // substrate
