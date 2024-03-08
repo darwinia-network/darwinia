@@ -26,10 +26,9 @@ mod test;
 
 // crates.io
 use codec::{Decode, Encode, MaxEncodedLen};
-use ethereum::TransactionAction;
 use ethereum::{
-	EIP1559Transaction, EIP2930Transaction, LegacyTransaction, TransactionSignature,
-	TransactionV2 as Transaction,
+	EIP1559Transaction, EIP2930Transaction, LegacyTransaction, TransactionAction,
+	TransactionSignature, TransactionV2 as Transaction,
 };
 use frame_support::sp_runtime::traits::UniqueSaturatedInto;
 use scale_info::TypeInfo;
@@ -232,9 +231,8 @@ impl<T: Config> Pallet<T> {
 				transaction_data.gas_limit.unique_saturated_into(),
 				true,
 			) {
-				weight_limit if weight_limit.proof_size() > 0 => {
-					(Some(weight_limit), Some(proof_size_base_cost(&transaction)))
-				},
+				weight_limit if weight_limit.proof_size() > 0 =>
+					(Some(weight_limit), Some(proof_size_base_cost(&transaction))),
 				_ => (None, None),
 			};
 

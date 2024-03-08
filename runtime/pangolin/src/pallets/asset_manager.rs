@@ -105,7 +105,7 @@ impl From<AssetType> for crate::AssetId {
 		use sp_runtime::traits::Hash;
 
 		match asset {
-			AssetType::Xcm(id) => {
+			AssetType::Xcm(id) =>
 				if id == UsdtLocation::get() {
 					1027
 				} else {
@@ -115,8 +115,7 @@ impl From<AssetType> for crate::AssetId {
 					result.copy_from_slice(&hash.as_fixed_bytes()[0..8]);
 
 					u64::from_le_bytes(result)
-				}
-			},
+				},
 		}
 	}
 }
