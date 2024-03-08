@@ -77,7 +77,7 @@ fn forward_legacy_request_sufficient_balance() {
 			($tx_type:expr) => {
 				let mut request = mocked_request();
 				request.tx_type = $tx_type;
-                
+
 				assert_err!(
 					EthTxForwarder::forward_transact(
 						ForwardEthOrigin::ForwardEth(alice.address).into(),
@@ -105,4 +105,26 @@ fn forward_legacy_request_sufficient_balance() {
 		test_tx_types!(TxType::EIP1559Transaction);
 		test_tx_types!(TxType::EIP2930Transaction);
 	});
+}
+
+#[test]
+fn mock_signature_valid() {
+	assert(
+		// copied from:
+		// https://github.com/rust-ethereum/ethereum/blob/24739cc8ba6e9d8ee30ada8ec92161e4c48d578e/src/transaction.rs#L798
+		TransactionSignature::new(
+			38,
+			// be67e0a07db67da8d446f76add590e54b6e92cb6b8f9835aeb67540579a27717
+			H256([
+				190, 103, 224, 160, 125, 182, 125, 168, 212, 70, 247, 106, 221, 89, 14, 84, 182,
+				233, 44, 182, 184, 249, 131, 90, 235, 103, 84, 5, 121, 162, 119, 23,
+			]),
+			// 2d690516512020171c1ec870f6ff45398cc8609250326be89915fb538e7bd718
+			H256([
+				45, 105, 5, 22, 81, 32, 32, 23, 28, 30, 200, 112, 246, 255, 69, 57, 140, 200, 96,
+				146, 80, 50, 107, 232, 153, 21, 251, 83, 142, 123, 215, 24,
+			]),
+		)
+		.is_some(),
+	)
 }

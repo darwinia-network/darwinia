@@ -41,6 +41,7 @@ use pallet_evm::{FeeCalculator, GasWeightMapping};
 use frame_support::{traits::EnsureOrigin, PalletError};
 use sp_core::{Get, H160, H256, U256};
 use sp_runtime::{traits::BadOrigin, DispatchError, RuntimeDebug};
+use sp_std::vec::Vec;
 
 pub use pallet::*;
 
