@@ -26,6 +26,7 @@ mod tests;
 
 // crates.io
 use codec::{Decode, Encode, MaxEncodedLen};
+use ethereum::TransactionAction;
 use ethereum::{
 	EIP1559Transaction, EIP2930Transaction, LegacyTransaction, TransactionSignature,
 	TransactionV2 as Transaction,
@@ -114,7 +115,7 @@ pub mod pallet {
 		//This call can only be used at runtime and is not available to EOA users.
 		#[pallet::call_index(0)]
 		#[pallet::weight({
-			<T as pallet_evm::Config>::GasWeightMapping::gas_to_weight(request.gas_limit().unique_saturated_into(), true)
+			<T as pallet_evm::Config>::GasWeightMapping::gas_to_weight(request.gas_limit.unique_saturated_into(), true)
 		})]
 		pub fn forward_transact(
 			origin: OriginFor<T>,
@@ -143,19 +144,21 @@ impl<T: Config> Pallet<T> {
 
 	fn validated_transaction(
 		source: H160,
-		request: ForwardRequest,
+		req: ForwardRequest,
 	) -> Result<Transaction, DispatchError> {
 		let (who, _) = pallet_evm::Pallet::<T>::account_basic(&source);
 		let base_fee = T::FeeCalculator::min_gas_price().0;
 
-		let transaction = match request {
-			ForwardRequest::Legacy(req) => Transaction::Legacy(LegacyTransaction {
+		let transaction = match req.tx_type {
+			TxType::LegacyTransaction => Transaction::Legacy(LegacyTransaction {
 				nonce: who.nonce,
 				gas_price: base_fee,
 				gas_limit: req.gas_limit,
 				action: req.action,
 				value: req.value,
 				input: req.input,
+				// copied from:
+				// https://github.com/rust-ethereum/ethereum/blob/24739cc8ba6e9d8ee30ada8ec92161e4c48d578e/src/transaction.rs#L798
 				signature: TransactionSignature::new(
 					38,
 					H256([
@@ -169,7 +172,7 @@ impl<T: Config> Pallet<T> {
 				)
 				.expect("This signature is always valid"),
 			}),
-			ForwardRequest::EIP2930(req) => {
+			TxType::EIP2930Transaction => {
 				Transaction::EIP2930(EIP2930Transaction {
 					chain_id: 0,
 					nonce: who.nonce,
@@ -194,7 +197,7 @@ impl<T: Config> Pallet<T> {
 					]),
 				})
 			},
-			ForwardRequest::EIP1559(req) => {
+			TxType::EIP1559Transaction => {
 				Transaction::EIP1559(EIP1559Transaction {
 					chain_id: 0,
 					nonce: who.nonce,
@@ -300,16 +303,9 @@ fn proof_size_base_cost(transaction: &Transaction) -> u64 {
 		.saturating_add(1) as u64
 }
 
-use ethereum::TransactionAction;
-#[derive(Clone, Debug, PartialEq, Eq, codec::Encode, codec::Decode, scale_info::TypeInfo)]
-pub enum ForwardRequest {
-	Legacy(LegacyTxRequest),
-	EIP2930(EIP2930TxRequest),
-	EIP1559(EIP1559TxRequest),
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, codec::Encode, codec::Decode, scale_info::TypeInfo)]
-pub struct LegacyTxRequest {
+#[derive(Clone, Debug, PartialEq, Eq, Encode, Decode, TypeInfo)]
+pub struct ForwardRequest {
+	pub tx_type: TxType,
 	pub source: H160,
 	pub gas_limit: U256,
 	pub action: TransactionAction,
@@ -317,48 +313,9 @@ pub struct LegacyTxRequest {
 	pub input: Vec<u8>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, codec::Encode, codec::Decode, scale_info::TypeInfo)]
-pub struct EIP2930TxRequest {
-	pub source: H160,
-	pub gas_limit: U256,
-	pub action: TransactionAction,
-	pub value: U256,
-	pub input: Vec<u8>,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, codec::Encode, codec::Decode, scale_info::TypeInfo)]
-pub struct EIP1559TxRequest {
-	pub source: H160,
-	pub gas_limit: U256,
-	pub action: TransactionAction,
-	pub value: U256,
-	pub input: Vec<u8>,
-}
-
-impl From<LegacyTxRequest> for ForwardRequest {
-	fn from(request: LegacyTxRequest) -> Self {
-		Self::Legacy(request)
-	}
-}
-
-impl From<EIP2930TxRequest> for ForwardRequest {
-	fn from(request: EIP2930TxRequest) -> Self {
-		Self::EIP2930(request)
-	}
-}
-
-impl From<EIP1559TxRequest> for ForwardRequest {
-	fn from(request: EIP1559TxRequest) -> Self {
-		Self::EIP1559(request)
-	}
-}
-
-impl ForwardRequest {
-	fn gas_limit(&self) -> U256 {
-		match &self {
-			ForwardRequest::Legacy(req) => req.gas_limit,
-			ForwardRequest::EIP2930(req) => req.gas_limit,
-			ForwardRequest::EIP1559(req) => req.gas_limit,
-		}
-	}
+#[derive(Clone, Debug, PartialEq, Eq, Encode, Decode, TypeInfo)]
+pub enum TxType {
+	LegacyTransaction,
+	EIP2930Transaction,
+	EIP1559Transaction,
 }
