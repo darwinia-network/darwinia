@@ -103,9 +103,7 @@ pub mod pallet {
 	#[pallet::error]
 	pub enum Error<T> {
 		/// Transaction validation errors.
-		ValidationError(EvmTxErrorWrapper),
-		/// Sender of the request should be the same as the sender of the origin.
-		ConflictSender,
+		ValidationError(TxErrorWrapper),
 	}
 
 	#[pallet::call]
@@ -123,9 +121,8 @@ pub mod pallet {
 			request: ForwardRequest,
 		) -> DispatchResultWithPostInfo {
 			let source = ensure_forward_transact(origin)?;
-			ensure!(source != request.source(), Error::<T>::ConflictSender);
 
-			let transaction = Self::validated_transaction(request)?;
+			let transaction = Self::validated_transaction(source, request)?;
 			T::ValidatedTransaction::apply(source, transaction).map(|(post_info, _)| post_info)
 		}
 	}
@@ -144,8 +141,11 @@ impl<T: Config> Pallet<T> {
 		tx_data.value.saturating_add(fee)
 	}
 
-	fn validated_transaction(request: ForwardRequest) -> Result<Transaction, DispatchError> {
-		let (who, _) = pallet_evm::Pallet::<T>::account_basic(&request.source());
+	fn validated_transaction(
+		source: H160,
+		request: ForwardRequest,
+	) -> Result<Transaction, DispatchError> {
+		let (who, _) = pallet_evm::Pallet::<T>::account_basic(&source);
 		let base_fee = T::FeeCalculator::min_gas_price().0;
 
 		let transaction = match request {
@@ -167,7 +167,7 @@ impl<T: Config> Pallet<T> {
 						200, 96, 146, 80, 50, 107, 232, 153, 21, 251, 83, 142, 123, 215, 24,
 					]),
 				)
-				.unwrap(),
+				.expect("This signature is always valid"),
 			}),
 			ForwardRequest::EIP2930(req) => {
 				Transaction::EIP2930(EIP2930Transaction {
@@ -234,7 +234,7 @@ impl<T: Config> Pallet<T> {
 				_ => (None, None),
 			};
 
-		let _ = CheckEvmTransaction::<EvmTxErrorWrapper>::new(
+		let _ = CheckEvmTransaction::<TxErrorWrapper>::new(
 			CheckEvmTransactionConfig {
 				evm_config: T::config(),
 				block_gas_limit: T::BlockGasLimit::get(),
@@ -257,7 +257,7 @@ impl<T: Config> Pallet<T> {
 
 // TODO: replace it with upstream error type
 #[derive(Encode, Decode, TypeInfo, PalletError)]
-pub enum EvmTxErrorWrapper {
+pub enum TxErrorWrapper {
 	GasLimitTooLow,
 	GasLimitTooHigh,
 	GasPriceTooLow,
@@ -271,20 +271,20 @@ pub enum EvmTxErrorWrapper {
 	UnknownError,
 }
 
-impl From<TransactionValidationError> for EvmTxErrorWrapper {
+impl From<TransactionValidationError> for TxErrorWrapper {
 	fn from(validation_error: TransactionValidationError) -> Self {
 		match validation_error {
-			TransactionValidationError::GasLimitTooLow => EvmTxErrorWrapper::GasLimitTooLow,
-			TransactionValidationError::GasLimitTooHigh => EvmTxErrorWrapper::GasLimitTooHigh,
-			TransactionValidationError::GasPriceTooLow => EvmTxErrorWrapper::GasPriceTooLow,
-			TransactionValidationError::PriorityFeeTooHigh => EvmTxErrorWrapper::PriorityFeeTooHigh,
-			TransactionValidationError::BalanceTooLow => EvmTxErrorWrapper::BalanceTooLow,
-			TransactionValidationError::TxNonceTooLow => EvmTxErrorWrapper::TxNonceTooLow,
-			TransactionValidationError::TxNonceTooHigh => EvmTxErrorWrapper::TxNonceTooHigh,
-			TransactionValidationError::InvalidFeeInput => EvmTxErrorWrapper::InvalidFeeInput,
-			TransactionValidationError::InvalidChainId => EvmTxErrorWrapper::InvalidChainId,
-			TransactionValidationError::InvalidSignature => EvmTxErrorWrapper::InvalidSignature,
-			TransactionValidationError::UnknownError => EvmTxErrorWrapper::UnknownError,
+			TransactionValidationError::GasLimitTooLow => TxErrorWrapper::GasLimitTooLow,
+			TransactionValidationError::GasLimitTooHigh => TxErrorWrapper::GasLimitTooHigh,
+			TransactionValidationError::GasPriceTooLow => TxErrorWrapper::GasPriceTooLow,
+			TransactionValidationError::PriorityFeeTooHigh => TxErrorWrapper::PriorityFeeTooHigh,
+			TransactionValidationError::BalanceTooLow => TxErrorWrapper::BalanceTooLow,
+			TransactionValidationError::TxNonceTooLow => TxErrorWrapper::TxNonceTooLow,
+			TransactionValidationError::TxNonceTooHigh => TxErrorWrapper::TxNonceTooHigh,
+			TransactionValidationError::InvalidFeeInput => TxErrorWrapper::InvalidFeeInput,
+			TransactionValidationError::InvalidChainId => TxErrorWrapper::InvalidChainId,
+			TransactionValidationError::InvalidSignature => TxErrorWrapper::InvalidSignature,
+			TransactionValidationError::UnknownError => TxErrorWrapper::UnknownError,
 		}
 	}
 }
@@ -354,14 +354,6 @@ impl From<EIP1559TxRequest> for ForwardRequest {
 }
 
 impl ForwardRequest {
-	fn source(&self) -> H160 {
-		match &self {
-			ForwardRequest::Legacy(req) => req.source,
-			ForwardRequest::EIP2930(req) => req.source,
-			ForwardRequest::EIP1559(req) => req.source,
-		}
-	}
-
 	fn gas_limit(&self) -> U256 {
 		match &self {
 			ForwardRequest::Legacy(req) => req.gas_limit,
