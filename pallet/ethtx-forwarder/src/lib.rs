@@ -22,7 +22,7 @@
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
-mod tests;
+mod test;
 
 // crates.io
 use codec::{Decode, Encode, MaxEncodedLen};
@@ -135,11 +135,11 @@ impl<T: Config> Pallet<T> {
 	/// The gas_price of an EVM transaction is always the min_gas_price(), which is a fixed value.
 	/// Therefore, only the gas_limit and value of the transaction should be considered in the
 	/// calculation of the fee, and the gas_price of the transaction itself can be ignored.
-	pub fn total_payment(tx_data: TransactionData) -> U256 {
+	pub fn total_payment(request: &ForwardRequest) -> U256 {
 		let base_fee = <T as pallet_evm::Config>::FeeCalculator::min_gas_price().0;
-		let fee = base_fee.saturating_mul(tx_data.gas_limit);
+		let fee = base_fee.saturating_mul(request.gas_limit);
 
-		tx_data.value.saturating_add(fee)
+		request.value.saturating_add(fee)
 	}
 
 	fn validated_transaction(
@@ -306,15 +306,15 @@ fn proof_size_base_cost(transaction: &Transaction) -> u64 {
 #[derive(Clone, Debug, PartialEq, Eq, Encode, Decode, TypeInfo)]
 pub struct ForwardRequest {
 	pub tx_type: TxType,
-	pub source: H160,
 	pub gas_limit: U256,
 	pub action: TransactionAction,
 	pub value: U256,
 	pub input: Vec<u8>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Encode, Decode, TypeInfo)]
+#[derive(Clone, Debug, PartialEq, Eq, Encode, Decode, TypeInfo, Default)]
 pub enum TxType {
+	#[default]
 	LegacyTransaction,
 	EIP2930Transaction,
 	EIP1559Transaction,

@@ -22,12 +22,10 @@ frame-support = { workspace = true }
 frame-system  = { workspace = true }
 sp-core       = { workspace = true }
 sp-runtime    = { workspace = true }
-# sp-std        = { workspace = true }
 
 [dev-dependencies]
 array-bytes  = { workspace = true }
 libsecp256k1 = { workspace = true, features = ["std"] }
-rlp          = { version = "0.5" }
 sha3         = { workspace = true }
 
 # frontier
@@ -39,6 +37,7 @@ pallet-balances  = { workspace = true, features = ["std"] }
 pallet-timestamp = { workspace = true, features = ["std"] }
 sp-io            = { workspace = true, features = ["std"] }
 sp-runtime       = { workspace = true, features = ["std"] }
+sp-std           = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]
@@ -58,7 +57,6 @@ std = [
 	"frame-system/std",
 	"sp-core/std",
 	"sp-runtime/std",
-	# "sp-std/std",
 ]
 
 runtime-benchmarks = [

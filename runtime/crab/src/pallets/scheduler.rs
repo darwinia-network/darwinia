@@ -29,8 +29,9 @@ impl frame_support::traits::PrivilegeCmp<OriginCaller> for OriginPrivilegeCmp {
 
 		match (left, right) {
 			// Root is greater than anything.
-			(OriginCaller::system(frame_system::RawOrigin::Root), _) =>
-				Some(core::cmp::Ordering::Greater),
+			(OriginCaller::system(frame_system::RawOrigin::Root), _) => {
+				Some(core::cmp::Ordering::Greater)
+			},
 			// Check which one has more yes votes.
 			(
 				OriginCaller::TechnicalCommittee(pallet_collective::RawOrigin::Members(
