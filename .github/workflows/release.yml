@@ -110,6 +110,12 @@ jobs:
           curl -LO ${{ env.GOMPLATE_URL }}/${{ env.GOMPLATE_VERSION }}/${{ env.GOMPLATE }}
           chmod u+x ${{ env.GOMPLATE }}
           sudo mv ${{ env.GOMPLATE }} /usr/bin/gomplate
+      - name: Setup wuh
+        run: |
+          curl -LO https://github.com/darwinia-network/darwinia-releases/releases/download/v0.1.0/wuh.zst
+          zstd -d wuh.zst
+          chmod u+x ./wuh
+          sudo mv ./wuh /usr/bin/wuh
       - name: Filter
         run: |
           SKIP_BUILD=${{ env.SKIP_BUILD }}
@@ -146,7 +152,15 @@ jobs:
 
           if [ "$FILTER" == "true" ]; then
             echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${CHAIN}-srtool.json
-            mv ${{ steps.srtool_build.outputs.wasm_compressed }} build/
+
+            WASM_FILE='${{ steps.srtool_build.outputs.wasm_compressed }}'
+            WHITELIST_PALLET_INDEX=0x33
+            if [ "$CHAIN" == "crab" ]; then
+              WHITELIST_PALLET_INDEX=0x2f
+            fi
+            export WHITELIST_HASH=$(wuh ${WASM_FILE} ${WHITELIST_PALLET_INDEX} 0x01)
+
+            mv ${WASM_FILE} build/
 
             cat .github/note-template/runtime.md \
               | gomplate -d srtool=build/${CHAIN}-srtool.json \
