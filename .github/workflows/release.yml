@@ -151,9 +151,14 @@ jobs:
           mkdir -p build
 
           if [ "$FILTER" == "true" ]; then
-            WASM_FILE='${{ steps.srtool_build.outputs.wasm_compressed }}'
             echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${CHAIN}-srtool.json
-            export WHITELIST_HASH=$(wuh ${WASM_FILE} 0x33 0x01)
+
+            WASM_FILE='${{ steps.srtool_build.outputs.wasm_compressed }}'
+            WHITELIST_PALLET_INDEX=0x33
+            if [ "$CHAIN" == "crab" ]; then
+              WHITELIST_PALLET_INDEX=0x2f
+            fi
+            export WHITELIST_HASH=$(wuh ${WASM_FILE} ${WHITELIST_PALLET_INDEX} 0x01)
 
             mv ${WASM_FILE} build/
 
