@@ -22,8 +22,8 @@ macro_rules! impl_account_migration_tests {
 		mod account_migration {
 			// darwinia
 			use super::mock::*;
-			use darwinia_deposit::Deposit as DepositS;
-			use darwinia_staking::Ledger;
+			use dp_deposit::Deposit as DepositS;
+			use dp_staking::Ledger;
 			// substrate
 			use frame_support::{
 				assert_err, assert_ok, migration, Blake2_128Concat, StorageHasher,
@@ -119,7 +119,7 @@ macro_rules! impl_account_migration_tests {
 				assert!(AccountMigration::kton_account_of(&account_id_32).is_none());
 
 				<pallet_balances::TotalIssuance<Runtime, _>>::put(RING_AMOUNT);
-				<darwinia_account_migration::Accounts<Runtime>>::insert(
+				<dp_account_migration::Accounts<Runtime>>::insert(
 					&account_id_32,
 					AccountInfo {
 						nonce: 100,
@@ -140,7 +140,7 @@ macro_rules! impl_account_migration_tests {
 			}
 
 			fn migrate(from: Pair, to: AccountId) -> Result<(), E> {
-				let message = darwinia_account_migration::signable_message(
+				let message = dp_account_migration::signable_message(
 					<<Runtime as frame_system::Config>::Version as Get<RuntimeVersion>>::get()
 						.spec_name
 						.as_bytes(),
@@ -149,7 +149,7 @@ macro_rules! impl_account_migration_tests {
 				let sig = from.sign(&message);
 				let from_pk = AccountId32::new(from.public().0);
 
-				AccountMigration::pre_dispatch(&darwinia_account_migration::Call::migrate {
+				AccountMigration::pre_dispatch(&dp_account_migration::Call::migrate {
 					from: from_pk.clone(),
 					to,
 					signature: sig.0.clone(),
@@ -189,20 +189,18 @@ macro_rules! impl_account_migration_tests {
 			fn validate_invalid_sig() {
 				let (from, from_pk) = alice();
 				let to = H160::from_low_u64_be(0).into();
-				let message = darwinia_account_migration::signable_message(b"?", &to);
+				let message = dp_account_migration::signable_message(b"?", &to);
 				let sig = from.sign(&message);
 
 				ExtBuilder::default().build().execute_with(|| {
 					preset_state_of(&from);
 
 					assert_err!(
-						AccountMigration::pre_dispatch(
-							&darwinia_account_migration::Call::migrate {
-								from: from_pk,
-								to,
-								signature: sig.0,
-							}
-						)
+						AccountMigration::pre_dispatch(&dp_account_migration::Call::migrate {
+							from: from_pk,
+							to,
+							signature: sig.0,
+						})
 						.map_err(E::from),
 						invalid_transaction(2)
 					);
@@ -285,7 +283,7 @@ macro_rules! impl_account_migration_tests {
 					.execute_with(|| {
 						preset_state_of(&from);
 
-						<darwinia_account_migration::Deposits<Runtime>>::insert(
+						<dp_account_migration::Deposits<Runtime>>::insert(
 							&from_pk,
 							vec![
 								DepositS {
@@ -304,7 +302,7 @@ macro_rules! impl_account_migration_tests {
 								},
 							],
 						);
-						<darwinia_account_migration::Ledgers<Runtime>>::insert(
+						<dp_account_migration::Ledgers<Runtime>>::insert(
 							&from_pk,
 							Ledger {
 								staked_ring: 20,
@@ -319,21 +317,18 @@ macro_rules! impl_account_migration_tests {
 						assert_ok!(migrate(from, to));
 						assert_eq!(Balances::free_balance(to), 60);
 						assert_eq!(
-							Balances::free_balance(&darwinia_deposit::account_id::<AccountId>()),
+							Balances::free_balance(&dp_deposit::account_id::<AccountId>()),
 							20
 						);
 						assert_eq!(
-							Balances::free_balance(&darwinia_staking::account_id::<AccountId>()),
+							Balances::free_balance(&dp_staking::account_id::<AccountId>()),
 							20
 						);
 						assert_eq!(Deposit::deposit_of(to).unwrap().len(), 2);
 						assert_eq!(Assets::maybe_balance(KTON_ID, to).unwrap(), 80);
 						assert_eq!(
-							Assets::maybe_balance(
-								KTON_ID,
-								darwinia_staking::account_id::<AccountId>()
-							)
-							.unwrap(),
+							Assets::maybe_balance(KTON_ID, dp_staking::account_id::<AccountId>())
+								.unwrap(),
 							20
 						);
 						assert_eq!(DarwiniaStaking::ledger_of(to).unwrap().staked_ring, 20);
@@ -360,7 +355,7 @@ macro_rules! impl_account_migration_tests {
 						image: Data::None,
 						twitter: Data::None,
 					};
-					<darwinia_account_migration::Identities<Runtime>>::insert(
+					<dp_account_migration::Identities<Runtime>>::insert(
 						from_pk,
 						Registration {
 							judgements: Default::default(),

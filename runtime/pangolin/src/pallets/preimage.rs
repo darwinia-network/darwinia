@@ -21,7 +21,7 @@ use crate::*;
 
 impl pallet_preimage::Config for Runtime {
 	type BaseDeposit = ConstU128<{ 500 * UNIT }>;
-	type ByteDeposit = ConstU128<{ darwinia_deposit(0, 1) }>;
+	type ByteDeposit = ConstU128<{ dp_deposit(0, 1) }>;
 	type Currency = Balances;
 	type ManagerOrigin = RootOr<GeneralAdmin>;
 	type RuntimeEvent = RuntimeEvent;

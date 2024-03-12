@@ -86,7 +86,7 @@ pub type LocationToAccountId = (
 	// Straight up local `AccountId20` origins just alias directly to `AccountId`.
 	xcm_builder::AccountKey20Aliases<RelayNetwork, AccountId>,
 	// The rest of locations are converted via hashing it.
-	darwinia_common_runtime::xcm_configs::Account20Hash<AccountId>,
+	dr_common::xcm_configs::Account20Hash<AccountId>,
 );
 /// This is the type we use to convert an (incoming) XCM origin into a local `Origin` instance,
 /// ready for dispatching a transaction with Xcm's `Transact`. There is an `OriginKind` which can
@@ -122,12 +122,10 @@ pub type Barrier = xcm_builder::TrailingSetTopicAsId<
 					// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality
 					// get free execution.
 					xcm_builder::AllowExplicitUnpaidExecutionFrom<
-						darwinia_common_runtime::xcm_configs::ParentOrParentsExecutivePlurality,
+						dr_common::xcm_configs::ParentOrParentsExecutivePlurality,
 					>,
 					// Subscriptions for version tracking are OK.
-					xcm_builder::AllowSubscriptionsFrom<
-						darwinia_common_runtime::xcm_configs::ParentOrSiblings,
-					>,
+					xcm_builder::AllowSubscriptionsFrom<dr_common::xcm_configs::ParentOrSiblings>,
 				),
 				UniversalLocation,
 				ConstU32<8>,
@@ -249,7 +247,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 		xcm_configs::LocalAssetTrader<
 			frame_support::weights::ConstantMultiplier<
 				Balance,
-				darwinia_common_runtime::xcm_configs::XcmBaseWeightFee,
+				dr_common::xcm_configs::XcmBaseWeightFee,
 			>,
 			AnchoringSelfReserve,
 			AccountId,

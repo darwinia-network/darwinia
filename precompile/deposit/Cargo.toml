@@ -2,7 +2,7 @@
 authors.workspace = true
 description       = "Deposit precompile for EVM pallet."
 edition.workspace = true
-name              = "darwinia-precompile-deposit"
+name              = "dpc-deposit"
 readme            = "README.md"
 version.workspace = true
 
@@ -12,7 +12,7 @@ fp-evm     = { workspace = true }
 pallet-evm = { workspace = true }
 
 # darwinia
-darwinia-deposit = { workspace = true }
+dp-deposit = { workspace = true }
 
 # moonbeam
 precompile-utils = { workspace = true }
@@ -45,7 +45,7 @@ std = [
 	"pallet-evm/std",
 
 	# darwinia
-	"darwinia-deposit/std",
+	"dp-deposit/std",
 
 	# moonbeam
 	"precompile-utils/std",

@@ -2,7 +2,7 @@
 authors.workspace = true
 description       = "Darwinia Common Runtime"
 edition.workspace = true
-name              = "darwinia-common-runtime"
+name              = "dr-common"
 readme            = "README.md"
 version.workspace = true
 
@@ -14,11 +14,10 @@ scale-info = { workspace = true }
 smallvec   = { version = "1.10" }
 
 # darwinia
-darwinia-precompile-assets = { workspace = true }
-dc-primitives              = { workspace = true }
+dc-primitives = { workspace = true }
+dpc-assets    = { workspace = true }
 
 # frontier
-fp-account = { workspace = true }
 pallet-evm = { workspace = true }
 
 # polkadot
@@ -47,11 +46,10 @@ std = [
 	"scale-info/std",
 
 	# darwinia
-	"darwinia-precompile-assets/std",
 	"dc-primitives/std",
+	"dpc-assets/std",
 
 	# frontier
-	"fp-account/std",
 	"pallet-evm/std",
 
 	# polkadot

@@ -19,7 +19,7 @@
 // darwinia
 use crate::*;
 
-impl darwinia_account_migration::Config for Runtime {
+impl dp_account_migration::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = weights::darwinia_account_migration::WeightInfo<Self>;
+	type WeightInfo = weights::dp_account_migration::WeightInfo<Self>;
 }

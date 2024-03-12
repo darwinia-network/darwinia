@@ -1,8 +1,8 @@
 [package]
 authors.workspace = true
-description       = "Darwinia parachain staking."
+description       = "Darwinia parachain staking pallet."
 edition.workspace = true
-name              = "darwinia-staking"
+name              = "dp-staking"
 readme            = "README.md"
 version.workspace = true
 
@@ -15,11 +15,11 @@ log        = { workspace = true }
 scale-info = { workspace = true }
 
 # darwinia
-darwinia-ethtx-forwarder  = { workspace = true }
-darwinia-staking-traits   = { workspace = true }
-dc-types                  = { workspace = true }
+dc-types           = { workspace = true }
+dp-ethtx-forwarder = { workspace = true }
+dp-staking-traits  = { workspace = true }
 # darwinia optional
-darwinia-deposit = { workspace = true, optional = true }
+dp-deposit = { workspace = true, optional = true }
 
 # subtrate
 frame-support     = { workspace = true }
@@ -37,7 +37,7 @@ frame-benchmarking = { workspace = true, optional = true }
 pretty_env_logger = { version = "0.5" }
 
 # darwinia
-darwinia-deposit = { workspace = true, features = ["std"] }
+dp-deposit = { workspace = true, features = ["std"] }
 
 # substrate
 dc-inflation         = { workspace = true, features = ["std"] }
@@ -60,10 +60,10 @@ std = [
 	"scale-info/std",
 
 	# darwinia
-	"darwinia-ethtx-forwarder/std",
-	"darwinia-staking-traits/std",
+	"dp-ethtx-forwarder/std",
+	"dp-staking-traits/std",
 	# darwinia optional
-	"darwinia-deposit?/std",
+	"dp-deposit?/std",
 
 	# subtrate
 	"frame-support/std",
@@ -80,9 +80,9 @@ std = [
 
 runtime-benchmarks = [
 	# darwinia
-	"darwinia-deposit",
-	"darwinia-ethtx-forwarder/runtime-benchmarks",
-	"darwinia-staking-traits/runtime-benchmarks",
+	"dp-deposit",
+	"dp-ethtx-forwarder/runtime-benchmarks",
+	"dp-staking-traits/runtime-benchmarks",
 
 	# substrate
 	"frame-benchmarking/runtime-benchmarks",
@@ -94,7 +94,7 @@ runtime-benchmarks = [
 
 try-runtime = [
 	# darwinia
-	"darwinia-ethtx-forwarder/try-runtime",
+	"dp-ethtx-forwarder/try-runtime",
 	# substrate
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",

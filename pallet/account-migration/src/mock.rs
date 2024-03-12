@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-pub use crate as darwinia_account_migration;
+pub use crate as dp_account_migration;
 pub use dc_primitives::*;
 
 // substrate
@@ -24,7 +24,7 @@ use sp_io::TestExternalities;
 use sp_runtime::BuildStorage;
 
 pub struct Dummy;
-impl darwinia_deposit::SimpleAsset for Dummy {
+impl dp_deposit::SimpleAsset for Dummy {
 	type AccountId = AccountId;
 
 	fn mint(_: &Self::AccountId, _: Balance) -> sp_runtime::DispatchResult {
@@ -35,7 +35,7 @@ impl darwinia_deposit::SimpleAsset for Dummy {
 		Ok(())
 	}
 }
-impl darwinia_staking::Stake for Dummy {
+impl dp_staking::Stake for Dummy {
 	type AccountId = AccountId;
 	type Item = Balance;
 
@@ -150,7 +150,7 @@ frame_support::parameter_types! {
 		);
 }
 
-impl darwinia_deposit::Config for Runtime {
+impl dp_deposit::Config for Runtime {
 	type Kton = Dummy;
 	type MaxDeposits = ();
 	type MinLockingAmount = ();
@@ -159,7 +159,7 @@ impl darwinia_deposit::Config for Runtime {
 	type WeightInfo = ();
 }
 
-impl darwinia_staking::Config for Runtime {
+impl dp_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
 	type IssuingManager = ();
@@ -176,7 +176,7 @@ impl darwinia_staking::Config for Runtime {
 	type WeightInfo = ();
 }
 #[cfg(not(feature = "runtime-benchmarks"))]
-impl darwinia_staking::DepositConfig for Runtime {}
+impl dp_staking::DepositConfig for Runtime {}
 
 impl pallet_identity::Config for Runtime {
 	type BasicDeposit = ();
@@ -193,7 +193,7 @@ impl pallet_identity::Config for Runtime {
 	type WeightInfo = ();
 }
 
-impl darwinia_account_migration::Config for Runtime {
+impl dp_account_migration::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 }
@@ -204,10 +204,10 @@ frame_support::construct_runtime! {
 		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
 		Assets: pallet_assets,
-		Deposit: darwinia_deposit,
-		Staking: darwinia_staking,
+		Deposit: dp_deposit,
+		Staking: dp_staking,
 		Identity: pallet_identity,
-		AccountMigration: darwinia_account_migration,
+		AccountMigration: dp_account_migration,
 	}
 }
 
@@ -215,13 +215,8 @@ pub(crate) fn new_test_ext() -> TestExternalities {
 	let mut storage = <frame_system::GenesisConfig<Runtime>>::default().build_storage().unwrap();
 
 	pallet_assets::GenesisConfig::<Runtime> {
-		assets: vec![(darwinia_account_migration::KTON_ID, [0; 20].into(), true, 1)],
-		metadata: vec![(
-			darwinia_account_migration::KTON_ID,
-			b"KTON".to_vec(),
-			b"KTON".to_vec(),
-			18,
-		)],
+		assets: vec![(dp_account_migration::KTON_ID, [0; 20].into(), true, 1)],
+		metadata: vec![(dp_account_migration::KTON_ID, b"KTON".to_vec(), b"KTON".to_vec(), 18)],
 		..Default::default()
 	}
 	.assimilate_storage(&mut storage)

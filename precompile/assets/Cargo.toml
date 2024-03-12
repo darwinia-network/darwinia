@@ -2,7 +2,7 @@
 authors.workspace = true
 description       = "Assets precompile for EVM pallet."
 edition.workspace = true
-name              = "darwinia-precompile-assets"
+name              = "dpc-assets"
 readme            = "README.md"
 version.workspace = true
 

@@ -19,4 +19,4 @@
 // darwinia
 use crate::*;
 
-impl darwinia_message_gadget::Config for Runtime {}
+impl dp_message_gadget::Config for Runtime {}

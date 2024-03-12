@@ -56,9 +56,9 @@ mod weights;
 pub use weights::WeightInfo;
 
 // darwinia
-use darwinia_deposit::Deposit;
-use darwinia_staking::Ledger;
 use dc_primitives::{AccountId as AccountId20, AssetId, Balance, Nonce};
+use dp_deposit::Deposit;
+use dp_staking::Ledger;
 // substrate
 use frame_support::{
 	migration,
@@ -110,8 +110,8 @@ pub mod pallet {
 		> + pallet_assets::Config<Balance = Balance, AssetId = AssetId>
 		+ pallet_balances::Config<Balance = Balance>
 		+ pallet_identity::Config<Currency = pallet_balances::Pallet<Self>>
-		+ darwinia_deposit::Config
-		+ darwinia_staking::Config
+		+ dp_deposit::Config
+		+ dp_staking::Config
 	{
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
@@ -157,7 +157,7 @@ pub mod pallet {
 	#[pallet::getter(fn kton_account_of)]
 	pub type KtonAccounts<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, AssetAccount>;
 
-	/// [`darwinia_deposit::Deposits`] data.
+	/// [`dp_deposit::Deposits`] data.
 	#[pallet::storage]
 	#[pallet::unbounded]
 	#[pallet::getter(fn deposit_of)]
@@ -175,7 +175,7 @@ pub mod pallet {
 		Registration<Balance, ConstU32<100>, ConstU32<100>>,
 	>;
 
-	/// [`darwinia_staking::Ledgers`] data.
+	/// [`dp_staking::Ledgers`] data.
 	#[pallet::storage]
 	#[pallet::getter(fn ledger_of)]
 	pub type Ledgers<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, Ledger<T>>;
@@ -467,11 +467,11 @@ pub mod pallet {
 				if let Some(ds) = <Deposits<T>>::take(from) {
 					<pallet_balances::Pallet<T> as Currency<_>>::transfer(
 						to,
-						&darwinia_deposit::account_id(),
+						&dp_deposit::account_id(),
 						ds.iter().map(|d| d.value).sum(),
 						AllowDeath,
 					)?;
-					<darwinia_deposit::Deposits<T>>::insert(
+					<dp_deposit::Deposits<T>>::insert(
 						to,
 						BoundedVec::try_from(ds).map_err(|_| <Error<T>>::ExceedMaxDeposits)?,
 					);
@@ -482,7 +482,7 @@ pub mod pallet {
 				l.unstaking_ring.retain(|(_, t)| t > &now);
 				l.unstaking_kton.retain(|(_, t)| t > &now);
 
-				let staking_pot = darwinia_staking::account_id();
+				let staking_pot = dp_staking::account_id();
 				let r = l.staked_ring + l.unstaking_ring.iter().map(|(r, _)| r).sum::<Balance>();
 
 				// To calculated the worst case in benchmark.
@@ -511,7 +511,7 @@ pub mod pallet {
 					)?;
 				}
 
-				<darwinia_staking::Ledgers<T>>::insert(to, l);
+				<dp_staking::Ledgers<T>>::insert(to, l);
 			}
 
 			Ok(())

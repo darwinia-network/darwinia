@@ -1,8 +1,8 @@
 [package]
 authors.workspace = true
-description       = "Darwinia messages gadget."
+description       = "Darwinia messages gadget pallet."
 edition.workspace = true
-name              = "darwinia-message-gadget"
+name              = "dp-message-gadget"
 readme            = "README.md"
 version.workspace = true
 

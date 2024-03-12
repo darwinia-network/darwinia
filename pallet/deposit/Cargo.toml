@@ -1,8 +1,8 @@
 [package]
 authors.workspace = true
-description       = "Darwinia deposit mechanism implementation."
+description       = "Darwinia deposit mechanism pallet implementation."
 edition.workspace = true
-name              = "darwinia-deposit"
+name              = "dp-deposit"
 readme            = "README.md"
 version.workspace = true
 
@@ -12,9 +12,9 @@ codec      = { workspace = true, package = "parity-scale-codec" }
 scale-info = { workspace = true }
 
 # darwinia
-darwinia-staking-traits = { workspace = true }
-dc-inflation            = { workspace = true }
-dc-types                = { workspace = true }
+dc-inflation      = { workspace = true }
+dc-types          = { workspace = true }
+dp-staking-traits = { workspace = true }
 
 # subtrate
 frame-support    = { workspace = true }
@@ -40,8 +40,8 @@ std = [
 	"scale-info/std",
 
 	# darwinia
-	"darwinia-staking-traits/std",
 	"dc-inflation/std",
+	"dp-staking-traits/std",
 
 	# subtrate
 	"frame-support/std",
@@ -55,7 +55,7 @@ std = [
 
 runtime-benchmarks = [
 	# darwinia
-	"darwinia-staking-traits/runtime-benchmarks",
+	"dp-staking-traits/runtime-benchmarks",
 
 	# substrate
 	"frame-support/runtime-benchmarks",

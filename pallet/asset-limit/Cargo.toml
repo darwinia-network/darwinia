@@ -1,8 +1,8 @@
 [package]
 authors.workspace = true
-description       = "Darwinia asset limit implementation."
+description       = "Darwinia asset limit pallet implementation."
 edition.workspace = true
-name              = "darwinia-asset-limit"
+name              = "dp-asset-limit"
 readme            = "README.md"
 version.workspace = true
 
@@ -22,20 +22,20 @@ frame-system  = { workspace = true }
 default = ["std"]
 
 std = [
-    # crates.io
-    "codec/std",
-    "scale-info/std",
-    # moonbeam
-    "pallet-asset-manager/std",
-    # substrate
-    "frame-support/std",
-    "frame-system/std",
+	# crates.io
+	"codec/std",
+	"scale-info/std",
+	# moonbeam
+	"pallet-asset-manager/std",
+	# substrate
+	"frame-support/std",
+	"frame-system/std",
 ]
 
 try-runtime = [
-    # moonbeam
-    "pallet-asset-manager/try-runtime",
-    # substrate
-    "frame-support/try-runtime",
-    "frame-system/try-runtime",
+	# moonbeam
+	"pallet-asset-manager/try-runtime",
+	# substrate
+	"frame-support/try-runtime",
+	"frame-system/try-runtime",
 ]

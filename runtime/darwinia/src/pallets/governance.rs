@@ -121,17 +121,15 @@ impl pallet_treasury::Config for Runtime {
 	type Currency = Balances;
 	type MaxApprovals = ConstU32<100>;
 	type OnSlash = Treasury;
-	type PalletId = pallet_config::TreasuryPid;
+	type PalletId = TreasuryPid;
 	type ProposalBond = ProposalBond;
 	type ProposalBondMaximum = ();
 	type ProposalBondMinimum = ConstU128<DARWINIA_PROPOSAL_REQUIREMENT>;
 	type RejectOrigin = RootOrAll<CouncilCollective>;
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
-	type SpendOrigin = EitherOf<
-		frame_system::EnsureRootWithSuccess<AccountId, pallet_config::MaxBalance>,
-		Spender,
-	>;
+	type SpendOrigin =
+		EitherOf<frame_system::EnsureRootWithSuccess<AccountId, MaxBalance>, Spender>;
 	type SpendPeriod = ConstU32<{ 28 * DAYS }>;
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Self>;
 }

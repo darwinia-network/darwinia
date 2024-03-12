@@ -18,8 +18,8 @@
 
 // darwinia
 use crate::*;
-use darwinia_deposit::SimpleAsset;
 use dc_types::UNIT;
+use dp_deposit::SimpleAsset;
 // substrate
 use frame_benchmarking::v2;
 use frame_system::RawOrigin;
@@ -34,16 +34,12 @@ mod benchmarks {
 
 	fn deposit_for<T>(who: &T::AccountId, count: u32) -> Vec<DepositId<T>>
 	where
-		T: Config + darwinia_deposit::Config,
+		T: Config + dp_deposit::Config,
 	{
 		(0..count.min(<<T as Config>::MaxUnstakings>::get()) as u8)
 			.map(|x| {
-				<darwinia_deposit::Pallet<T>>::lock(
-					RawOrigin::Signed(who.to_owned()).into(),
-					UNIT,
-					1,
-				)
-				.unwrap();
+				<dp_deposit::Pallet<T>>::lock(RawOrigin::Signed(who.to_owned()).into(), UNIT, 1)
+					.unwrap();
 
 				x.into()
 			})
@@ -55,8 +51,8 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller();
 
 		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, 1_024 * UNIT + 1);
-		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
+		<T as dp_deposit::Config>::Ring::make_free_balance_be(&a, 1_024 * UNIT + 1);
+		<T as dp_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
 
 		let deposits = deposit_for::<T>(&a, x);
 
@@ -72,8 +68,8 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller();
 
 		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, 1_024 * UNIT + 1);
-		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
+		<T as dp_deposit::Config>::Ring::make_free_balance_be(&a, 1_024 * UNIT + 1);
+		<T as dp_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
 
 		let deposits = deposit_for::<T>(&a, x);
 
@@ -92,8 +88,8 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller();
 
 		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, 1_024 * UNIT + 1);
-		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
+		<T as dp_deposit::Config>::Ring::make_free_balance_be(&a, 1_024 * UNIT + 1);
+		<T as dp_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
 
 		let deposits = deposit_for::<T>(&a, x);
 
@@ -114,8 +110,8 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller();
 
 		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, 1_024 * UNIT + 1);
-		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
+		<T as dp_deposit::Config>::Ring::make_free_balance_be(&a, 1_024 * UNIT + 1);
+		<T as dp_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
 
 		let deposits = deposit_for::<T>(&a, <T as Config>::MaxUnstakings::get());
 
@@ -156,7 +152,7 @@ mod benchmarks {
 		let a_cloned = a.clone();
 
 		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, UNIT + 1);
+		<T as dp_deposit::Config>::Ring::make_free_balance_be(&a, UNIT + 1);
 
 		<Pallet<T>>::stake(
 			RawOrigin::Signed(a.clone()).into(),
@@ -179,7 +175,7 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
 
 		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, UNIT + 1);
+		<T as dp_deposit::Config>::Ring::make_free_balance_be(&a, UNIT + 1);
 
 		<Pallet<T>>::stake(
 			RawOrigin::Signed(a.clone()).into(),

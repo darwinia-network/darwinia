@@ -2,7 +2,7 @@
 authors.workspace = true
 description       = "Staking precompile for EVM pallet."
 edition.workspace = true
-name              = "darwinia-precompile-staking"
+name              = "dpc-staking"
 readme            = "README.md"
 version.workspace = true
 
@@ -12,7 +12,7 @@ fp-evm     = { workspace = true }
 pallet-evm = { workspace = true }
 
 # darwinia
-darwinia-staking = { workspace = true }
+dp-staking = { workspace = true }
 
 # moonbeam
 precompile-utils = { workspace = true }
@@ -30,7 +30,7 @@ codec      = { workspace = true, package = "parity-scale-codec", features = ["st
 scale-info = { workspace = true, features = ["std"] }
 
 # darwinia
-darwinia-deposit = { workspace = true, features = ["std"] }
+dp-deposit = { workspace = true, features = ["std"] }
 
 # moonbeam
 precompile-utils = { workspace = true, features = ["std", "testing"] }
@@ -49,7 +49,7 @@ std = [
 	"pallet-evm/std",
 
 	# darwinia
-	"darwinia-staking/std",
+	"dp-staking/std",
 
 	# moonbeam
 	"precompile-utils/std",
@@ -64,7 +64,7 @@ std = [
 
 runtime-benchmarks = [
 	# darwinia
-	"darwinia-staking/runtime-benchmarks",
+	"dp-staking/runtime-benchmarks",
 	"frame-support/runtime-benchmarks",
 	"pallet-evm/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",

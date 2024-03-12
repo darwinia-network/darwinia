@@ -20,7 +20,7 @@
 use crate::*;
 
 pub enum KtonMinting {}
-impl darwinia_deposit::SimpleAsset for KtonMinting {
+impl dp_deposit::SimpleAsset for KtonMinting {
 	type AccountId = AccountId;
 
 	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
@@ -43,11 +43,11 @@ impl darwinia_deposit::SimpleAsset for KtonMinting {
 	}
 }
 
-impl darwinia_deposit::Config for Runtime {
+impl dp_deposit::Config for Runtime {
 	type Kton = KtonMinting;
 	type MaxDeposits = ConstU32<512>;
 	type MinLockingAmount = ConstU128<UNIT>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = weights::darwinia_deposit::WeightInfo<Self>;
+	type WeightInfo = weights::dp_deposit::WeightInfo<Self>;
 }

@@ -33,10 +33,10 @@ cumulus-primitives-parachain-inherent = { workspace = true, features = ["std"] }
 cumulus-relay-chain-interface         = { workspace = true }
 
 # darwinia
-crab-runtime     = { workspace = true, optional = true }
-darwinia-runtime = { workspace = true, optional = true }
-dc-primitives    = { workspace = true, features = ["std"] }
-pangolin-runtime = { workspace = true, optional = true }
+dc-primitives = { workspace = true, features = ["std"] }
+dr-crab       = { workspace = true, optional = true }
+dr-darwinia   = { workspace = true, optional = true }
+dr-pangolin   = { workspace = true, optional = true }
 
 # frontier
 fc-api          = { workspace = true }
@@ -103,16 +103,16 @@ default = [
 
 fast-runtime = [
 	# darwinia
-	"crab-runtime?/fast-runtime",
-	"darwinia-runtime?/fast-runtime",
-	"pangolin-runtime?/fast-runtime",
+	"dr-crab?/fast-runtime",
+	"dr-darwinia?/fast-runtime",
+	"dr-pangolin?/fast-runtime",
 ]
 
 evm-tracing = [
 	# darwinia
-	"crab-runtime?/evm-tracing",
-	"darwinia-runtime?/evm-tracing",
-	"pangolin-runtime?/evm-tracing",
+	"dr-crab?/evm-tracing",
+	"dr-darwinia?/evm-tracing",
+	"dr-pangolin?/evm-tracing",
 
 	# moonbeam
 	"moonbeam-primitives-ext",
@@ -120,9 +120,9 @@ evm-tracing = [
 
 runtime-benchmarks = [
 	# darwinia
-	"crab-runtime?/runtime-benchmarks",
-	"darwinia-runtime?/runtime-benchmarks",
-	"pangolin-runtime?/runtime-benchmarks",
+	"dr-crab?/runtime-benchmarks",
+	"dr-darwinia?/runtime-benchmarks",
+	"dr-pangolin?/runtime-benchmarks",
 
 	# polkadot
 	"polkadot-cli/runtime-benchmarks",
@@ -137,9 +137,9 @@ runtime-benchmarks = [
 
 try-runtime = [
 	# darwinia
-	"crab-runtime?/try-runtime",
-	"darwinia-runtime?/try-runtime",
-	"pangolin-runtime?/try-runtime",
+	"dr-crab?/try-runtime",
+	"dr-darwinia?/try-runtime",
+	"dr-pangolin?/try-runtime",
 
 	# polkadot
 	"polkadot-cli/try-runtime",
@@ -156,21 +156,21 @@ all-natives = [
 ]
 crab-native = [
 	# darwinia
-	"crab-runtime",
+	"dr-crab",
 
 	# polkadot
 	"polkadot-cli/kusama-native",
 ]
 darwinia-native = [
 	# darwinia
-	"darwinia-runtime",
+	"dr-darwinia",
 
 	# polkadot
 	"polkadot-cli/polkadot-native",
 ]
 pangolin-native = [
 	# darwinia
-	"pangolin-runtime",
+	"dr-pangolin",
 
 	# polkadot
 	"polkadot-cli/rococo-native",

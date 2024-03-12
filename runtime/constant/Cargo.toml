@@ -1,0 +1,32 @@
+[package]
+authors.workspace = true
+description       = "Darwinia runtime constant collection."
+edition.workspace = true
+name              = "dr-constant"
+readme            = "README.md"
+version.workspace = true
+
+[dependencies]
+# darwinia
+dc-primitives = { workspace = true }
+
+# frontier
+fp-account = { workspace = true }
+
+# substrate
+frame-support = { workspace = true }
+sp-std        = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+	# darwinia
+	"dc-primitives/std",
+
+	# frontier
+	"fp-account/std",
+
+	# substrate
+	"frame-support/std",
+	"sp-std/std",
+]

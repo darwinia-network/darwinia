@@ -20,8 +20,6 @@ pub use frame_support::traits::{EitherOf, EitherOfDiverse};
 
 // darwinia
 use dc_primitives::AccountId;
-// frontier
-use fp_account::AccountId20;
 // substrate
 use frame_system::EnsureRoot;
 use pallet_collective::{EnsureProportionAtLeast, EnsureProportionMoreThan};
@@ -47,7 +45,3 @@ pub type AtLeastFourFifth<T> = EnsureProportionAtLeast<AccountId, T, 4, 5>;
 
 pub type RootOrAll<T> = RootOrDiverse<All<T>>;
 pub type All<T> = EnsureProportionAtLeast<AccountId, T, 1, 1>;
-
-/// An [`AccountId20`] generated from b"root".
-pub const ROOT: AccountId20 =
-	AccountId20([0x72, 0x6f, 0x6f, 0x74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);

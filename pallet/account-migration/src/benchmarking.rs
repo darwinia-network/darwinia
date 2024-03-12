@@ -109,7 +109,7 @@ mod benchmarks {
 					expired_time: Default::default(),
 					in_use: Default::default(),
 				};
-				<T as darwinia_deposit::Config>::MaxDeposits::get() as usize
+				<T as dp_deposit::Config>::MaxDeposits::get() as usize
 			],
 		);
 		<Ledgers<T>>::insert(
@@ -119,7 +119,7 @@ mod benchmarks {
 				staked_kton: 1,
 				staked_deposits: BoundedVec::truncate_from(vec![
 					Default::default();
-					<T as darwinia_deposit::Config>::MaxDeposits::get()
+					<T as dp_deposit::Config>::MaxDeposits::get()
 						as usize
 				]),
 				unstaking_ring: BoundedVec::truncate_from(vec![
@@ -127,7 +127,7 @@ mod benchmarks {
 						Default::default(),
 						Default::default()
 					);
-					<T as darwinia_staking::Config>::MaxUnstakings::get()
+					<T as dp_staking::Config>::MaxUnstakings::get()
 						as usize
 				]),
 				unstaking_kton: BoundedVec::truncate_from(vec![
@@ -135,7 +135,7 @@ mod benchmarks {
 						Default::default(),
 						Default::default()
 					);
-					<T as darwinia_staking::Config>::MaxUnstakings::get()
+					<T as dp_staking::Config>::MaxUnstakings::get()
 						as usize
 				]),
 				unstaking_deposits: Default::default(),

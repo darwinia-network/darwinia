@@ -39,11 +39,11 @@ impl NativeExecutionDispatch for DarwiniaRuntimeExecutor {
 	type ExtendHostFunctions = HostFunctions;
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-		darwinia_runtime::api::dispatch(method, data)
+		dr_darwinia::api::dispatch(method, data)
 	}
 
 	fn native_version() -> NativeVersion {
-		darwinia_runtime::native_version()
+		dr_darwinia::native_version()
 	}
 }
 
@@ -55,11 +55,11 @@ impl NativeExecutionDispatch for CrabRuntimeExecutor {
 	type ExtendHostFunctions = HostFunctions;
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-		crab_runtime::api::dispatch(method, data)
+		dr_crab::api::dispatch(method, data)
 	}
 
 	fn native_version() -> NativeVersion {
-		crab_runtime::native_version()
+		dr_crab::native_version()
 	}
 }
 
@@ -71,10 +71,10 @@ impl NativeExecutionDispatch for PangolinRuntimeExecutor {
 	type ExtendHostFunctions = HostFunctions;
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-		pangolin_runtime::api::dispatch(method, data)
+		dr_pangolin::api::dispatch(method, data)
 	}
 
 	fn native_version() -> NativeVersion {
-		pangolin_runtime::native_version()
+		dr_pangolin::native_version()
 	}
 }

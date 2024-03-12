@@ -21,7 +21,7 @@ use crate::{
 	mock::{Deposit, *},
 	Deposit as DepositS, *,
 };
-use darwinia_staking_traits::Stake;
+use dp_staking_traits::Stake;
 // substrate
 use frame_support::{assert_noop, assert_ok};
 use sp_runtime::TokenError;
@@ -30,11 +30,11 @@ use sp_runtime::TokenError;
 fn lock_should_work() {
 	new_test_ext().execute_with(|| {
 		assert_eq!(System::account(1).consumers, 0);
-		assert_eq!(Balances::free_balance(darwinia_deposit::account_id::<u32>()), 0);
+		assert_eq!(Balances::free_balance(dp_deposit::account_id::<u32>()), 0);
 		assert_eq!(Balances::free_balance(1), 1_000 * UNIT);
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 10 * UNIT, 1));
 		assert_eq!(System::account(1).consumers, 1);
-		assert_eq!(Balances::free_balance(darwinia_deposit::account_id::<u32>()), 10 * UNIT);
+		assert_eq!(Balances::free_balance(dp_deposit::account_id::<u32>()), 10 * UNIT);
 		assert_eq!(Balances::free_balance(1), 990 * UNIT);
 	});
 }
