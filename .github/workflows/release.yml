@@ -277,7 +277,7 @@ jobs:
       #     ls -la deploy/
       #     cat build/*.md
       - name: Publish
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           body_path: "node.md"
           files: |
