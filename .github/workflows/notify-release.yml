@@ -1,4 +1,4 @@
-name: Runtime override
+name: Notify release
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
           curl -XPOST \
             -H "Authorization:Bearer ${{ secrets.GH_TKN_DARWINIA }}" \
             -H "Accept:application/vnd.github+json" \
-            "https://api.github.com/repos/darwinia-network/wasm-runtime-overrides/dispatches" \
+            "https://api.github.com/repos/darwinia-network/darwinia-releases/dispatches" \
             -d '{"event_type":"create","client_payload":{"network":"mainnet","tag":"'"${TAG}"'"}}'
 
   notify-testnet:
@@ -32,5 +32,5 @@ jobs:
           curl -XPOST \
             -H "Authorization:Bearer ${{ secrets.GH_TKN_DARWINIA }}" \
             -H "Accept:application/vnd.github+json" \
-            "https://api.github.com/repos/darwinia-network/wasm-runtime-overrides/dispatches" \
+            "https://api.github.com/repos/darwinia-network/darwinia-releases/dispatches" \
             -d '{"event_type":"create","client_payload":{"network":"testnet","tag":"'"${TAG}"'"}}'
