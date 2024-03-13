@@ -18,9 +18,11 @@
 
 // darwinia
 use crate::{mock::*, ForwardEthOrigin, ForwardRequest, TxType};
+// crates.io
+use ethereum::TransactionSignature;
 // substrate
 use frame_support::{assert_err, assert_ok, traits::Currency};
-use sp_core::U256;
+use sp_core::{H256, U256};
 use sp_runtime::{DispatchError, ModuleError};
 
 // This ERC-20 contract mints the maximum amount of tokens to the contract creator.
@@ -109,7 +111,7 @@ fn forward_legacy_request_sufficient_balance() {
 
 #[test]
 fn mock_signature_valid() {
-	assert(
+	assert!(
 		// copied from:
 		// https://github.com/rust-ethereum/ethereum/blob/24739cc8ba6e9d8ee30ada8ec92161e4c48d578e/src/transaction.rs#L798
 		TransactionSignature::new(
