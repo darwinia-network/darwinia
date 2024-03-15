@@ -22,13 +22,14 @@
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
-mod tests;
+mod test;
 
-// core
-use core::borrow::BorrowMut;
 // crates.io
 use codec::{Decode, Encode, MaxEncodedLen};
-use ethereum::TransactionV2 as Transaction;
+use ethereum::{
+	EIP1559Transaction, EIP2930Transaction, LegacyTransaction, TransactionAction,
+	TransactionSignature, TransactionV2 as Transaction,
+};
 use frame_support::sp_runtime::traits::UniqueSaturatedInto;
 use scale_info::TypeInfo;
 // frontier
@@ -37,9 +38,9 @@ use fp_evm::{CheckEvmTransaction, CheckEvmTransactionConfig, TransactionValidati
 use pallet_evm::{FeeCalculator, GasWeightMapping};
 // substrate
 use frame_support::{traits::EnsureOrigin, PalletError};
-use sp_core::{H160, U256};
-use sp_runtime::{traits::BadOrigin, RuntimeDebug};
-use sp_std::boxed::Box;
+use sp_core::{Get, H160, H256, U256};
+use sp_runtime::{traits::BadOrigin, DispatchError, RuntimeDebug};
+use sp_std::vec::Vec;
 
 pub use pallet::*;
 
@@ -102,8 +103,8 @@ pub mod pallet {
 
 	#[pallet::error]
 	pub enum Error<T> {
-		/// EVM validation errors.
-		MessageTransactError(EvmTxErrorWrapper),
+		/// Transaction validation errors.
+		ValidationError(TxErrorWrapper),
 	}
 
 	#[pallet::call]
@@ -114,65 +115,16 @@ pub mod pallet {
 		//This call can only be used at runtime and is not available to EOA users.
 		#[pallet::call_index(0)]
 		#[pallet::weight({
-			<T as pallet_evm::Config>::GasWeightMapping::gas_to_weight({
-				let transaction_data: TransactionData = (&**transaction).into();
-				transaction_data.gas_limit.unique_saturated_into()
-			}, true)
+			<T as pallet_evm::Config>::GasWeightMapping::gas_to_weight(request.gas_limit.unique_saturated_into(), true)
 		})]
 		pub fn forward_transact(
 			origin: OriginFor<T>,
-			mut transaction: Box<Transaction>,
+			request: ForwardRequest,
 		) -> DispatchResultWithPostInfo {
 			let source = ensure_forward_transact(origin)?;
-			let (who, _) = pallet_evm::Pallet::<T>::account_basic(&source);
-			let base_fee = T::FeeCalculator::min_gas_price().0;
 
-			let transaction_mut = transaction.borrow_mut();
-			match transaction_mut {
-				Transaction::Legacy(tx) => {
-					tx.nonce = who.nonce;
-					tx.gas_price = base_fee;
-				},
-				Transaction::EIP2930(tx) => {
-					tx.nonce = who.nonce;
-					tx.gas_price = base_fee;
-				},
-				Transaction::EIP1559(tx) => {
-					tx.nonce = who.nonce;
-					tx.max_fee_per_gas = base_fee;
-					tx.max_priority_fee_per_gas = U256::zero();
-				},
-			};
-
-			let transaction_data: TransactionData = (&*transaction).into();
-			let (weight_limit, proof_size_base_cost) =
-				match <T as pallet_evm::Config>::GasWeightMapping::gas_to_weight(
-					transaction_data.gas_limit.unique_saturated_into(),
-					true,
-				) {
-					weight_limit if weight_limit.proof_size() > 0 =>
-						(Some(weight_limit), Some(proof_size_base_cost(&transaction))),
-					_ => (None, None),
-				};
-
-			let _ = CheckEvmTransaction::<EvmTxErrorWrapper>::new(
-				CheckEvmTransactionConfig {
-					evm_config: T::config(),
-					block_gas_limit: T::BlockGasLimit::get(),
-					base_fee,
-					chain_id: T::ChainId::get(),
-					is_transactional: true,
-				},
-				transaction_data.into(),
-				weight_limit,
-				proof_size_base_cost,
-			)
-			.validate_in_block_for(&who)
-			.and_then(|v| v.with_base_fee())
-			.and_then(|v| v.with_balance_for(&who))
-			.map_err(|e| <Error<T>>::MessageTransactError(e))?;
-
-			T::ValidatedTransaction::apply(source, *transaction).map(|(post_info, _)| post_info)
+			let transaction = Self::validated_transaction(source, request)?;
+			T::ValidatedTransaction::apply(source, transaction).map(|(post_info, _)| post_info)
 		}
 	}
 }
@@ -183,17 +135,131 @@ impl<T: Config> Pallet<T> {
 	/// The gas_price of an EVM transaction is always the min_gas_price(), which is a fixed value.
 	/// Therefore, only the gas_limit and value of the transaction should be considered in the
 	/// calculation of the fee, and the gas_price of the transaction itself can be ignored.
-	pub fn total_payment(tx_data: TransactionData) -> U256 {
+	pub fn total_payment(request: &ForwardRequest) -> U256 {
 		let base_fee = <T as pallet_evm::Config>::FeeCalculator::min_gas_price().0;
-		let fee = base_fee.saturating_mul(tx_data.gas_limit);
+		let fee = base_fee.saturating_mul(request.gas_limit);
 
-		tx_data.value.saturating_add(fee)
+		request.value.saturating_add(fee)
+	}
+
+	fn validated_transaction(
+		source: H160,
+		req: ForwardRequest,
+	) -> Result<Transaction, DispatchError> {
+		let (who, _) = pallet_evm::Pallet::<T>::account_basic(&source);
+		let base_fee = T::FeeCalculator::min_gas_price().0;
+
+		let transaction = match req.tx_type {
+			TxType::LegacyTransaction => Transaction::Legacy(LegacyTransaction {
+				nonce: who.nonce,
+				gas_price: base_fee,
+				gas_limit: req.gas_limit,
+				action: req.action,
+				value: req.value,
+				input: req.input,
+				// copied from:
+				// https://github.com/rust-ethereum/ethereum/blob/24739cc8ba6e9d8ee30ada8ec92161e4c48d578e/src/transaction.rs#L798
+				signature: TransactionSignature::new(
+					38,
+					H256([
+						190, 103, 224, 160, 125, 182, 125, 168, 212, 70, 247, 106, 221, 89, 14, 84,
+						182, 233, 44, 182, 184, 249, 131, 90, 235, 103, 84, 5, 121, 162, 119, 23,
+					]),
+					H256([
+						45, 105, 5, 22, 81, 32, 32, 23, 28, 30, 200, 112, 246, 255, 69, 57, 140,
+						200, 96, 146, 80, 50, 107, 232, 153, 21, 251, 83, 142, 123, 215, 24,
+					]),
+				)
+				.expect("This signature is always valid"),
+			}),
+			TxType::EIP2930Transaction => {
+				Transaction::EIP2930(EIP2930Transaction {
+					chain_id: 0,
+					nonce: who.nonce,
+					gas_price: base_fee,
+					gas_limit: req.gas_limit,
+					action: req.action,
+					value: req.value,
+					input: req.input,
+					access_list: Default::default(),
+					// copied from:
+					// https://github.com/rust-ethereum/ethereum/blob/24739cc8ba6e9d8ee30ada8ec92161e4c48d578e/src/transaction.rs#L873-L875
+					odd_y_parity: false,
+					// 36b241b061a36a32ab7fe86c7aa9eb592dd59018cd0443adc0903590c16b02b0
+					r: H256([
+						54, 178, 65, 176, 97, 163, 106, 50, 171, 127, 232, 108, 122, 169, 235, 89,
+						45, 213, 144, 24, 205, 4, 67, 173, 192, 144, 53, 144, 193, 107, 2, 176,
+					]),
+					// 5edcc541b4741c5cc6dd347c5ed9577ef293a62787b4510465fadbfe39ee4094
+					s: H256([
+						54, 178, 65, 176, 97, 163, 106, 50, 171, 127, 232, 108, 122, 169, 235, 89,
+						45, 213, 144, 24, 205, 4, 67, 173, 192, 144, 53, 144, 193, 107, 2, 176,
+					]),
+				})
+			},
+			TxType::EIP1559Transaction => {
+				Transaction::EIP1559(EIP1559Transaction {
+					chain_id: 0,
+					nonce: who.nonce,
+					max_fee_per_gas: base_fee,
+					max_priority_fee_per_gas: U256::zero(),
+					gas_limit: req.gas_limit,
+					action: req.action,
+					value: req.value,
+					input: req.input,
+					access_list: Default::default(),
+					// copied from:
+					// https://github.com/rust-ethereum/ethereum/blob/24739cc8ba6e9d8ee30ada8ec92161e4c48d578e/src/transaction.rs#L873-L875
+					odd_y_parity: false,
+					// 36b241b061a36a32ab7fe86c7aa9eb592dd59018cd0443adc0903590c16b02b0
+					r: H256([
+						54, 178, 65, 176, 97, 163, 106, 50, 171, 127, 232, 108, 122, 169, 235, 89,
+						45, 213, 144, 24, 205, 4, 67, 173, 192, 144, 53, 144, 193, 107, 2, 176,
+					]),
+					// 5edcc541b4741c5cc6dd347c5ed9577ef293a62787b4510465fadbfe39ee4094
+					s: H256([
+						54, 178, 65, 176, 97, 163, 106, 50, 171, 127, 232, 108, 122, 169, 235, 89,
+						45, 213, 144, 24, 205, 4, 67, 173, 192, 144, 53, 144, 193, 107, 2, 176,
+					]),
+				})
+			},
+		};
+
+		let transaction_data: TransactionData = (&transaction).into();
+		let (weight_limit, proof_size_base_cost) =
+			match <T as pallet_evm::Config>::GasWeightMapping::gas_to_weight(
+				transaction_data.gas_limit.unique_saturated_into(),
+				true,
+			) {
+				weight_limit if weight_limit.proof_size() > 0 =>
+					(Some(weight_limit), Some(proof_size_base_cost(&transaction))),
+				_ => (None, None),
+			};
+
+		let _ = CheckEvmTransaction::<TxErrorWrapper>::new(
+			CheckEvmTransactionConfig {
+				evm_config: T::config(),
+				block_gas_limit: T::BlockGasLimit::get(),
+				base_fee,
+				chain_id: T::ChainId::get(),
+				is_transactional: true,
+			},
+			transaction_data.into(),
+			weight_limit,
+			proof_size_base_cost,
+		)
+		.validate_in_block_for(&who)
+		.and_then(|v| v.with_base_fee())
+		.and_then(|v| v.with_balance_for(&who))
+		.map_err(|e| <Error<T>>::ValidationError(e))?;
+
+		Ok(transaction)
 	}
 }
 
 // TODO: replace it with upstream error type
 #[derive(Encode, Decode, TypeInfo, PalletError)]
-pub enum EvmTxErrorWrapper {
+pub enum TxErrorWrapper {
 	GasLimitTooLow,
 	GasLimitTooHigh,
 	GasPriceTooLow,
@@ -207,20 +273,20 @@ pub enum EvmTxErrorWrapper {
 	UnknownError,
 }
 
-impl From<TransactionValidationError> for EvmTxErrorWrapper {
+impl From<TransactionValidationError> for TxErrorWrapper {
 	fn from(validation_error: TransactionValidationError) -> Self {
 		match validation_error {
-			TransactionValidationError::GasLimitTooLow => EvmTxErrorWrapper::GasLimitTooLow,
-			TransactionValidationError::GasLimitTooHigh => EvmTxErrorWrapper::GasLimitTooHigh,
-			TransactionValidationError::GasPriceTooLow => EvmTxErrorWrapper::GasPriceTooLow,
-			TransactionValidationError::PriorityFeeTooHigh => EvmTxErrorWrapper::PriorityFeeTooHigh,
-			TransactionValidationError::BalanceTooLow => EvmTxErrorWrapper::BalanceTooLow,
-			TransactionValidationError::TxNonceTooLow => EvmTxErrorWrapper::TxNonceTooLow,
-			TransactionValidationError::TxNonceTooHigh => EvmTxErrorWrapper::TxNonceTooHigh,
-			TransactionValidationError::InvalidFeeInput => EvmTxErrorWrapper::InvalidFeeInput,
-			TransactionValidationError::InvalidChainId => EvmTxErrorWrapper::InvalidChainId,
-			TransactionValidationError::InvalidSignature => EvmTxErrorWrapper::InvalidSignature,
-			TransactionValidationError::UnknownError => EvmTxErrorWrapper::UnknownError,
+			TransactionValidationError::GasLimitTooLow => TxErrorWrapper::GasLimitTooLow,
+			TransactionValidationError::GasLimitTooHigh => TxErrorWrapper::GasLimitTooHigh,
+			TransactionValidationError::GasPriceTooLow => TxErrorWrapper::GasPriceTooLow,
+			TransactionValidationError::PriorityFeeTooHigh => TxErrorWrapper::PriorityFeeTooHigh,
+			TransactionValidationError::BalanceTooLow => TxErrorWrapper::BalanceTooLow,
+			TransactionValidationError::TxNonceTooLow => TxErrorWrapper::TxNonceTooLow,
+			TransactionValidationError::TxNonceTooHigh => TxErrorWrapper::TxNonceTooHigh,
+			TransactionValidationError::InvalidFeeInput => TxErrorWrapper::InvalidFeeInput,
+			TransactionValidationError::InvalidChainId => TxErrorWrapper::InvalidChainId,
+			TransactionValidationError::InvalidSignature => TxErrorWrapper::InvalidSignature,
+			TransactionValidationError::UnknownError => TxErrorWrapper::UnknownError,
 		}
 	}
 }
@@ -234,4 +300,21 @@ fn proof_size_base_cost(transaction: &Transaction) -> u64 {
 		.saturating_add(1)
 		// call index
 		.saturating_add(1) as u64
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Encode, Decode, TypeInfo)]
+pub struct ForwardRequest {
+	pub tx_type: TxType,
+	pub gas_limit: U256,
+	pub action: TransactionAction,
+	pub value: U256,
+	pub input: Vec<u8>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Encode, Decode, TypeInfo, Default)]
+pub enum TxType {
+	#[default]
+	LegacyTransaction,
+	EIP2930Transaction,
+	EIP1559Transaction,
 }

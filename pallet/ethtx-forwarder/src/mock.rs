@@ -87,7 +87,7 @@ impl pallet_timestamp::Config for Runtime {
 
 frame_support::parameter_types! {
 	pub const TransactionByteFee: u64 = 1;
-	pub const ChainId: u64 = 42;
+	pub const ChainId: u64 = 888;
 	pub const BlockGasLimit: sp_core::U256 = sp_core::U256::MAX;
 	pub const WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(20_000, 0);
 }
@@ -208,7 +208,6 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 
 pub(crate) struct AccountInfo {
 	pub address: sp_core::H160,
-	pub private_key: sp_core::H256,
 }
 
 pub(crate) fn address_build(seed: u8) -> AccountInfo {
@@ -221,7 +220,7 @@ pub(crate) fn address_build(seed: u8) -> AccountInfo {
 		s
 	};
 
-	AccountInfo { private_key: raw_private_key.into(), address: raw_address.into() }
+	AccountInfo { address: raw_address.into() }
 }
 
 #[derive(Default)]

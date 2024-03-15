@@ -52,18 +52,16 @@ use core::mem;
 // crates.io
 use codec::FullCodec;
 use ethabi::{Function, Param, ParamType, StateMutability, Token};
-use ethereum::{
-	LegacyTransaction, TransactionAction, TransactionSignature, TransactionV2 as Transaction,
-};
+use ethereum::TransactionAction;
 // darwinia
-use darwinia_ethtx_forwarder::ForwardEthOrigin;
+use darwinia_ethtx_forwarder::{ForwardEthOrigin, ForwardRequest, TxType};
 use dc_types::{Balance, Moment};
 // substrate
 use frame_support::{
 	pallet_prelude::*, traits::Currency, DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound,
 };
 use frame_system::{pallet_prelude::*, RawOrigin};
-use sp_core::{H160, H256, U256};
+use sp_core::{H160, U256};
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, One, Zero},
 	Perbill, Perquintill,
@@ -1283,13 +1281,6 @@ where
 	<T as frame_system::Config>::AccountId: Into<H160>,
 {
 	fn notify(amount: Balance) {
-		let Some(signature) = mock_sig() else {
-			log::error!(
-				"[pallet::staking] Invalid mock signature for the staking notify transaction."
-			);
-
-			return;
-		};
 		// KTONStakingRewards
 		// 0x000000000419683a1a03AbC21FC9da25fd2B4dD7
 		let staking_reward =
@@ -1317,17 +1308,14 @@ where
 			state_mutability: StateMutability::Payable,
 		};
 
-		let notify_transaction = LegacyTransaction {
-			nonce: U256::zero(),     // Will be reset in the message transact call
-			gas_price: U256::zero(), // Will be reset in the message transact call
-			gas_limit: U256::from(1_000_000), /* It should be big enough for the evm
-			                          * transaction, otherwise it will out of gas. */
+		let request = ForwardRequest {
+			tx_type: TxType::LegacyTransaction,
 			action: TransactionAction::Call(reward_distr),
 			value: U256::zero(),
 			input: function
 				.encode_input(&[Token::Address(staking_reward), Token::Uint(amount.into())])
 				.unwrap_or_default(),
-			signature,
+			gas_limit: U256::from(1_000_000),
 		};
 		// Treasury account.
 		let sender = H160([
@@ -1336,26 +1324,9 @@ where
 
 		if let Err(e) = <darwinia_ethtx_forwarder::Pallet<T>>::forward_transact(
 			ForwardEthOrigin::ForwardEth(sender).into(),
-			Box::new(Transaction::Legacy(notify_transaction)),
+			request,
 		) {
 			log::error!("[pallet::staking] failed to notify KTON staker contract due to {e:?}");
 		}
 	}
-}
-/// Mock a valid signature, copied from:
-/// https://github.com/rust-ethereum/ethereum/blob/master/src/transaction/mod.rs#L230
-pub fn mock_sig() -> Option<TransactionSignature> {
-	TransactionSignature::new(
-		38,
-		// be67e0a07db67da8d446f76add590e54b6e92cb6b8f9835aeb67540579a27717
-		H256([
-			190, 103, 224, 160, 125, 182, 125, 168, 212, 70, 247, 106, 221, 89, 14, 84, 182, 233,
-			44, 182, 184, 249, 131, 90, 235, 103, 84, 5, 121, 162, 119, 23,
-		]),
-		// 2d690516512020171c1ec870f6ff45398cc8609250326be89915fb538e7bd718
-		H256([
-			45, 105, 5, 22, 81, 32, 32, 23, 28, 30, 200, 112, 246, 255, 69, 57, 140, 200, 96, 146,
-			80, 50, 107, 232, 153, 21, 251, 83, 142, 123, 215, 24,
-		]),
-	)
 }
