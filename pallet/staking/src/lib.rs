@@ -373,12 +373,6 @@ pub mod pallet {
 	pub struct Pallet<T>(_);
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-		fn on_runtime_upgrade() -> Weight {
-			<MigrationStartBlock<T>>::put(<frame_system::Pallet<T>>::block_number());
-
-			T::DbWeight::get().reads_writes(0, 1)
-		}
-
 		fn on_initialize(_: BlockNumberFor<T>) -> Weight {
 			// There are already plenty of tasks to handle during the new session,
 			// so refrain from assigning any additional ones here.

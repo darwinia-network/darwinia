@@ -41,46 +41,6 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	let mut w = 0;
-
-	w += migration_helper::PalletCleaner {
-		name: b"BridgeMoonbaseGrandpa",
-		values: &[
-			b"RequestCount",
-			b"InitialHash",
-			b"BestFinalized",
-			b"ImportedHashesPointer",
-			b"CurrentAuthoritySet",
-			b"PalletOwner",
-			b"PalletOperatingMode",
-		],
-		maps: &[b"ImportedHashes", b"ImportedHeaders"],
-	}
-	.remove_all();
-	w += migration_helper::PalletCleaner {
-		name: b"BridgeMoonbaseParachain",
-		values: &[b"PalletOwner", b"PalletOperatingMode"],
-		maps: &[b"ParasInfo", b"ImportedParaHeads", b"ImportedParaHashes"],
-	}
-	.remove_all();
-	w += migration_helper::PalletCleaner {
-		name: b"BridgePangoroMessages",
-		values: &[b"PalletOwner", b"PalletOperatingMode"],
-		maps: &[b"InboundLanes", b"OutboundLanes", b"OutboundMessages"],
-	}
-	.remove_all();
-	w += migration_helper::PalletCleaner {
-		name: b"PangoroFeeMarket",
-		values: &[
-			b"Relayers",
-			b"AssignedRelayers",
-			b"CollateralSlashProtect",
-			b"AssignedRelayersNumber",
-		],
-		maps: &[b"Orders", b"RelayersMap"],
-	}
-	.remove_all();
-
-	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, w as _)
+	frame_support::weights::Weight::zero()
+	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, w as _)
 }
