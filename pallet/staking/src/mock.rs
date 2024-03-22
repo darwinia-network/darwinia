@@ -305,7 +305,7 @@ impl darwinia_staking::IssuingManager<Runtime> for OnDarwiniaSessionEnd {
 	}
 
 	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		let _ = Balances::deposit_into_existing(who, amount);
+		let _ = Balances::deposit_creating(who, amount);
 
 		Ok(())
 	}
