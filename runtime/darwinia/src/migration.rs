@@ -41,7 +41,7 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	migration::clear_storage_prefix(
+	let _ = migration::clear_storage_prefix(
 		b"BridgeKusamaGrandpa",
 		b"ImportedHeaders",
 		&[],
