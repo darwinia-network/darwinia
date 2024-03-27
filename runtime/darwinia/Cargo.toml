@@ -38,9 +38,7 @@ darwinia-account-migration        = { workspace = true }
 darwinia-asset-limit              = { workspace = true }
 darwinia-common-runtime           = { workspace = true }
 darwinia-deposit                  = { workspace = true }
-darwinia-ecdsa-authority          = { workspace = true }
 darwinia-ethtx-forwarder          = { workspace = true }
-darwinia-message-gadget           = { workspace = true }
 darwinia-precompile-assets        = { workspace = true }
 darwinia-precompile-bls12-381     = { workspace = true }
 darwinia-precompile-deposit       = { workspace = true }
@@ -162,9 +160,7 @@ std = [
 	"darwinia-asset-limit/std",
 	"darwinia-common-runtime/std",
 	"darwinia-deposit/std",
-	"darwinia-ecdsa-authority/std",
 	"darwinia-ethtx-forwarder/std",
-	"darwinia-message-gadget/std",
 	"darwinia-precompile-assets/std",
 	"darwinia-precompile-bls12-381/std",
 	"darwinia-precompile-deposit/std",
@@ -288,7 +284,6 @@ runtime-benchmarks = [
 	"darwinia-account-migration/runtime-benchmarks",
 	"darwinia-common-runtime/runtime-benchmarks",
 	"darwinia-deposit/runtime-benchmarks",
-	"darwinia-ecdsa-authority/runtime-benchmarks",
 	"darwinia-ethtx-forwarder/runtime-benchmarks",
 	"darwinia-precompile-assets/runtime-benchmarks",
 	"darwinia-precompile-staking/runtime-benchmarks",
@@ -352,9 +347,7 @@ try-runtime = [
 	"darwinia-account-migration/try-runtime",
 	"darwinia-asset-limit/try-runtime",
 	"darwinia-deposit/try-runtime",
-	"darwinia-ecdsa-authority/try-runtime",
 	"darwinia-ethtx-forwarder/try-runtime",
-	"darwinia-message-gadget/try-runtime",
 	"darwinia-staking/try-runtime",
 
 	# frontier

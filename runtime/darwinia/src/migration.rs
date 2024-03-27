@@ -41,6 +41,23 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
+	let mut w = 101;
+	let _ =
+		migration::clear_storage_prefix(b"MessageGadget", b"CommitmentContract", &[], None, None);
+
+	w += migration_helper::PalletCleaner {
+		name: b"EcdsaAuthority",
+		values: &[
+			b"Authorities",
+			b"NextAuthorities",
+			b"Nonce",
+			b"AuthoritiesChangeToSign",
+			b"MessageRootToSign",
+		],
+		maps: &[],
+	}
+	.remove_all();
+
 	let _ = migration::clear_storage_prefix(
 		b"BridgeKusamaGrandpa",
 		b"ImportedHeaders",
@@ -50,5 +67,5 @@ fn migrate() -> frame_support::weights::Weight {
 	);
 
 	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 100)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, w as _)
 }
