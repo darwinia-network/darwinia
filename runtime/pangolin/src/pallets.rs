@@ -60,10 +60,6 @@ mod aura;
 
 mod aura_ext;
 
-mod message_gadget;
-
-mod ecdsa_authority;
-
 // Governance stuff.
 mod governance;
 pub use governance::*;

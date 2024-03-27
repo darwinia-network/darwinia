@@ -2825,26 +2825,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-ecdsa-authority"
-version = "6.6.1"
-dependencies = [
- "array-bytes",
- "dc-primitives",
- "ethabi",
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "libsecp256k1",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
- "sp-version",
-]
-
-[[package]]
 name = "darwinia-ethtx-forwarder"
 version = "6.6.1"
 dependencies = [
@@ -2863,25 +2843,6 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sha3",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "darwinia-message-gadget"
-version = "6.6.1"
-dependencies = [
- "array-bytes",
- "frame-support",
- "frame-system",
- "log",
- "pallet-balances",
- "pallet-evm",
- "pallet-timestamp",
- "parity-scale-codec",
- "scale-info",
  "sp-core",
  "sp-io",
  "sp-runtime",
@@ -3004,9 +2965,7 @@ dependencies = [
  "darwinia-asset-limit",
  "darwinia-common-runtime",
  "darwinia-deposit",
- "darwinia-ecdsa-authority",
  "darwinia-ethtx-forwarder",
- "darwinia-message-gadget",
  "darwinia-precompile-assets",
  "darwinia-precompile-bls12-381",
  "darwinia-precompile-deposit",
@@ -8955,9 +8914,7 @@ dependencies = [
  "darwinia-asset-limit",
  "darwinia-common-runtime",
  "darwinia-deposit",
- "darwinia-ecdsa-authority",
  "darwinia-ethtx-forwarder",
- "darwinia-message-gadget",
  "darwinia-precompile-assets",
  "darwinia-precompile-bls12-381",
  "darwinia-precompile-deposit",
