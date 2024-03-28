@@ -112,7 +112,7 @@ jobs:
           sudo mv ${{ env.GOMPLATE }} /usr/bin/gomplate
       - name: Setup wuh
         run: |
-          curl -LO https://github.com/darwinia-network/darwinia-releases/releases/download/v0.1.0/wuh.zst
+          curl -LO https://github.com/darwinia-network/darwinia-release/releases/download/v0.1.0/wuh.zst
           zstd -d wuh.zst
           chmod u+x ./wuh
           sudo mv ./wuh /usr/bin/wuh
