@@ -174,9 +174,9 @@ impl WeightToFeePolynomial for RefTimeToFee {
 	type Balance = Balance;
 
 	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-		// Map base extrinsic weight to 1/100 UNIT.
+		// Map base extrinsic weight to 1/200 UNIT.
 		let p = UNIT;
-		let q = 100 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
+		let q = 200 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
 
 		smallvec::smallvec![WeightToFeeCoefficient {
 			degree: 1,

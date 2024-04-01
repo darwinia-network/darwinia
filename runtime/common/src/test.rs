@@ -698,7 +698,7 @@ macro_rules! impl_fee_tests {
 					assert_eq!(TransactionPayment::next_fee_multiplier(), Multiplier::from(1u128));
 					assert_eq!(
 						TransactionPaymentGasPrice::min_gas_price().0,
-						U256::from(1_507_065_121_289u128)
+						U256::from(753_532_560_644u128)
 					);
 				})
 			}
@@ -713,42 +713,75 @@ macro_rules! impl_fee_tests {
 							System::set_block_consumed_resources(block_weight, 0);
 							TransactionPayment::on_finalize(i as u32);
 						}
-
 						TransactionPaymentGasPrice::min_gas_price().0
 					};
 
-					assert_eq!(sim(Perbill::from_percent(0), 1), U256::from(1507036864082u128),);
-					assert_eq!(sim(Perbill::from_percent(25), 1), U256::from(1507036864082u128),);
-					assert_eq!(sim(Perbill::from_percent(50), 1), U256::from(1507065121289u128),);
-					assert_eq!(sim(Perbill::from_percent(100), 1), U256::from(1507149896086u128),);
+					assert_eq!(sim(Perbill::from_percent(0), 1), U256::from(753_518_432_040u128));
+					assert_eq!(sim(Perbill::from_percent(25), 1), U256::from(753_518_432_040u128));
+					assert_eq!(sim(Perbill::from_percent(50), 1), U256::from(753_532_560_644u128));
+					assert_eq!(sim(Perbill::from_percent(100), 1), U256::from(753_574_948_042u128));
 
 					// 1 "real" hour (at 12-second blocks)
-					assert_eq!(sim(Perbill::from_percent(0), 300), U256::from(1498695976859u128));
-					assert_eq!(sim(Perbill::from_percent(25), 300), U256::from(1498695976859u128),);
-					assert_eq!(sim(Perbill::from_percent(50), 300), U256::from(1507149896086u128),);
-					assert_eq!(sim(Perbill::from_percent(100), 300), U256::from(1532798855001u128),);
+					assert_eq!(sim(Perbill::from_percent(0), 300), U256::from(749_347_988_429u128));
+					assert_eq!(
+						sim(Perbill::from_percent(25), 300),
+						U256::from(749_347_988_429u128)
+					);
+					assert_eq!(
+						sim(Perbill::from_percent(50), 300),
+						U256::from(753_574_948_042u128)
+					);
+					assert_eq!(
+						sim(Perbill::from_percent(100), 300),
+						U256::from(766_399_427_500u128)
+					);
 
 					// 1 "real" day (at 12-second blocks)
-					assert_eq!(sim(Perbill::from_percent(0), 7200), U256::from(1339230749042u128),);
-					assert_eq!(sim(Perbill::from_percent(25), 7200), U256::from(1339230749042u128),);
-					assert_eq!(sim(Perbill::from_percent(50), 7200), U256::from(1532798855001u128));
+					assert_eq!(
+						sim(Perbill::from_percent(0), 7200),
+						U256::from(669_615_374_520u128)
+					);
+					assert_eq!(
+						sim(Perbill::from_percent(25), 7200),
+						U256::from(669_615_374_520u128)
+					);
+					assert_eq!(
+						sim(Perbill::from_percent(50), 7200),
+						U256::from(766_399_427_500u128)
+					);
 					assert_eq!(
 						sim(Perbill::from_percent(100), 7200),
-						U256::from(2298129154896u128),
+						U256::from(1149_064_577_447u128)
 					);
 
 					// 7 "real" day (at 12-second blocks)
-					assert_eq!(sim(Perbill::from_percent(0), 50400), U256::from(893235853851u128),);
-					assert_eq!(sim(Perbill::from_percent(25), 50400), U256::from(893235853851u128),);
+					assert_eq!(
+						sim(Perbill::from_percent(0), 50400),
+						U256::from(446_617_926_925u128)
+					);
+					assert_eq!(
+						sim(Perbill::from_percent(25), 50400),
+						U256::from(446_617_926_925u128)
+					);
 					assert_eq!(
 						sim(Perbill::from_percent(50), 50400),
-						U256::from(2298129154896u128)
+						U256::from(1_149_064_577_447u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(100), 50400),
-						U256::from(39138059391389u128),
+						U256::from(19_569_029_695_681u128)
 					);
-				})
+
+					// 30 "real" day (at 12-second blocks)
+					assert_eq!(
+						sim(Perbill::from_percent(0), 259200),
+						U256::from(151_669_449_464u128)
+					);
+					assert_eq!(
+						sim(Perbill::from_percent(25), 259200),
+						U256::from(151_669_449_464u128)
+					);
+				});
 			}
 		}
 	};
