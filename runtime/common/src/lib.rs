@@ -84,8 +84,9 @@ macro_rules! impl_self_contained_call {
 				len: usize,
 			) -> Option<sp_runtime::transaction_validity::TransactionValidity> {
 				match self {
-					RuntimeCall::Ethereum(call) =>
-						call.validate_self_contained(info, dispatch_info, len),
+					RuntimeCall::Ethereum(call) => {
+						call.validate_self_contained(info, dispatch_info, len)
+					},
 					_ => None,
 				}
 			}
@@ -97,8 +98,9 @@ macro_rules! impl_self_contained_call {
 				len: usize,
 			) -> Option<Result<(), sp_runtime::transaction_validity::TransactionValidityError>> {
 				match self {
-					RuntimeCall::Ethereum(call) =>
-						call.pre_dispatch_self_contained(info, dispatch_info, len),
+					RuntimeCall::Ethereum(call) => {
+						call.pre_dispatch_self_contained(info, dispatch_info, len)
+					},
 					_ => None,
 				}
 			}
@@ -113,10 +115,11 @@ macro_rules! impl_self_contained_call {
 				use sp_runtime::traits::Dispatchable;
 
 				match self {
-					call @ RuntimeCall::Ethereum(pallet_ethereum::Call::transact { .. }) =>
+					call @ RuntimeCall::Ethereum(pallet_ethereum::Call::transact { .. }) => {
 						Some(call.dispatch(RuntimeOrigin::from(
 							pallet_ethereum::RawOrigin::EthereumTransaction(info),
-						))),
+						)))
+					},
 					_ => None,
 				}
 			}
@@ -174,9 +177,9 @@ impl WeightToFeePolynomial for RefTimeToFee {
 	type Balance = Balance;
 
 	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-		// Map base extrinsic weight to 1/100 UNIT.
+		// Map base extrinsic weight to 1/200 UNIT.
 		let p = UNIT;
-		let q = 100 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
+		let q = 200 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
 
 		smallvec::smallvec![WeightToFeeCoefficient {
 			degree: 1,
