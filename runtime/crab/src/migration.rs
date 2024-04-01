@@ -27,11 +27,19 @@ pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::DispatchError> {
+		assert!(Balances::free_balance(ROOT) != 0);
+
 		Ok(Vec::new())
 	}
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
+		assert!(Balances::free_balance(ROOT) == 0);
+
+		<pallet_balances::Locks<Runtime>>::iter_values().for_each(|v| {
+			assert!(!v.is_empty());
+		});
+
 		Ok(())
 	}
 
@@ -41,9 +49,52 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	let mut w = 1;
+	let mut r = 0;
+	let mut w = 4;
 	let _ =
 		migration::clear_storage_prefix(b"MessageGadget", b"CommitmentContract", &[], None, None);
+	let _ = Balances::transfer_all(RuntimeOrigin::signed(ROOT), Treasury::account_id(), true);
+	let lock_ids = [
+		// Democracy lock.
+		*b"democrac",
+		// Fee market lock.
+		*b"da/feecr",
+	];
+
+	<pallet_balances::Locks<Runtime>>::iter().for_each(|(k, mut v)| {
+		if v.is_empty() {
+			// Clear the storage entry if the vector is empty.
+
+			<pallet_balances::Locks<Runtime>>::remove(k);
+
+			w += 1;
+		} else {
+			// Find matching lock ids and remove them.
+
+			let mut changed = false;
+
+			v.retain(|l| {
+				if lock_ids.contains(&l.id) {
+					// Mark as changed, the storage entry needs to be updated.
+					changed = true;
+
+					// To remove.
+					false
+				} else {
+					// To keep.
+					true
+				}
+			});
+
+			if changed {
+				<pallet_balances::Locks<Runtime>>::insert(k, v);
+
+				w += 1;
+			}
+		}
+
+		r += 1;
+	});
 
 	w += migration_helper::PalletCleaner {
 		name: b"EcdsaAuthority",
@@ -59,5 +110,5 @@ fn migrate() -> frame_support::weights::Weight {
 	.remove_all();
 
 	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, w as _)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(r as _, w as _)
 }
