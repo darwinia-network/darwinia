@@ -57,7 +57,7 @@ pub use weights::WeightInfo;
 
 // darwinia
 use darwinia_deposit::Deposit;
-use darwinia_staking::Ledger;
+use darwinia_staking::{migration::v2::OldLedger, Ledger};
 use dc_primitives::{AccountId as AccountId20, AssetId, Balance, Nonce};
 // substrate
 use frame_support::{
@@ -175,10 +175,10 @@ pub mod pallet {
 		Registration<Balance, ConstU32<100>, ConstU32<100>>,
 	>;
 
-	/// [`darwinia_staking::Ledgers`] data.
+	/// [`darwinia_staking::migration::v2::OldLedger`] data.
 	#[pallet::storage]
 	#[pallet::getter(fn ledger_of)]
-	pub type Ledgers<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, Ledger<T>>;
+	pub type Ledgers<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, OldLedger<T>>;
 
 	/// Multisig migration caches.
 	#[pallet::storage]
@@ -496,7 +496,15 @@ pub mod pallet {
 					)?;
 				}
 
-				<darwinia_staking::Ledgers<T>>::insert(to, l);
+				<darwinia_staking::Ledgers<T>>::insert(
+					to,
+					Ledger {
+						staked_ring: l.staked_ring,
+						staked_deposits: l.staked_deposits,
+						unstaking_ring: l.unstaking_ring,
+						unstaking_deposits: l.unstaking_deposits,
+					},
+				);
 			}
 
 			Ok(())

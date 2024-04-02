@@ -12,18 +12,19 @@ type RingPool<T: Config> = StorageValue<Pallet<T>, ()>;
 #[frame_support::storage_alias]
 type KtonPool<T: Config> = StorageValue<Pallet<T>, ()>;
 
+#[allow(missing_docs)]
 #[derive(DebugNoBound, PartialEqNoBound, EqNoBound, Encode, Decode, MaxEncodedLen, TypeInfo)]
 #[scale_info(skip_type_params(T))]
-struct OldLedger<T>
+pub struct OldLedger<T>
 where
 	T: Config,
 {
-	staked_ring: Balance,
-	staked_kton: Balance,
-	staked_deposits: BoundedVec<DepositId<T>, <T as Config>::MaxDeposits>,
-	unstaking_ring: BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>,
-	unstaking_kton: BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>,
-	unstaking_deposits: BoundedVec<(DepositId<T>, BlockNumberFor<T>), T::MaxUnstakings>,
+	pub staked_ring: Balance,
+	pub staked_kton: Balance,
+	pub staked_deposits: BoundedVec<DepositId<T>, <T as Config>::MaxDeposits>,
+	pub unstaking_ring: BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>,
+	pub unstaking_kton: BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>,
+	pub unstaking_deposits: BoundedVec<(DepositId<T>, BlockNumberFor<T>), T::MaxUnstakings>,
 }
 
 #[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
