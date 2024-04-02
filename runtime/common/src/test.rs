@@ -23,7 +23,7 @@ macro_rules! impl_account_migration_tests {
 			// darwinia
 			use super::mock::*;
 			use darwinia_deposit::Deposit as DepositS;
-			use darwinia_staking::Ledger;
+			use darwinia_staking::migration::v2::OldLedger;
 			// substrate
 			use frame_support::{
 				assert_err, assert_ok, migration, Blake2_128Concat, StorageHasher,
@@ -306,12 +306,7 @@ macro_rules! impl_account_migration_tests {
 						);
 						<darwinia_account_migration::Ledgers<Runtime>>::insert(
 							&from_pk,
-							Ledger {
-								staked_ring: 20,
-								staked_deposits: Default::default(),
-								unstaking_ring: Default::default(),
-								unstaking_deposits: Default::default(),
-							},
+							OldLedger { staked_ring: 20, ..Default::default() },
 						);
 
 						assert_ok!(migrate(from, to));

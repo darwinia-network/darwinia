@@ -13,7 +13,16 @@ type RingPool<T: Config> = StorageValue<Pallet<T>, ()>;
 type KtonPool<T: Config> = StorageValue<Pallet<T>, ()>;
 
 #[allow(missing_docs)]
-#[derive(DebugNoBound, PartialEqNoBound, EqNoBound, Encode, Decode, MaxEncodedLen, TypeInfo)]
+#[derive(
+	DebugNoBound,
+	DefaultNoBound,
+	PartialEqNoBound,
+	EqNoBound,
+	Encode,
+	Decode,
+	MaxEncodedLen,
+	TypeInfo,
+)]
 #[scale_info(skip_type_params(T))]
 pub struct OldLedger<T>
 where
