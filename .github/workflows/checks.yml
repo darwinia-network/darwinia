@@ -92,8 +92,10 @@ jobs:
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v4
+      - name: Install nightly Rust
+        run: rustup toolchain install nightly && rustup component add rustfmt --toolchain nightly
       - name: Check format
-        run: cargo fmt --all -- --check
+        run: cargo +nightly fmt --all -- --check
       - name: Fast fail
         uses: vishnudxb/cancel-workflow@v1.2
         if: failure()
@@ -108,7 +110,7 @@ jobs:
     strategy:
       matrix:
         runtime:
-          [runtime/darwinia, runtime/crab, runtime/pangoro, runtime/pangolin]
+          [runtime/darwinia, runtime/crab, runtime/pangolin]
     runs-on: ubuntu-latest
     steps:
       - name: Fetch latest code
@@ -134,10 +136,6 @@ jobs:
             {
               chain: crab-dev,
               compare-with: "https://crab-rpc.darwiniacommunitydao.xyz",
-            },
-            {
-              chain: pangoro-dev,
-              compare-with: "https://pangoro-rpc.darwinia.network",
             },
             {
               chain: pangolin-dev,

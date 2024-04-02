@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -208,8 +208,6 @@ pub fn genesis_config() -> ChainSpec {
 				},
 				aura: Default::default(),
 				aura_ext: Default::default(),
-				message_gadget: Default::default(),
-				ecdsa_authority: Default::default(),
 
 				// Governance stuff.
 				technical_committee: Default::default(),
@@ -242,12 +240,6 @@ pub fn genesis_config() -> ChainSpec {
 					},
 					..Default::default()
 				},
-
-				// S2S stuff.
-				bridge_moonbase_grandpa: Default::default(),
-				bridge_moonbase_parachain: Default::default(),
-				bridge_pangoro_messages: Default::default(),
-				pangoro_fee_market: Default::default(),
 			}
 		},
 		vec![
@@ -316,8 +308,6 @@ fn testnet_genesis(
 		},
 		aura: Default::default(),
 		aura_ext: Default::default(),
-		message_gadget: Default::default(),
-		ecdsa_authority: Default::default(),
 
 		// Governance stuff.
 		technical_committee: TechnicalCommitteeConfig {
@@ -373,11 +363,5 @@ fn testnet_genesis(
 			},
 			..Default::default()
 		},
-
-		// S2S stuff.
-		bridge_moonbase_grandpa: Default::default(),
-		bridge_moonbase_parachain: Default::default(),
-		bridge_pangoro_messages: Default::default(),
-		pangoro_fee_market: Default::default(),
 	}
 }

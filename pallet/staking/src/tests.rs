@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@ use core::time::Duration;
 // darwinia
 use crate::{mock::*, *};
 use darwinia_deposit::Error as DepositError;
-use dc_types::{Balance, UNIT};
+use dc_types::UNIT;
 // substrate
 use frame_support::{assert_noop, assert_ok, BoundedVec};
 use sp_runtime::{assert_eq_error_rate, DispatchError, Perbill};
@@ -280,6 +280,7 @@ fn restake_should_work() {
 				staked_deposits: BoundedVec::truncate_from(vec![1]),
 				unstaking_ring: BoundedVec::truncate_from(vec![(UNIT, 6), (UNIT / 2, 7)]),
 				unstaking_deposits: BoundedVec::truncate_from(vec![(0, 6), (2, 6)]),
+				..ZeroDefault::default()
 			}
 		);
 
@@ -466,20 +467,20 @@ fn payout_should_work() {
 		new_session();
 		payout();
 
-		let rewards = vec![
-			364298724080145719490,
-			680024286193078324226,
-			947176684881602914390,
-			1165755919271402550091,
-			1335761991256830601093,
-			1092896174426229508197,
-			777170612459016393442,
-			510018214936247723133,
-			291438979672131147541,
-			121432907832422586521,
+		let rewards = [
+			182149362040072859745,
+			340012143096539162113,
+			473588342440801457194,
+			582877959635701275045,
+			667880995628415300546,
+			546448087213114754098,
+			388585306229508196721,
+			255009107468123861566,
+			145719489836065573771,
+			60716453916211293261,
 		];
 		assert_eq!(
-			rewards,
+			rewards.as_slice(),
 			(1..=10)
 				.map(|i| Balances::free_balance(i)
 					- (1_000 - if i < 6 { i } else { 11 - i }) as Balance * UNIT)
@@ -487,7 +488,8 @@ fn payout_should_work() {
 		);
 		assert_eq_error_rate!(
 			PayoutFraction::get()
-				* dc_inflation::issuing_in_period(session_duration, Timestamp::now()).unwrap(),
+				* dc_inflation::issuing_in_period(session_duration, Timestamp::now()).unwrap()
+				/ 2,
 			rewards.iter().sum::<Balance>(),
 			// Error rate 1 RING.
 			UNIT
@@ -524,20 +526,20 @@ fn payout_should_work() {
 		new_session();
 		payout();
 
-		let rewards = vec![
-			499999998800000000000,
-			933333332800000000000,
-			1300000000000000000000,
-			1599999999200000000000,
-			1833333333000000000000,
-			1499999999400000000000,
-			1066666665600000000000,
-			700000000000000000000,
-			399999999600000000000,
-			166666666000000000000,
+		let rewards = [
+			249999999400000000000,
+			466666666400000000000,
+			650000000000000000000,
+			799999999600000000000,
+			916666666500000000000,
+			749999999700000000000,
+			533333332800000000000,
+			350000000000000000000,
+			199999999800000000000,
+			83333333000000000000,
 		];
 		assert_eq!(
-			rewards,
+			rewards.as_slice(),
 			(1..=10)
 				.map(|i| Balances::free_balance(i)
 					- (1_000 - if i < 6 { i } else { 11 - i }) as Balance * UNIT)
@@ -545,13 +547,7 @@ fn payout_should_work() {
 		);
 
 		assert_eq!(Balances::total_issuance(), total_issuance);
-		assert_eq!(
-			Balances::free_balance(&Treasury::account_id()),
-			1_000_000 * UNIT - rewards.iter().sum::<Balance>()
-			// Due to `into_account_truncating`, the same pallet account is produced for both staking and treasury.
-			+ 30 * UNIT
-		);
-
+		
 		assert_ok!(Balances::transfer_all(
 			RuntimeOrigin::signed(Treasury::account_id()),
 			Default::default(),
@@ -571,8 +567,9 @@ fn payout_should_work() {
 				})
 				.collect::<Vec<_>>(),
 			vec![
-				Event::Unpaid { who: 6, amount: 7499999997000000000000 },
-				Event::Unpaid { who: 1, amount: 2499999994000000000000 }
+				Event::Unpaid { who: 0, amount: 5000000000000000000000 },
+				Event::Unpaid { who: 6, amount: 3749999998500000000000 },
+				Event::Unpaid { who: 1, amount: 1249999997000000000000 }
 			]
 		);
 	});
@@ -616,10 +613,10 @@ fn auto_payout_should_work() {
 				Balances::free_balance(4),
 			],
 			[
-				999001214329082270795,
+				999000607164541135398,
 				998000000000000000000,
-				998001821493622950820,
-				999000000000000000000,
+				998000910746811475409,
+				999000000000000000000
 			]
 		);
 
@@ -632,10 +629,10 @@ fn auto_payout_should_work() {
 				Balances::free_balance(4),
 			],
 			[
-				999001214329082270795,
-				998002226269984213722,
-				998001821493622950820,
-				999000809552721311475,
+				999000607164541135398,
+				998001113134992106860,
+				998000910746811475409,
+				999000404776360655738
 			]
 		);
 
@@ -648,10 +645,10 @@ fn auto_payout_should_work() {
 				Balances::free_balance(4),
 			],
 			[
-				999001214329082270795,
-				998002226269984213722,
-				998001821493622950820,
-				999000809552721311475,
+				999000607164541135398,
+				998001113134992106860,
+				998000910746811475409,
+				999000404776360655738
 			]
 		);
 	});

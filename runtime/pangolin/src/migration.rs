@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -27,11 +27,27 @@ pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::DispatchError> {
+		log::info!("pre");
+
+		<pallet_balances::Locks<Runtime>>::iter().for_each(|(k, v)| {
+			log::info!("{k:?}");
+			log::info!("{v:?}");
+		});
+
 		Ok(Vec::new())
 	}
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
+		log::info!("post");
+
+		<pallet_balances::Locks<Runtime>>::iter().for_each(|(k, v)| {
+			log::info!("{k:?}");
+			log::info!("{v:?}");
+
+			assert!(!v.is_empty());
+		});
+
 		Ok(())
 	}
 
@@ -41,19 +57,71 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	// polkadot-sdk
-	use sp_core::H160;
-	use sp_std::str::FromStr;
+	let mut r = 0;
+	let mut w = 1;
+	let _ =
+		migration::clear_storage_prefix(b"MessageGadget", b"CommitmentContract", &[], None, None);
+	let lock_ids = [
+		// Democracy lock.
+		*b"democrac",
+		// Fee market lock.
+		*b"da/feecr",
+	];
 
-	const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
-	// KTON equals to the 0x402 in the pallet-evm runtime.
-	const KTON_ADDRESS: &str = "0x0000000000000000000000000000000000000402";
-	if let Ok(addr) = H160::from_str(KTON_ADDRESS) {
-		EVM::create_account(addr, REVERT_BYTECODE.to_vec());
-		return RuntimeBlockWeights::get().max_block;
+	<pallet_balances::Locks<Runtime>>::iter().for_each(|(k, mut v)| {
+		if v.is_empty() {
+			// Clear the storage entry if the vector is empty.
+
+			<pallet_balances::Locks<Runtime>>::remove(k);
+
+			w += 1;
+		} else {
+			// Find matching lock ids and remove them.
+
+			let mut changed = false;
+
+			v.retain(|l| {
+				if lock_ids.contains(&l.id) {
+					// Mark as changed, the storage entry needs to be updated.
+					changed = true;
+
+					// To remove.
+					false
+				} else {
+					// To keep.
+					true
+				}
+			});
+
+			if changed {
+				if v.is_empty() {
+					// Clear the storage entry if the vector is empty.
+
+					<pallet_balances::Locks<Runtime>>::remove(k);
+				} else {
+					<pallet_balances::Locks<Runtime>>::insert(k, v);
+				}
+
+				w += 1;
+			}
+		}
+
+		r += 1;
+	});
+
+	w += migration_helper::PalletCleaner {
+		name: b"EcdsaAuthority",
+		values: &[
+			b"Authorities",
+			b"NextAuthorities",
+			b"Nonce",
+			b"AuthoritiesChangeToSign",
+			b"MessageRootToSign",
+		],
+		maps: &[],
 	}
+	.remove_all();
 
 	// frame_support::weights::Weight::zero()
-	RuntimeBlockWeights::get().max_block
-	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(5, 5)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(r as _, w as _)
 }

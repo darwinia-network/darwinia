@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -114,7 +114,7 @@ impl darwinia_deposit::SimpleAsset for KtonMinting {
 
 impl darwinia_deposit::Config for Runtime {
 	type Kton = KtonMinting;
-	type MaxDeposits = frame_support::traits::ConstU32<16>;
+	type MaxDeposits = frame_support::traits::ConstU32<512>;
 	type MinLockingAmount = frame_support::traits::ConstU128<100>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
@@ -192,7 +192,6 @@ impl pallet_evm::Config for Runtime {
 frame_support::parameter_types! {
 	pub const PayoutFraction: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(40);
 }
-
 pub enum RingStaking {}
 impl darwinia_staking::Stake for RingStaking {
 	type AccountId = AccountId;
@@ -216,11 +215,26 @@ impl darwinia_staking::Stake for RingStaking {
 		)
 	}
 }
+pub enum KtonStaking {}
+impl darwinia_staking::Stake for KtonStaking {
+	type AccountId = AccountId;
+	type Item = Balance;
 
+	fn stake(_: &Self::AccountId, _: Self::Item) -> sp_runtime::DispatchResult {
+		Ok(())
+	}
+
+	fn unstake(_: &Self::AccountId, _: Self::Item) -> sp_runtime::DispatchResult {
+		Ok(())
+	}
+}
 impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
 	type IssuingManager = ();
+	type Kton = KtonStaking;
+	type KtonRewardDistributionContract = ();
+	type KtonStakerNotifier = ();
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = frame_support::traits::ConstU32<16>;
 	type MinStakingDuration = frame_support::traits::ConstU64<3>;

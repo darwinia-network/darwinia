@@ -72,7 +72,7 @@ where
 		<Ledgers<T>>::translate::<OldLedger<T>, _>(|a, o| {
 			w += 2;
 
-			let _ = T::Kton::unstake(
+			let _ = <T as Config>::Kton::unstake(
 				&a,
 				o.staked_kton + o.unstaking_kton.into_iter().fold(0, |s, (v, _)| s + v),
 			);

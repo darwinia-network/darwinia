@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -31,8 +31,6 @@ pub use crab_runtime::RuntimeApi as CrabRuntimeApi;
 pub use darwinia_runtime::RuntimeApi as DarwiniaRuntimeApi;
 #[cfg(feature = "pangolin-native")]
 pub use pangolin_runtime::RuntimeApi as PangolinRuntimeApi;
-#[cfg(feature = "pangoro-native")]
-pub use pangoro_runtime::RuntimeApi as PangoroRuntimeApi;
 
 // std
 use std::{
@@ -80,11 +78,6 @@ pub trait IdentifyVariant {
 	/// Returns if this is a configuration for the `Pangolin` network.
 	fn is_pangolin(&self) -> bool {
 		self.id().starts_with("pangolin")
-	}
-
-	/// Returns if this is a configuration for the `Pangoro` network.
-	fn is_pangoro(&self) -> bool {
-		self.id().starts_with("pangoro")
 	}
 
 	/// Returns true if this configuration is for a development network.

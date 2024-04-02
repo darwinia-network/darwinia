@@ -1,0 +1,30 @@
+name: Notify release
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_TKN_DARWINIA }}
+
+on:
+  push:
+    tags:
+      - "v*"
+      - "pango*"
+
+jobs:
+  notify-mainnet:
+    name: Notify mainnet
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify
+        run: |
+          TAG=$(echo ${{ github.ref }} | sed 's!.*/\(.*\)!\1!')
+          gh workflow run wasm.yml --repo darwinia-network/darwinia-release -f network=mainnet -f tag=${TAG}
+
+  notify-testnet:
+    name: Notify testnet
+    if: startsWith(github.ref, 'refs/tags/pango')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify
+        run: |
+          TAG=$(echo ${{ github.ref }} | sed 's!.*/\(.*\)!\1!')
+          gh workflow run wasm.yml --repo darwinia-network/darwinia-release -f network=testnet -f tag=${TAG}

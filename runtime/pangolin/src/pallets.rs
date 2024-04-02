@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -60,10 +60,6 @@ mod aura;
 
 mod aura_ext;
 
-mod message_gadget;
-
-mod ecdsa_authority;
-
 // Governance stuff.
 mod governance;
 pub use governance::*;
@@ -105,20 +101,4 @@ mod ethereum;
 mod evm;
 pub use evm::*;
 
-mod message_transact;
-
-// S2S stuff.
-mod bridge_dispatch;
-pub use bridge_dispatch::*;
-
-mod bridge_grandpa;
-pub use bridge_grandpa::*;
-
-mod bridge_messages;
-pub use bridge_messages::*;
-
-mod bridge_parachains;
-pub use bridge_parachains::*;
-
-mod fee_market;
-pub use fee_market::*;
+mod ethtx_forwarder;

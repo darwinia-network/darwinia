@@ -10,6 +10,7 @@ members = [
 	"precompile/*",
 	"runtime/*",
 ]
+resolver = "2"
 
 [workspace.package]
 authors    = ["Darwinia Network <hello@darwinia.network>"]
@@ -17,7 +18,7 @@ edition    = "2021"
 homepage   = "https://darwinia.network"
 license    = "GPL-3.0"
 repository = "https://github.com/darwinia-network/darwinia"
-version    = "6.6.0"
+version    = "6.6.1"
 
 [workspace.dependencies]
 # crates.io
@@ -29,7 +30,7 @@ log               = { version = "0.4" }
 scale-info        = { version = "2.10", default-features = false }
 sha3              = { version = "0.10" }
 static_assertions = { version = "1.1" }
-strum             = { version = "0.25", default-features = false }
+strum             = { version = "0.26", default-features = false }
 
 # cumulus
 cumulus-client-cli                    = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
@@ -56,9 +57,7 @@ darwinia-account-migration        = { path = "pallet/account-migration", default
 darwinia-asset-limit              = { path = "pallet/asset-limit", default-features = false }
 darwinia-common-runtime           = { path = "runtime/common", default-features = false }
 darwinia-deposit                  = { path = "pallet/deposit", default-features = false }
-darwinia-ecdsa-authority          = { path = "pallet/ecdsa-authority", default-features = false }
-darwinia-message-gadget           = { path = "pallet/message-gadget", default-features = false }
-darwinia-message-transact         = { path = "pallet/message-transact", default-features = false }
+darwinia-ethtx-forwarder          = { path = "pallet/ethtx-forwarder", default-features = false }
 darwinia-precompile-assets        = { path = "precompile/assets", default-features = false }
 darwinia-precompile-bls12-381     = { path = "precompile/bls12-381", default-features = false }
 darwinia-precompile-deposit       = { path = "precompile/deposit", default-features = false }
@@ -71,20 +70,6 @@ dc-inflation                      = { path = "core/inflation", default-features 
 dc-primitives                     = { path = "core/primitives", default-features = false }
 dc-types                          = { path = "core/types" }
 pangolin-runtime                  = { path = "runtime/pangolin" }
-pangoro-runtime                   = { path = "runtime/pangoro" }
-
-# darwinia-messages-substrate
-bp-darwinia-core         = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-bp-message-dispatch      = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-bp-messages              = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-bp-polkadot-core         = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-bp-runtime               = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-bridge-runtime-common    = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-pallet-bridge-dispatch   = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-pallet-bridge-grandpa    = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-pallet-bridge-messages   = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-pallet-bridge-parachains = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
-pallet-fee-market        = { git = "https://github.com/darwinia-network/darwinia-messages-substrate", branch = "polkadot-v1.1.0", default-features = false }
 
 # frontier
 fc-api                         = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }
@@ -191,6 +176,7 @@ sp-block-builder                           = { git = "https://github.com/parityt
 sp-blockchain                              = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 sp-consensus-aura                          = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 sp-core                                    = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+sp-debug-derive                            = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 sp-inherents                               = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 sp-io                                      = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 sp-keyring                                 = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }

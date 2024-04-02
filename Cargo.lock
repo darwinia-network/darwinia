@@ -1120,176 +1120,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bp-darwinia-core"
-version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v1.1.0#3b7fdf5658d5fc132e30ffda6bf40b65997ec823"
-dependencies = [
- "bp-messages",
- "bp-runtime",
- "fp-account",
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "bp-header-chain"
-version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v1.1.0#3b7fdf5658d5fc132e30ffda6bf40b65997ec823"
-dependencies = [
- "bp-runtime",
- "finality-grandpa",
- "frame-support",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-consensus-grandpa",
- "sp-core",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "bp-message-dispatch"
-version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v1.1.0#3b7fdf5658d5fc132e30ffda6bf40b65997ec823"
-dependencies = [
- "bp-runtime",
- "frame-support",
- "parity-scale-codec",
- "scale-info",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "bp-messages"
-version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v1.1.0#3b7fdf5658d5fc132e30ffda6bf40b65997ec823"
-dependencies = [
- "bitvec",
- "bp-runtime",
- "frame-support",
- "frame-system",
- "impl-trait-for-tuples",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-core",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "bp-parachains"
-version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v1.1.0#3b7fdf5658d5fc132e30ffda6bf40b65997ec823"
-dependencies = [
- "bp-polkadot-core",
- "bp-runtime",
- "frame-support",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-runtime",
-]
-
-[[package]]
-name = "bp-polkadot-core"
-version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v1.1.0#3b7fdf5658d5fc132e30ffda6bf40b65997ec823"
-dependencies = [
- "bp-messages",
- "bp-runtime",
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-api",
- "sp-core",
- "sp-runtime",
- "sp-std",
- "sp-version",
-]
-
-[[package]]
-name = "bp-runtime"
-version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v1.1.0#3b7fdf5658d5fc132e30ffda6bf40b65997ec823"
-dependencies = [
- "frame-support",
- "frame-system",
- "hash-db",
- "log",
- "num-traits",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-state-machine",
- "sp-std",
- "sp-trie",
- "trie-db 0.28.0",
-]
-
-[[package]]
-name = "bp-test-utils"
-version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v1.1.0#3b7fdf5658d5fc132e30ffda6bf40b65997ec823"
-dependencies = [
- "bp-header-chain",
- "ed25519-dalek 1.0.1",
- "finality-grandpa",
- "parity-scale-codec",
- "sp-application-crypto",
- "sp-consensus-grandpa",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "bridge-runtime-common"
-version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v1.1.0#3b7fdf5658d5fc132e30ffda6bf40b65997ec823"
-dependencies = [
- "bp-header-chain",
- "bp-message-dispatch",
- "bp-messages",
- "bp-parachains",
- "bp-polkadot-core",
- "bp-runtime",
- "fp-account",
- "frame-support",
- "frame-system",
- "hash-db",
- "log",
- "num-traits",
- "pallet-balances",
- "pallet-bridge-dispatch",
- "pallet-bridge-grandpa",
- "pallet-bridge-messages",
- "pallet-bridge-parachains",
- "pallet-fee-market",
- "pallet-transaction-payment",
- "parity-scale-codec",
- "scale-info",
- "sp-api",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-state-machine",
- "sp-std",
- "sp-trie",
-]
-
-[[package]]
 name = "bs58"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1801,15 +1631,9 @@ dependencies = [
 
 [[package]]
 name = "crab-runtime"
-version = "6.6.0"
+version = "6.6.1"
 dependencies = [
  "array-bytes",
- "bp-darwinia-core",
- "bp-message-dispatch",
- "bp-messages",
- "bp-polkadot-core",
- "bp-runtime",
- "bridge-runtime-common",
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-dmp-queue",
  "cumulus-pallet-parachain-system",
@@ -1821,7 +1645,7 @@ dependencies = [
  "darwinia-account-migration",
  "darwinia-common-runtime",
  "darwinia-deposit",
- "darwinia-message-transact",
+ "darwinia-ethtx-forwarder",
  "darwinia-precompile-assets",
  "darwinia-precompile-bls12-381",
  "darwinia-precompile-deposit",
@@ -1846,10 +1670,6 @@ dependencies = [
  "pallet-aura",
  "pallet-authorship",
  "pallet-balances",
- "pallet-bridge-dispatch",
- "pallet-bridge-grandpa",
- "pallet-bridge-messages",
- "pallet-bridge-parachains",
  "pallet-collective",
  "pallet-conviction-voting",
  "pallet-democracy",
@@ -1861,7 +1681,6 @@ dependencies = [
  "pallet-evm-precompile-dispatch",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-simple",
- "pallet-fee-market",
  "pallet-identity",
  "pallet-preimage",
  "pallet-proxy",
@@ -1888,6 +1707,7 @@ dependencies = [
  "sp-block-builder",
  "sp-consensus-aura",
  "sp-core",
+ "sp-debug-derive",
  "sp-inherents",
  "sp-io",
  "sp-keyring",
@@ -1902,7 +1722,7 @@ dependencies = [
  "staging-xcm-builder",
  "staging-xcm-executor",
  "static_assertions",
- "strum 0.25.0",
+ "strum 0.26.1",
  "substrate-wasm-builder",
  "xcm-primitives",
 ]
@@ -2430,7 +2250,7 @@ dependencies = [
  "sp-trie",
  "sp-version",
  "staging-xcm",
- "trie-db 0.27.1",
+ "trie-db",
 ]
 
 [[package]]
@@ -2844,7 +2664,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia"
-version = "6.6.0"
+version = "6.6.1"
 dependencies = [
  "array-bytes",
  "async-trait",
@@ -2880,7 +2700,6 @@ dependencies = [
  "moonbeam-rpc-trace",
  "pallet-transaction-payment-rpc",
  "pangolin-runtime",
- "pangoro-runtime",
  "polkadot-cli",
  "polkadot-primitives",
  "sc-basic-authorship",
@@ -2923,7 +2742,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-account-migration"
-version = "6.6.0"
+version = "6.6.1"
 dependencies = [
  "array-bytes",
  "darwinia-deposit",
@@ -2948,7 +2767,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-asset-limit"
-version = "6.6.0"
+version = "6.6.1"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2959,9 +2778,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-common-runtime"
-version = "6.6.0"
+version = "6.6.1"
 dependencies = [
- "bp-darwinia-core",
  "darwinia-precompile-assets",
  "dc-primitives",
  "fp-account",
@@ -2987,7 +2805,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-deposit"
-version = "6.6.0"
+version = "6.6.1"
 dependencies = [
  "darwinia-staking-traits",
  "dc-inflation",
@@ -3007,51 +2825,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-ecdsa-authority"
-version = "6.6.0"
+name = "darwinia-ethtx-forwarder"
+version = "6.6.1"
 dependencies = [
  "array-bytes",
- "dc-primitives",
- "ethabi",
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "libsecp256k1",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
- "sp-version",
-]
-
-[[package]]
-name = "darwinia-message-gadget"
-version = "6.6.0"
-dependencies = [
- "array-bytes",
- "frame-support",
- "frame-system",
- "log",
- "pallet-balances",
- "pallet-evm",
- "pallet-timestamp",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "darwinia-message-transact"
-version = "6.6.0"
-dependencies = [
- "array-bytes",
- "bp-message-dispatch",
- "bp-runtime",
  "ethereum",
  "fp-ethereum",
  "fp-evm",
@@ -3060,12 +2837,10 @@ dependencies = [
  "frame-system",
  "libsecp256k1",
  "pallet-balances",
- "pallet-bridge-dispatch",
  "pallet-ethereum",
  "pallet-evm",
  "pallet-timestamp",
  "parity-scale-codec",
- "rlp",
  "scale-info",
  "sha3",
  "sp-core",
@@ -3076,7 +2851,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-assets"
-version = "6.6.0"
+version = "6.6.1"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -3097,7 +2872,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-bls12-381"
-version = "6.6.0"
+version = "6.6.1"
 dependencies = [
  "ark-bls12-381",
  "ark-ec",
@@ -3115,7 +2890,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-deposit"
-version = "6.6.0"
+version = "6.6.1"
 dependencies = [
  "darwinia-deposit",
  "fp-evm",
@@ -3135,7 +2910,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-staking"
-version = "6.6.0"
+version = "6.6.1"
 dependencies = [
  "darwinia-deposit",
  "darwinia-staking",
@@ -3156,7 +2931,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-state-storage"
-version = "6.6.0"
+version = "6.6.1"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -3175,15 +2950,9 @@ dependencies = [
 
 [[package]]
 name = "darwinia-runtime"
-version = "6.6.0"
+version = "6.6.1"
 dependencies = [
  "array-bytes",
- "bp-darwinia-core",
- "bp-message-dispatch",
- "bp-messages",
- "bp-polkadot-core",
- "bp-runtime",
- "bridge-runtime-common",
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-dmp-queue",
  "cumulus-pallet-parachain-system",
@@ -3196,9 +2965,7 @@ dependencies = [
  "darwinia-asset-limit",
  "darwinia-common-runtime",
  "darwinia-deposit",
- "darwinia-ecdsa-authority",
- "darwinia-message-gadget",
- "darwinia-message-transact",
+ "darwinia-ethtx-forwarder",
  "darwinia-precompile-assets",
  "darwinia-precompile-bls12-381",
  "darwinia-precompile-deposit",
@@ -3227,10 +2994,6 @@ dependencies = [
  "pallet-aura",
  "pallet-authorship",
  "pallet-balances",
- "pallet-bridge-dispatch",
- "pallet-bridge-grandpa",
- "pallet-bridge-messages",
- "pallet-bridge-parachains",
  "pallet-collective",
  "pallet-conviction-voting",
  "pallet-democracy",
@@ -3243,7 +3006,6 @@ dependencies = [
  "pallet-evm-precompile-dispatch",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-simple",
- "pallet-fee-market",
  "pallet-identity",
  "pallet-preimage",
  "pallet-proxy",
@@ -3269,6 +3031,7 @@ dependencies = [
  "sp-block-builder",
  "sp-consensus-aura",
  "sp-core",
+ "sp-debug-derive",
  "sp-inherents",
  "sp-io",
  "sp-keyring",
@@ -3283,19 +3046,22 @@ dependencies = [
  "staging-xcm-builder",
  "staging-xcm-executor",
  "static_assertions",
- "strum 0.25.0",
+ "strum 0.26.1",
  "substrate-wasm-builder",
  "xcm-primitives",
 ]
 
 [[package]]
 name = "darwinia-staking"
-version = "6.6.0"
+version = "6.6.1"
 dependencies = [
  "darwinia-deposit",
+ "darwinia-ethtx-forwarder",
  "darwinia-staking-traits",
  "dc-inflation",
  "dc-types",
+ "ethabi",
+ "ethereum",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
@@ -3318,7 +3084,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking-traits"
-version = "6.6.0"
+version = "6.6.1"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -3353,7 +3119,7 @@ dependencies = [
 
 [[package]]
 name = "dc-inflation"
-version = "6.6.0"
+version = "6.6.1"
 dependencies = [
  "dc-types",
  "primitive-types",
@@ -3363,7 +3129,7 @@ dependencies = [
 
 [[package]]
 name = "dc-primitives"
-version = "6.6.0"
+version = "6.6.1"
 dependencies = [
  "dc-types",
  "fp-account",
@@ -3373,7 +3139,7 @@ dependencies = [
 
 [[package]]
 name = "dc-types"
-version = "6.6.0"
+version = "6.6.1"
 
 [[package]]
 name = "der"
@@ -3710,15 +3476,6 @@ dependencies = [
 
 [[package]]
 name = "ed25519"
-version = "1.5.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "91cff35c70bba8a626e3185d8cd48cc11b5437e1a5bcd15b9b5fa3c64b6dfee7"
-dependencies = [
- "signature 1.6.4",
-]
-
-[[package]]
-name = "ed25519"
 version = "2.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "115531babc129696a58c64a4fef0a8bf9e9698629fb97e9e40767d235cfbcd53"
@@ -3729,26 +3486,12 @@ dependencies = [
 
 [[package]]
 name = "ed25519-dalek"
-version = "1.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c762bae6dcaf24c4c84667b8579785430908723d5c889f469d76a41d59cc7a9d"
-dependencies = [
- "curve25519-dalek 3.2.0",
- "ed25519 1.5.3",
- "rand 0.7.3",
- "serde",
- "sha2 0.9.9",
- "zeroize",
-]
-
-[[package]]
-name = "ed25519-dalek"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7277392b266383ef8396db7fdeb1e77b6c52fed775f5df15bb24f35b72156980"
 dependencies = [
  "curve25519-dalek 4.1.1",
- "ed25519 2.2.3",
+ "ed25519",
  "rand_core 0.6.4",
  "serde",
  "sha2 0.10.8",
@@ -3776,7 +3519,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d9ce6874da5d4415896cd45ffbc4d1cfc0c4f9c079427bd870742c30f2f65a9"
 dependencies = [
  "curve25519-dalek 4.1.1",
- "ed25519 2.2.3",
+ "ed25519",
  "hashbrown 0.14.2",
  "hex",
  "rand_core 0.6.4",
@@ -3894,25 +3637,12 @@ dependencies = [
 
 [[package]]
 name = "env_logger"
-version = "0.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "44533bbbb3bb3c1fa17d9f2e4e38bbbaf8396ba82193c4cb1b6445d711445d36"
-dependencies = [
- "atty",
- "humantime 1.3.0",
- "log",
- "regex",
- "termcolor",
-]
-
-[[package]]
-name = "env_logger"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a12e6657c4c97ebab115a42dcee77225f7f482cdd841cf7088c657a42e9e00e7"
 dependencies = [
  "atty",
- "humantime 2.1.0",
+ "humantime",
  "log",
  "regex",
  "termcolor",
@@ -3924,7 +3654,7 @@ version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "85cdab6a89accf66733ad5a1693a4dcced6aeff64602b634530dd73c1f3ee9f0"
 dependencies = [
- "humantime 2.1.0",
+ "humantime",
  "is-terminal",
  "log",
  "regex",
@@ -5491,15 +5221,6 @@ checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 
 [[package]]
 name = "humantime"
-version = "1.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df004cfca50ef23c36850aaaa59ad52cc70d0e90243c3c7737a4dd32dc7a3c4f"
-dependencies = [
- "quick-error",
-]
-
-[[package]]
-name = "humantime"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
@@ -6276,7 +5997,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "276bb57e7af15d8f100d3c11cbdd32c6752b7eef4ba7a18ecf464972c07abcce"
 dependencies = [
  "bs58 0.4.0",
- "ed25519-dalek 2.0.0",
+ "ed25519-dalek",
  "log",
  "multiaddr",
  "multihash",
@@ -8177,90 +7898,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-bridge-dispatch"
-version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v1.1.0#3b7fdf5658d5fc132e30ffda6bf40b65997ec823"
-dependencies = [
- "bp-message-dispatch",
- "bp-runtime",
- "frame-support",
- "frame-system",
- "log",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-bridge-grandpa"
-version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v1.1.0#3b7fdf5658d5fc132e30ffda6bf40b65997ec823"
-dependencies = [
- "bp-header-chain",
- "bp-runtime",
- "bp-test-utils",
- "finality-grandpa",
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "num-traits",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-consensus-grandpa",
- "sp-runtime",
- "sp-std",
- "sp-trie",
-]
-
-[[package]]
-name = "pallet-bridge-messages"
-version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v1.1.0#3b7fdf5658d5fc132e30ffda6bf40b65997ec823"
-dependencies = [
- "bitvec",
- "bp-message-dispatch",
- "bp-messages",
- "bp-runtime",
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "num-traits",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-core",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-bridge-parachains"
-version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v1.1.0#3b7fdf5658d5fc132e30ffda6bf40b65997ec823"
-dependencies = [
- "bp-parachains",
- "bp-polkadot-core",
- "bp-runtime",
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "pallet-bridge-grandpa",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-core",
- "sp-runtime",
- "sp-std",
- "sp-trie",
-]
-
-[[package]]
 name = "pallet-child-bounties"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.1.0#c8d2251cafadc108ba2f1f8a3208dc547ff38901"
@@ -8559,26 +8196,6 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-staking",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-fee-market"
-version = "0.1.0"
-source = "git+https://github.com/darwinia-network/darwinia-messages-substrate?branch=polkadot-v1.1.0#3b7fdf5658d5fc132e30ffda6bf40b65997ec823"
-dependencies = [
- "bp-messages",
- "bp-runtime",
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "pallet-timestamp",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
  "sp-std",
 ]
 
@@ -9282,15 +8899,9 @@ dependencies = [
 
 [[package]]
 name = "pangolin-runtime"
-version = "6.6.0"
+version = "6.6.1"
 dependencies = [
  "array-bytes",
- "bp-darwinia-core",
- "bp-message-dispatch",
- "bp-messages",
- "bp-polkadot-core",
- "bp-runtime",
- "bridge-runtime-common",
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-dmp-queue",
  "cumulus-pallet-parachain-system",
@@ -9303,9 +8914,7 @@ dependencies = [
  "darwinia-asset-limit",
  "darwinia-common-runtime",
  "darwinia-deposit",
- "darwinia-ecdsa-authority",
- "darwinia-message-gadget",
- "darwinia-message-transact",
+ "darwinia-ethtx-forwarder",
  "darwinia-precompile-assets",
  "darwinia-precompile-bls12-381",
  "darwinia-precompile-deposit",
@@ -9333,10 +8942,6 @@ dependencies = [
  "pallet-aura",
  "pallet-authorship",
  "pallet-balances",
- "pallet-bridge-dispatch",
- "pallet-bridge-grandpa",
- "pallet-bridge-messages",
- "pallet-bridge-parachains",
  "pallet-collective",
  "pallet-conviction-voting",
  "pallet-democracy",
@@ -9350,7 +8955,6 @@ dependencies = [
  "pallet-evm-precompile-dispatch",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-simple",
- "pallet-fee-market",
  "pallet-identity",
  "pallet-preimage",
  "pallet-proxy",
@@ -9377,6 +8981,7 @@ dependencies = [
  "sp-block-builder",
  "sp-consensus-aura",
  "sp-core",
+ "sp-debug-derive",
  "sp-inherents",
  "sp-io",
  "sp-keyring",
@@ -9391,118 +8996,7 @@ dependencies = [
  "staging-xcm-builder",
  "staging-xcm-executor",
  "static_assertions",
- "strum 0.25.0",
- "substrate-wasm-builder",
- "xcm-primitives",
-]
-
-[[package]]
-name = "pangoro-runtime"
-version = "6.6.0"
-dependencies = [
- "array-bytes",
- "bp-darwinia-core",
- "bp-message-dispatch",
- "bp-messages",
- "bp-polkadot-core",
- "bp-runtime",
- "bridge-runtime-common",
- "cumulus-pallet-aura-ext",
- "cumulus-pallet-dmp-queue",
- "cumulus-pallet-parachain-system",
- "cumulus-pallet-session-benchmarking",
- "cumulus-pallet-xcm",
- "cumulus-pallet-xcmp-queue",
- "cumulus-primitives-core",
- "cumulus-primitives-utility",
- "darwinia-account-migration",
- "darwinia-common-runtime",
- "darwinia-deposit",
- "darwinia-ecdsa-authority",
- "darwinia-message-gadget",
- "darwinia-message-transact",
- "darwinia-precompile-assets",
- "darwinia-precompile-bls12-381",
- "darwinia-precompile-deposit",
- "darwinia-precompile-staking",
- "darwinia-precompile-state-storage",
- "darwinia-staking",
- "dc-inflation",
- "dc-primitives",
- "fp-evm",
- "fp-rpc",
- "fp-self-contained",
- "frame-benchmarking",
- "frame-executive",
- "frame-support",
- "frame-system",
- "frame-system-benchmarking",
- "frame-system-rpc-runtime-api",
- "frame-try-runtime",
- "log",
- "moonbeam-evm-tracer",
- "moonbeam-rpc-primitives-debug",
- "pallet-assets",
- "pallet-aura",
- "pallet-authorship",
- "pallet-balances",
- "pallet-bridge-dispatch",
- "pallet-bridge-grandpa",
- "pallet-bridge-messages",
- "pallet-bridge-parachains",
- "pallet-collective",
- "pallet-conviction-voting",
- "pallet-democracy",
- "pallet-ethereum",
- "pallet-ethereum-xcm",
- "pallet-evm",
- "pallet-evm-precompile-blake2",
- "pallet-evm-precompile-bn128",
- "pallet-evm-precompile-dispatch",
- "pallet-evm-precompile-modexp",
- "pallet-evm-precompile-simple",
- "pallet-fee-market",
- "pallet-identity",
- "pallet-preimage",
- "pallet-proxy",
- "pallet-referenda",
- "pallet-scheduler",
- "pallet-session",
- "pallet-sudo",
- "pallet-timestamp",
- "pallet-transaction-payment",
- "pallet-transaction-payment-rpc-runtime-api",
- "pallet-treasury",
- "pallet-tx-pause",
- "pallet-utility",
- "pallet-whitelist",
- "pallet-xcm",
- "parachain-info",
- "parity-scale-codec",
- "polkadot-parachain-primitives",
- "polkadot-primitives",
- "polkadot-runtime-common",
- "precompile-utils",
- "scale-info",
- "sp-api",
- "sp-block-builder",
- "sp-consensus-aura",
- "sp-core",
- "sp-inherents",
- "sp-io",
- "sp-keyring",
- "sp-offchain",
- "sp-runtime",
- "sp-session",
- "sp-staking",
- "sp-std",
- "sp-transaction-pool",
- "sp-version",
- "staging-xcm",
- "staging-xcm-builder",
- "staging-xcm-executor",
- "static_assertions",
- "strum 0.25.0",
+ "strum 0.26.1",
  "substrate-wasm-builder",
  "xcm-primitives",
 ]
@@ -10994,7 +10488,6 @@ dependencies = [
  "thiserror",
  "tracing-gum",
  "westend-runtime",
- "westend-runtime-constants",
 ]
 
 [[package]]
@@ -11199,11 +10692,11 @@ dependencies = [
 
 [[package]]
 name = "pretty_env_logger"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "926d36b9553851b8b0005f1275891b392ee4d2d833852c417ed025477350fb9d"
+checksum = "865724d4dbe39d9f3dd3b52b88d859d66bcb2d6a0acfd5ea68a65fb66d4bdc1c"
 dependencies = [
- "env_logger 0.7.1",
+ "env_logger 0.10.0",
  "log",
 ]
 
@@ -14399,7 +13892,7 @@ version = "23.0.0"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.1.0#c8d2251cafadc108ba2f1f8a3208dc547ff38901"
 dependencies = [
  "bytes",
- "ed25519-dalek 2.0.0",
+ "ed25519-dalek",
  "libsecp256k1",
  "log",
  "parity-scale-codec",
@@ -14621,7 +14114,7 @@ dependencies = [
  "sp-trie",
  "thiserror",
  "tracing",
- "trie-db 0.27.1",
+ "trie-db",
 ]
 
 [[package]]
@@ -14631,7 +14124,7 @@ source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot
 dependencies = [
  "aes-gcm 0.10.3",
  "curve25519-dalek 4.1.1",
- "ed25519-dalek 2.0.0",
+ "ed25519-dalek",
  "hkdf",
  "parity-scale-codec",
  "rand 0.8.5",
@@ -14734,7 +14227,7 @@ dependencies = [
  "sp-std",
  "thiserror",
  "tracing",
- "trie-db 0.27.1",
+ "trie-db",
  "trie-root",
 ]
 
@@ -15201,8 +14694,14 @@ name = "strum"
 version = "0.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "290d54ea6f91c969195bdbcd7442c8c2a2ba87da8bf60a7ee86a235d4bc1e125"
+
+[[package]]
+name = "strum"
+version = "0.26.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "723b93e8addf9aa965ebe2d11da6d7540fa2283fcea14b3371ff055f7ba13f5f"
 dependencies = [
- "strum_macros 0.25.3",
+ "strum_macros 0.26.1",
 ]
 
 [[package]]
@@ -15223,6 +14722,19 @@ name = "strum_macros"
 version = "0.25.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23dc1fa9ac9c169a78ba62f0b841814b7abae11bdd047b9c58f893439e309ea0"
+dependencies = [
+ "heck",
+ "proc-macro2",
+ "quote",
+ "rustversion",
+ "syn 2.0.38",
+]
+
+[[package]]
+name = "strum_macros"
+version = "0.26.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7a3417fc93d76740d974a01654a09777cb500428cc874ca9f45edfe0c4d4cd18"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -15350,7 +14862,7 @@ dependencies = [
  "sp-runtime",
  "sp-state-machine",
  "sp-trie",
- "trie-db 0.27.1",
+ "trie-db",
 ]
 
 [[package]]
@@ -16072,19 +15584,6 @@ name = "trie-db"
 version = "0.27.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "767abe6ffed88a1889671a102c2861ae742726f52e0a5a425b92c9fbfa7e9c85"
-dependencies = [
- "hash-db",
- "hashbrown 0.13.2",
- "log",
- "rustc-hex",
- "smallvec",
-]
-
-[[package]]
-name = "trie-db"
-version = "0.28.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ff28e0f815c2fea41ebddf148e008b077d2faddb026c9555b29696114d602642"
 dependencies = [
  "hash-db",
  "hashbrown 0.13.2",

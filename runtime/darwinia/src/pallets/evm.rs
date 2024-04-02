@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -48,7 +48,7 @@ where
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> [sp_core::H160; 17] {
+	pub fn used_addresses() -> [sp_core::H160; 18] {
 		[
 			addr(0x01),
 			addr(0x02),
@@ -63,6 +63,7 @@ where
 			addr(0x401),
 			addr(0x402), // For KTON asset.
 			addr(0x403), // For Tether USDT.
+			addr(0x404), // For PINK.
 			addr(0x600),
 			addr(0x601),
 			addr(0x602),
@@ -200,7 +201,7 @@ impl DispatchValidateT<AccountId, RuntimeCall> for DarwiniaDispatchValidator {
 				| RuntimeCall::Vesting(..)
 				| RuntimeCall::Ethereum(..)
 				| RuntimeCall::EVM(..)
-				| RuntimeCall::MessageTransact(..)
+				| RuntimeCall::EthTxForwarder(..)
 		) {
 			Some(fp_evm::PrecompileFailure::Error {
 				exit_status: ExitError::Other(

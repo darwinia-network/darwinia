@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -67,8 +67,8 @@ impl<Runtime: pallet_evm::Config> BLS12381<Runtime> {
 		let pub_keys: Result<Vec<PublicKey>, _> =
 			pub_keys.into_iter().map(|k| PublicKey::from_bytes(k.as_bytes())).collect();
 		let Ok(pks) = pub_keys else {
-            return Err(revert("Invalid pub keys"));
-        };
+			return Err(revert("Invalid pub keys"));
+		};
 
 		let apk = PublicKey::aggregate(pks);
 		let msg = hash_to_curve_g2(message.as_bytes()).map_err(|_| revert("Invalid message"))?;

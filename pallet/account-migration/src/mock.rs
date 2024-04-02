@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -53,7 +53,7 @@ pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia2"),
 	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
 	authoring_version: 0,
-	spec_version: 6_0_0_0,
+	spec_version: 6_6_1_0,
 	impl_version: 0,
 	apis: sp_version::create_apis_vec!([]),
 	transaction_version: 0,
@@ -163,6 +163,9 @@ impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
 	type IssuingManager = ();
+	type Kton = Dummy;
+	type KtonRewardDistributionContract = ();
+	type KtonStakerNotifier = ();
 	type MaxDeposits = ();
 	type MaxUnstakings = ();
 	type MinStakingDuration = ();

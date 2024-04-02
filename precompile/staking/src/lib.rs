@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -51,7 +51,7 @@ where
 	<Runtime::RuntimeCall as Dispatchable>::RuntimeOrigin: From<Option<Runtime::AccountId>>,
 	<Runtime as frame_system::Config>::AccountId: From<H160>,
 	<<Runtime as frame_system::Config>::RuntimeCall as Dispatchable>::RuntimeOrigin: OriginTrait,
-	<<Runtime as darwinia_staking::Config>::Deposit as Stake>::Item: From<u8>,
+	<<Runtime as darwinia_staking::Config>::Deposit as Stake>::Item: From<u16>,
 {
 	#[precompile::public("stake(uint256,uint8[])")]
 	fn stake(

@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -46,8 +46,9 @@ pub enum ProxyType {
 	IdentityJudgement,
 	#[codec(index = 5)]
 	CancelProxy,
-	// #[codec(index = 6)]
-	// EcdsaBridge,
+	// TODO: Migration.
+	#[codec(index = 6)]
+	EcdsaBridge,
 	#[codec(index = 7)]
 	SubstrateBridge,
 }
@@ -87,21 +88,13 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 						| RuntimeCall::DarwiniaStaking(..)
 				)
 			},
-			ProxyType::IdentityJudgement =>
-				matches!(c, RuntimeCall::Identity(pallet_identity::Call::provide_judgement { .. })),
+			ProxyType::IdentityJudgement => {
+				matches!(c, RuntimeCall::Identity(pallet_identity::Call::provide_judgement { .. }))
+			},
 			ProxyType::CancelProxy => {
 				matches!(c, RuntimeCall::Proxy(pallet_proxy::Call::reject_announcement { .. }))
 			},
-			ProxyType::SubstrateBridge => {
-				matches!(
-					c,
-					RuntimeCall::BridgePolkadotGrandpa(..)
-						| RuntimeCall::BridgePolkadotParachain(..)
-						| RuntimeCall::BridgeDarwiniaMessages(..)
-						| RuntimeCall::BridgeDarwiniaDispatch(..)
-						| RuntimeCall::DarwiniaFeeMarket(..)
-				)
-			},
+			_ => false,
 		}
 	}
 

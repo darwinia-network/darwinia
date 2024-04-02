@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -20,24 +20,15 @@
 
 #![allow(clippy::unnecessary_cast)]
 
-pub mod pallet_bridge_messages;
-pub use self::pallet_bridge_messages::WeightInfo as MessagesWeightInfo;
-
-pub mod pallet_bridge_parachains;
-pub use self::pallet_bridge_parachains::WeightInfo as ParachainsWeightInfo;
-
 pub mod cumulus_pallet_xcmp_queue;
 pub mod darwinia_account_migration;
 pub mod darwinia_deposit;
-pub mod darwinia_ecdsa_authority;
 pub mod darwinia_staking;
 pub mod frame_system;
 pub mod pallet_assets;
 pub mod pallet_balances;
-pub mod pallet_bridge_grandpa;
 pub mod pallet_collective;
 pub mod pallet_conviction_voting;
-pub mod pallet_fee_market;
 pub mod pallet_identity;
 pub mod pallet_preimage;
 pub mod pallet_proxy;

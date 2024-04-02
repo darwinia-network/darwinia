@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -282,14 +282,6 @@ impl darwinia_staking::IssuingManager<Runtime> for StatedOnSessionEnd {
 			OnCrabSessionEnd::reward(who, amount)
 		}
 	}
-
-	fn clear(remaining: Balance) {
-		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
-			OnDarwiniaSessionEnd::clear(remaining)
-		} else {
-			OnCrabSessionEnd::clear(remaining)
-		}
-	}
 }
 pub enum OnDarwiniaSessionEnd {}
 impl darwinia_staking::IssuingManager<Runtime> for OnDarwiniaSessionEnd {
@@ -312,13 +304,9 @@ impl darwinia_staking::IssuingManager<Runtime> for OnDarwiniaSessionEnd {
 	}
 
 	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		let _ = Balances::deposit_into_existing(who, amount);
+		let _ = Balances::deposit_creating(who, amount);
 
 		Ok(())
-	}
-
-	fn clear(remaining: Balance) {
-		let _ = Balances::deposit_into_existing(&Treasury::account_id(), remaining);
 	}
 }
 pub enum OnCrabSessionEnd {}
@@ -352,6 +340,8 @@ impl darwinia_staking::Config for Runtime {
 	type Deposit = Deposit;
 	type IssuingManager = StatedOnSessionEnd;
 	type Kton = KtonStaking;
+	type KtonRewardDistributionContract = ();
+	type KtonStakerNotifier = ();
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = frame_support::traits::ConstU32<16>;
 	type MinStakingDuration = frame_support::traits::ConstU64<3>;

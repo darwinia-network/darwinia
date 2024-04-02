@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -218,7 +218,7 @@ impl DispatchValidateT<AccountId, RuntimeCall> for DarwiniaDispatchValidator {
 			RuntimeCall::Assets(..)
 				| RuntimeCall::Ethereum(..)
 				| RuntimeCall::EVM(..)
-				| RuntimeCall::MessageTransact(..)
+				| RuntimeCall::EthTxForwarder(..)
 		) {
 			Some(fp_evm::PrecompileFailure::Error {
 				exit_status: ExitError::Other(

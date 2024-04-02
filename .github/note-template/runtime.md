@@ -1,9 +1,9 @@
 ## {{ .Env.CHAIN | strings.Title }}
 <h4 align="right">Upgrade Priority LOW :green_circle:</h4>
 
-#### Proposal Hash
+#### Whitelist Hash
 ```
-{{ (ds "srtool").runtimes.compressed.subwasm.proposal_hash }}
+{{ .Env.WHITELIST_HASH }}
 ```
 #### Blake2 256 Hash
 ```

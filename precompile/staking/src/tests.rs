@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -33,9 +33,9 @@ fn precompiles() -> TestPrecompiles<Runtime> {
 
 #[test]
 fn selectors() {
-	assert!(PCall::stake_selectors().contains(&0x757f9b3b));
-	assert!(PCall::unstake_selectors().contains(&0xef20fcb3));
-	assert!(PCall::restake_selectors().contains(&0x17092fcb));
+	assert!(PCall::stake_selectors().contains(&0x924a2009));
+	assert!(PCall::unstake_selectors().contains(&0x8a5a590b));
+	assert!(PCall::restake_selectors().contains(&0x6dbcd550));
 	assert!(PCall::claim_selectors().contains(&0x4e71d92d));
 	assert!(PCall::nominate_selectors().contains(&0xb332180b));
 	assert!(PCall::collect_selectors().contains(&0x10a66536));

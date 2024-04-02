@@ -16,6 +16,7 @@ frame_support::parameter_types! {
 	pub const FeeMarketLid: LockIdentifier = *b"da/feecr";
 
 	pub const ExistentialDeposit: Balance = EXISTENTIAL_DEPOSIT;
+	pub const MaxBalance: Balance = Balance::max_value();
 
 	pub  AssetCreators: Vec<AccountId> = vec![ROOT];
 }

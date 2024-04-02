@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -686,7 +686,7 @@ macro_rules! impl_fee_tests {
 					assert_eq!(TransactionPayment::next_fee_multiplier(), Multiplier::from(1u128));
 					assert_eq!(
 						TransactionPaymentGasPrice::min_gas_price().0,
-						U256::from(1_507_065_121_289u128)
+						U256::from(753_532_560_644u128)
 					);
 				})
 			}
@@ -701,137 +701,75 @@ macro_rules! impl_fee_tests {
 							System::set_block_consumed_resources(block_weight, 0);
 							TransactionPayment::on_finalize(i as u32);
 						}
-
 						TransactionPaymentGasPrice::min_gas_price().0
 					};
 
-					assert_eq!(sim(Perbill::from_percent(0), 1), U256::from(1507036864082u128),);
-					assert_eq!(sim(Perbill::from_percent(25), 1), U256::from(1507036864082u128),);
-					assert_eq!(sim(Perbill::from_percent(50), 1), U256::from(1507065121289u128),);
-					assert_eq!(sim(Perbill::from_percent(100), 1), U256::from(1507149896086u128),);
+					assert_eq!(sim(Perbill::from_percent(0), 1), U256::from(753_518_432_040u128));
+					assert_eq!(sim(Perbill::from_percent(25), 1), U256::from(753_518_432_040u128));
+					assert_eq!(sim(Perbill::from_percent(50), 1), U256::from(753_532_560_644u128));
+					assert_eq!(sim(Perbill::from_percent(100), 1), U256::from(753_574_948_042u128));
 
 					// 1 "real" hour (at 12-second blocks)
-					assert_eq!(sim(Perbill::from_percent(0), 300), U256::from(1498695976859u128));
-					assert_eq!(sim(Perbill::from_percent(25), 300), U256::from(1498695976859u128),);
-					assert_eq!(sim(Perbill::from_percent(50), 300), U256::from(1507149896086u128),);
-					assert_eq!(sim(Perbill::from_percent(100), 300), U256::from(1532798855001u128),);
+					assert_eq!(sim(Perbill::from_percent(0), 300), U256::from(749_347_988_429u128));
+					assert_eq!(
+						sim(Perbill::from_percent(25), 300),
+						U256::from(749_347_988_429u128)
+					);
+					assert_eq!(
+						sim(Perbill::from_percent(50), 300),
+						U256::from(753_574_948_042u128)
+					);
+					assert_eq!(
+						sim(Perbill::from_percent(100), 300),
+						U256::from(766_399_427_500u128)
+					);
 
 					// 1 "real" day (at 12-second blocks)
-					assert_eq!(sim(Perbill::from_percent(0), 7200), U256::from(1339230749042u128),);
-					assert_eq!(sim(Perbill::from_percent(25), 7200), U256::from(1339230749042u128),);
-					assert_eq!(sim(Perbill::from_percent(50), 7200), U256::from(1532798855001u128));
+					assert_eq!(
+						sim(Perbill::from_percent(0), 7200),
+						U256::from(669_615_374_520u128)
+					);
+					assert_eq!(
+						sim(Perbill::from_percent(25), 7200),
+						U256::from(669_615_374_520u128)
+					);
+					assert_eq!(
+						sim(Perbill::from_percent(50), 7200),
+						U256::from(766_399_427_500u128)
+					);
 					assert_eq!(
 						sim(Perbill::from_percent(100), 7200),
-						U256::from(2298129154896u128),
+						U256::from(1149_064_577_447u128)
 					);
 
 					// 7 "real" day (at 12-second blocks)
-					assert_eq!(sim(Perbill::from_percent(0), 50400), U256::from(893235853851u128),);
-					assert_eq!(sim(Perbill::from_percent(25), 50400), U256::from(893235853851u128),);
+					assert_eq!(
+						sim(Perbill::from_percent(0), 50400),
+						U256::from(446_617_926_925u128)
+					);
+					assert_eq!(
+						sim(Perbill::from_percent(25), 50400),
+						U256::from(446_617_926_925u128)
+					);
 					assert_eq!(
 						sim(Perbill::from_percent(50), 50400),
-						U256::from(2298129154896u128)
+						U256::from(1_149_064_577_447u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(100), 50400),
-						U256::from(39138059391389u128),
+						U256::from(19_569_029_695_681u128)
 					);
-				})
-			}
-		}
-	};
-}
 
-#[macro_export]
-macro_rules! impl_messages_bridge_tests {
-	() => {
-		mod messages_bridge {
-			// crates.io
-			use static_assertions::assert_type_eq_all;
-			// darwinia
-			use super::mock::*;
-
-			#[test]
-			fn darwinia_constants_should_match() {
-				assert_eq!(
-					bp_darwinia_core::MILLISECS_PER_BLOCK,
-					dc_primitives::MILLISECS_PER_BLOCK
-				);
-				assert_eq!(bp_darwinia_core::MINUTES, dc_primitives::MINUTES);
-				assert_eq!(bp_darwinia_core::HOURS, dc_primitives::HOURS);
-				assert_eq!(bp_darwinia_core::DAYS, dc_primitives::DAYS);
-
-				assert_eq!(
-					bp_darwinia_core::AVERAGE_ON_INITIALIZE_RATIO,
-					AVERAGE_ON_INITIALIZE_RATIO
-				);
-				assert_eq!(bp_darwinia_core::NORMAL_DISPATCH_RATIO, NORMAL_DISPATCH_RATIO);
-				assert_eq!(
-					bp_darwinia_core::WEIGHT_MILLISECS_PER_BLOCK,
-					WEIGHT_MILLISECS_PER_BLOCK
-				);
-				assert_eq!(bp_darwinia_core::MAXIMUM_BLOCK_WEIGHT, MAXIMUM_BLOCK_WEIGHT);
-
-				assert_eq!(
-					bp_darwinia_core::RuntimeBlockLength::get().max,
-					RuntimeBlockLength::get().max
-				);
-			}
-
-			#[test]
-			fn darwinia_types_should_match() {
-				assert_type_eq_all!(bp_darwinia_core::BlockNumber, dc_primitives::BlockNumber);
-				assert_type_eq_all!(bp_darwinia_core::Hash, dc_primitives::Hash);
-				assert_type_eq_all!(bp_darwinia_core::Nonce, dc_primitives::Nonce);
-				assert_type_eq_all!(bp_darwinia_core::Balance, dc_primitives::Balance);
-				assert_type_eq_all!(bp_darwinia_core::AccountId, dc_primitives::AccountId);
-			}
-
-			#[test]
-			fn polkadot_constants_should_match() {
-				assert_eq!(
-					bp_polkadot_core::NORMAL_DISPATCH_RATIO,
-					polkadot_runtime_common::NORMAL_DISPATCH_RATIO
-				);
-				assert_eq!(
-					bp_polkadot_core::MAXIMUM_BLOCK_WEIGHT,
-					polkadot_runtime_common::MAXIMUM_BLOCK_WEIGHT
-				);
-				assert_eq!(
-					bp_polkadot_core::AVERAGE_ON_INITIALIZE_RATIO,
-					polkadot_runtime_common::AVERAGE_ON_INITIALIZE_RATIO
-				);
-				assert_eq!(
-					bp_polkadot_core::BlockLength::get().max,
-					polkadot_runtime_common::BlockLength::get().max
-				);
-			}
-
-			#[test]
-			fn polkadot_types_should_match() {
-				assert_type_eq_all!(
-					bp_polkadot_core::BlockNumber,
-					polkadot_primitives::BlockNumber
-				);
-				assert_type_eq_all!(bp_polkadot_core::Balance, polkadot_primitives::Balance);
-				assert_type_eq_all!(bp_polkadot_core::Hash, polkadot_primitives::Hash);
-				assert_type_eq_all!(bp_polkadot_core::Index, polkadot_primitives::AccountIndex);
-				assert_type_eq_all!(bp_polkadot_core::Nonce, polkadot_primitives::Nonce);
-				assert_type_eq_all!(bp_polkadot_core::Signature, polkadot_primitives::Signature);
-				assert_type_eq_all!(bp_polkadot_core::AccountId, polkadot_primitives::AccountId);
-				assert_type_eq_all!(bp_polkadot_core::Header, polkadot_primitives::Header);
-			}
-
-			#[test]
-			fn block_execution_and_extrinsic_base_weight_should_match() {
-				assert_eq!(
-					frame_support::weights::constants::BlockExecutionWeight::get(),
-					frame_support::weights::constants::BlockExecutionWeight::get(),
-				);
-				assert_eq!(
-					frame_support::weights::constants::ExtrinsicBaseWeight::get(),
-					frame_support::weights::constants::ExtrinsicBaseWeight::get(),
-				);
+					// 30 "real" day (at 12-second blocks)
+					assert_eq!(
+						sim(Perbill::from_percent(0), 259200),
+						U256::from(151_669_449_464u128)
+					);
+					assert_eq!(
+						sim(Perbill::from_percent(25), 259200),
+						U256::from(151_669_449_464u128)
+					);
+				});
 			}
 		}
 	};

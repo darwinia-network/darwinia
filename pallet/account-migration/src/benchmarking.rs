@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -116,21 +116,12 @@ mod benchmarks {
 			from,
 			Ledger {
 				staked_ring: 1,
-				staked_kton: 1,
 				staked_deposits: BoundedVec::truncate_from(vec![
 					Default::default();
 					<T as darwinia_deposit::Config>::MaxDeposits::get()
 						as usize
 				]),
 				unstaking_ring: BoundedVec::truncate_from(vec![
-					(
-						Default::default(),
-						Default::default()
-					);
-					<T as darwinia_staking::Config>::MaxUnstakings::get()
-						as usize
-				]),
-				unstaking_kton: BoundedVec::truncate_from(vec![
 					(
 						Default::default(),
 						Default::default()

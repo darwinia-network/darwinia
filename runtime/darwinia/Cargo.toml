@@ -38,9 +38,7 @@ darwinia-account-migration        = { workspace = true }
 darwinia-asset-limit              = { workspace = true }
 darwinia-common-runtime           = { workspace = true }
 darwinia-deposit                  = { workspace = true }
-darwinia-ecdsa-authority          = { workspace = true }
-darwinia-message-gadget           = { workspace = true }
-darwinia-message-transact         = { workspace = true }
+darwinia-ethtx-forwarder          = { workspace = true }
 darwinia-precompile-assets        = { workspace = true }
 darwinia-precompile-bls12-381     = { workspace = true }
 darwinia-precompile-deposit       = { workspace = true }
@@ -49,18 +47,6 @@ darwinia-precompile-state-storage = { workspace = true }
 darwinia-staking                  = { workspace = true }
 dc-inflation                      = { workspace = true }
 dc-primitives                     = { workspace = true }
-
-# darwinia-messages-substrate
-bp-message-dispatch      = { workspace = true }
-bp-messages              = { workspace = true }
-bp-polkadot-core         = { workspace = true }
-bp-runtime               = { workspace = true }
-bridge-runtime-common    = { workspace = true }
-pallet-bridge-dispatch   = { workspace = true }
-pallet-bridge-grandpa    = { workspace = true }
-pallet-bridge-messages   = { workspace = true }
-pallet-bridge-parachains = { workspace = true }
-pallet-fee-market        = { workspace = true }
 
 # frontier
 fp-evm                         = { workspace = true }
@@ -125,6 +111,7 @@ sp-api              = { workspace = true }
 sp-block-builder    = { workspace = true }
 sp-consensus-aura   = { workspace = true }
 sp-core             = { workspace = true }
+sp-debug-derive     = { workspace = true, optional = true, features = ["force-debug"] }
 sp-inherents        = { workspace = true }
 sp-offchain         = { workspace = true }
 sp-runtime          = { workspace = true }
@@ -141,8 +128,6 @@ frame-try-runtime         = { workspace = true, optional = true }
 [dev-dependencies]
 # darwinia
 darwinia-common-runtime = { workspace = true, features = ["std", "test"] }
-# darwinia-messages-substrate
-bp-darwinia-core = { workspace = true, features = ["std"] }
 # polkadot
 polkadot-primitives = { workspace = true, features = ["std"] }
 # substrate
@@ -175,9 +160,7 @@ std = [
 	"darwinia-asset-limit/std",
 	"darwinia-common-runtime/std",
 	"darwinia-deposit/std",
-	"darwinia-ecdsa-authority/std",
-	"darwinia-message-gadget/std",
-	"darwinia-message-transact/std",
+	"darwinia-ethtx-forwarder/std",
 	"darwinia-precompile-assets/std",
 	"darwinia-precompile-bls12-381/std",
 	"darwinia-precompile-deposit/std",
@@ -186,18 +169,6 @@ std = [
 	"darwinia-staking/std",
 	"dc-inflation/std",
 	"dc-primitives/std",
-
-	# darwinia-messages-substrate
-	"bp-message-dispatch/std",
-	"bp-messages/std",
-	"bp-polkadot-core/std",
-	"bp-runtime/std",
-	"bridge-runtime-common/std",
-	"pallet-bridge-dispatch/std",
-	"pallet-bridge-grandpa/std",
-	"pallet-bridge-messages/std",
-	"pallet-bridge-parachains/std",
-	"pallet-fee-market/std",
 
 	# frontier
 	"fp-evm/std",
@@ -262,6 +233,7 @@ std = [
 	"sp-block-builder/std",
 	"sp-consensus-aura/std",
 	"sp-core/std",
+	"sp-debug-derive?/std",
 	"sp-inherents/std",
 	"sp-offchain/std",
 	"sp-runtime/std",
@@ -280,6 +252,11 @@ std = [
 evm-tracing = [
 	# moonbeam
 	"moonbeam-evm-tracer",
+]
+
+force-debug = [
+	# substrate
+	"sp-debug-derive",
 ]
 
 fast-runtime = []
@@ -307,18 +284,10 @@ runtime-benchmarks = [
 	"darwinia-account-migration/runtime-benchmarks",
 	"darwinia-common-runtime/runtime-benchmarks",
 	"darwinia-deposit/runtime-benchmarks",
-	"darwinia-ecdsa-authority/runtime-benchmarks",
-	"darwinia-message-transact/runtime-benchmarks",
+	"darwinia-ethtx-forwarder/runtime-benchmarks",
 	"darwinia-precompile-assets/runtime-benchmarks",
 	"darwinia-precompile-staking/runtime-benchmarks",
 	"darwinia-staking/runtime-benchmarks",
-
-	# darwinia-messages-substrate
-	"bridge-runtime-common/runtime-benchmarks",
-	"pallet-bridge-grandpa/runtime-benchmarks",
-	"pallet-bridge-messages/runtime-benchmarks",
-	"pallet-bridge-parachains/runtime-benchmarks",
-	"pallet-fee-market/runtime-benchmarks",
 
 	# frontier
 	"pallet-ethereum/runtime-benchmarks",
@@ -378,17 +347,8 @@ try-runtime = [
 	"darwinia-account-migration/try-runtime",
 	"darwinia-asset-limit/try-runtime",
 	"darwinia-deposit/try-runtime",
-	"darwinia-ecdsa-authority/try-runtime",
-	"darwinia-message-gadget/try-runtime",
-	"darwinia-message-transact/try-runtime",
+	"darwinia-ethtx-forwarder/try-runtime",
 	"darwinia-staking/try-runtime",
-
-	# darwinia-messages-substrate
-	"pallet-bridge-dispatch/try-runtime",
-	"pallet-bridge-grandpa/try-runtime",
-	"pallet-bridge-messages/try-runtime",
-	"pallet-bridge-parachains/try-runtime",
-	"pallet-fee-market/try-runtime",
 
 	# frontier
 	"fp-self-contained/try-runtime",

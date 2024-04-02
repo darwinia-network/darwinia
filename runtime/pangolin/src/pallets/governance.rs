@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -120,7 +120,10 @@ impl pallet_treasury::Config for Runtime {
 	type RejectOrigin = RootOr<GeneralAdmin>;
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
-	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<Balance>;
+	type SpendOrigin = EitherOf<
+		frame_system::EnsureRootWithSuccess<AccountId, pallet_config::MaxBalance>,
+		Spender,
+	>;
 	type SpendPeriod = Time1;
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Self>;
 }

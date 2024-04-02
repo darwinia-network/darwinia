@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -22,5 +22,4 @@ darwinia_common_runtime::impl_weight_tests! {}
 darwinia_common_runtime::impl_fee_tests! {}
 darwinia_common_runtime::impl_evm_tests! {}
 darwinia_common_runtime::impl_account_migration_tests! {}
-darwinia_common_runtime::impl_messages_bridge_tests! {}
 darwinia_common_runtime::impl_maintenance_tests! {}

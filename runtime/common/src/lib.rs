@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -22,13 +22,9 @@
 // #![deny(missing_docs)]
 
 pub mod gov_origin;
+pub mod migration_helper;
 pub mod pallet_config;
 pub mod xcm_configs;
-
-pub use bp_darwinia_core as bp_crab;
-pub use bp_darwinia_core as bp_darwinia;
-pub use bp_darwinia_core as bp_pangolin;
-pub use bp_darwinia_core as bp_pangoro;
 
 #[cfg(feature = "test")]
 pub mod test;
@@ -178,9 +174,9 @@ impl WeightToFeePolynomial for RefTimeToFee {
 	type Balance = Balance;
 
 	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
-		// Map base extrinsic weight to 1/100 UNIT.
+		// Map base extrinsic weight to 1/200 UNIT.
 		let p = UNIT;
-		let q = 100 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
+		let q = 200 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
 
 		smallvec::smallvec![WeightToFeeCoefficient {
 			degree: 1,

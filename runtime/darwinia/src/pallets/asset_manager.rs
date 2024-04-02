@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -102,20 +102,18 @@ impl From<MultiLocation> for AssetType {
 // We simply hash the `AssetType` and take the lowest 128 bits.
 impl From<AssetType> for crate::AssetId {
 	fn from(asset: AssetType) -> crate::AssetId {
-		use sp_runtime::traits::Hash;
-
 		match asset {
-			AssetType::Xcm(id) =>
-				if id == UsdtLocation::get() {
-					1027
-				} else {
-					let mut result: [u8; 8] = [0_u8; 8];
-					let hash: sp_core::H256 = id.using_encoded(dc_primitives::Hashing::hash);
+			AssetType::Xcm(id) if id == UsdtLocation::get() => 1027,
+			AssetType::Xcm(id) if id == PinkLocation::get() => 1028,
+			AssetType::Xcm(id) => {
+				use sp_runtime::traits::Hash;
 
-					result.copy_from_slice(&hash.as_fixed_bytes()[0..8]);
+				let mut result: [u8; 8] = [0_u8; 8];
+				let hash: sp_core::H256 = id.using_encoded(dc_primitives::Hashing::hash);
+				result.copy_from_slice(&hash.as_fixed_bytes()[0..8]);
 
-					u64::from_le_bytes(result)
-				},
+				u64::from_le_bytes(result)
+			},
 		}
 	}
 }
@@ -131,10 +129,16 @@ impl Into<Option<MultiLocation>> for AssetType {
 frame_support::parameter_types! {
 	/// 1000 is AssetHub paraId.
 	/// 50 is pallet-assets index on AssetHub.
-	/// 1984 is the id of Test USDT on AssetHub(Polkadot).
+	/// 1984 is the id of USDT on AssetHub(Polkadot).
 	pub UsdtLocation: MultiLocation = MultiLocation::new(
 		1,
 		X3(Parachain(1000), PalletInstance(50), GeneralIndex(1984))
+	);
+
+	/// 23 is the id of PINK on AssetHub(Polkadot).
+	pub PinkLocation: MultiLocation = MultiLocation::new(
+		1,
+		X3(Parachain(1000), PalletInstance(50), GeneralIndex(23))
 	);
 }
 

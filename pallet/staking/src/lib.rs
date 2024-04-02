@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -48,13 +48,17 @@ pub use darwinia_staking_traits::*;
 
 // crates.io
 use codec::FullCodec;
+use ethabi::{Function, Param, ParamType, StateMutability, Token};
+use ethereum::TransactionAction;
 // darwinia
+use darwinia_ethtx_forwarder::{ForwardEthOrigin, ForwardRequest, TxType};
 use dc_types::{Balance, Moment};
 // substrate
 use frame_support::{
 	pallet_prelude::*, traits::Currency, DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound,
 };
 use frame_system::{pallet_prelude::*, RawOrigin};
+use sp_core::{H160, U256};
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, One, Zero},
 	Perbill,
@@ -112,7 +116,7 @@ pub mod pallet {
 		/// RING [`Stake`] interface.
 		type Ring: Stake<AccountId = Self::AccountId, Item = Balance>;
 
-		// TODO: Remove.
+		// TODO: Remove after the migration.
 		/// KTON [`Stake`] interface.
 		type Kton: Stake<AccountId = Self::AccountId, Item = Balance>;
 
@@ -124,6 +128,9 @@ pub mod pallet {
 
 		/// Inflation and reward manager.
 		type IssuingManager: IssuingManager<Self>;
+
+		/// KTON staker notifier.
+		type KtonStakerNotifier: KtonStakerNotification;
 
 		/// Pass [`pallet_session::Config::ShouldEndSession`]'s result to here.
 		type ShouldEndSession: Get<bool>;
@@ -140,9 +147,9 @@ pub mod pallet {
 		#[pallet::constant]
 		type MaxUnstakings: Get<u32>;
 
-		/// KTON staker contract address.
+		/// The address of KTON reward distribution contract.
 		#[pallet::constant]
-		type KtonStaker: Get<Self::AccountId>;
+		type KtonRewardDistributionContract: Get<Self::AccountId>;
 	}
 
 	#[allow(missing_docs)]
@@ -282,6 +289,11 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn elapsed_time)]
 	pub type ElapsedTime<T: Config> = StorageValue<_, Moment, ValueQuery>;
+
+	/// Migration starting block.
+	#[pallet::storage]
+	#[pallet::getter(fn migration_start_block)]
+	pub type MigrationStartBlock<T: Config> = StorageValue<_, BlockNumberFor<T>, ValueQuery>;
 
 	#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
@@ -750,38 +762,26 @@ pub mod pallet {
 		pub fn distribute_session_reward(amount: Balance) {
 			let reward_to_ring = amount.saturating_div(2);
 			let reward_to_kton = amount.saturating_sub(reward_to_ring);
-			let kton_staker = T::KtonStaker::get();
-
-			if T::IssuingManager::reward(&kton_staker, reward_to_kton).is_err() {
-				Self::deposit_event(Event::Unpaid {
-					who: kton_staker,
-					amount: reward_to_kton,
-				});
-			}
-
 			let (sum, map) = <AuthoredBlocksCount<T>>::take();
-			let staking_pot = account_id();
-			let mut actual_reward_to_ring = 0;
-			let mut unpaid_reward_to_ring = 0;
-
-			map.into_iter().for_each(|(c, p)| {
+			let actual_reward_to_ring = map.into_iter().fold(0, |s, (c, p)| {
 				let r = Perbill::from_rational(p, sum) * reward_to_ring;
 
-				<PendingRewards<T>>::mutate(&c, |u| *u = u.map(|u| u + r).or(Some(r)));
+				<PendingRewards<T>>::mutate(c, |u| *u = u.map(|u| u + r).or(Some(r)));
 
-				if T::IssuingManager::reward(&staking_pot, r).is_ok() {
-					actual_reward_to_ring += amount;
-				} else {
-					unpaid_reward_to_ring += amount;
-				}
+				s + r
 			});
+			let reward = |who, amount| {
+				if T::IssuingManager::reward(&who, amount).is_ok() {
+					Self::deposit_event(Event::Payout { who, amount });
+				} else {
+					Self::deposit_event(Event::Unpaid { who, amount });
+				}
+			};
 
-			if unpaid != 0 {
-				Self::deposit_event(Event::Unpaid {
-					who: staking_pot,
-					amount: unpaid_reward_to_ring,
-				});
-			}
+			reward(account_id(), actual_reward_to_ring);
+			reward(T::KtonRewardDistributionContract::get(), reward_to_kton);
+
+			T::KtonStakerNotifier::notify(reward_to_kton);
 		}
 
 		/// Pay the reward to the collator and its nominators.
@@ -1000,7 +1000,7 @@ where
 
 /// A snapshot of the stake backing a single collator in the system.
 #[cfg_attr(test, derive(Clone))]
-#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+#[derive(Encode, Decode, TypeInfo, RuntimeDebug)]
 pub struct Exposure<AccountId> {
 	/// The commission of this collator.
 	pub commission: Perbill,
@@ -1011,7 +1011,7 @@ pub struct Exposure<AccountId> {
 }
 /// A snapshot of the staker's state.
 #[cfg_attr(test, derive(Clone))]
-#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+#[derive(Encode, Decode, TypeInfo, RuntimeDebug)]
 pub struct IndividualExposure<AccountId> {
 	/// Nominator.
 	pub who: AccountId,
@@ -1054,4 +1054,82 @@ where
 	A: FullCodec,
 {
 	PalletId(*b"da/staki").into_account_truncating()
+}
+
+/// The address of the RewardsDistribution.
+/// 0x000000000Ae5DB7BDAf8D071e680452e33d91Dd5.
+pub struct KtonRewardDistributionContract;
+impl<T> Get<T> for KtonRewardDistributionContract
+where
+	T: From<[u8; 20]>,
+{
+	fn get() -> T {
+		[0, 0, 0, 0, 10, 229, 219, 123, 218, 248, 208, 113, 230, 128, 69, 46, 51, 217, 29, 213]
+			.into()
+	}
+}
+
+/// KTON staker contact notification interface.
+pub trait KtonStakerNotification {
+	/// Notify the KTON staker contract.
+	fn notify(_: Balance) {}
+}
+impl KtonStakerNotification for () {}
+/// KTON staker contact notifier.
+pub struct KtonStakerNotifier<T>(PhantomData<T>);
+impl<T> KtonStakerNotification for KtonStakerNotifier<T>
+where
+	T: Config + darwinia_ethtx_forwarder::Config,
+	T::RuntimeOrigin: Into<Result<ForwardEthOrigin, T::RuntimeOrigin>> + From<ForwardEthOrigin>,
+	<T as frame_system::Config>::AccountId: Into<H160>,
+{
+	fn notify(amount: Balance) {
+		// KTONStakingRewards
+		// 0x000000000419683a1a03AbC21FC9da25fd2B4dD7
+		let staking_reward =
+			H160([0, 0, 0, 0, 4, 25, 104, 58, 26, 3, 171, 194, 31, 201, 218, 37, 253, 43, 77, 215]);
+
+		let reward_distr = T::KtonRewardDistributionContract::get().into();
+		// https://github.com/darwinia-network/kton-staker/blob/175f0ec131d4aef3bf64cfb2fce1d262e7ce9140/src/RewardsDistribution.sol#L11
+		#[allow(deprecated)]
+		let function = Function {
+			name: "distributeRewards".into(),
+			inputs: vec![
+				Param {
+					name: "ktonStakingRewards".into(),
+					kind: ParamType::Address,
+					internal_type: None,
+				},
+				Param { name: "reward".into(), kind: ParamType::Uint(256), internal_type: None },
+			],
+			outputs: vec![Param {
+				name: "success or not".into(),
+				kind: ParamType::Bool,
+				internal_type: None,
+			}],
+			constant: None,
+			state_mutability: StateMutability::Payable,
+		};
+
+		let request = ForwardRequest {
+			tx_type: TxType::LegacyTransaction,
+			action: TransactionAction::Call(reward_distr),
+			value: U256::zero(),
+			input: function
+				.encode_input(&[Token::Address(staking_reward), Token::Uint(amount.into())])
+				.unwrap_or_default(),
+			gas_limit: U256::from(1_000_000),
+		};
+		// Treasury account.
+		let sender = H160([
+			109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0,
+		]);
+
+		if let Err(e) = <darwinia_ethtx_forwarder::Pallet<T>>::forward_transact(
+			ForwardEthOrigin::ForwardEth(sender).into(),
+			request,
+		) {
+			log::error!("[pallet::staking] failed to notify KTON staker contract due to {e:?}");
+		}
+	}
 }

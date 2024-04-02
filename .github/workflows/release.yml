@@ -17,7 +17,7 @@ env:
   GOMPLATE_URL: https://github.com/hairyhenderson/gomplate/releases/download
 
   RUST_BACKTRACE: full
-  RUST_TOOLCHAIN: nightly-2023-05-22
+  RUST_TOOLCHAIN: 1.74.0
 
   # Set this to true for CI testing purposes only.
   # SKIP_BUILD: true
@@ -36,10 +36,10 @@ jobs:
             features: darwinia-native,crab-native,evm-tracing
             type: tracing
           - network: testnet
-            features: pangoro-native,pangolin-native
+            features: pangolin-native
             bz2: true
           - network: testnet
-            features: pangoro-native,pangolin-native,evm-tracing
+            features: pangolin-native,evm-tracing
             type: tracing
     steps:
       - name: Free disk space
@@ -100,8 +100,6 @@ jobs:
             type: mainnet
           - name: crab
             type: mainnet
-          - name: pangoro
-            type: testnet
           - name: pangolin
             type: testnet
     steps:
@@ -112,6 +110,12 @@ jobs:
           curl -LO ${{ env.GOMPLATE_URL }}/${{ env.GOMPLATE_VERSION }}/${{ env.GOMPLATE }}
           chmod u+x ${{ env.GOMPLATE }}
           sudo mv ${{ env.GOMPLATE }} /usr/bin/gomplate
+      - name: Setup wuh
+        run: |
+          curl -LO https://github.com/darwinia-network/darwinia-release/releases/download/v0.1.0/wuh.zst
+          zstd -d wuh.zst
+          chmod u+x ./wuh
+          sudo mv ./wuh /usr/bin/wuh
       - name: Filter
         run: |
           SKIP_BUILD=${{ env.SKIP_BUILD }}
@@ -128,9 +132,11 @@ jobs:
         id: srtool_build
         if: ${{ env.FILTER == 'true' }}
         uses: chevdor/srtool-actions@v0.9.2
+        env:
+          BUILD_OPTS: --features=on-chain-release-build
         with:
           image: paritytech/srtool
-          tag: "1.70.0"
+          tag: "1.74.0"
           chain: ${{ matrix.runtime.name }}
       - name: Prepare runtime
         run: |
@@ -146,7 +152,15 @@ jobs:
 
           if [ "$FILTER" == "true" ]; then
             echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${CHAIN}-srtool.json
-            mv ${{ steps.srtool_build.outputs.wasm_compressed }} build/
+
+            WASM_FILE='${{ steps.srtool_build.outputs.wasm_compressed }}'
+            WHITELIST_PALLET_INDEX=0x33
+            if [ "$CHAIN" == "crab" ]; then
+              WHITELIST_PALLET_INDEX=0x2f
+            fi
+            export WHITELIST_HASH=$(wuh ${WASM_FILE} ${WHITELIST_PALLET_INDEX} 0x01)
+
+            mv ${WASM_FILE} build/
 
             cat .github/note-template/runtime.md \
               | gomplate -d srtool=build/${CHAIN}-srtool.json \
@@ -252,7 +266,6 @@ jobs:
             cat node.tmp.md >> node.md
           else
             cat pangolin-runtime/runtime.md >> node.md
-            cat pangoro-runtime/runtime.md >> node.md
             cat node.tmp.md >> node.md
           fi
       - name: Hash file
@@ -264,7 +277,7 @@ jobs:
       #     ls -la deploy/
       #     cat build/*.md
       - name: Publish
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           body_path: "node.md"
           files: |
@@ -272,32 +285,3 @@ jobs:
           generate_release_notes: true
           token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: ${{ startsWith(github.ref, 'refs/tags/pango') }}
-
-  deploy-tracing-nodes:
-    name: Deploy tracing nodes
-    runs-on: ubuntu-latest
-    needs: [publish-github-release]
-    steps:
-      - name: Tag
-        uses: olegtarasov/get-tag@v2.1
-      - name: Deploy tracing nodes
-        run: |
-          IS_MAINNET=${{ env.SKIP_BUILD != 'true' && startsWith(github.ref, 'refs/tags/v') }}
-          IS_TESTNET=${{ env.SKIP_BUILD != 'true' && startsWith(github.ref, 'refs/tags/pango') }}
-
-          if [ "$IS_MAINNET" == "true" ]; then
-            TYPE=mainnets
-          elif [ "$IS_TESTNET" == "true" ]; then
-            TYPE=testnets
-          fi
-
-          echo $TYPE
-
-          if [ "$TYPE" != "" ]; then
-            GITHUB_TOKEN=${{ secrets.GH_TKN_DARWINIA }} gh workflow run \
-              trigger-tracing-node.yml \
-              --ref=main \
-              --repo=darwinia-network/devops \
-              --raw-field=type=$TYPE \
-              --raw-field="version=$GIT_TAG_NAME"
-          fi

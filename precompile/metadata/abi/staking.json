@@ -105,14 +105,9 @@
               "type": "uint256"
             },
             {
-              "internalType": "uint256",
-              "name": "ktonAmount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint8[]",
+              "internalType": "uint16[]",
               "name": "depositIds",
-              "type": "uint8[]"
+              "type": "uint16[]"
             }
           ],
           "name": "restake",
@@ -141,9 +136,9 @@
               "type": "uint256"
             },
             {
-              "internalType": "uint8[]",
+              "internalType": "uint16[]",
               "name": "depositIds",
-              "type": "uint8[]"
+              "type": "uint16[]"
             }
           ],
           "name": "stake",
@@ -172,9 +167,9 @@
               "type": "uint256"
             },
             {
-              "internalType": "uint8[]",
+              "internalType": "uint16[]",
               "name": "depositIds",
-              "type": "uint8[]"
+              "type": "uint16[]"
             }
           ],
           "name": "unstake",
@@ -247,13 +242,12 @@
               "_0": "returns true on success, false otherwise."
             }
           },
-          "restake(uint256,uint256,uint8[])":
+          "restake(uint256,uint16[])":
           {
             "details": "Re-stake the unstaking assets immediately.",
             "params":
             {
               "depositIds": "The deposit ids list",
-              "ktonAmount": "The amount of staking KTON asset",
               "ringAmount": "The amount of staking RING asset"
             },
             "returns":
@@ -261,7 +255,7 @@
               "_0": "true on success, false otherwise."
             }
           },
-          "stake(uint256,uint256,uint8[])":
+          "stake(uint256,uint256,uint16[])":
           {
             "details": "Add stakes to the staking pool.",
             "params":
@@ -275,7 +269,7 @@
               "_0": "returns true on success, false otherwise."
             }
           },
-          "unstake(uint256,uint256,uint8[])":
+          "unstake(uint256,uint256,uint16[])":
           {
             "details": "Withdraw stakes to the staking pool.",
             "params":
@@ -300,9 +294,9 @@
         "collect(uint32)": "10a66536",
         "nominate(address)": "b332180b",
         "payout(address)": "0b7e9c44",
-        "restake(uint256,uint256,uint8[])": "17092fcb",
-        "stake(uint256,uint256,uint8[])": "757f9b3b",
-        "unstake(uint256,uint256,uint8[])": "ef20fcb3"
+        "restake(uint256,uint16[])": "1ed0818e",
+        "stake(uint256,uint256,uint16[])": "98e9fb50",
+        "unstake(uint256,uint256,uint16[])": "632efe00"
       }
     }
   },

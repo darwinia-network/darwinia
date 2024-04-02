@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -251,12 +251,6 @@ pub fn genesis_config() -> ChainSpec {
 					},
 					..Default::default()
 				},
-
-				// S2S stuff.
-				bridge_polkadot_grandpa: Default::default(),
-				bridge_polkadot_parachain: Default::default(),
-				bridge_darwinia_messages: Default::default(),
-				darwinia_fee_market: Default::default(),
 			}
 		},
 		vec![
@@ -374,11 +368,5 @@ fn testnet_genesis(
 			},
 			..Default::default()
 		},
-
-		// S2S stuff.
-		bridge_polkadot_grandpa: Default::default(),
-		bridge_polkadot_parachain: Default::default(),
-		bridge_darwinia_messages: Default::default(),
-		darwinia_fee_market: Default::default(),
 	}
 }

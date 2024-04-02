@@ -1,6 +1,6 @@
 // This file is part of Darwinia.
 //
-// Copyright (C) 2018-2023 Darwinia Network
+// Copyright (C) Darwinia Network
 // SPDX-License-Identifier: GPL-3.0
 //
 // Darwinia is free software: you can redistribute it and/or modify
@@ -76,21 +76,5 @@ impl NativeExecutionDispatch for PangolinRuntimeExecutor {
 
 	fn native_version() -> NativeVersion {
 		pangolin_runtime::native_version()
-	}
-}
-
-/// Pangoro native executor instance.
-#[cfg(feature = "pangoro-native")]
-pub struct PangoroRuntimeExecutor;
-#[cfg(feature = "pangoro-native")]
-impl NativeExecutionDispatch for PangoroRuntimeExecutor {
-	type ExtendHostFunctions = HostFunctions;
-
-	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-		pangoro_runtime::api::dispatch(method, data)
-	}
-
-	fn native_version() -> NativeVersion {
-		pangoro_runtime::native_version()
 	}
 }
