@@ -154,12 +154,7 @@ mod benchmarks {
 		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
 		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, UNIT + 1);
 
-		<Pallet<T>>::stake(
-			RawOrigin::Signed(a.clone()).into(),
-			UNIT,
-			Default::default(),
-		)
-		.unwrap();
+		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, Default::default()).unwrap();
 		<Pallet<T>>::collect(RawOrigin::Signed(a.clone()).into(), Default::default()).unwrap();
 
 		// Worst-case scenario:
@@ -176,12 +171,7 @@ mod benchmarks {
 		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
 		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, UNIT + 1);
 
-		<Pallet<T>>::stake(
-			RawOrigin::Signed(a.clone()).into(),
-			UNIT,
-			Default::default(),
-		)
-		.unwrap();
+		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, Default::default()).unwrap();
 		<Pallet<T>>::collect(RawOrigin::Signed(a.clone()).into(), Default::default()).unwrap();
 		<Pallet<T>>::nominate(RawOrigin::Signed(a.clone()).into(), a.clone()).unwrap();
 
