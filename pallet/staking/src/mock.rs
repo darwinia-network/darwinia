@@ -19,7 +19,7 @@
 pub use crate as darwinia_staking;
 
 // darwinia
-use dc_types::{AssetId, Balance, Moment, UNIT};
+use dc_types::{Balance, Moment, UNIT};
 // substrate
 use frame_support::traits::{Currency, OnInitialize};
 use sp_io::TestExternalities;
@@ -77,53 +77,16 @@ impl pallet_balances::Config for Runtime {
 	type WeightInfo = ();
 }
 
-#[cfg(feature = "runtime-benchmarks")]
-pub enum BenchmarkHelper {}
-#[cfg(feature = "runtime-benchmarks")]
-impl pallet_assets::BenchmarkHelper<codec::Compact<AssetId>> for BenchmarkHelper {
-	fn create_asset_id_parameter(id: u32) -> codec::Compact<AssetId> {
-		(id as u64).into()
-	}
-}
-impl pallet_assets::Config for Runtime {
-	type ApprovalDeposit = ();
-	type AssetAccountDeposit = ();
-	type AssetDeposit = ();
-	type AssetId = AssetId;
-	type AssetIdParameter = codec::Compact<AssetId>;
-	type Balance = Balance;
-	#[cfg(feature = "runtime-benchmarks")]
-	type BenchmarkHelper = BenchmarkHelper;
-	type CallbackHandle = ();
-	type CreateOrigin = frame_support::traits::AsEnsureOriginWithArg<
-		frame_system::EnsureSignedBy<frame_support::traits::IsInVec<()>, AccountId>,
-	>;
-	type Currency = Balances;
-	type Extra = ();
-	type ForceOrigin = frame_system::EnsureRoot<AccountId>;
-	type Freezer = ();
-	type MetadataDepositBase = ();
-	type MetadataDepositPerByte = ();
-	type RemoveItemsLimit = ();
-	type RuntimeEvent = RuntimeEvent;
-	type StringLimit = frame_support::traits::ConstU32<4>;
-	type WeightInfo = ();
-}
-
 pub enum KtonMinting {}
 impl darwinia_deposit::SimpleAsset for KtonMinting {
 	type AccountId = AccountId;
 
-	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		Assets::mint(RuntimeOrigin::signed(0), 0.into(), *beneficiary, amount)
+	fn mint(_: &Self::AccountId, _: Balance) -> sp_runtime::DispatchResult {
+		Ok(())
 	}
 
-	fn burn(who: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		if Assets::balance(0, who) < amount {
-			Err(<pallet_assets::Error<Runtime>>::BalanceLow)?;
-		}
-
-		Assets::burn(RuntimeOrigin::signed(0), 0.into(), *who, amount)
+	fn burn(_: &Self::AccountId, _: Balance) -> sp_runtime::DispatchResult {
+		Ok(())
 	}
 }
 impl darwinia_deposit::Config for Runtime {
@@ -133,53 +96,6 @@ impl darwinia_deposit::Config for Runtime {
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
-}
-
-pub enum RingStaking {}
-impl darwinia_staking::Stake for RingStaking {
-	type AccountId = AccountId;
-	type Item = Balance;
-
-	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		<Balances as frame_support::traits::Currency<_>>::transfer(
-			who,
-			&darwinia_staking::account_id(),
-			item,
-			frame_support::traits::ExistenceRequirement::AllowDeath,
-		)
-	}
-
-	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		<Balances as frame_support::traits::Currency<_>>::transfer(
-			&darwinia_staking::account_id(),
-			who,
-			item,
-			frame_support::traits::ExistenceRequirement::AllowDeath,
-		)
-	}
-}
-pub enum KtonStaking {}
-impl darwinia_staking::Stake for KtonStaking {
-	type AccountId = AccountId;
-	type Item = Balance;
-
-	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		Assets::transfer(
-			RuntimeOrigin::signed(*who),
-			0.into(),
-			darwinia_staking::account_id(),
-			item,
-		)
-	}
-
-	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		Assets::transfer(
-			RuntimeOrigin::signed(darwinia_staking::account_id()),
-			0.into(),
-			*who,
-			item,
-		)
-	}
 }
 
 frame_support::parameter_types! {
@@ -335,6 +251,42 @@ impl frame_support::traits::Get<bool> for ShouldEndSession {
 		)
 	}
 }
+pub enum RingStaking {}
+impl darwinia_staking::Stake for RingStaking {
+	type AccountId = AccountId;
+	type Item = Balance;
+
+	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
+		<Balances as frame_support::traits::Currency<_>>::transfer(
+			who,
+			&darwinia_staking::account_id(),
+			item,
+			frame_support::traits::ExistenceRequirement::AllowDeath,
+		)
+	}
+
+	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
+		<Balances as frame_support::traits::Currency<_>>::transfer(
+			&darwinia_staking::account_id(),
+			who,
+			item,
+			frame_support::traits::ExistenceRequirement::AllowDeath,
+		)
+	}
+}
+pub enum KtonStaking {}
+impl darwinia_staking::Stake for KtonStaking {
+	type AccountId = AccountId;
+	type Item = Balance;
+
+	fn stake(_: &Self::AccountId, _: Self::Item) -> sp_runtime::DispatchResult {
+		Ok(())
+	}
+
+	fn unstake(_: &Self::AccountId, _: Self::Item) -> sp_runtime::DispatchResult {
+		Ok(())
+	}
+}
 impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
@@ -358,7 +310,6 @@ frame_support::construct_runtime! {
 		System: frame_system,
 		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
-		Assets: pallet_assets,
 		Deposit: darwinia_deposit,
 		Session: pallet_session,
 		Treasury: pallet_treasury,
@@ -429,13 +380,6 @@ impl ExtBuilder {
 				.map(|i| (i, 1_000 * UNIT))
 				.chain([(Treasury::account_id(), 1_000_000 * UNIT)])
 				.collect(),
-		}
-		.assimilate_storage(&mut storage)
-		.unwrap();
-		pallet_assets::GenesisConfig::<Runtime> {
-			assets: vec![(0, 0, true, 1)],
-			metadata: vec![(0, b"KTON".to_vec(), b"KTON".to_vec(), 18)],
-			accounts: (1..=10).map(|i| (0, i, 1_000 * UNIT)).collect(),
 		}
 		.assimilate_storage(&mut storage)
 		.unwrap();

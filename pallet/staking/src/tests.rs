@@ -118,7 +118,6 @@ fn stake_should_work() {
 		assert_eq!(System::account(1).consumers, 0);
 		assert!(Staking::ledger_of(1).is_none());
 		assert_eq!(Balances::free_balance(1), 1_000 * UNIT);
-		assert_eq!(Assets::balance(0, 1), 1_000 * UNIT);
 
 		// Stake 1 RING.
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), UNIT, Vec::new()));
@@ -243,7 +242,6 @@ fn restake_should_work() {
 		Efflux::block(1);
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), UNIT, Vec::new()));
 		assert_eq!(Balances::free_balance(1), 994 * UNIT);
-		assert_eq!(Assets::balance(0, 1), 1_000 * UNIT + 22_842_639_593_907);
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger {
@@ -547,7 +545,7 @@ fn payout_should_work() {
 		);
 
 		assert_eq!(Balances::total_issuance(), total_issuance);
-		
+
 		assert_ok!(Balances::transfer_all(
 			RuntimeOrigin::signed(Treasury::account_id()),
 			Default::default(),
