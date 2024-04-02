@@ -27,12 +27,24 @@ pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::DispatchError> {
+		log::info!("pre");
+
+		<pallet_balances::Locks<Runtime>>::iter().for_each(|(k, v)| {
+			log::info!("{k:?}");
+			log::info!("{v:?}");
+		});
+
 		Ok(Vec::new())
 	}
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
-		<pallet_balances::Locks<Runtime>>::iter_values().for_each(|v| {
+		log::info!("post");
+
+		<pallet_balances::Locks<Runtime>>::iter().for_each(|(k, v)| {
+			log::info!("{k:?}");
+			log::info!("{v:?}");
+
 			assert!(!v.is_empty());
 		});
 
@@ -82,7 +94,13 @@ fn migrate() -> frame_support::weights::Weight {
 			});
 
 			if changed {
-				<pallet_balances::Locks<Runtime>>::insert(k, v);
+				if v.is_empty() {
+					// Clear the storage entry if the vector is empty.
+
+					<pallet_balances::Locks<Runtime>>::remove(k);
+				} else {
+					<pallet_balances::Locks<Runtime>>::insert(k, v);
+				}
 
 				w += 1;
 			}
