@@ -33,9 +33,9 @@ fn precompiles() -> TestPrecompiles<Runtime> {
 
 #[test]
 fn selectors() {
-	assert!(PCall::stake_selectors().contains(&0x924a2009));
-	assert!(PCall::unstake_selectors().contains(&0x8a5a590b));
-	assert!(PCall::restake_selectors().contains(&0x6dbcd550));
+	assert!(PCall::stake_selectors().contains(&0x88FD3D50));
+	assert!(PCall::unstake_selectors().contains(&0xE198447));
+	assert!(PCall::restake_selectors().contains(&0x1ED0818E));
 	assert!(PCall::claim_selectors().contains(&0x4e71d92d));
 	assert!(PCall::nominate_selectors().contains(&0xb332180b));
 	assert!(PCall::collect_selectors().contains(&0x10a66536));
