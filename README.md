@@ -1,6 +1,6 @@
 <div align="center">
 
-![Logo](https://infura-ipfs.io/ipfs/QmWm8Fdvjnu1afHGiyXQusGrBhTdZRyviNJNa6Dyx7Ujud)
+![mission](./.maintain/mission.png)
 
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Substrate version](https://img.shields.io/badge/Substrate-3.0.0-brightgreen?logo=Parity%20Substrate)](https://substrate.io)
