@@ -4,7 +4,7 @@
 
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Substrate version](https://img.shields.io/badge/Substrate-3.0.0-brightgreen?logo=Parity%20Substrate)](https://substrate.io)
-[![CI](https://github.com/darwinia-network/darwinia/workflows/CI/badge.svg?branch=master)](https://github.com/darwinia-network/darwinia/actions/workflows/checks.yml)
+[![CI](https://github.com/darwinia-network/darwinia/workflows/CI/badge.svg?branch=main)](https://github.com/darwinia-network/darwinia/actions/workflows/checks.yml)
 [![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/darwinia-network/darwinia)](https://github.com/darwinia-network/darwinia/tags)
 [![Quay.io](https://img.shields.io/badge/quay-latest-blue.svg?logo=docker&logoColor=white)](https://quay.io/repository/darwinia-network/darwinia)
 [![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/darwinia)](https://github.com/darwinia-network/darwinia)
