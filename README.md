@@ -3,10 +3,8 @@
 ![mission](./.maintain/mission.png)
 
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Substrate version](https://img.shields.io/badge/Substrate-3.0.0-brightgreen?logo=Parity%20Substrate)](https://substrate.io)
-[![CI](https://github.com/darwinia-network/darwinia/workflows/CI/badge.svg?branch=main)](https://github.com/darwinia-network/darwinia/actions/workflows/checks.yml)
+[![CI](https://github.com/darwinia-network/darwinia/actions/workflows/checks.yml/badge.svg)](https://github.com/darwinia-network/darwinia/actions/workflows/checks.yml/badge.svg)
 [![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/darwinia-network/darwinia)](https://github.com/darwinia-network/darwinia/tags)
-[![Quay.io](https://img.shields.io/badge/quay-latest-blue.svg?logo=docker&logoColor=white)](https://quay.io/repository/darwinia-network/darwinia)
 [![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/darwinia)](https://github.com/darwinia-network/darwinia)
 [![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/darwinia?color=red&style=plastic)](https://github.com/darwinia-network/darwinia)
 
@@ -23,9 +21,9 @@ Implementation of a **https://darwinia.network** node based on the **[Polkadot-s
 
 This repo contains the following networks:
 
-* the **[Darwinia main network](https://docs.darwinia.network/evm/chains/darwinia/)**, the parachain on the Polkadot.
-* the **[Crab main network](https://docs.darwinia.network/evm/chains/crab/)**, the parachain on the Kusama.
-* the **[Pangolin test network](https://docs.darwinia.network/evm/chains/pangolin/)**, the official testnet for production networks, the parachain on the Rococo.
+* the **[Darwinia Main Network](https://docs.darwinia.network/evm/chains/darwinia/)**, the parachain on the Polkadot.
+* the **[Crab Main Network](https://docs.darwinia.network/evm/chains/crab/)**, the parachain on the Kusama.
+* the **[Pangolin Test Network](https://docs.darwinia.network/evm/chains/pangolin/)**, the official testnet for production networks, the parachain on the Rococo.
 
 ## Other Projects
 
