@@ -4,7 +4,7 @@
 
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Substrate version](https://img.shields.io/badge/Substrate-3.0.0-brightgreen?logo=Parity%20Substrate)](https://substrate.io)
-[![CI](https://github.com/darwinia-network/darwinia/workflows/CI/badge.svg?branch=master)](https://github.com/darwinia-network/darwinia/actions/workflows/ci.yml)
+[![CI](https://github.com/darwinia-network/darwinia/workflows/CI/badge.svg?branch=master)](https://github.com/darwinia-network/darwinia/actions/workflows/checks.yml)
 [![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/darwinia-network/darwinia)](https://github.com/darwinia-network/darwinia/tags)
 [![Quay.io](https://img.shields.io/badge/quay-latest-blue.svg?logo=docker&logoColor=white)](https://quay.io/repository/darwinia-network/darwinia)
 [![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/darwinia)](https://github.com/darwinia-network/darwinia)
@@ -19,25 +19,25 @@
 
 ## Introduction
 
-Implementation of a **https://darwinia.network** node in **Rust** based on the **Substrate** framework.
+Implementation of a **https://darwinia.network** node based on the **[Polkadot-sdk](https://github.com/paritytech/polkadot-sdk)** framework.
 
 This repo contains the following networks:
 
-1. the **Darwinia main network**, the parachain on the Polkadot, and its test network **Pangoro**.
-2. the **Crab main network**, the parachain on the Kusama, and its test network **Pangolin**.
+* the **[Darwinia main network](https://docs.darwinia.network/evm/chains/darwinia/)**, the parachain on the Polkadot.
+* the **[Crab main network](https://docs.darwinia.network/evm/chains/crab/)**, the parachain on the Kusama.
+* the **[Pangolin test network](https://docs.darwinia.network/evm/chains/pangolin/)**, the official testnet for production networks, the parachain on the Rococo.
 
-## Ecosystem
+## Other Projects
 
 | Project | Introduction | Code | Activity |
 | :-----: | :----------: | :--: | :------: |
-| [darwinia-messages-sol](https://github.com/darwinia-network/darwinia-messages-sol) | Darwinia cross-chain messages SDK for solidity developers | ![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/darwinia-messages-sol) | ![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/darwinia-messages-sol) |
-| [darwinia-bridger](https://github.com/darwinia-network/bridger) | Client for header and message relayers in Darwinia cross-chain messaging network. | ![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/bridger) | ![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/bridger) |
-
-## Documents
-[Darwinia Network Docs](https://docs.darwinia.network)
+| [darwinia-msgport](https://github.com/darwinia-network/darwinia-msgport) | Msgport is unified interface for sending and receiving messages across different chains | ![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/darwinia-msgport) | ![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/darwinia-msgport) |
+| [ORMP](https://github.com/darwinia-network/ORMP) | Oracle and Relayer based Message Protocol | ![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/ORMP) | ![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/ORMP) |
+| [DIPs](https://github.com/darwinia-network/DIPs) | Darwinia Improvement Proposals Hosting Repository | ![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/DIPs) | ![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/DIPs) |
+| [Darwinia Document](https://github.com/darwinia-network/document) | Darwinia Document | ![GitHub code lines](https://tokei.rs/b1/github/darwinia-network/document) | ![GitHub last commit](https://img.shields.io/github/last-commit/darwinia-network/document) |
 
 ## Roadmap
 [Roadmap](https://itering.notion.site/9617e154ec884b07a7cee9a056374e42?v=0c3e4d9f257646c486a32a0425ee3a93)
 
 ## Security
-[Security](docs/SECURITY.md)
+[Security](./SECURITY.md)
