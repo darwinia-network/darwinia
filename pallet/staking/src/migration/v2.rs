@@ -11,6 +11,8 @@ use sp_runtime::TryRuntimeError;
 type RingPool<T: Config> = StorageValue<Pallet<T>, ()>;
 #[frame_support::storage_alias]
 type KtonPool<T: Config> = StorageValue<Pallet<T>, ()>;
+#[frame_support::storage_alias]
+type MigrationStartBlock<T: Config> = StorageValue<Pallet<T>, ()>;
 
 #[allow(missing_docs)]
 #[derive(
@@ -75,10 +77,11 @@ where
 			return T::DbWeight::get().reads(r);
 		}
 
-		let mut w = 3;
+		let mut w = 4;
 
 		<RingPool<T>>::kill();
 		<KtonPool<T>>::kill();
+		<MigrationStartBlock<T>>::kill();
 		<Ledgers<T>>::translate::<OldLedger<T>, _>(|a, o| {
 			w += 2;
 

@@ -290,11 +290,6 @@ pub mod pallet {
 	#[pallet::getter(fn elapsed_time)]
 	pub type ElapsedTime<T: Config> = StorageValue<_, Moment, ValueQuery>;
 
-	/// Migration starting block.
-	#[pallet::storage]
-	#[pallet::getter(fn migration_start_block)]
-	pub type MigrationStartBlock<T: Config> = StorageValue<_, BlockNumberFor<T>, ValueQuery>;
-
 	#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
