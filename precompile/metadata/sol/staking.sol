@@ -29,23 +29,19 @@ Staking constant STAKING_CONTRACT = Staking(STAKING_ADDRESS);
 interface Staking {
 	/// @dev Add stakes to the staking pool.
 	/// @param ringAmount The amount of staking RING asset
-	/// @param ktonAmount The amount of staking KTON asset
 	/// @param depositIds The deposit ids list
 	/// @return returns true on success, false otherwise.
 	function stake(
 		uint256 ringAmount,
-		uint256 ktonAmount,
 		uint16[] memory depositIds
 	) external returns (bool);
 
 	/// @dev Withdraw stakes to the staking pool.
 	/// @param ringAmount The amount of staking RING asset
-	/// @param ktonAmount The amount of staking KTON asset
 	/// @param depositIds The deposit ids list
 	/// @return returns true on success, false otherwise.
 	function unstake(
 		uint256 ringAmount,
-		uint256 ktonAmount,
 		uint16[] memory depositIds
 	) external returns (bool);
 
