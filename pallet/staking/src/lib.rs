@@ -594,9 +594,9 @@ pub mod pallet {
 
 		/// Update the record of block production.
 		pub fn note_authors(authors: &[T::AccountId]) {
-			<AuthoredBlocksCount<T>>::mutate(|(sum, map)| {
+			<AuthoredBlocksCount<T>>::mutate(|(total, map)| {
 				authors.iter().cloned().for_each(|c| {
-					*sum += One::one();
+					*total += One::one();
 
 					map.entry(c).and_modify(|p_| *p_ += One::one()).or_insert(One::one());
 				});
@@ -621,9 +621,9 @@ pub mod pallet {
 		pub fn distribute_session_reward(amount: Balance) {
 			let reward_to_ring = amount.saturating_div(2);
 			let reward_to_kton = amount.saturating_sub(reward_to_ring);
-			let (sum, map) = <AuthoredBlocksCount<T>>::take();
-			let actual_reward_to_ring = map.into_iter().fold(0, |s, (c, p)| {
-				let r = Perbill::from_rational(p, sum) * reward_to_ring;
+			let (total, map) = <AuthoredBlocksCount<T>>::take();
+			let actual_reward_to_ring = map.into_iter().fold(0, |s, (c, b)| {
+				let r = Perbill::from_rational(b, total) * reward_to_ring;
 
 				<PendingRewards<T>>::mutate(c, |u| *u = u.map(|u| u + r).or(Some(r)));
 
