@@ -57,7 +57,7 @@ pub use weights::WeightInfo;
 
 // darwinia
 use darwinia_deposit::Deposit;
-use darwinia_staking::Ledger;
+use darwinia_staking::{migration::v2::OldLedger, Ledger};
 use dc_primitives::{AccountId as AccountId20, AssetId, Balance, Nonce};
 // substrate
 use frame_support::{
@@ -66,7 +66,7 @@ use frame_support::{
 	traits::{Currency, ExistenceRequirement::AllowDeath},
 	StorageHasher,
 };
-use frame_system::{pallet_prelude::*, AccountInfo, RawOrigin};
+use frame_system::{pallet_prelude::*, AccountInfo};
 use pallet_balances::AccountData;
 use pallet_identity::{Judgement, Registration};
 use sp_core::{
@@ -175,10 +175,10 @@ pub mod pallet {
 		Registration<Balance, ConstU32<100>, ConstU32<100>>,
 	>;
 
-	/// [`darwinia_staking::Ledgers`] data.
+	/// [`darwinia_staking::migration::v2::OldLedger`] data.
 	#[pallet::storage]
 	#[pallet::getter(fn ledger_of)]
-	pub type Ledgers<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, Ledger<T>>;
+	pub type Ledgers<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, OldLedger<T>>;
 
 	/// Multisig migration caches.
 	#[pallet::storage]
@@ -480,7 +480,6 @@ pub mod pallet {
 				let now = <frame_system::Pallet<T>>::block_number();
 
 				l.unstaking_ring.retain(|(_, t)| t > &now);
-				l.unstaking_kton.retain(|(_, t)| t > &now);
 
 				let staking_pot = darwinia_staking::account_id();
 				let r = l.staked_ring + l.unstaking_ring.iter().map(|(r, _)| r).sum::<Balance>();
@@ -497,21 +496,15 @@ pub mod pallet {
 					)?;
 				}
 
-				let k = l.staked_kton + l.unstaking_kton.iter().map(|(k, _)| k).sum::<Balance>();
-
-				// To calculated the worst case in benchmark.
-				debug_assert!(k > 0);
-
-				if k != 0 {
-					<pallet_assets::Pallet<T>>::transfer(
-						RawOrigin::Signed(*to).into(),
-						KTON_ID.into(),
-						staking_pot,
-						k,
-					)?;
-				}
-
-				<darwinia_staking::Ledgers<T>>::insert(to, l);
+				<darwinia_staking::Ledgers<T>>::insert(
+					to,
+					Ledger {
+						staked_ring: l.staked_ring,
+						staked_deposits: l.staked_deposits,
+						unstaking_ring: l.unstaking_ring,
+						unstaking_deposits: l.unstaking_deposits,
+					},
+				);
 			}
 
 			Ok(())

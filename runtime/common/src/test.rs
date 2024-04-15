@@ -23,7 +23,7 @@ macro_rules! impl_account_migration_tests {
 			// darwinia
 			use super::mock::*;
 			use darwinia_deposit::Deposit as DepositS;
-			use darwinia_staking::Ledger;
+			use darwinia_staking::migration::v2::OldLedger;
 			// substrate
 			use frame_support::{
 				assert_err, assert_ok, migration, Blake2_128Concat, StorageHasher,
@@ -306,14 +306,7 @@ macro_rules! impl_account_migration_tests {
 						);
 						<darwinia_account_migration::Ledgers<Runtime>>::insert(
 							&from_pk,
-							Ledger {
-								staked_ring: 20,
-								staked_kton: 20,
-								staked_deposits: Default::default(),
-								unstaking_ring: Default::default(),
-								unstaking_kton: Default::default(),
-								unstaking_deposits: Default::default(),
-							},
+							OldLedger { staked_ring: 20, ..Default::default() },
 						);
 
 						assert_ok!(migrate(from, to));
@@ -327,20 +320,10 @@ macro_rules! impl_account_migration_tests {
 							20
 						);
 						assert_eq!(Deposit::deposit_of(to).unwrap().len(), 2);
-						assert_eq!(Assets::maybe_balance(KTON_ID, to).unwrap(), 80);
-						assert_eq!(
-							Assets::maybe_balance(
-								KTON_ID,
-								darwinia_staking::account_id::<AccountId>()
-							)
-							.unwrap(),
-							20
-						);
+						assert_eq!(Assets::maybe_balance(KTON_ID, to).unwrap(), 100);
 						assert_eq!(DarwiniaStaking::ledger_of(to).unwrap().staked_ring, 20);
-						assert_eq!(DarwiniaStaking::ledger_of(to).unwrap().staked_kton, 20);
 					});
 			}
-
 			#[test]
 			fn identities_should_work() {
 				let (from, from_pk) = alice();

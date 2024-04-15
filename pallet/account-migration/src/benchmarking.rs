@@ -114,9 +114,8 @@ mod benchmarks {
 		);
 		<Ledgers<T>>::insert(
 			from,
-			Ledger {
+			OldLedger {
 				staked_ring: 1,
-				staked_kton: 1,
 				staked_deposits: BoundedVec::truncate_from(vec![
 					Default::default();
 					<T as darwinia_deposit::Config>::MaxDeposits::get()
@@ -130,15 +129,7 @@ mod benchmarks {
 					<T as darwinia_staking::Config>::MaxUnstakings::get()
 						as usize
 				]),
-				unstaking_kton: BoundedVec::truncate_from(vec![
-					(
-						Default::default(),
-						Default::default()
-					);
-					<T as darwinia_staking::Config>::MaxUnstakings::get()
-						as usize
-				]),
-				unstaking_deposits: Default::default(),
+				..Default::default()
 			},
 		);
 	}

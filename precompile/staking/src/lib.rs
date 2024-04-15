@@ -53,11 +53,10 @@ where
 	<<Runtime as frame_system::Config>::RuntimeCall as Dispatchable>::RuntimeOrigin: OriginTrait,
 	<<Runtime as darwinia_staking::Config>::Deposit as Stake>::Item: From<u16>,
 {
-	#[precompile::public("stake(uint256,uint256,uint16[])")]
+	#[precompile::public("stake(uint256,uint16[])")]
 	fn stake(
 		handle: &mut impl PrecompileHandle,
 		ring_amount: U256,
-		kton_amount: U256,
 		deposits: Vec<u16>,
 	) -> EvmResult<bool> {
 		let origin = handle.context().caller.into();
@@ -68,18 +67,16 @@ where
 			Some(origin).into(),
 			darwinia_staking::Call::<Runtime>::stake {
 				ring_amount: ring_amount.as_u128(),
-				kton_amount: kton_amount.as_u128(),
 				deposits,
 			},
 		)?;
 		Ok(true)
 	}
 
-	#[precompile::public("unstake(uint256,uint256,uint16[])")]
+	#[precompile::public("unstake(uint256,uint16[])")]
 	fn unstake(
 		handle: &mut impl PrecompileHandle,
 		ring_amount: U256,
-		kton_amount: U256,
 		deposits: Vec<u16>,
 	) -> EvmResult<bool> {
 		let origin = handle.context().caller.into();
@@ -90,7 +87,6 @@ where
 			Some(origin).into(),
 			darwinia_staking::Call::<Runtime>::unstake {
 				ring_amount: ring_amount.as_u128(),
-				kton_amount: kton_amount.as_u128(),
 				deposits,
 			},
 		)?;

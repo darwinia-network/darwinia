@@ -3066,7 +3066,6 @@ dependencies = [
  "frame-support",
  "frame-system",
  "log",
- "pallet-assets",
  "pallet-authorship",
  "pallet-balances",
  "pallet-session",

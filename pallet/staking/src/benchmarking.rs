@@ -64,7 +64,7 @@ mod benchmarks {
 		//
 		// The total number of deposit items has reached `Config::MaxUnstakings`.
 		#[extrinsic_call]
-		_(RawOrigin::Signed(a), UNIT, UNIT, deposits);
+		_(RawOrigin::Signed(a), UNIT, deposits);
 	}
 
 	#[benchmark]
@@ -77,14 +77,13 @@ mod benchmarks {
 
 		let deposits = deposit_for::<T>(&a, x);
 
-		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, UNIT, deposits.clone())
-			.unwrap();
+		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, deposits.clone()).unwrap();
 
 		// Worst-case scenario:
 		//
 		// The total number of deposit items has reached `Config::MaxUnstakings`.
 		#[extrinsic_call]
-		_(RawOrigin::Signed(a), UNIT, UNIT, deposits);
+		_(RawOrigin::Signed(a), UNIT, deposits);
 	}
 
 	#[benchmark]
@@ -97,10 +96,8 @@ mod benchmarks {
 
 		let deposits = deposit_for::<T>(&a, x);
 
-		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, UNIT, deposits.clone())
-			.unwrap();
-		<Pallet<T>>::unstake(RawOrigin::Signed(a.clone()).into(), UNIT, UNIT, deposits.clone())
-			.unwrap();
+		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, deposits.clone()).unwrap();
+		<Pallet<T>>::unstake(RawOrigin::Signed(a.clone()).into(), UNIT, deposits.clone()).unwrap();
 
 		// Worst-case scenario:
 		//
@@ -119,9 +116,8 @@ mod benchmarks {
 
 		let deposits = deposit_for::<T>(&a, <T as Config>::MaxUnstakings::get());
 
-		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, UNIT, deposits.clone())
-			.unwrap();
-		<Pallet<T>>::unstake(RawOrigin::Signed(a.clone()).into(), UNIT, UNIT, deposits).unwrap();
+		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, deposits.clone()).unwrap();
+		<Pallet<T>>::unstake(RawOrigin::Signed(a.clone()).into(), UNIT, deposits).unwrap();
 
 		<frame_system::Pallet<T>>::set_block_number(
 			<frame_system::Pallet<T>>::block_number() + T::MinStakingDuration::get(),
@@ -158,13 +154,7 @@ mod benchmarks {
 		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
 		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, UNIT + 1);
 
-		<Pallet<T>>::stake(
-			RawOrigin::Signed(a.clone()).into(),
-			UNIT,
-			Default::default(),
-			Default::default(),
-		)
-		.unwrap();
+		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, Default::default()).unwrap();
 		<Pallet<T>>::collect(RawOrigin::Signed(a.clone()).into(), Default::default()).unwrap();
 
 		// Worst-case scenario:
@@ -181,13 +171,7 @@ mod benchmarks {
 		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
 		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, UNIT + 1);
 
-		<Pallet<T>>::stake(
-			RawOrigin::Signed(a.clone()).into(),
-			UNIT,
-			Default::default(),
-			Default::default(),
-		)
-		.unwrap();
+		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, Default::default()).unwrap();
 		<Pallet<T>>::collect(RawOrigin::Signed(a.clone()).into(), Default::default()).unwrap();
 		<Pallet<T>>::nominate(RawOrigin::Signed(a.clone()).into(), a.clone()).unwrap();
 

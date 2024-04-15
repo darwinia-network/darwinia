@@ -131,11 +131,6 @@
               "type": "uint256"
             },
             {
-              "internalType": "uint256",
-              "name": "ktonAmount",
-              "type": "uint256"
-            },
-            {
               "internalType": "uint16[]",
               "name": "depositIds",
               "type": "uint16[]"
@@ -159,11 +154,6 @@
             {
               "internalType": "uint256",
               "name": "ringAmount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "ktonAmount",
               "type": "uint256"
             },
             {
@@ -255,13 +245,12 @@
               "_0": "true on success, false otherwise."
             }
           },
-          "stake(uint256,uint256,uint16[])":
+          "stake(uint256,uint16[])":
           {
             "details": "Add stakes to the staking pool.",
             "params":
             {
               "depositIds": "The deposit ids list",
-              "ktonAmount": "The amount of staking KTON asset",
               "ringAmount": "The amount of staking RING asset"
             },
             "returns":
@@ -269,13 +258,12 @@
               "_0": "returns true on success, false otherwise."
             }
           },
-          "unstake(uint256,uint256,uint16[])":
+          "unstake(uint256,uint16[])":
           {
             "details": "Withdraw stakes to the staking pool.",
             "params":
             {
               "depositIds": "The deposit ids list",
-              "ktonAmount": "The amount of staking KTON asset",
               "ringAmount": "The amount of staking RING asset"
             },
             "returns":
@@ -295,8 +283,8 @@
         "nominate(address)": "b332180b",
         "payout(address)": "0b7e9c44",
         "restake(uint256,uint16[])": "1ed0818e",
-        "stake(uint256,uint256,uint16[])": "98e9fb50",
-        "unstake(uint256,uint256,uint16[])": "632efe00"
+        "stake(uint256,uint16[])": "88fd3d50",
+        "unstake(uint256,uint16[])": "0e198447"
       }
     }
   },

@@ -192,7 +192,6 @@ impl pallet_evm::Config for Runtime {
 frame_support::parameter_types! {
 	pub const PayoutFraction: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(40);
 }
-
 pub enum RingStaking {}
 impl darwinia_staking::Stake for RingStaking {
 	type AccountId = AccountId;
@@ -216,21 +215,19 @@ impl darwinia_staking::Stake for RingStaking {
 		)
 	}
 }
-
 pub enum KtonStaking {}
 impl darwinia_staking::Stake for KtonStaking {
 	type AccountId = AccountId;
 	type Item = Balance;
 
-	fn stake(_who: &Self::AccountId, _item: Self::Item) -> sp_runtime::DispatchResult {
+	fn stake(_: &Self::AccountId, _: Self::Item) -> sp_runtime::DispatchResult {
 		Ok(())
 	}
 
-	fn unstake(_who: &Self::AccountId, _item: Self::Item) -> sp_runtime::DispatchResult {
+	fn unstake(_: &Self::AccountId, _: Self::Item) -> sp_runtime::DispatchResult {
 		Ok(())
 	}
 }
-
 impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
@@ -240,7 +237,6 @@ impl darwinia_staking::Config for Runtime {
 	type KtonStakerNotifier = ();
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type MaxUnstakings = frame_support::traits::ConstU32<16>;
-	type MigrationCurve = ();
 	type MinStakingDuration = frame_support::traits::ConstU64<3>;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
