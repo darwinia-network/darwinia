@@ -159,6 +159,15 @@ mod benchmarks {
 	}
 
 	#[benchmark]
+	fn set_max_unstake_ring() {
+		// Worst-case scenario:
+		//
+		// Set max unstake ring successfully.
+		#[extrinsic_call]
+		_(RawOrigin::Root, 1);
+	}
+
+	#[benchmark]
 	fn set_collator_count() {
 		// Worst-case scenario:
 		//

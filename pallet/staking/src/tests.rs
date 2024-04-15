@@ -199,6 +199,7 @@ fn unstake_should_work() {
 
 		// Unstake 1 RING.
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), UNIT, Vec::new()));
+		assert_eq!(Staking::accumulate_unstake(), UNIT);
 		assert_eq!(Balances::free_balance(1), 995 * UNIT);
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
@@ -214,6 +215,7 @@ fn unstake_should_work() {
 		// Unstake 1 deposit.
 		Efflux::block(1);
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), 0, vec![1]));
+		assert_eq!(Staking::accumulate_unstake(), 2 * UNIT);
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger { ring: 2 * UNIT, deposits: BoundedVec::truncate_from(vec![0, 2]) }
@@ -250,16 +252,57 @@ fn unstake_should_work() {
 		// Unstake 2 RING and 2 deposits.
 		Efflux::block(1);
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), 2 * UNIT, vec![0, 2]));
+		assert_eq!(Staking::accumulate_unstake(), 6 * UNIT);
 		assert!(Staking::ledger_of(1).is_none());
 		assert_eq!(
 			Deposit::deposit_of(1).unwrap(),
 			<BoundedVec<_, <Runtime as darwinia_deposit::Config>::MaxDeposits>>::truncate_from(
 				vec![
-					DepositS { id: 0, value: UNIT, start_time: 3, expired_time: 2635200003, in_use: false },
-					DepositS { id: 1, value: UNIT, start_time: 3, expired_time: 2635200003, in_use: false },
-					DepositS { id: 2, value: UNIT, start_time: 3, expired_time: 2635200003, in_use: false }
+					DepositS {
+						id: 0,
+						value: UNIT,
+						start_time: 3,
+						expired_time: 2635200003,
+						in_use: false
+					},
+					DepositS {
+						id: 1,
+						value: UNIT,
+						start_time: 3,
+						expired_time: 2635200003,
+						in_use: false
+					},
+					DepositS {
+						id: 2,
+						value: UNIT,
+						start_time: 3,
+						expired_time: 2635200003,
+						in_use: false
+					}
 				]
 			)
+		);
+
+		// Prepare rate limit test data.
+		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 94 * UNIT + 1, 1));
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), 94 * UNIT + 1, vec![3]));
+
+		// Unstake 94 UNIT + 1.
+		assert_noop!(
+			Staking::unstake(RuntimeOrigin::signed(1), 94 * UNIT + 1, Vec::new()),
+			<Error<Runtime>>::ExceedMaxUnstakeAmount
+		);
+
+		// Unstake 94 UNIT + 1.
+		assert_noop!(
+			Staking::unstake(RuntimeOrigin::signed(1), 0, vec![3]),
+			<Error<Runtime>>::ExceedMaxUnstakeAmount
+		);
+
+		// Unstake RING(94 UNIT + 1) and deposit(94 UNIT + 1).
+		assert_noop!(
+			Staking::unstake(RuntimeOrigin::signed(1), 94 * UNIT + 1, vec![3]),
+			<Error<Runtime>>::ExceedMaxUnstakeAmount
 		);
 	});
 }

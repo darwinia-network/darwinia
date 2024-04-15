@@ -368,6 +368,7 @@ impl ExtBuilder {
 		.assimilate_storage(&mut storage)
 		.unwrap();
 		darwinia_staking::GenesisConfig::<Runtime> {
+			max_unstake_ring: 100 * UNIT,
 			collator_count: self.collator_count,
 			collators: if self.genesis_collator {
 				(1..=self.collator_count).map(|i| (i, UNIT)).collect()

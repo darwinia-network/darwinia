@@ -2,6 +2,7 @@
 use core::marker::PhantomData;
 // darwinia
 use crate::*;
+use dc_types::UNIT;
 // substrate
 use frame_support::traits::OnRuntimeUpgrade;
 #[cfg(feature = "try-runtime")]
@@ -77,11 +78,12 @@ where
 			return T::DbWeight::get().reads(r);
 		}
 
-		let mut w = 4;
+		let mut w = 5;
 
 		<RingPool<T>>::kill();
 		<KtonPool<T>>::kill();
 		<MigrationStartBlock<T>>::kill();
+		<MaxUnstakeRing<T>>::put(10_000_000 * UNIT);
 		<Ledgers<T>>::translate::<OldLedger<T>, _>(|a, o| {
 			w += 6;
 

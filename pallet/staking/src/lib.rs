@@ -166,8 +166,8 @@ pub mod pallet {
 	pub enum Error<T> {
 		/// Exceed maximum deposit count.
 		ExceedMaxDeposits,
-		/// Exceed maximum unstaking/unbonding count.
-		ExceedMaxUnstakings,
+		/// Exceed maximum unstake amount.
+		ExceedMaxUnstakeAmount,
 		/// Deposit not found.
 		DepositNotFound,
 		/// You are not a staker.
@@ -282,6 +282,20 @@ pub mod pallet {
 	#[pallet::getter(fn elapsed_time)]
 	pub type ElapsedTime<T: Config> = StorageValue<_, Moment, ValueQuery>;
 
+	/// Max unstake RING limit.
+	///
+	/// The maximum RING amount that can be unstaked in a session.
+	#[pallet::storage]
+	#[pallet::getter(fn max_unstake_ring)]
+	pub type MaxUnstakeRing<T: Config> = StorageValue<_, Balance, ValueQuery>;
+
+	/// Unstake accumulator.
+	///
+	/// Tracks the total RING amount being unstaked in a session.
+	#[pallet::storage]
+	#[pallet::getter(fn accumulate_unstake)]
+	pub type AccumulateUnstake<T: Config> = StorageValue<_, Balance, ValueQuery>;
+
 	#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
@@ -289,6 +303,8 @@ pub mod pallet {
 		pub now: Moment,
 		/// The running time of Darwinia1.
 		pub elapsed_time: Moment,
+		/// Max unstake RING limit.
+		pub max_unstake_ring: Balance,
 		/// Genesis collator count.
 		pub collator_count: u32,
 		/// Genesis collator preferences.
@@ -304,6 +320,7 @@ pub mod pallet {
 
 			<SessionStartTime<T>>::put(self.now);
 			<ElapsedTime<T>>::put(self.elapsed_time);
+			<MaxUnstakeRing<T>>::put(self.max_unstake_ring);
 			<CollatorCount<T>>::put(self.collator_count);
 
 			self.collators.iter().for_each(|(who, ring_amount)| {
@@ -400,6 +417,8 @@ pub mod pallet {
 				return Ok(());
 			}
 
+			let mut acc = <AccumulateUnstake<T>>::get().saturating_add(ring_amount);
+
 			<Ledgers<T>>::try_mutate(&who, |l| {
 				let l = l.as_mut().ok_or(<Error<T>>::NotStaker)?;
 
@@ -413,6 +432,8 @@ pub mod pallet {
 				}
 
 				for d in deposits {
+					acc = acc.saturating_add(T::Deposit::amount(&who, d).unwrap_or_default());
+
 					l.deposits.remove(
 						l.deposits
 							.iter()
@@ -425,6 +446,12 @@ pub mod pallet {
 
 				DispatchResult::Ok(())
 			})?;
+
+			if acc <= <MaxUnstakeRing<T>>::get() {
+				<AccumulateUnstake<T>>::put(acc);
+			} else {
+				Err(<Error<T>>::ExceedMaxUnstakeAmount)?;
+			}
 
 			Self::try_clean_ledger_of(&who);
 
@@ -489,6 +516,17 @@ pub mod pallet {
 			ensure_signed(origin)?;
 
 			Self::payout_inner(who)?;
+
+			Ok(())
+		}
+
+		/// Set max unstake RING limit.
+		#[pallet::call_index(9)]
+		#[pallet::weight(<T as Config>::WeightInfo::set_max_unstake_ring())]
+		pub fn set_max_unstake_ring(origin: OriginFor<T>, amount: Balance) -> DispatchResult {
+			ensure_root(origin)?;
+
+			<MaxUnstakeRing<T>>::put(amount);
 
 			Ok(())
 		}

@@ -58,6 +58,7 @@ pub trait WeightInfo {
 	fn nominate() -> Weight;
 	fn chill() -> Weight;
 	fn payout() -> Weight;
+	fn set_max_unstake_ring() -> Weight;
 	fn set_collator_count() -> Weight;
 }
 
@@ -170,6 +171,9 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 			.saturating_add(Weight::from_parts(4914, 0))
 			.saturating_add(T::DbWeight::get().reads(4_u64))
 			.saturating_add(T::DbWeight::get().writes(1_u64))
+	}
+	fn set_max_unstake_ring() -> Weight {
+		Default::default()
 	}
 	/// Storage: `DarwiniaStaking::CollatorCount` (r:0 w:1)
 	/// Proof: `DarwiniaStaking::CollatorCount` (`max_values`: Some(1), `max_size`: Some(4), added: 499, mode: `MaxEncodedLen`)
@@ -292,6 +296,9 @@ impl WeightInfo for () {
 			.saturating_add(Weight::from_parts(4914, 0))
 			.saturating_add(RocksDbWeight::get().reads(4_u64))
 			.saturating_add(RocksDbWeight::get().writes(1_u64))
+	}
+	fn set_max_unstake_ring() -> Weight {
+		Default::default()
 	}
 	/// Storage: `DarwiniaStaking::CollatorCount` (r:0 w:1)
 	/// Proof: `DarwiniaStaking::CollatorCount` (`max_values`: Some(1), `max_size`: Some(4), added: 499, mode: `MaxEncodedLen`)
