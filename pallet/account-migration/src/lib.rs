@@ -463,7 +463,16 @@ pub mod pallet {
 
 				migration::put_storage_value(b"Identity", b"Registrars", &[], rs);
 			}
-			if let Some(mut l) = <Ledgers<T>>::take(from) {
+			if let Some(l) = <Ledgers<T>>::take(from) {
+				if l.staked_ring > 0 {
+					<pallet_balances::Pallet<T> as Currency<_>>::transfer(
+						to,
+						&darwinia_staking::account_id(),
+						l.staked_ring,
+						AllowDeath,
+					)?;
+				}
+
 				if let Some(ds) = <Deposits<T>>::take(from) {
 					<pallet_balances::Pallet<T> as Currency<_>>::transfer(
 						to,
@@ -477,33 +486,9 @@ pub mod pallet {
 					);
 				}
 
-				let now = <frame_system::Pallet<T>>::block_number();
-
-				l.unstaking_ring.retain(|(_, t)| t > &now);
-
-				let staking_pot = darwinia_staking::account_id();
-				let r = l.staked_ring + l.unstaking_ring.iter().map(|(r, _)| r).sum::<Balance>();
-
-				// To calculated the worst case in benchmark.
-				debug_assert!(r > 0);
-
-				if r > 0 {
-					<pallet_balances::Pallet<T> as Currency<_>>::transfer(
-						to,
-						&staking_pot,
-						r,
-						AllowDeath,
-					)?;
-				}
-
 				<darwinia_staking::Ledgers<T>>::insert(
 					to,
-					Ledger {
-						staked_ring: l.staked_ring,
-						staked_deposits: l.staked_deposits,
-						unstaking_ring: l.unstaking_ring,
-						unstaking_deposits: l.unstaking_deposits,
-					},
+					Ledger { ring: l.staked_ring, deposits: l.staked_deposits },
 				);
 			}
 

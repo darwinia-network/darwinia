@@ -321,7 +321,7 @@ macro_rules! impl_account_migration_tests {
 						);
 						assert_eq!(Deposit::deposit_of(to).unwrap().len(), 2);
 						assert_eq!(Assets::maybe_balance(KTON_ID, to).unwrap(), 100);
-						assert_eq!(DarwiniaStaking::ledger_of(to).unwrap().staked_ring, 20);
+						assert_eq!(DarwiniaStaking::ledger_of(to).unwrap().ring, 20);
 					});
 			}
 			#[test]

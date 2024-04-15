@@ -126,8 +126,7 @@ mod benchmarks {
 						Default::default(),
 						Default::default()
 					);
-					<T as darwinia_staking::Config>::MaxUnstakings::get()
-						as usize
+					16
 				]),
 				..Default::default()
 			},

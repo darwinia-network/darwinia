@@ -23,8 +23,6 @@ use frame_support::traits::Currency;
 
 fast_runtime_or_not!(DURATION, BlockNumber, 5 * MINUTES, 14 * DAYS);
 
-type MinStakingDuration = ConstU32<{ DURATION }>;
-
 pub enum RingStaking {}
 impl darwinia_staking::Stake for RingStaking {
 	type AccountId = AccountId;
@@ -108,8 +106,6 @@ impl darwinia_staking::Config for Runtime {
 	type KtonRewardDistributionContract = darwinia_staking::KtonRewardDistributionContract;
 	type KtonStakerNotifier = darwinia_staking::KtonStakerNotifier<Self>;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
-	type MaxUnstakings = ConstU32<16>;
-	type MinStakingDuration = MinStakingDuration;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
 	type ShouldEndSession = ShouldEndSession;

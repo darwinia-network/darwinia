@@ -295,8 +295,6 @@ impl darwinia_staking::Config for Runtime {
 	type KtonRewardDistributionContract = ();
 	type KtonStakerNotifier = ();
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
-	type MaxUnstakings = frame_support::traits::ConstU32<16>;
-	type MinStakingDuration = frame_support::traits::ConstU64<3>;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
 	type ShouldEndSession = ShouldEndSession;
@@ -314,20 +312,6 @@ frame_support::construct_runtime! {
 		Session: pallet_session,
 		Treasury: pallet_treasury,
 		Staking: darwinia_staking,
-	}
-}
-
-pub trait ZeroDefault {
-	fn default() -> Self;
-}
-impl ZeroDefault for darwinia_staking::Ledger<Runtime> {
-	fn default() -> Self {
-		Self {
-			staked_ring: Default::default(),
-			staked_deposits: Default::default(),
-			unstaking_ring: Default::default(),
-			unstaking_deposits: Default::default(),
-		}
 	}
 }
 

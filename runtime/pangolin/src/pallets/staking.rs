@@ -102,8 +102,6 @@ impl darwinia_staking::Config for Runtime {
 	type KtonRewardDistributionContract = darwinia_staking::KtonRewardDistributionContract;
 	type KtonStakerNotifier = darwinia_staking::KtonStakerNotifier<Self>;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
-	type MaxUnstakings = ConstU32<16>;
-	type MinStakingDuration = ConstU32<{ 2 * MINUTES }>;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
 	type ShouldEndSession = ShouldEndSession;

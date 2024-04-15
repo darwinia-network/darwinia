@@ -109,41 +109,6 @@ impl<T: frame_system::Config> darwinia_staking::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(8))
 			.saturating_add(T::DbWeight::get().writes(7))
 	}
-	/// Storage: `DarwiniaStaking::Ledgers` (r:1 w:1)
-	/// Proof: `DarwiniaStaking::Ledgers` (`max_values`: None, `max_size`: Some(1833), added: 4308, mode: `MaxEncodedLen`)
-	/// Storage: `DarwiniaStaking::RingPool` (r:1 w:1)
-	/// Proof: `DarwiniaStaking::RingPool` (`max_values`: Some(1), `max_size`: Some(16), added: 511, mode: `MaxEncodedLen`)
-	/// Storage: `Deposit::Deposits` (r:1 w:0)
-	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
-	/// The range of component `x` is `[0, 1023]`.
-	fn restake(x: u32, ) -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `1637`
-		//  Estimated: `29615`
-		// Minimum execution time: 9_000_000 picoseconds.
-		Weight::from_parts(53_351_430, 0)
-			.saturating_add(Weight::from_parts(0, 29615))
-			// Standard Error: 969
-			.saturating_add(Weight::from_parts(4_963, 0).saturating_mul(x.into()))
-			.saturating_add(T::DbWeight::get().reads(3))
-			.saturating_add(T::DbWeight::get().writes(2))
-	}
-	/// Storage: `DarwiniaStaking::Ledgers` (r:1 w:1)
-	/// Proof: `DarwiniaStaking::Ledgers` (`max_values`: None, `max_size`: Some(1833), added: 4308, mode: `MaxEncodedLen`)
-	/// Storage: `System::Account` (r:1 w:1)
-	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
-	/// Storage: `Deposit::Deposits` (r:1 w:1)
-	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
-	fn claim() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `1725`
-		//  Estimated: `29615`
-		// Minimum execution time: 81_000_000 picoseconds.
-		Weight::from_parts(82_000_000, 0)
-			.saturating_add(Weight::from_parts(0, 29615))
-			.saturating_add(T::DbWeight::get().reads(3))
-			.saturating_add(T::DbWeight::get().writes(3))
-	}
 	/// Storage: `DarwiniaStaking::Collators` (r:1 w:1)
 	/// Proof: `DarwiniaStaking::Collators` (`max_values`: None, `max_size`: Some(32), added: 2507, mode: `MaxEncodedLen`)
 	fn collect() -> Weight {

@@ -36,7 +36,7 @@ mod benchmarks {
 	where
 		T: Config + darwinia_deposit::Config,
 	{
-		(0..count.min(<<T as Config>::MaxUnstakings>::get()) as u8)
+		(0..count.min(<<T as darwinia_deposit::Config>::MaxDeposits>::get()) as u16)
 			.map(|x| {
 				<darwinia_deposit::Pallet<T>>::lock(
 					RawOrigin::Signed(who.to_owned()).into(),
@@ -62,7 +62,7 @@ mod benchmarks {
 
 		// Worst-case scenario:
 		//
-		// The total number of deposit items has reached `Config::MaxUnstakings`.
+		// The total number of deposit items has reached `darwinia_deposits::Config::MaxDeposits`.
 		#[extrinsic_call]
 		_(RawOrigin::Signed(a), UNIT, deposits);
 	}
@@ -81,58 +81,9 @@ mod benchmarks {
 
 		// Worst-case scenario:
 		//
-		// The total number of deposit items has reached `Config::MaxUnstakings`.
+		// The total number of deposit items has reached `darwinia_deposits::Config::MaxDeposits`.
 		#[extrinsic_call]
 		_(RawOrigin::Signed(a), UNIT, deposits);
-	}
-
-	#[benchmark]
-	fn restake(x: Linear<0, 1_023>) {
-		let a = frame_benchmarking::whitelisted_caller();
-
-		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, 1_024 * UNIT + 1);
-		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
-
-		let deposits = deposit_for::<T>(&a, x);
-
-		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, deposits.clone()).unwrap();
-		<Pallet<T>>::unstake(RawOrigin::Signed(a.clone()).into(), UNIT, deposits.clone()).unwrap();
-
-		// Worst-case scenario:
-		//
-		// The total number of deposit items has reached `Config::MaxUnstakings`.
-		#[extrinsic_call]
-		_(RawOrigin::Signed(a), UNIT, deposits);
-	}
-
-	#[benchmark]
-	fn claim() {
-		let a = frame_benchmarking::whitelisted_caller();
-
-		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, 1_024 * UNIT + 1);
-		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
-
-		let deposits = deposit_for::<T>(&a, <T as Config>::MaxUnstakings::get());
-
-		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, deposits.clone()).unwrap();
-		<Pallet<T>>::unstake(RawOrigin::Signed(a.clone()).into(), UNIT, deposits).unwrap();
-
-		<frame_system::Pallet<T>>::set_block_number(
-			<frame_system::Pallet<T>>::block_number() + T::MinStakingDuration::get(),
-		);
-
-		assert!(<Ledgers<T>>::contains_key(&a));
-
-		// Worst-case scenario:
-		//
-		// The total number of deposit items has reached `Config::MaxUnstakings`.
-		// In addition, all `RING` and `KTON` should be claimed, to make ledger get killed.
-		#[extrinsic_call]
-		_(RawOrigin::Signed(a.clone()));
-
-		assert!(!<Ledgers<T>>::contains_key(&a));
 	}
 
 	#[benchmark]

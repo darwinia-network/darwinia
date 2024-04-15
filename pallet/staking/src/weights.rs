@@ -54,8 +54,6 @@ use core::marker::PhantomData;
 pub trait WeightInfo {
 	fn stake(x: u32, ) -> Weight;
 	fn unstake(x: u32, ) -> Weight;
-	fn restake(x: u32, ) -> Weight;
-	fn claim() -> Weight;
 	fn collect() -> Weight;
 	fn nominate() -> Weight;
 	fn chill() -> Weight;
@@ -113,47 +111,6 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 			.saturating_add(Weight::from_parts(3_363, 0).saturating_mul(x.into()))
 			.saturating_add(T::DbWeight::get().reads(4_u64))
 			.saturating_add(T::DbWeight::get().writes(3_u64))
-	}
-	/// Storage: `DarwiniaStaking::Ledgers` (r:1 w:1)
-	/// Proof: `DarwiniaStaking::Ledgers` (`max_values`: None, `max_size`: Some(1833), added: 4308, mode: `MaxEncodedLen`)
-	/// Storage: `DarwiniaStaking::RingPool` (r:1 w:1)
-	/// Proof: `DarwiniaStaking::RingPool` (`max_values`: Some(1), `max_size`: Some(16), added: 511, mode: `MaxEncodedLen`)
-	/// Storage: `DarwiniaStaking::KtonPool` (r:1 w:1)
-	/// Proof: `DarwiniaStaking::KtonPool` (`max_values`: Some(1), `max_size`: Some(16), added: 511, mode: `MaxEncodedLen`)
-	/// Storage: `Deposit::Deposits` (r:1 w:0)
-	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
-	/// The range of component `x` is `[0, 1023]`.
-	fn restake(x: u32, ) -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `1693`
-		//  Estimated: `29615`
-		// Minimum execution time: 10_061 nanoseconds.
-		Weight::from_parts(43_375_019, 0)
-			.saturating_add(Weight::from_parts(29615, 0))
-			// Standard Error: 750
-			.saturating_add(Weight::from_parts(3_582, 0).saturating_mul(x.into()))
-			.saturating_add(T::DbWeight::get().reads(4_u64))
-			.saturating_add(T::DbWeight::get().writes(3_u64))
-	}
-	/// Storage: `DarwiniaStaking::Ledgers` (r:1 w:1)
-	/// Proof: `DarwiniaStaking::Ledgers` (`max_values`: None, `max_size`: Some(1833), added: 4308, mode: `MaxEncodedLen`)
-	/// Storage: `System::Account` (r:1 w:1)
-	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
-	/// Storage: `Assets::Asset` (r:1 w:1)
-	/// Proof: `Assets::Asset` (`max_values`: None, `max_size`: Some(166), added: 2641, mode: `MaxEncodedLen`)
-	/// Storage: `Assets::Account` (r:2 w:2)
-	/// Proof: `Assets::Account` (`max_values`: None, `max_size`: Some(114), added: 2589, mode: `MaxEncodedLen`)
-	/// Storage: `Deposit::Deposits` (r:1 w:1)
-	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
-	fn claim() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `2215`
-		//  Estimated: `29615`
-		// Minimum execution time: 87_073 nanoseconds.
-		Weight::from_parts(89_352_000, 0)
-			.saturating_add(Weight::from_parts(29615, 0))
-			.saturating_add(T::DbWeight::get().reads(6_u64))
-			.saturating_add(T::DbWeight::get().writes(6_u64))
 	}
 	/// Storage: `DarwiniaStaking::Collators` (r:1 w:1)
 	/// Proof: `DarwiniaStaking::Collators` (`max_values`: None, `max_size`: Some(32), added: 2507, mode: `MaxEncodedLen`)
@@ -276,47 +233,6 @@ impl WeightInfo for () {
 			.saturating_add(Weight::from_parts(3_363, 0).saturating_mul(x.into()))
 			.saturating_add(RocksDbWeight::get().reads(4_u64))
 			.saturating_add(RocksDbWeight::get().writes(3_u64))
-	}
-	/// Storage: `DarwiniaStaking::Ledgers` (r:1 w:1)
-	/// Proof: `DarwiniaStaking::Ledgers` (`max_values`: None, `max_size`: Some(1833), added: 4308, mode: `MaxEncodedLen`)
-	/// Storage: `DarwiniaStaking::RingPool` (r:1 w:1)
-	/// Proof: `DarwiniaStaking::RingPool` (`max_values`: Some(1), `max_size`: Some(16), added: 511, mode: `MaxEncodedLen`)
-	/// Storage: `DarwiniaStaking::KtonPool` (r:1 w:1)
-	/// Proof: `DarwiniaStaking::KtonPool` (`max_values`: Some(1), `max_size`: Some(16), added: 511, mode: `MaxEncodedLen`)
-	/// Storage: `Deposit::Deposits` (r:1 w:0)
-	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
-	/// The range of component `x` is `[0, 1023]`.
-	fn restake(x: u32, ) -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `1693`
-		//  Estimated: `29615`
-		// Minimum execution time: 10_061 nanoseconds.
-		Weight::from_parts(43_375_019, 0)
-			.saturating_add(Weight::from_parts(29615, 0))
-			// Standard Error: 750
-			.saturating_add(Weight::from_parts(3_582, 0).saturating_mul(x.into()))
-			.saturating_add(RocksDbWeight::get().reads(4_u64))
-			.saturating_add(RocksDbWeight::get().writes(3_u64))
-	}
-	/// Storage: `DarwiniaStaking::Ledgers` (r:1 w:1)
-	/// Proof: `DarwiniaStaking::Ledgers` (`max_values`: None, `max_size`: Some(1833), added: 4308, mode: `MaxEncodedLen`)
-	/// Storage: `System::Account` (r:1 w:1)
-	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
-	/// Storage: `Assets::Asset` (r:1 w:1)
-	/// Proof: `Assets::Asset` (`max_values`: None, `max_size`: Some(166), added: 2641, mode: `MaxEncodedLen`)
-	/// Storage: `Assets::Account` (r:2 w:2)
-	/// Proof: `Assets::Account` (`max_values`: None, `max_size`: Some(114), added: 2589, mode: `MaxEncodedLen`)
-	/// Storage: `Deposit::Deposits` (r:1 w:1)
-	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
-	fn claim() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `2215`
-		//  Estimated: `29615`
-		// Minimum execution time: 87_073 nanoseconds.
-		Weight::from_parts(89_352_000, 0)
-			.saturating_add(Weight::from_parts(29615, 0))
-			.saturating_add(RocksDbWeight::get().reads(6_u64))
-			.saturating_add(RocksDbWeight::get().writes(6_u64))
 	}
 	/// Storage: `DarwiniaStaking::Collators` (r:1 w:1)
 	/// Proof: `DarwiniaStaking::Collators` (`max_values`: None, `max_size`: Some(32), added: 2507, mode: `MaxEncodedLen`)

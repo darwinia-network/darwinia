@@ -33,9 +33,9 @@ where
 	pub staked_ring: Balance,
 	pub staked_kton: Balance,
 	pub staked_deposits: BoundedVec<DepositId<T>, <T as Config>::MaxDeposits>,
-	pub unstaking_ring: BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>,
-	pub unstaking_kton: BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>,
-	pub unstaking_deposits: BoundedVec<(DepositId<T>, BlockNumberFor<T>), T::MaxUnstakings>,
+	pub unstaking_ring: BoundedVec<(Balance, BlockNumberFor<T>), ConstU32<16>>,
+	pub unstaking_kton: BoundedVec<(Balance, BlockNumberFor<T>), ConstU32<16>>,
+	pub unstaking_deposits: BoundedVec<(DepositId<T>, BlockNumberFor<T>), ConstU32<16>>,
 }
 
 #[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
@@ -83,19 +83,27 @@ where
 		<KtonPool<T>>::kill();
 		<MigrationStartBlock<T>>::kill();
 		<Ledgers<T>>::translate::<OldLedger<T>, _>(|a, o| {
-			w += 2;
+			w += 6;
 
+			let unstaking_ring = o.unstaking_ring.into_iter().fold(0, |s, (v, _)| s + v);
+
+			// Release the unstaking RING immediately.
+			if unstaking_ring != 0 {
+				let _ = <T as Config>::Ring::unstake(&a, unstaking_ring);
+			}
+
+			// Release all KTON immediately.
 			let _ = <T as Config>::Kton::unstake(
 				&a,
 				o.staked_kton + o.unstaking_kton.into_iter().fold(0, |s, (v, _)| s + v),
 			);
 
-			Some(Ledger {
-				staked_ring: o.staked_ring,
-				staked_deposits: o.staked_deposits,
-				unstaking_ring: o.unstaking_ring,
-				unstaking_deposits: o.unstaking_deposits,
-			})
+			// Release the unstaking deposits immediately.
+			for (d, _) in o.unstaking_deposits {
+				let _ = T::Deposit::unstake(&a, d);
+			}
+
+			Some(Ledger { ring: o.staked_ring, deposits: o.staked_deposits })
 		});
 		<ExposureCache0<T>>::translate_values::<OldExposure<T::AccountId>, _>(|o| {
 			w += 1;
