@@ -93,38 +93,6 @@ where
 		Ok(true)
 	}
 
-	#[precompile::public("restake(uint256,uint16[])")]
-	fn restake(
-		handle: &mut impl PrecompileHandle,
-		ring_amount: U256,
-		deposits: Vec<u16>,
-	) -> EvmResult<bool> {
-		let origin = handle.context().caller.into();
-		let deposits = deposits.into_iter().map(|i| i.into()).collect();
-
-		RuntimeHelper::<Runtime>::try_dispatch(
-			handle,
-			Some(origin).into(),
-			darwinia_staking::Call::<Runtime>::restake {
-				ring_amount: ring_amount.as_u128(),
-				deposits,
-			},
-		)?;
-		Ok(true)
-	}
-
-	#[precompile::public("claim()")]
-	fn claim(handle: &mut impl PrecompileHandle) -> EvmResult<bool> {
-		let origin = handle.context().caller.into();
-
-		RuntimeHelper::<Runtime>::try_dispatch(
-			handle,
-			Some(origin).into(),
-			darwinia_staking::Call::<Runtime>::claim {},
-		)?;
-		Ok(true)
-	}
-
 	#[precompile::public("collect(uint32)")]
 	fn collect(handle: &mut impl PrecompileHandle, commission: u32) -> EvmResult<bool> {
 		let origin = handle.context().caller.into();

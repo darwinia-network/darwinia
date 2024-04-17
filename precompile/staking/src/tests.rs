@@ -19,7 +19,7 @@
 // darwinia
 use crate::mock::{
 	Account::{Alice, Bob, Precompile},
-	ExtBuilder, PCall, PrecompilesValue, Runtime, Staking, System, TestPrecompiles,
+	ExtBuilder, PCall, PrecompilesValue, Runtime, Staking, TestPrecompiles,
 };
 use sp_runtime::Perbill;
 // moonbeam
@@ -35,8 +35,6 @@ fn precompiles() -> TestPrecompiles<Runtime> {
 fn selectors() {
 	assert!(PCall::stake_selectors().contains(&0x88FD3D50));
 	assert!(PCall::unstake_selectors().contains(&0xE198447));
-	assert!(PCall::restake_selectors().contains(&0x1ED0818E));
-	assert!(PCall::claim_selectors().contains(&0x4e71d92d));
 	assert!(PCall::nominate_selectors().contains(&0xb332180b));
 	assert!(PCall::collect_selectors().contains(&0x10a66536));
 	assert!(PCall::chill_selectors().contains(&0x2b8a3ae6));
@@ -55,7 +53,7 @@ fn stake_unstake_restake() {
 				PCall::stake { ring_amount: 200.into(), deposits: vec![] },
 			)
 			.execute_returns(true);
-		assert_eq!(Staking::ledger_of(alice).unwrap().staked_ring, 200);
+		assert_eq!(Staking::ledger_of(alice).unwrap().ring, 200);
 
 		// unstake
 		precompiles()
@@ -65,47 +63,6 @@ fn stake_unstake_restake() {
 				PCall::unstake { ring_amount: 200.into(), deposits: vec![] },
 			)
 			.execute_returns(true);
-		assert_eq!(Staking::ledger_of(alice).unwrap().staked_ring, 0);
-		assert_eq!(Staking::ledger_of(alice).unwrap().unstaking_ring.len(), 1);
-
-		// restake
-		precompiles()
-			.prepare_test(
-				alice,
-				Precompile,
-				PCall::restake { ring_amount: 200.into(), deposits: vec![] },
-			)
-			.execute_returns(true);
-		assert_eq!(Staking::ledger_of(alice).unwrap().staked_ring, 200);
-		assert_eq!(Staking::ledger_of(alice).unwrap().unstaking_ring.len(), 0);
-	});
-}
-
-#[test]
-fn claim() {
-	let alice: H160 = Alice.into();
-	ExtBuilder::default().with_balances(vec![(alice, 300)]).build().execute_with(|| {
-		// stake
-		precompiles()
-			.prepare_test(
-				alice,
-				Precompile,
-				PCall::stake { ring_amount: 200.into(), deposits: vec![] },
-			)
-			.execute_returns(true);
-
-		// unstake
-		precompiles()
-			.prepare_test(
-				alice,
-				Precompile,
-				PCall::unstake { ring_amount: 200.into(), deposits: vec![] },
-			)
-			.execute_returns(true);
-
-		// You have to wait for MinStakingDuration to claim
-		System::set_block_number(5);
-		precompiles().prepare_test(alice, Precompile, PCall::claim {}).execute_returns(true);
 		assert!(Staking::ledger_of(alice).is_none());
 	});
 }

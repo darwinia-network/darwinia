@@ -135,17 +135,9 @@ pub mod pallet {
 		/// Pass [`pallet_session::Config::ShouldEndSession`]'s result to here.
 		type ShouldEndSession: Get<bool>;
 
-		/// Minimum time to stake at least.
-		#[pallet::constant]
-		type MinStakingDuration: Get<BlockNumberFor<Self>>;
-
 		/// Maximum deposit count.
 		#[pallet::constant]
 		type MaxDeposits: Get<u32>;
-
-		/// Maximum unstaking/unbonding count.
-		#[pallet::constant]
-		type MaxUnstakings: Get<u32>;
 
 		/// The address of KTON reward distribution contract.
 		#[pallet::constant]
@@ -174,8 +166,8 @@ pub mod pallet {
 	pub enum Error<T> {
 		/// Exceed maximum deposit count.
 		ExceedMaxDeposits,
-		/// Exceed maximum unstaking/unbonding count.
-		ExceedMaxUnstakings,
+		/// Exceed rate limit.
+		ExceedRateLimit,
 		/// Deposit not found.
 		DepositNotFound,
 		/// You are not a staker.
@@ -290,6 +282,20 @@ pub mod pallet {
 	#[pallet::getter(fn elapsed_time)]
 	pub type ElapsedTime<T: Config> = StorageValue<_, Moment, ValueQuery>;
 
+	/// Rate limit.
+	///
+	/// The maximum amount of RING that can be staked or unstaked in one session.
+	#[pallet::storage]
+	#[pallet::getter(fn rate_limit)]
+	pub type RateLimit<T: Config> = StorageValue<_, Balance, ValueQuery>;
+
+	/// Rate limit state.
+	///
+	/// Tracks the rate limit state in a session.
+	#[pallet::storage]
+	#[pallet::getter(fn rate_limit_state)]
+	pub type RateLimitState<T: Config> = StorageValue<_, RateLimiter, ValueQuery>;
+
 	#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
@@ -297,6 +303,8 @@ pub mod pallet {
 		pub now: Moment,
 		/// The running time of Darwinia1.
 		pub elapsed_time: Moment,
+		/// Rate limit.
+		pub rate_limit: Balance,
 		/// Genesis collator count.
 		pub collator_count: u32,
 		/// Genesis collator preferences.
@@ -312,6 +320,7 @@ pub mod pallet {
 
 			<SessionStartTime<T>>::put(self.now);
 			<ElapsedTime<T>>::put(self.elapsed_time);
+			<RateLimit<T>>::put(self.rate_limit);
 			<CollatorCount<T>>::put(self.collator_count);
 
 			self.collators.iter().for_each(|(who, ring_amount)| {
@@ -367,32 +376,38 @@ pub mod pallet {
 				return Ok(());
 			}
 
-			<Ledgers<T>>::try_mutate(&who, |l| {
+			let flow_in_amount = <Ledgers<T>>::try_mutate(&who, |l| {
 				let l = if let Some(l) = l {
 					l
 				} else {
 					<frame_system::Pallet<T>>::inc_consumers(&who)?;
 
-					*l = Some(Ledger {
-						staked_ring: Default::default(),
-						staked_deposits: Default::default(),
-						unstaking_ring: Default::default(),
-						unstaking_deposits: Default::default(),
-					});
+					*l = Some(Ledger { ring: Default::default(), deposits: Default::default() });
 
 					l.as_mut().expect("[pallet::staking] `l` must be some; qed")
 				};
+				let mut v = ring_amount;
 
 				if ring_amount != 0 {
-					Self::stake_ring(&who, &mut l.staked_ring, ring_amount)?;
+					Self::stake_ring(&who, &mut l.ring, ring_amount)?;
 				}
 
 				for d in deposits.clone() {
+					v = v.saturating_add(T::Deposit::amount(&who, d).unwrap_or_default());
+
 					Self::stake_deposit(&who, l, d)?;
 				}
 
-				DispatchResult::Ok(())
+				<Result<_, DispatchError>>::Ok(v)
 			})?;
+
+			if let Some(r) =
+				<RateLimitState<T>>::get().flow_in(flow_in_amount, <RateLimit<T>>::get())
+			{
+				<RateLimitState<T>>::put(r);
+			} else {
+				Err(<Error<T>>::ExceedRateLimit)?;
+			}
 
 			Self::deposit_event(Event::Staked { who, ring_amount, deposits });
 
@@ -413,64 +428,43 @@ pub mod pallet {
 				return Ok(());
 			}
 
-			<Ledgers<T>>::try_mutate(&who, |l| {
+			let flow_out_amount = <Ledgers<T>>::try_mutate(&who, |l| {
 				let l = l.as_mut().ok_or(<Error<T>>::NotStaker)?;
+				let mut v = ring_amount;
 
 				if ring_amount != 0 {
-					Self::unstake_ring(&mut l.staked_ring, &mut l.unstaking_ring, ring_amount)?;
+					l.ring = l
+						.ring
+						.checked_sub(ring_amount)
+						.ok_or("[pallet::staking] `u128` must not be overflowed; qed")?;
+
+					<T as Config>::Ring::unstake(&who, ring_amount)?;
 				}
 
 				for d in deposits {
-					Self::unstake_deposit(l, d)?;
+					v = v.saturating_add(T::Deposit::amount(&who, d).unwrap_or_default());
+
+					l.deposits.remove(
+						l.deposits
+							.iter()
+							.position(|d_| d_ == &d)
+							.ok_or(<Error<T>>::DepositNotFound)?,
+					);
+
+					T::Deposit::unstake(&who, d)?;
 				}
 
-				DispatchResult::Ok(())
+				<Result<_, DispatchError>>::Ok(v)
 			})?;
 
-			Ok(())
-		}
-
-		/// Cancel the `unstake` operation.
-		///
-		/// Re-stake the unstaking assets immediately.
-		#[pallet::call_index(2)]
-		#[pallet::weight(<T as Config>::WeightInfo::restake(deposits.len() as _))]
-		pub fn restake(
-			origin: OriginFor<T>,
-			ring_amount: Balance,
-			deposits: Vec<DepositId<T>>,
-		) -> DispatchResult {
-			let who = ensure_signed(origin)?;
-
-			if ring_amount == 0 && deposits.is_empty() {
-				return Ok(());
+			if let Some(r) =
+				<RateLimitState<T>>::get().flow_out(flow_out_amount, <RateLimit<T>>::get())
+			{
+				<RateLimitState<T>>::put(r);
+			} else {
+				Err(<Error<T>>::ExceedRateLimit)?;
 			}
 
-			<Ledgers<T>>::try_mutate(&who, |l| {
-				let l = l.as_mut().ok_or(<Error<T>>::NotStaker)?;
-
-				if ring_amount != 0 {
-					Self::restake_ring(&mut l.staked_ring, &mut l.unstaking_ring, ring_amount)?;
-				}
-
-				for d in deposits {
-					Self::restake_deposit(l, d)?;
-				}
-
-				DispatchResult::Ok(())
-			})?;
-
-			Ok(())
-		}
-
-		/// Claim the stakes from the pallet/contract account.
-		#[pallet::call_index(3)]
-		#[pallet::weight(<T as Config>::WeightInfo::claim())]
-		pub fn claim(origin: OriginFor<T>) -> DispatchResult {
-			let who = ensure_signed(origin)?;
-
-			// Deposit doesn't need to be claimed.
-			Self::claim_unstakings(&who)?;
 			Self::try_clean_ledger_of(&who);
 
 			Ok(())
@@ -538,6 +532,17 @@ pub mod pallet {
 			Ok(())
 		}
 
+		/// Set max unstake RING limit.
+		#[pallet::call_index(9)]
+		#[pallet::weight(<T as Config>::WeightInfo::set_rate_limit())]
+		pub fn set_rate_limit(origin: OriginFor<T>, amount: Balance) -> DispatchResult {
+			ensure_root(origin)?;
+
+			<RateLimit<T>>::put(amount);
+
+			Ok(())
+		}
+
 		/// Set collator count.
 		///
 		/// This will apply to the incoming session.
@@ -578,138 +583,9 @@ pub mod pallet {
 		) -> DispatchResult {
 			T::Deposit::stake(who, deposit)?;
 
-			ledger.staked_deposits.try_push(deposit).map_err(|_| <Error<T>>::ExceedMaxDeposits)?;
+			ledger.deposits.try_push(deposit).map_err(|_| <Error<T>>::ExceedMaxDeposits)?;
 
 			Ok(())
-		}
-
-		fn unstake_ring(
-			staked: &mut Balance,
-			unstaking: &mut BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>,
-			amount: Balance,
-		) -> DispatchResult {
-			*staked = staked
-				.checked_sub(amount)
-				.ok_or("[pallet::staking] `u128` must not be overflowed; qed")?;
-
-			unstaking
-				.try_push((
-					amount,
-					<frame_system::Pallet<T>>::block_number() + T::MinStakingDuration::get(),
-				))
-				.map_err(|_| <Error<T>>::ExceedMaxUnstakings)?;
-
-			Ok(())
-		}
-
-		fn unstake_deposit(ledger: &mut Ledger<T>, deposit: DepositId<T>) -> DispatchResult {
-			ledger
-				.unstaking_deposits
-				.try_push((
-					ledger.staked_deposits.remove(
-						ledger
-							.staked_deposits
-							.iter()
-							.position(|d| d == &deposit)
-							.ok_or(<Error<T>>::DepositNotFound)?,
-					),
-					<frame_system::Pallet<T>>::block_number() + T::MinStakingDuration::get(),
-				))
-				.map_err(|_| <Error<T>>::ExceedMaxUnstakings)?;
-
-			Ok(())
-		}
-
-		fn restake_ring(
-			staked: &mut Balance,
-			unstaking: &mut BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>,
-			mut amount: Balance,
-		) -> DispatchResult {
-			let mut actual_restake = 0;
-
-			// Cancel the latest `unstake` first.
-			while let Some((u, _)) = unstaking.last_mut() {
-				if let Some(k) = u.checked_sub(amount) {
-					actual_restake += amount;
-					*u = k;
-
-					if k == 0 {
-						unstaking
-							.pop()
-							.ok_or("[pallet::staking] record must exist, due to `last_mut`; qed")?;
-					}
-
-					break;
-				} else {
-					actual_restake += *u;
-					amount -= *u;
-
-					unstaking
-						.pop()
-						.ok_or("[pallet::staking] record must exist, due to `last_mut`; qed")?;
-				}
-			}
-
-			*staked += actual_restake;
-
-			Ok(())
-		}
-
-		fn restake_deposit(ledger: &mut Ledger<T>, deposit: DepositId<T>) -> DispatchResult {
-			ledger
-				.staked_deposits
-				.try_push(
-					ledger
-						.unstaking_deposits
-						.remove(
-							ledger
-								.unstaking_deposits
-								.iter()
-								.position(|(d, _)| d == &deposit)
-								.ok_or(<Error<T>>::DepositNotFound)?,
-						)
-						.0,
-				)
-				.map_err(|_| <Error<T>>::ExceedMaxDeposits)?;
-
-			Ok(())
-		}
-
-		fn claim_unstakings(who: &T::AccountId) -> DispatchResult {
-			<Ledgers<T>>::try_mutate(who, |l| {
-				let l = l.as_mut().ok_or(<Error<T>>::NotStaker)?;
-				let now = <frame_system::Pallet<T>>::block_number();
-				let mut r_claimed = 0;
-
-				l.unstaking_ring.retain(|(a, t)| {
-					if t <= &now {
-						r_claimed += a;
-
-						false
-					} else {
-						true
-					}
-				});
-				<T as Config>::Ring::unstake(who, r_claimed)?;
-
-				let mut d_claimed = Vec::new();
-
-				l.unstaking_deposits.retain(|(d, t)| {
-					if t <= &now {
-						d_claimed.push(*d);
-
-						false
-					} else {
-						true
-					}
-				});
-
-				for d in d_claimed {
-					T::Deposit::unstake(who, d)?;
-				}
-
-				Ok(())
-			})
 		}
 
 		fn try_clean_ledger_of(who: &T::AccountId) {
@@ -730,9 +606,9 @@ pub mod pallet {
 
 		/// Update the record of block production.
 		pub fn note_authors(authors: &[T::AccountId]) {
-			<AuthoredBlocksCount<T>>::mutate(|(sum, map)| {
+			<AuthoredBlocksCount<T>>::mutate(|(total, map)| {
 				authors.iter().cloned().for_each(|c| {
-					*sum += One::one();
+					*total += One::one();
 
 					map.entry(c).and_modify(|p_| *p_ += One::one()).or_insert(One::one());
 				});
@@ -743,8 +619,8 @@ pub mod pallet {
 		pub fn stake_of(who: &T::AccountId) -> Balance {
 			<Ledgers<T>>::get(who)
 				.map(|l| {
-					l.staked_ring
-						+ l.staked_deposits
+					l.ring
+						+ l.deposits
 							.into_iter()
 							// We don't care if the deposit exists here.
 							// It was guaranteed by the `stake`/`unstake`/`restake` functions.
@@ -757,9 +633,9 @@ pub mod pallet {
 		pub fn distribute_session_reward(amount: Balance) {
 			let reward_to_ring = amount.saturating_div(2);
 			let reward_to_kton = amount.saturating_sub(reward_to_ring);
-			let (sum, map) = <AuthoredBlocksCount<T>>::take();
-			let actual_reward_to_ring = map.into_iter().fold(0, |s, (c, p)| {
-				let r = Perbill::from_rational(p, sum) * reward_to_ring;
+			let (total, map) = <AuthoredBlocksCount<T>>::take();
+			let actual_reward_to_ring = map.into_iter().fold(0, |s, (c, b)| {
+				let r = Perbill::from_rational(b, total) * reward_to_ring;
 
 				<PendingRewards<T>>::mutate(c, |u| *u = u.map(|u| u + r).or(Some(r)));
 
@@ -812,6 +688,7 @@ pub mod pallet {
 
 		/// Prepare the session state.
 		pub fn prepare_new_session(index: u32) -> Option<Vec<T::AccountId>> {
+			<RateLimitState<T>>::kill();
 			<Pallet<T>>::shift_exposure_cache_states();
 
 			#[allow(deprecated)]
@@ -946,6 +823,57 @@ where
 	}
 }
 
+/// Staking rate limiter.
+#[derive(Clone, Debug, PartialEq, Encode, Decode, MaxEncodedLen, TypeInfo)]
+pub enum RateLimiter {
+	/// Positive balance.
+	Pos(Balance),
+	/// Negative balance.
+	Neg(Balance),
+}
+impl RateLimiter {
+	fn flow_in(self, amount: Balance, limit: Balance) -> Option<Self> {
+		match self {
+			Self::Pos(v) => v.checked_add(amount).filter(|&v| v <= limit).map(Self::Pos),
+			Self::Neg(v) =>
+				if v >= amount {
+					Some(Self::Neg(v - amount))
+				} else {
+					let v = amount - v;
+
+					if v <= limit {
+						Some(Self::Pos(v))
+					} else {
+						None
+					}
+				},
+		}
+	}
+
+	fn flow_out(self, amount: Balance, limit: Balance) -> Option<Self> {
+		match self {
+			Self::Pos(v) =>
+				if v >= amount {
+					Some(Self::Pos(v - amount))
+				} else {
+					let v = amount - v;
+
+					if v <= limit {
+						Some(Self::Neg(v))
+					} else {
+						None
+					}
+				},
+			Self::Neg(v) => v.checked_add(amount).filter(|&new_v| new_v <= limit).map(Self::Neg),
+		}
+	}
+}
+impl Default for RateLimiter {
+	fn default() -> Self {
+		Self::Pos(0)
+	}
+}
+
 /// Exposure cache's state.
 #[allow(missing_docs)]
 #[cfg_attr(any(test, feature = "runtime-benchmarks", feature = "try-runtime"), derive(PartialEq))]
@@ -973,23 +901,16 @@ where
 	T: Config,
 {
 	/// Staked RING.
-	pub staked_ring: Balance,
+	pub ring: Balance,
 	/// Staked deposits.
-	pub staked_deposits: BoundedVec<DepositId<T>, <T as Config>::MaxDeposits>,
-	/// The RING in unstaking process.
-	pub unstaking_ring: BoundedVec<(Balance, BlockNumberFor<T>), T::MaxUnstakings>,
-	/// The deposit in unstaking process.
-	pub unstaking_deposits: BoundedVec<(DepositId<T>, BlockNumberFor<T>), T::MaxUnstakings>,
+	pub deposits: BoundedVec<DepositId<T>, <T as Config>::MaxDeposits>,
 }
 impl<T> Ledger<T>
 where
 	T: Config,
 {
 	fn is_empty(&self) -> bool {
-		self.staked_ring == 0
-			&& self.staked_deposits.is_empty()
-			&& self.unstaking_ring.is_empty()
-			&& self.unstaking_deposits.is_empty()
+		self.ring == 0 && self.deposits.is_empty()
 	}
 }
 

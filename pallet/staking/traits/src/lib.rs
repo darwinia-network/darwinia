@@ -47,7 +47,7 @@ pub trait Stake {
 		+ Copy
 		+ Debug
 		+ Default
-		+ From<u8>
+		+ From<u16>
 		+ PartialEq
 		+ FullCodec
 		+ MaxEncodedLen

@@ -236,8 +236,6 @@ impl darwinia_staking::Config for Runtime {
 	type KtonRewardDistributionContract = ();
 	type KtonStakerNotifier = ();
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
-	type MaxUnstakings = frame_support::traits::ConstU32<16>;
-	type MinStakingDuration = frame_support::traits::ConstU64<3>;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
 	type ShouldEndSession = ();
@@ -270,16 +268,24 @@ impl ExtBuilder {
 	}
 
 	pub(crate) fn build(self) -> sp_io::TestExternalities {
-		let mut t = <frame_system::GenesisConfig<Runtime>>::default()
-			.build_storage()
-			.expect("Frame system builds valid default genesis config");
+		let mut storage =
+			<frame_system::GenesisConfig<Runtime>>::default().build_storage().unwrap();
 
 		pallet_balances::GenesisConfig::<Runtime> { balances: self.balances }
-			.assimilate_storage(&mut t)
-			.expect("Pallet balances storage can be assimilated");
+			.assimilate_storage(&mut storage)
+			.unwrap();
+		darwinia_staking::GenesisConfig::<Runtime> {
+			rate_limit: 500,
+			collator_count: 1,
+			..Default::default()
+		}
+		.assimilate_storage(&mut storage)
+		.unwrap();
 
-		let mut ext = sp_io::TestExternalities::new(t);
+		let mut ext = sp_io::TestExternalities::new(storage);
+
 		ext.execute_with(|| System::set_block_number(1));
+
 		ext
 	}
 }
