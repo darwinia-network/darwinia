@@ -639,41 +639,38 @@ fn on_new_session_should_work() {
 #[test]
 fn rate_limiter_should_work() {
 	let r = RateLimiter::default();
-	let r = r.flow_in(UNIT, 3 * UNIT).unwrap();
+	let r = r.flow_in(1, 3).unwrap();
+	assert_eq!(r, RateLimiter::Pos(1));
 
-	assert_eq!(r, RateLimiter::Pos(UNIT));
+	let r = r.flow_in(2, 3).unwrap();
+	assert_eq!(r, RateLimiter::Pos(3));
+	assert!(r.clone().flow_in(1, 3).is_none());
 
-	let r = r.flow_in(2 * UNIT, 3 * UNIT).unwrap();
+	let r = r.flow_out(1, 3).unwrap();
+	assert_eq!(r, RateLimiter::Pos(2));
 
-	assert_eq!(r, RateLimiter::Pos(3 * UNIT));
-	assert!(r.clone().flow_in(1, 3 * UNIT).is_none());
-
-	let r = r.flow_out(UNIT, 3 * UNIT).unwrap();
-
-	assert_eq!(r, RateLimiter::Pos(2 * UNIT));
-
-	let r = r.flow_out(2 * UNIT, 3 * UNIT).unwrap();
-
+	let r = r.flow_out(2, 3).unwrap();
 	assert_eq!(r, RateLimiter::Pos(0));
 
-	let r = r.flow_out(UNIT, 3 * UNIT).unwrap();
+	let r = r.flow_out(1, 3).unwrap();
+	assert_eq!(r, RateLimiter::Neg(1));
 
-	assert_eq!(r, RateLimiter::Neg(UNIT));
+	let r = r.flow_out(2, 3).unwrap();
+	assert_eq!(r, RateLimiter::Neg(3));
+	assert!(r.clone().flow_out(1, 3).is_none());
 
-	let r = r.flow_out(2 * UNIT, 3 * UNIT).unwrap();
+	let r = r.flow_in(1, 3).unwrap();
+	assert_eq!(r, RateLimiter::Neg(2));
 
-	assert_eq!(r, RateLimiter::Neg(3 * UNIT));
-	assert!(r.clone().flow_out(1, 3 * UNIT).is_none());
-
-	let r = r.flow_in(UNIT, 3 * UNIT).unwrap();
-
-	assert_eq!(r, RateLimiter::Neg(2 * UNIT));
-
-	let r = r.flow_in(2 * UNIT, 3 * UNIT).unwrap();
-
+	let r = r.flow_in(2, 3).unwrap();
 	assert_eq!(r, RateLimiter::Neg(0));
 
-	let r = r.flow_in(UNIT, 3 * UNIT).unwrap();
+	let r = r.flow_in(1, 3).unwrap();
+	assert_eq!(r, RateLimiter::Pos(1));
 
-	assert_eq!(r, RateLimiter::Pos(UNIT));
+	let r = RateLimiter::Pos(3);
+	assert_eq!(r.flow_out(6, 3).unwrap(), RateLimiter::Neg(3));
+
+	let r = RateLimiter::Neg(3);
+	assert_eq!(r.flow_in(6, 3).unwrap(), RateLimiter::Pos(3));
 }
