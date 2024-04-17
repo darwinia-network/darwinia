@@ -83,7 +83,7 @@ where
 		<RingPool<T>>::kill();
 		<KtonPool<T>>::kill();
 		<MigrationStartBlock<T>>::kill();
-		<MaxUnstakeRing<T>>::put(10_000_000 * UNIT);
+		<RateLimit<T>>::put(10_000_000 * UNIT);
 		<Ledgers<T>>::translate::<OldLedger<T>, _>(|a, o| {
 			w += 6;
 

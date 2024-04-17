@@ -166,8 +166,8 @@ pub mod pallet {
 	pub enum Error<T> {
 		/// Exceed maximum deposit count.
 		ExceedMaxDeposits,
-		/// Exceed maximum unstake amount.
-		ExceedMaxUnstakeAmount,
+		/// Exceed rate limit.
+		ExceedRateLimit,
 		/// Deposit not found.
 		DepositNotFound,
 		/// You are not a staker.
@@ -282,19 +282,19 @@ pub mod pallet {
 	#[pallet::getter(fn elapsed_time)]
 	pub type ElapsedTime<T: Config> = StorageValue<_, Moment, ValueQuery>;
 
-	/// Max unstake RING limit.
+	/// Rate limit.
 	///
-	/// The maximum RING amount that can be unstaked in a session.
+	/// The maximum amount of RING that can be staked or unstaked in one session.
 	#[pallet::storage]
-	#[pallet::getter(fn max_unstake_ring)]
-	pub type MaxUnstakeRing<T: Config> = StorageValue<_, Balance, ValueQuery>;
+	#[pallet::getter(fn rate_limit)]
+	pub type RateLimit<T: Config> = StorageValue<_, Balance, ValueQuery>;
 
-	/// Unstake accumulator.
+	/// Rate limit state.
 	///
-	/// Tracks the total RING amount being unstaked in a session.
+	/// Tracks the rate limit state in a session.
 	#[pallet::storage]
-	#[pallet::getter(fn accumulate_unstake)]
-	pub type AccumulateUnstake<T: Config> = StorageValue<_, Balance, ValueQuery>;
+	#[pallet::getter(fn rate_limit_state)]
+	pub type RateLimitState<T: Config> = StorageValue<_, RateLimiter, ValueQuery>;
 
 	#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
@@ -303,8 +303,8 @@ pub mod pallet {
 		pub now: Moment,
 		/// The running time of Darwinia1.
 		pub elapsed_time: Moment,
-		/// Max unstake RING limit.
-		pub max_unstake_ring: Balance,
+		/// Rate limit.
+		pub rate_limit: Balance,
 		/// Genesis collator count.
 		pub collator_count: u32,
 		/// Genesis collator preferences.
@@ -320,7 +320,7 @@ pub mod pallet {
 
 			<SessionStartTime<T>>::put(self.now);
 			<ElapsedTime<T>>::put(self.elapsed_time);
-			<MaxUnstakeRing<T>>::put(self.max_unstake_ring);
+			<RateLimit<T>>::put(self.rate_limit);
 			<CollatorCount<T>>::put(self.collator_count);
 
 			self.collators.iter().for_each(|(who, ring_amount)| {
@@ -376,7 +376,7 @@ pub mod pallet {
 				return Ok(());
 			}
 
-			<Ledgers<T>>::try_mutate(&who, |l| {
+			let flow_in_amount = <Ledgers<T>>::try_mutate(&who, |l| {
 				let l = if let Some(l) = l {
 					l
 				} else {
@@ -386,17 +386,28 @@ pub mod pallet {
 
 					l.as_mut().expect("[pallet::staking] `l` must be some; qed")
 				};
+				let mut v = ring_amount;
 
 				if ring_amount != 0 {
 					Self::stake_ring(&who, &mut l.ring, ring_amount)?;
 				}
 
 				for d in deposits.clone() {
+					v = v.saturating_add(T::Deposit::amount(&who, d).unwrap_or_default());
+
 					Self::stake_deposit(&who, l, d)?;
 				}
 
-				DispatchResult::Ok(())
+				<Result<_, DispatchError>>::Ok(v)
 			})?;
+
+			if let Some(r) =
+				<RateLimitState<T>>::get().flow_in(flow_in_amount, <RateLimit<T>>::get())
+			{
+				<RateLimitState<T>>::put(r);
+			} else {
+				Err(<Error<T>>::ExceedRateLimit)?;
+			}
 
 			Self::deposit_event(Event::Staked { who, ring_amount, deposits });
 
@@ -417,10 +428,9 @@ pub mod pallet {
 				return Ok(());
 			}
 
-			let mut acc = <AccumulateUnstake<T>>::get().saturating_add(ring_amount);
-
-			<Ledgers<T>>::try_mutate(&who, |l| {
+			let flow_out_amount = <Ledgers<T>>::try_mutate(&who, |l| {
 				let l = l.as_mut().ok_or(<Error<T>>::NotStaker)?;
+				let mut v = ring_amount;
 
 				if ring_amount != 0 {
 					l.ring = l
@@ -432,7 +442,7 @@ pub mod pallet {
 				}
 
 				for d in deposits {
-					acc = acc.saturating_add(T::Deposit::amount(&who, d).unwrap_or_default());
+					v = v.saturating_add(T::Deposit::amount(&who, d).unwrap_or_default());
 
 					l.deposits.remove(
 						l.deposits
@@ -444,13 +454,15 @@ pub mod pallet {
 					T::Deposit::unstake(&who, d)?;
 				}
 
-				DispatchResult::Ok(())
+				<Result<_, DispatchError>>::Ok(v)
 			})?;
 
-			if acc <= <MaxUnstakeRing<T>>::get() {
-				<AccumulateUnstake<T>>::put(acc);
+			if let Some(r) =
+				<RateLimitState<T>>::get().flow_out(flow_out_amount, <RateLimit<T>>::get())
+			{
+				<RateLimitState<T>>::put(r);
 			} else {
-				Err(<Error<T>>::ExceedMaxUnstakeAmount)?;
+				Err(<Error<T>>::ExceedRateLimit)?;
 			}
 
 			Self::try_clean_ledger_of(&who);
@@ -522,11 +534,11 @@ pub mod pallet {
 
 		/// Set max unstake RING limit.
 		#[pallet::call_index(9)]
-		#[pallet::weight(<T as Config>::WeightInfo::set_max_unstake_ring())]
-		pub fn set_max_unstake_ring(origin: OriginFor<T>, amount: Balance) -> DispatchResult {
+		#[pallet::weight(<T as Config>::WeightInfo::set_rate_limit())]
+		pub fn set_rate_limit(origin: OriginFor<T>, amount: Balance) -> DispatchResult {
 			ensure_root(origin)?;
 
-			<MaxUnstakeRing<T>>::put(amount);
+			<RateLimit<T>>::put(amount);
 
 			Ok(())
 		}
@@ -676,6 +688,7 @@ pub mod pallet {
 
 		/// Prepare the session state.
 		pub fn prepare_new_session(index: u32) -> Option<Vec<T::AccountId>> {
+			<RateLimitState<T>>::kill();
 			<Pallet<T>>::shift_exposure_cache_states();
 
 			#[allow(deprecated)]
@@ -807,6 +820,57 @@ where
 
 	fn reward(_who: &T::AccountId, _amount: Balance) -> DispatchResult {
 		Ok(())
+	}
+}
+
+/// Staking rate limiter.
+#[derive(Clone, Debug, PartialEq, Encode, Decode, MaxEncodedLen, TypeInfo)]
+pub enum RateLimiter {
+	/// Positive balance.
+	Pos(Balance),
+	/// Negative balance.
+	Neg(Balance),
+}
+impl RateLimiter {
+	fn flow_in(self, amount: Balance, limit: Balance) -> Option<Self> {
+		match self {
+			Self::Pos(v) => v.checked_add(amount).filter(|&v| v <= limit).map(Self::Pos),
+			Self::Neg(v) =>
+				if v >= amount {
+					Some(Self::Neg(v - amount))
+				} else {
+					let v = amount - v;
+
+					if v <= limit {
+						Some(Self::Pos(v))
+					} else {
+						None
+					}
+				},
+		}
+	}
+
+	fn flow_out(self, amount: Balance, limit: Balance) -> Option<Self> {
+		match self {
+			Self::Pos(v) =>
+				if v >= amount {
+					Some(Self::Pos(v - amount))
+				} else {
+					let v = amount - v;
+
+					if v <= limit {
+						Some(Self::Neg(v))
+					} else {
+						None
+					}
+				},
+			Self::Neg(v) => v.checked_add(amount).filter(|&new_v| new_v <= limit).map(Self::Neg),
+		}
+	}
+}
+impl Default for RateLimiter {
+	fn default() -> Self {
+		Self::Pos(0)
 	}
 }
 

@@ -196,7 +196,7 @@ pub fn genesis_config() -> ChainSpec {
 				darwinia_staking: DarwiniaStakingConfig {
 					now: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
 					elapsed_time: 0,
-					max_unstake_ring: 10_000_000 * UNIT,
+					rate_limit: 20_000_000 * UNIT,
 					collator_count: 5,
 					collators: collators
 						.iter()
@@ -302,7 +302,7 @@ fn testnet_genesis(
 		darwinia_staking: DarwiniaStakingConfig {
 			now: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
 			elapsed_time: 0,
-			max_unstake_ring: 10_000_000 * UNIT,
+			rate_limit: 20_000_000 * UNIT,
 			collator_count: collators.len() as _,
 			collators: collators.iter().map(|(a, _)| (a.to_owned(), UNIT)).collect(),
 		},

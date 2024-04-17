@@ -275,7 +275,7 @@ impl ExtBuilder {
 			.assimilate_storage(&mut storage)
 			.unwrap();
 		darwinia_staking::GenesisConfig::<Runtime> {
-			max_unstake_ring: 500,
+			rate_limit: 500,
 			collator_count: 1,
 			..Default::default()
 		}

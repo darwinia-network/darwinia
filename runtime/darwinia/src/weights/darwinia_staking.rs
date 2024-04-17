@@ -168,7 +168,7 @@ impl<T: frame_system::Config> darwinia_staking::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(35))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
-	fn set_max_unstake_ring() -> Weight {
+	fn set_rate_limit() -> Weight {
 		Default::default()
 	}
 	/// Storage: `DarwiniaStaking::CollatorCount` (r:0 w:1)

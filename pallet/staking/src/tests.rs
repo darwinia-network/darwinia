@@ -20,7 +20,7 @@
 use core::time::Duration;
 // darwinia
 use crate::{mock::*, *};
-use darwinia_deposit::{Deposit as DepositS, Error as DepositError};
+use darwinia_deposit::Error as DepositError;
 use dc_types::UNIT;
 // substrate
 use frame_support::{assert_noop, assert_ok, BoundedVec};
@@ -118,6 +118,7 @@ fn stake_should_work() {
 		assert_eq!(System::account(1).consumers, 0);
 		assert!(Staking::ledger_of(1).is_none());
 		assert_eq!(Balances::free_balance(1), 1_000 * UNIT);
+		assert_eq!(Staking::rate_limit_state(), RateLimiter::Pos(0));
 
 		// Stake 1 RING.
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), UNIT, Vec::new()));
@@ -127,6 +128,7 @@ fn stake_should_work() {
 			Ledger { ring: UNIT, deposits: Default::default() }
 		);
 		assert_eq!(Balances::free_balance(1), 999 * UNIT);
+		assert_eq!(Staking::rate_limit_state(), RateLimiter::Pos(UNIT));
 
 		// Stake invalid deposit.
 		assert_noop!(
@@ -142,17 +144,19 @@ fn stake_should_work() {
 			Staking::ledger_of(1).unwrap(),
 			Ledger { ring: UNIT, deposits: BoundedVec::truncate_from(vec![0]) }
 		);
+		assert_eq!(Staking::rate_limit_state(), RateLimiter::Pos(2 * UNIT));
 
-		// Stake 500 RING and 2 deposits.
+		// Stake 2 RING and 2 deposits.
 		assert_eq!(System::account(1).consumers, 2);
-		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 200 * UNIT, 1));
-		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 200 * UNIT, 1));
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), 500 * UNIT, vec![1, 2]));
-		assert_eq!(Balances::free_balance(1), 98 * UNIT);
+		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
+		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), 2 * UNIT, vec![1, 2]));
+		assert_eq!(Balances::free_balance(1), 994 * UNIT);
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
-			Ledger { ring: 501 * UNIT, deposits: BoundedVec::truncate_from(vec![0, 1, 2]) }
+			Ledger { ring: 3 * UNIT, deposits: BoundedVec::truncate_from(vec![0, 1, 2]) }
 		);
+		assert_eq!(Staking::rate_limit_state(), RateLimiter::Pos(6 * UNIT));
 	});
 }
 
@@ -164,42 +168,19 @@ fn unstake_should_work() {
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), 3 * UNIT, vec![0, 1, 2]));
 		assert_eq!(Balances::free_balance(1), 994 * UNIT);
+		assert_eq!(Staking::rate_limit_state(), RateLimiter::Pos(6 * UNIT));
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger { ring: 3 * UNIT, deposits: BoundedVec::truncate_from(vec![0, 1, 2]) }
 		);
 		assert_eq!(
-			Deposit::deposit_of(1).unwrap(),
-			<BoundedVec<_, <Runtime as darwinia_deposit::Config>::MaxDeposits>>::truncate_from(
-				vec![
-					DepositS {
-						id: 0,
-						value: UNIT,
-						start_time: 3,
-						expired_time: 2635200003,
-						in_use: true
-					},
-					DepositS {
-						id: 1,
-						value: UNIT,
-						start_time: 3,
-						expired_time: 2635200003,
-						in_use: true
-					},
-					DepositS {
-						id: 2,
-						value: UNIT,
-						start_time: 3,
-						expired_time: 2635200003,
-						in_use: true
-					}
-				]
-			)
+			Deposit::deposit_of(1).unwrap().into_iter().map(|d| d.in_use).collect::<Vec<_>>(),
+			[true, true, true]
 		);
 
 		// Unstake 1 RING.
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), UNIT, Vec::new()));
-		assert_eq!(Staking::accumulate_unstake(), UNIT);
+		assert_eq!(Staking::rate_limit_state(), RateLimiter::Pos(5 * UNIT));
 		assert_eq!(Balances::free_balance(1), 995 * UNIT);
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
@@ -215,94 +196,49 @@ fn unstake_should_work() {
 		// Unstake 1 deposit.
 		Efflux::block(1);
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), 0, vec![1]));
-		assert_eq!(Staking::accumulate_unstake(), 2 * UNIT);
+		assert_eq!(Staking::rate_limit_state(), RateLimiter::Pos(4 * UNIT));
 		assert_eq!(
 			Staking::ledger_of(1).unwrap(),
 			Ledger { ring: 2 * UNIT, deposits: BoundedVec::truncate_from(vec![0, 2]) }
 		);
 		assert_eq!(
-			Deposit::deposit_of(1).unwrap(),
-			<BoundedVec<_, <Runtime as darwinia_deposit::Config>::MaxDeposits>>::truncate_from(
-				vec![
-					DepositS {
-						id: 0,
-						value: UNIT,
-						start_time: 3,
-						expired_time: 2635200003,
-						in_use: true
-					},
-					DepositS {
-						id: 1,
-						value: UNIT,
-						start_time: 3,
-						expired_time: 2635200003,
-						in_use: false
-					},
-					DepositS {
-						id: 2,
-						value: UNIT,
-						start_time: 3,
-						expired_time: 2635200003,
-						in_use: true
-					}
-				]
-			)
+			Deposit::deposit_of(1).unwrap().into_iter().map(|d| d.in_use).collect::<Vec<_>>(),
+			[true, false, true]
 		);
 
 		// Unstake 2 RING and 2 deposits.
 		Efflux::block(1);
 		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), 2 * UNIT, vec![0, 2]));
-		assert_eq!(Staking::accumulate_unstake(), 6 * UNIT);
+		assert_eq!(Staking::rate_limit_state(), RateLimiter::Pos(0));
 		assert!(Staking::ledger_of(1).is_none());
 		assert_eq!(
-			Deposit::deposit_of(1).unwrap(),
-			<BoundedVec<_, <Runtime as darwinia_deposit::Config>::MaxDeposits>>::truncate_from(
-				vec![
-					DepositS {
-						id: 0,
-						value: UNIT,
-						start_time: 3,
-						expired_time: 2635200003,
-						in_use: false
-					},
-					DepositS {
-						id: 1,
-						value: UNIT,
-						start_time: 3,
-						expired_time: 2635200003,
-						in_use: false
-					},
-					DepositS {
-						id: 2,
-						value: UNIT,
-						start_time: 3,
-						expired_time: 2635200003,
-						in_use: false
-					}
-				]
-			)
+			Deposit::deposit_of(1).unwrap().into_iter().map(|d| d.in_use).collect::<Vec<_>>(),
+			[false, false, false]
 		);
 
 		// Prepare rate limit test data.
-		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 94 * UNIT + 1, 1));
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), 94 * UNIT + 1, vec![3]));
+		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 100 * UNIT + 1, 1));
+		<RateLimit<Runtime>>::put(200 * UNIT + 2);
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), 100 * UNIT + 1, vec![3]));
+		<RateLimit<Runtime>>::put(100 * UNIT);
+		<RateLimitState<Runtime>>::kill();
 
-		// Unstake 94 UNIT + 1.
+		// Unstake 100 UNIT + 1.
 		assert_noop!(
-			Staking::unstake(RuntimeOrigin::signed(1), 94 * UNIT + 1, Vec::new()),
-			<Error<Runtime>>::ExceedMaxUnstakeAmount
+			Staking::unstake(RuntimeOrigin::signed(1), 100 * UNIT + 1, Vec::new()),
+			<Error<Runtime>>::ExceedRateLimit
 		);
 
-		// Unstake 94 UNIT + 1.
+		// Unstake 100 UNIT + 1.
 		assert_noop!(
 			Staking::unstake(RuntimeOrigin::signed(1), 0, vec![3]),
-			<Error<Runtime>>::ExceedMaxUnstakeAmount
+			<Error<Runtime>>::ExceedRateLimit
 		);
 
-		// Unstake RING(94 UNIT + 1) and deposit(94 UNIT + 1).
+		// Unstake RING(100 UNIT + 1) and deposit(100 UNIT + 1).
 		assert_noop!(
-			Staking::unstake(RuntimeOrigin::signed(1), 94 * UNIT + 1, vec![3]),
-			<Error<Runtime>>::ExceedMaxUnstakeAmount
+			Staking::unstake(RuntimeOrigin::signed(1), 100 * UNIT + 1, vec![3]),
+			<Error<Runtime>>::ExceedRateLimit
 		);
 	});
 }
@@ -698,4 +634,46 @@ fn on_new_session_should_work() {
 			[1, 5]
 		);
 	});
+}
+
+#[test]
+fn rate_limiter_should_work() {
+	let r = RateLimiter::default();
+	let r = r.flow_in(UNIT, 3 * UNIT).unwrap();
+
+	assert_eq!(r, RateLimiter::Pos(UNIT));
+
+	let r = r.flow_in(2 * UNIT, 3 * UNIT).unwrap();
+
+	assert_eq!(r, RateLimiter::Pos(3 * UNIT));
+	assert!(r.clone().flow_in(1, 3 * UNIT).is_none());
+
+	let r = r.flow_out(UNIT, 3 * UNIT).unwrap();
+
+	assert_eq!(r, RateLimiter::Pos(2 * UNIT));
+
+	let r = r.flow_out(2 * UNIT, 3 * UNIT).unwrap();
+
+	assert_eq!(r, RateLimiter::Pos(0));
+
+	let r = r.flow_out(UNIT, 3 * UNIT).unwrap();
+
+	assert_eq!(r, RateLimiter::Neg(UNIT));
+
+	let r = r.flow_out(2 * UNIT, 3 * UNIT).unwrap();
+
+	assert_eq!(r, RateLimiter::Neg(3 * UNIT));
+	assert!(r.clone().flow_out(1, 3 * UNIT).is_none());
+
+	let r = r.flow_in(UNIT, 3 * UNIT).unwrap();
+
+	assert_eq!(r, RateLimiter::Neg(2 * UNIT));
+
+	let r = r.flow_in(2 * UNIT, 3 * UNIT).unwrap();
+
+	assert_eq!(r, RateLimiter::Neg(0));
+
+	let r = r.flow_in(UNIT, 3 * UNIT).unwrap();
+
+	assert_eq!(r, RateLimiter::Pos(UNIT));
 }

@@ -159,7 +159,7 @@ mod benchmarks {
 	}
 
 	#[benchmark]
-	fn set_max_unstake_ring() {
+	fn set_rate_limit() {
 		// Worst-case scenario:
 		//
 		// Set max unstake ring successfully.
