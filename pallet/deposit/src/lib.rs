@@ -175,9 +175,10 @@ pub mod pallet {
 				// Keep the list sorted in increasing order.
 				// And find the missing id.
 				let id = match ds.iter().map(|d| d.id).try_fold(0, |i, id| match i.cmp(&id) {
-					Less => Break(i),
+					// `Greater` never occurs, as this list is always sorted.
+					// But it's a good practice to handle it instead of marking as `unreachable!`.
+					Less | Greater => Break(i),
 					Equal => Continue(i + 1),
-					Greater => Break(i - 1),
 				}) {
 					Continue(c) => c,
 					Break(b) => b,
