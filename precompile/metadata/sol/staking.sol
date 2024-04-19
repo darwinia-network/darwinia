@@ -45,19 +45,6 @@ interface Staking {
 		uint16[] memory depositIds
 	) external returns (bool);
 
-    /// @dev Re-stake the unstaking assets immediately.
-	/// @param ringAmount The amount of staking RING asset
-	/// @param depositIds The deposit ids list
-	/// @return true on success, false otherwise.
-	function restake(
-		uint256 ringAmount,
-		uint16[] memory depositIds
-	) external returns (bool);
-
-    /// @dev Claim the stakes from the pallet/contract account.
-	/// @return returns true on success, false otherwise.
-	function claim() external returns (bool);
-
     /// @dev Declare the desire to collect.
     /// @param commission collator commission, 0 ~ 100
 	/// @return returns true on success, false otherwise.
