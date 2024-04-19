@@ -20,20 +20,6 @@
           "type": "function"
         },
         {
-          "inputs": [],
-          "name": "claim",
-          "outputs":
-          [
-            {
-              "internalType": "bool",
-              "name": "",
-              "type": "bool"
-            }
-          ],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
           "inputs":
           [
             {
@@ -85,32 +71,6 @@
             }
           ],
           "name": "payout",
-          "outputs":
-          [
-            {
-              "internalType": "bool",
-              "name": "",
-              "type": "bool"
-            }
-          ],
-          "stateMutability": "nonpayable",
-          "type": "function"
-        },
-        {
-          "inputs":
-          [
-            {
-              "internalType": "uint256",
-              "name": "ringAmount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint16[]",
-              "name": "depositIds",
-              "type": "uint16[]"
-            }
-          ],
-          "name": "restake",
           "outputs":
           [
             {
@@ -188,14 +148,6 @@
               "_0": "returns true on success, false otherwise."
             }
           },
-          "claim()":
-          {
-            "details": "Claim the stakes from the pallet/contract account.",
-            "returns":
-            {
-              "_0": "returns true on success, false otherwise."
-            }
-          },
           "collect(uint32)":
           {
             "details": "Declare the desire to collect.",
@@ -232,19 +184,6 @@
               "_0": "returns true on success, false otherwise."
             }
           },
-          "restake(uint256,uint16[])":
-          {
-            "details": "Re-stake the unstaking assets immediately.",
-            "params":
-            {
-              "depositIds": "The deposit ids list",
-              "ringAmount": "The amount of staking RING asset"
-            },
-            "returns":
-            {
-              "_0": "true on success, false otherwise."
-            }
-          },
           "stake(uint256,uint16[])":
           {
             "details": "Add stakes to the staking pool.",
@@ -278,11 +217,9 @@
       "hashes":
       {
         "chill()": "2b8a3ae6",
-        "claim()": "4e71d92d",
         "collect(uint32)": "10a66536",
         "nominate(address)": "b332180b",
         "payout(address)": "0b7e9c44",
-        "restake(uint256,uint16[])": "1ed0818e",
         "stake(uint256,uint16[])": "88fd3d50",
         "unstake(uint256,uint16[])": "0e198447"
       }
