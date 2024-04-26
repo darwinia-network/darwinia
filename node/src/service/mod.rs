@@ -142,7 +142,7 @@ pub fn new_partial<RuntimeApi, Executor>(
 		sc_consensus::DefaultImportQueue<Block>,
 		sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>,
 		(
-			fc_db::Backend<Block>,
+			fc_db::Backend<Block, FullClient<RuntimeApi, Executor>>,
 			Option<fc_rpc_core::types::FilterPool>,
 			fc_rpc_core::types::FeeHistoryCache,
 			fc_rpc_core::types::FeeHistoryCacheLimit,
@@ -352,6 +352,7 @@ where
 	}
 
 	let overrides = fc_storage::overrides_handle(client.clone());
+	let frontier_backend = Arc::new(frontier_backend);
 	let block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
 		task_manager.spawn_handle(),
 		overrides.clone(),
@@ -414,9 +415,9 @@ where
 				network: network.clone(),
 				sync: sync_service.clone(),
 				filter_pool: filter_pool.clone(),
-				frontier_backend: match frontier_backend.clone() {
-					fc_db::Backend::KeyValue(bd) => Arc::new(bd),
-					fc_db::Backend::Sql(bd) => Arc::new(bd),
+				frontier_backend: match &*frontier_backend {
+					fc_db::Backend::KeyValue(bd) => bd.clone(),
+					fc_db::Backend::Sql(bd) => bd.clone(),
 				},
 				max_past_logs,
 				fee_history_cache: fee_history_cache.clone(),
@@ -848,6 +849,7 @@ where
 
 	let prometheus_registry = config.prometheus_registry().cloned();
 	let overrides = fc_storage::overrides_handle(client.clone());
+	let frontier_backend = Arc::new(frontier_backend);
 	let block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
 		task_manager.spawn_handle(),
 		overrides.clone(),
@@ -910,9 +912,9 @@ where
 				network: network.clone(),
 				sync: sync_service.clone(),
 				filter_pool: filter_pool.clone(),
-				frontier_backend: match frontier_backend.clone() {
-					fc_db::Backend::KeyValue(bd) => Arc::new(bd),
-					fc_db::Backend::Sql(bd) => Arc::new(bd),
+				frontier_backend: match &*frontier_backend {
+					fc_db::Backend::KeyValue(bd) => bd.clone(),
+					fc_db::Backend::Sql(bd) => bd.clone(),
 				},
 				max_past_logs,
 				fee_history_cache: fee_history_cache.clone(),

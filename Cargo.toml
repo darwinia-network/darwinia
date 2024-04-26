@@ -198,27 +198,27 @@ substrate-test-utils                       = { git = "https://github.com/parityt
 substrate-wasm-builder                     = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 
 [patch."https://github.com/paritytech/frontier"]
-fc-api                         = { path = "/home/bear/coding/rust-space/frontier/client/api" }
-fc-consensus                   = { path = "/home/bear/coding/rust-space/frontier/client/consensus" }
-fc-db                          = { path = "/home/bear/coding/rust-space/frontier/client/db"  }
-fc-mapping-sync                = { path = "/home/bear/coding/rust-space/frontier/client/mapping-sync"  }
-fc-rpc                         = { path = "/home/bear/coding/rust-space/frontier/client/rpc"  }
-fc-rpc-core                    = { path = "/home/bear/coding/rust-space/frontier/client/rpc-core"  }
-fc-storage                     = { path = "/home/bear/coding/rust-space/frontier/client/storage" }
-fp-account                     = { path = "/home/bear/coding/rust-space/frontier/primitives/account"  }
-fp-ethereum                    = { path = "/home/bear/coding/rust-space/frontier/primitives/ethereum" }
-fp-evm                         = { path = "/home/bear/coding/rust-space/frontier/primitives/evm"  }
-fp-rpc                         = { path = "/home/bear/coding/rust-space/frontier/primitives/rpc"  }
-fp-self-contained              = { path = "/home/bear/coding/rust-space/frontier/primitives/self-contained"  }
-pallet-ethereum                = { path = "/home/bear/coding/rust-space/frontier/frame/ethereum"  }
-pallet-evm                     = { path = "/home/bear/coding/rust-space/frontier/frame/evm"  }
-pallet-evm-precompile-blake2   = { path = "/home/bear/coding/rust-space/frontier/frame/evm/precompile/blake2" }
-pallet-evm-precompile-bn128    = { path = "/home/bear/coding/rust-space/frontier/frame/evm/precompile/bn128"  }
-pallet-evm-precompile-bls12381 = { path = "/home/bear/coding/rust-space/frontier/frame/evm/precompile/bls12381"  }
-pallet-evm-precompile-dispatch = { path = "/home/bear/coding/rust-space/frontier/frame/evm/precompile/dispatch"  }
-pallet-evm-precompile-modexp   = { path = "/home/bear/coding/rust-space/frontier/frame/evm/precompile/modexp"  }
-pallet-evm-precompile-simple   = { path = "/home/bear/coding/rust-space/frontier/frame/evm/precompile/simple"  }
-precompile-utils               = { path = "/home/bear/coding/rust-space/frontier/precompiles"  }
+fc-api                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fc-consensus                   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fc-db                          = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fc-mapping-sync                = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fc-rpc                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fc-rpc-core                    = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fc-storage                     = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fp-account                     = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fp-ethereum                    = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fp-evm                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fp-rpc                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fp-self-contained              = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+pallet-ethereum                = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+pallet-evm                     = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+pallet-evm-precompile-blake2   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+pallet-evm-precompile-bls12381 = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+pallet-evm-precompile-bn128    = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+pallet-evm-precompile-dispatch = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+pallet-evm-precompile-modexp   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+pallet-evm-precompile-simple   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+precompile-utils               = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
 
 [profile.release]
 panic = "unwind"
