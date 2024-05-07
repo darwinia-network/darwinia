@@ -94,7 +94,8 @@ impl IdentifyVariant for Box<dyn sc_service::ChainSpec> {
 
 /// A set of APIs that darwinia-like runtimes must implement.
 pub trait RuntimeApiCollection:
-	cumulus_primitives_core::CollectCollationInfo<Block>
+	cumulus_primitives_aura::AuraUnincludedSegmentApi<Block>
+	+ cumulus_primitives_core::CollectCollationInfo<Block>
 	+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 	+ fp_rpc::EthereumRuntimeRPCApi<Block>
 	+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
@@ -110,7 +111,8 @@ pub trait RuntimeApiCollection:
 {
 }
 impl<Api> RuntimeApiCollection for Api where
-	Api: cumulus_primitives_core::CollectCollationInfo<Block>
+	Api: cumulus_primitives_aura::AuraUnincludedSegmentApi<Block>
+		+ cumulus_primitives_core::CollectCollationInfo<Block>
 		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
 		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
@@ -261,6 +263,7 @@ where
 	Executor: 'static + sc_executor::NativeExecutionDispatch,
 	SC: FnOnce(
 		Arc<FullClient<RuntimeApi, Executor>>,
+		Arc<FullBackend>,
 		ParachainBlockImport<RuntimeApi, Executor>,
 		Option<&substrate_prometheus_endpoint::Registry>,
 		Option<sc_telemetry::TelemetryHandle>,
@@ -521,6 +524,7 @@ where
 	if validator {
 		start_consensus(
 			client.clone(),
+			backend.clone(),
 			block_import,
 			prometheus_registry.as_ref(),
 			telemetry.as_ref().map(|t| t.handle()),
@@ -614,6 +618,7 @@ where
 		cumulus_client_service::CollatorSybilResistance::Resistant, // Aura
 		para_id,
 		|client,
+		 backend,
 		 block_import,
 		 prometheus_registry,
 		 telemetry,
@@ -642,11 +647,17 @@ where
 				announce_block,
 				client.clone(),
 			);
-			let params = cumulus_client_consensus_aura::collators::basic::Params {
+			let params = cumulus_client_consensus_aura::collators::lookahead::Params {
 				create_inherent_data_providers: move |_, ()| async move { Ok(()) },
 				block_import,
-				para_client: client,
+				para_client: client.clone(),
+				para_backend: backend.clone(),
 				relay_client: relay_chain_interface,
+				code_hash_provider: move |block_hash| {
+					client.code_at(block_hash).ok().map(|c| {
+						cumulus_primitives_core::relay_chain::ValidationCode::from(c).hash()
+					})
+				},
 				sync_oracle,
 				keystore,
 				collator_key,
@@ -657,11 +668,13 @@ where
 				proposer,
 				collator_service,
 				// Very limited proposal time.
-				authoring_duration: Duration::from_millis(500),
+				authoring_duration: Duration::from_millis(1_500),
 			};
-			let fut = cumulus_client_consensus_aura::collators::basic::run::<
+			let fut = cumulus_client_consensus_aura::collators::lookahead::run::<
 				Block,
 				sp_consensus_aura::sr25519::AuthorityPair,
+				_,
+				_,
 				_,
 				_,
 				_,

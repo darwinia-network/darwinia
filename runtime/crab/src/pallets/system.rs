@@ -31,7 +31,7 @@ pub const NORMAL_DISPATCH_RATIO: sp_runtime::Perbill = sp_runtime::Perbill::from
 pub const WEIGHT_MILLISECS_PER_BLOCK: u64 = 500;
 pub const MAXIMUM_BLOCK_WEIGHT: frame_support::weights::Weight =
 	frame_support::weights::Weight::from_parts(
-		frame_support::weights::constants::WEIGHT_REF_TIME_PER_MILLIS * WEIGHT_MILLISECS_PER_BLOCK,
+		frame_support::weights::constants::WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2),
 		cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
 	);
 

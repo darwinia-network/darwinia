@@ -29,6 +29,7 @@ mod system;
 pub use system::*;
 
 mod parachain_system;
+pub use parachain_system::*;
 
 mod timestamp;
 
@@ -59,8 +60,6 @@ mod session;
 pub use session::*;
 
 mod aura;
-
-mod aura_ext;
 
 // Governance stuff.
 mod governance;

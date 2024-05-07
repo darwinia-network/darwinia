@@ -20,8 +20,11 @@
 use crate::*;
 
 impl pallet_aura::Config for Runtime {
-	type AllowMultipleBlocksPerSlot = ConstBool<false>;
+	type AllowMultipleBlocksPerSlot = ConstBool<true>;
 	type AuthorityId = sp_consensus_aura::sr25519::AuthorityId;
 	type DisabledValidators = ();
 	type MaxAuthorities = ConstU32<100_000>;
+	type SlotDuration = ConstU64<SLOT_DURATION>;
 }
+
+impl cumulus_pallet_aura_ext::Config for Runtime {}
