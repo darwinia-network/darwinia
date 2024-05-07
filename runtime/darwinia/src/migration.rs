@@ -29,28 +29,12 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::DispatchError> {
 		log::info!("pre");
 
-		assert!(migration::have_storage_value(b"EcdsaAuthority", b"Authorities", &[]));
-
-		<pallet_balances::Locks<Runtime>>::iter().for_each(|(k, v)| {
-			log::info!("{k:?}");
-			log::info!("{v:?}");
-		});
-
 		Ok(Vec::new())
 	}
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
 		log::info!("post");
-
-		assert!(!migration::have_storage_value(b"EcdsaAuthority", b"Authorities", &[]));
-
-		<pallet_balances::Locks<Runtime>>::iter().for_each(|(k, v)| {
-			log::info!("{k:?}");
-			log::info!("{v:?}");
-
-			assert!(!v.is_empty());
-		});
 
 		Ok(())
 	}
@@ -61,70 +45,41 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	let mut r = 0;
-	let mut w = 101;
-	let _ =
-		migration::clear_storage_prefix(b"MessageGadget", b"CommitmentContract", &[], None, None);
-	let lock_ids = [
-		// Democracy lock.
-		*b"democrac",
-		// Fee market lock.
-		*b"da/feecr",
-	];
+	[
+		"0x71571c42067900bfb7ca8b51fccc07ef77074aea",
+		"0x0a1287977578f888bdc1c7627781af1cc000e6ab",
+		"0x0b001c95e86d64c1ad6e43944c568a6c31b53887",
+		"0xfa5727be643dba6599fc7f812fe60da3264a8205",
+		"0x5af9a1be7bc22f9a6b2ce90acd69c23dceeb23c2",
+		"0x1678a973ae9750d25c126cdbce891bb8cfacd520",
+		"0x5dd68958e07cec3f65489db8983ad737c37e0646",
+		"0xf11d8d9412fc6b90242e17af259cf7bd1eaa416b",
+		"0xdca962b899641d60ccf7268a2260f20b6c01c06d",
+	]
+	.iter()
+	.filter_map(|a| array_bytes::hex_n_into::<_, AccountId, 20>(a).ok())
+	.for_each(|a| {
+		let freeze = <pallet_balances::Freezes<Runtime>>::get(a)
+			.into_iter()
+			.map(|f| f.amount)
+			.max()
+			.unwrap_or(0);
+		let frozen = <pallet_balances::Locks<Runtime>>::get(a)
+			.into_iter()
+			.map(|l| l.amount)
+			.max()
+			.unwrap_or(0);
+		let frozen = freeze.max(frozen);
+		let _ = <frame_system::Account<Runtime>>::try_mutate(a, |a| {
+			if a.data.frozen == frozen {
+				Err(())
+			} else {
+				a.data.frozen = frozen;
 
-	<pallet_balances::Locks<Runtime>>::iter().for_each(|(k, mut v)| {
-		if v.is_empty() {
-			// Clear the storage entry if the vector is empty.
-
-			<pallet_balances::Locks<Runtime>>::remove(k);
-
-			w += 1;
-		} else {
-			// Find matching lock ids and remove them.
-
-			let mut changed = false;
-
-			v.retain(|l| {
-				if lock_ids.contains(&l.id) {
-					// Mark as changed, the storage entry needs to be updated.
-					changed = true;
-
-					// To remove.
-					false
-				} else {
-					// To keep.
-					true
-				}
-			});
-
-			if changed {
-				if v.is_empty() {
-					// Clear the storage entry if the vector is empty.
-
-					<pallet_balances::Locks<Runtime>>::remove(k);
-				} else {
-					<pallet_balances::Locks<Runtime>>::insert(k, v);
-				}
-
-				w += 1;
+				Ok(())
 			}
-		}
-
-		r += 1;
+		});
 	});
-
-	w += migration_helper::PalletCleaner {
-		name: b"EcdsaAuthority",
-		values: &[
-			b"Authorities",
-			b"NextAuthorities",
-			b"Nonce",
-			b"AuthoritiesChangeToSign",
-			b"MessageRootToSign",
-		],
-		maps: &[],
-	}
-	.remove_all();
 
 	let _ = migration::clear_storage_prefix(
 		b"BridgeKusamaGrandpa",
@@ -135,5 +90,5 @@ fn migrate() -> frame_support::weights::Weight {
 	);
 
 	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(r as _, w as _)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 118)
 }
