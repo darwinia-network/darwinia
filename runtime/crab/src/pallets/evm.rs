@@ -169,7 +169,7 @@ impl pallet_evm::Config for Runtime {
 	type FindAuthor = FindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
-	type OnChargeTransaction = ();
+	type OnChargeTransaction = pallet_evm::EVMFungibleAdapter<Balances, ()>;
 	type OnCreate = ();
 	type PrecompilesType = CrabPrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
