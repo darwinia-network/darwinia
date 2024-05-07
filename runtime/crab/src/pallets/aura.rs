@@ -19,6 +19,13 @@
 // darwinia
 use crate::*;
 
+pub type ConsensusHook = cumulus_pallet_aura_ext::FixedVelocityConsensusHook<
+	Runtime,
+	RELAY_CHAIN_SLOT_DURATION_MILLIS,
+	BLOCK_PROCESSING_VELOCITY,
+	UNINCLUDED_SEGMENT_CAPACITY,
+>;
+
 impl pallet_aura::Config for Runtime {
 	type AllowMultipleBlocksPerSlot = ConstBool<true>;
 	type AuthorityId = sp_consensus_aura::sr25519::AuthorityId;
