@@ -81,6 +81,14 @@ fn migrate() -> frame_support::weights::Weight {
 		});
 	});
 
+	let _ = migration::clear_storage_prefix(
+		b"BridgeKusamaGrandpa",
+		b"ImportedHeaders",
+		&[],
+		Some(100),
+		None,
+	);
+
 	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 18)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 118)
 }
