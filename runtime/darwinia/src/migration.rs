@@ -46,7 +46,15 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 
 fn migrate() -> frame_support::weights::Weight {
 	[
-		?
+		"0x71571c42067900bfb7ca8b51fccc07ef77074aea",
+		"0x0a1287977578f888bdc1c7627781af1cc000e6ab",
+		"0x0b001c95e86d64c1ad6e43944c568a6c31b53887",
+		"0xfa5727be643dba6599fc7f812fe60da3264a8205",
+		"0x5af9a1be7bc22f9a6b2ce90acd69c23dceeb23c2",
+		"0x1678a973ae9750d25c126cdbce891bb8cfacd520",
+		"0x5dd68958e07cec3f65489db8983ad737c37e0646",
+		"0xf11d8d9412fc6b90242e17af259cf7bd1eaa416b",
+		"0xdca962b899641d60ccf7268a2260f20b6c01c06d",
 	]
 	.iter()
 	.filter_map(|a| array_bytes::hex_n_into::<_, AccountId, 20>(a).ok())
@@ -74,5 +82,5 @@ fn migrate() -> frame_support::weights::Weight {
 	});
 
 	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, ?)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 18)
 }

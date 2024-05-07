@@ -45,12 +45,29 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
+	if let Ok(a) =
+		array_bytes::hex_n_into::<_, AccountId, 20>("0xacfa39b864e42d1bd3792783a571d2958af0bf1f")
+	{
+		let mut l = <pallet_balances::Locks<Runtime>>::get(a);
+
+		if let Some(i) = l.iter().position(|l| l.id == *"phrelect") {
+			l.remove(i);
+
+			if l.is_empty() {
+				<pallet_balances::Locks<Runtime>>::remove(a);
+			} else {
+				<pallet_balances::Locks<Runtime>>::insert(a, l);
+			}
+		}
+	}
+
 	[
 		"0xd891ce6a97b4f01a8b9b36d0298aa3631fe2eef5",
 		"0x88a39b052d477cfde47600a7c9950a441ce61cb4",
 		"0x0a1287977578f888bdc1c7627781af1cc000e6ab",
 		"0x0b001c95e86d64c1ad6e43944c568a6c31b53887",
 		"0x7ae2a0914db8bfbdad538b0eac3fa473a0e07843",
+		"0xacfa39b864e42d1bd3792783a571d2958af0bf1f",
 		"0x5af9a1be7bc22f9a6b2ce90acd69c23dceeb23c2",
 		"0x1678a973ae9750d25c126cdbce891bb8cfacd520",
 		"0x4ed7ae57608cf4f60753cde4f49cf821c293ed2a",
@@ -83,5 +100,5 @@ fn migrate() -> frame_support::weights::Weight {
 	});
 
 	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 20)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(1, 23)
 }
