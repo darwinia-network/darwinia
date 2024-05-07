@@ -50,7 +50,7 @@ fn migrate() -> frame_support::weights::Weight {
 	{
 		let mut l = <pallet_balances::Locks<Runtime>>::get(a);
 
-		if let Some(i) = l.iter().position(|l| l.id == *"phrelect") {
+		if let Some(i) = l.iter().position(|l| l.id == &*"phrelect"[..]) {
 			l.remove(i);
 
 			if l.is_empty() {
