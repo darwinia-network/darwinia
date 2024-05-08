@@ -198,27 +198,27 @@ substrate-test-utils                       = { git = "https://github.com/parityt
 substrate-wasm-builder                     = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 
 [patch."https://github.com/paritytech/frontier"]
-fc-api                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-fc-consensus                   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-fc-db                          = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-fc-mapping-sync                = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-fc-rpc                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-fc-rpc-core                    = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-fc-storage                     = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-fp-account                     = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-fp-ethereum                    = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-fp-evm                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-fp-rpc                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-fp-self-contained              = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-pallet-ethereum                = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-pallet-evm                     = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-pallet-evm-precompile-blake2   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-pallet-evm-precompile-bls12381 = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-pallet-evm-precompile-bn128    = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-pallet-evm-precompile-dispatch = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-pallet-evm-precompile-modexp   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-pallet-evm-precompile-simple   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
-precompile-utils               = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }
+fc-api                         = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+fc-consensus                   = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+fc-db                          = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+fc-mapping-sync                = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+fc-rpc                         = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+fc-rpc-core                    = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+fc-storage                     = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+fp-account                     = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+fp-ethereum                    = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+fp-evm                         = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+fp-rpc                         = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+fp-self-contained              = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+pallet-ethereum                = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+pallet-evm                     = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+pallet-evm-precompile-blake2   = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+pallet-evm-precompile-bls12381 = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+pallet-evm-precompile-bn128    = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+pallet-evm-precompile-dispatch = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+pallet-evm-precompile-modexp   = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+pallet-evm-precompile-simple   = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
+precompile-utils               = { git = "https://github.com/darwinia-network/frontier", branch = "bear-fix-missing-log" }
 
 [profile.release]
 panic = "unwind"
