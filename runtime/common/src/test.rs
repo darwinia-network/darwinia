@@ -421,7 +421,7 @@ macro_rules! impl_evm_tests {
 			#[test]
 			fn evm_constants_are_correctly() {
 				assert_eq!(BlockGasLimit::get(), U256::from(20_000_000));
-				assert_eq!(WeightPerGas::get().ref_time(), 18750);
+				assert_eq!(WeightPerGas::get().ref_time(), 75000);
 			}
 
 			#[test]
