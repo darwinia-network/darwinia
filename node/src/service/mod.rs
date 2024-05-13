@@ -299,7 +299,6 @@ where
 				telemetry_worker_handle,
 			),
 	} = new_partial::<RuntimeApi, Executor>(&parachain_config, eth_rpc_config)?;
-
 	let (relay_chain_interface, collator_key) =
 		cumulus_client_service::build_relay_chain_interface(
 			polkadot_config,
@@ -311,12 +310,10 @@ where
 		)
 		.await
 		.map_err(|e| sc_service::Error::Application(Box::new(e) as Box<_>))?;
-
 	let validator = parachain_config.role.is_authority();
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let import_queue_service = import_queue.service();
 	let net_config = sc_network::config::FullNetworkConfiguration::new(&parachain_config.network);
-
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		cumulus_client_service::build_network(cumulus_client_service::BuildNetworkParams {
 			parachain_config: &parachain_config,
@@ -701,10 +698,10 @@ pub fn start_dev_node<RuntimeApi, Executor>(
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> Result<sc_service::TaskManager, sc_service::error::Error>
 where
-	RuntimeApi: sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>
+	RuntimeApi: 'static
 		+ Send
 		+ Sync
-		+ 'static,
+		+ sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
 	RuntimeApi::RuntimeApi:
 		sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>,
@@ -733,7 +730,6 @@ where
 			),
 	} = new_partial::<RuntimeApi, Executor>(&config, eth_rpc_config)?;
 	let net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
-
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		sc_service::build_network(sc_service::BuildNetworkParams {
 			config: &config,
@@ -770,7 +766,8 @@ where
 	}
 
 	let force_authoring = config.force_authoring;
-	let backoff_authoring_blocks: Option<()> = None;
+	let backoff_authoring_blocks  = <Option<()>>::None;
+	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 	let proposer_factory = sc_basic_authorship::ProposerFactory::new(
 		task_manager.spawn_handle(),
 		client.clone(),
@@ -778,9 +775,8 @@ where
 		None,
 		None,
 	);
-
-	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 	let client_for_cidp = client.clone();
+
 	if config.role.is_authority() {
 		let aura = sc_consensus_aura::start_aura::<
 			sp_consensus_aura::sr25519::AuthorityPair,
@@ -795,7 +791,7 @@ where
 			_,
 			_,
 		>(sc_consensus_aura::StartAuraParams {
-			slot_duration: sc_consensus_aura::slot_duration(&*client)?,
+			slot_duration,
 			client: client.clone(),
 			select_chain,
 			block_import: instant_finalize::InstantFinalizeBlockImport::new(client.clone()),
@@ -900,8 +896,6 @@ where
 		let collator = config.role.is_authority();
 		let eth_rpc_config = eth_rpc_config.clone();
 		let sync_service = sync_service.clone();
-
-		let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 		let pending_create_inherent_data_providers = move |_, ()| async move {
 			let current = sp_timestamp::InherentDataProvider::from_system_time();
 			let next_slot = current.timestamp().as_millis() + slot_duration.as_millis();
