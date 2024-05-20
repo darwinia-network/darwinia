@@ -106,8 +106,6 @@ impl From<xcm::v3::Location> for AssetType {
 // We simply hash the `AssetType` and take the lowest 128 bits.
 impl From<AssetType> for crate::AssetId {
 	fn from(asset: AssetType) -> crate::AssetId {
-		use sp_runtime::traits::Hash;
-
 		match asset {
 			AssetType::Xcm(id) if id == UsdtLocation::get() => 1027,
 			AssetType::Xcm(id) if id == DotLocation::get() => 1029,
