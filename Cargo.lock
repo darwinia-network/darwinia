@@ -1479,7 +1479,7 @@ dependencies = [
 
 [[package]]
 name = "crab-runtime"
-version = "6.6.2"
+version = "6.6.3"
 dependencies = [
  "array-bytes",
  "cumulus-pallet-aura-ext",
@@ -2446,7 +2446,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia"
-version = "6.6.2"
+version = "6.6.3"
 dependencies = [
  "array-bytes",
  "async-trait",
@@ -2524,7 +2524,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-account-migration"
-version = "6.6.2"
+version = "6.6.3"
 dependencies = [
  "array-bytes",
  "darwinia-deposit",
@@ -2549,7 +2549,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-asset-limit"
-version = "6.6.2"
+version = "6.6.3"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2560,7 +2560,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-common-runtime"
-version = "6.6.2"
+version = "6.6.3"
 dependencies = [
  "darwinia-precompile-assets",
  "dc-primitives",
@@ -2587,7 +2587,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-deposit"
-version = "6.6.2"
+version = "6.6.3"
 dependencies = [
  "darwinia-staking-traits",
  "dc-inflation",
@@ -2608,7 +2608,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-ethtx-forwarder"
-version = "6.6.2"
+version = "6.6.3"
 dependencies = [
  "array-bytes",
  "ethereum",
@@ -2633,7 +2633,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-assets"
-version = "6.6.2"
+version = "6.6.3"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -2654,7 +2654,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-bls12-381"
-version = "6.6.2"
+version = "6.6.3"
 dependencies = [
  "ark-bls12-381",
  "ark-ec",
@@ -2672,7 +2672,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-deposit"
-version = "6.6.2"
+version = "6.6.3"
 dependencies = [
  "darwinia-deposit",
  "fp-evm",
@@ -2692,7 +2692,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-staking"
-version = "6.6.2"
+version = "6.6.3"
 dependencies = [
  "darwinia-deposit",
  "darwinia-staking",
@@ -2713,7 +2713,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-state-storage"
-version = "6.6.2"
+version = "6.6.3"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -2732,7 +2732,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-runtime"
-version = "6.6.2"
+version = "6.6.3"
 dependencies = [
  "array-bytes",
  "cumulus-pallet-aura-ext",
@@ -2835,7 +2835,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking"
-version = "6.6.2"
+version = "6.6.3"
 dependencies = [
  "darwinia-deposit",
  "darwinia-ethtx-forwarder",
@@ -2865,7 +2865,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking-traits"
-version = "6.6.2"
+version = "6.6.3"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -2900,7 +2900,7 @@ dependencies = [
 
 [[package]]
 name = "dc-inflation"
-version = "6.6.2"
+version = "6.6.3"
 dependencies = [
  "dc-types",
  "primitive-types",
@@ -2910,7 +2910,7 @@ dependencies = [
 
 [[package]]
 name = "dc-primitives"
-version = "6.6.2"
+version = "6.6.3"
 dependencies = [
  "dc-types",
  "fp-account",
@@ -2920,7 +2920,7 @@ dependencies = [
 
 [[package]]
 name = "dc-types"
-version = "6.6.2"
+version = "6.6.3"
 
 [[package]]
 name = "der"
@@ -8552,7 +8552,7 @@ dependencies = [
 
 [[package]]
 name = "pangolin-runtime"
-version = "6.6.2"
+version = "6.6.3"
 dependencies = [
  "array-bytes",
  "cumulus-pallet-aura-ext",
