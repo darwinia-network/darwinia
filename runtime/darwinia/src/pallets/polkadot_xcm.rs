@@ -110,30 +110,27 @@ pub type XcmOriginToTransactDispatchOrigin = (
 	// Xcm origins can be represented natively under the Xcm pallet's Xcm origin.
 	pallet_xcm::XcmPassthrough<RuntimeOrigin>,
 );
-pub type Barrier = xcm_builder::TrailingSetTopicAsId<
-	xcm_builder::DenyThenTry<
-		xcm_builder::DenyReserveTransferToRelayChain,
+
+pub type Barrier = xcm_builder::TrailingSetTopicAsId<(
+	xcm_builder::TakeWeightCredit,
+	xcm_builder::WithComputedOrigin<
 		(
-			xcm_builder::TakeWeightCredit,
-			xcm_builder::WithComputedOrigin<
-				(
-					// If the message is one that immediately attemps to pay for execution, then
-					// allow it.
-					xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
-					// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality
-					// get free execution.
-					xcm_builder::AllowUnpaidExecutionFrom<xcm_config::ParentOrParentsPlurality>,
-					// Subscriptions for version tracking are OK.
-					xcm_builder::AllowSubscriptionsFrom<xcm_config::ParentRelayOrSiblingParachains>,
-				),
-				UniversalLocation,
-				ConstU32<8>,
-			>,
-			// Expected responses are OK.
-			xcm_builder::AllowKnownQueryResponses<PolkadotXcm>,
+			// If the message is one that immediately attemps to pay for execution, then
+			// allow it.
+			xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
+			// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality
+			// get free execution.
+			xcm_builder::AllowUnpaidExecutionFrom<xcm_config::ParentOrParentsPlurality>,
+			// Subscriptions for version tracking are OK.
+			xcm_builder::AllowSubscriptionsFrom<xcm_config::ParentRelayOrSiblingParachains>,
 		),
+		UniversalLocation,
+		ConstU32<8>,
 	>,
->;
+	// Expected responses are OK.
+	xcm_builder::AllowKnownQueryResponses<PolkadotXcm>,
+)>;
+
 /// This is the struct that will handle the revenue from xcm fees
 /// We do not burn anything because we want to mimic exactly what
 /// the sovereign account has
@@ -162,6 +159,38 @@ pub type XcmRouter = xcm_builder::WithUniqueTopic<(
 	// ..and XCMP to communicate with the sibling chains.
 	XcmpQueue,
 )>;
+
+frame_support::parameter_types! {
+	pub const MaxAssetsIntoHolding: u32 = 64;
+	pub const MaxInstructions: u32 = 100;
+	pub AnchoringSelfReserve: MultiLocation = MultiLocation::new(
+		0,
+		X1(PalletInstance(<Balances as frame_support::traits::PalletInfoAccess>::index() as u8))
+	);
+	pub UniversalLocation: InteriorMultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
+	/// The amount of weight an XCM operation takes. This is a safe overestimate.
+	pub BaseXcmWeight: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 1024);
+	/// Xcm fees will go to the treasury account
+	pub XcmFeesAccount: AccountId = Treasury::account_id();
+	/// A temporary weight value for each XCM instruction.
+	/// NOTE: This should be removed after we account for PoV weights.
+	pub const TempFixedXcmWeight: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 0);
+}
+
+pub struct ToTreasury;
+impl xcm_builder::TakeRevenue for ToTreasury {
+	fn take_revenue(revenue: MultiAsset) {
+		if let MultiAsset { id: Concrete(_location), fun: Fungible(amount) } = revenue {
+			let treasury_account = Treasury::account_id();
+			let _ = Balances::deposit_creating(&treasury_account, amount);
+
+			log::trace!(
+				target: "xcm::weight",
+				"LocalAssetTrader::to_treasury amount: {amount:?}, treasury: {treasury_account:?}"
+			);
+		}
+	}
+}
 
 pub struct XcmCallDispatcher;
 impl xcm_executor::traits::CallDispatcher<RuntimeCall> for XcmCallDispatcher {
