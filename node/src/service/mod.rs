@@ -43,7 +43,7 @@ use futures::FutureExt;
 // darwinia
 use dc_primitives::*;
 // substrate
-use sc_client_api::Backend;
+use sc_client_api::{Backend, HeaderBackend};
 use sc_consensus::ImportQueue;
 use sc_network::NetworkBlock;
 use sp_core::Encode;
@@ -696,6 +696,7 @@ where
 /// !!! WARNING: DO NOT USE ELSEWHERE
 pub fn start_dev_node<RuntimeApi, Executor>(
 	mut config: sc_service::Configuration,
+	para_id: cumulus_primitives_core::ParaId,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> Result<sc_service::TaskManager, sc_service::error::Error>
 where
@@ -708,9 +709,6 @@ where
 		sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>,
 	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
-	// substrate
-	use sc_client_api::HeaderBackend;
-
 	let sc_service::PartialComponents {
 		client,
 		backend,
@@ -813,6 +811,8 @@ where
 					.encode(),
 				)]);
 
+				dbg!(para_id);
+
 				async move {
 					let current_para_block = maybe_current_para_block?
 						.ok_or(sp_blockchain::Error::UnknownBlock(block.to_string()))?;
@@ -838,7 +838,7 @@ where
 							xcm_config: cumulus_primitives_parachain_inherent::MockXcmConfig::new(
 								&*client_for_xcm,
 								block,
-								Default::default(),
+								para_id,
 								Default::default(),
 							),
 							raw_downward_messages: Vec::new(),

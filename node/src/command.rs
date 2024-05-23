@@ -506,6 +506,7 @@ pub fn run() -> Result<()> {
 					if chain_spec.is_crab() {
 						return service::start_dev_node::<CrabRuntimeApi, CrabRuntimeExecutor>(
 							config,
+							id,
 							&eth_rpc_config,
 						)
 						.map_err(Into::into);
@@ -515,6 +516,7 @@ pub fn run() -> Result<()> {
 					if chain_spec.is_darwinia() {
 						return service::start_dev_node::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
 							config,
+							id,
 							&eth_rpc_config,
 						)
 						.map_err(Into::into)
@@ -524,6 +526,7 @@ pub fn run() -> Result<()> {
 					if chain_spec.is_pangolin() {
 						return service::start_dev_node::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
 							config,
+							id,
 							&eth_rpc_config,
 						)
 						.map_err(Into::into)
