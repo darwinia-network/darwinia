@@ -46,6 +46,7 @@ use dc_primitives::*;
 use sc_client_api::Backend;
 use sc_consensus::ImportQueue;
 use sc_network::NetworkBlock;
+use sp_core::Encode;
 
 /// Full client backend type.
 type FullBackend = sc_service::TFullBackend<Block>;
@@ -766,7 +767,7 @@ where
 	}
 
 	let force_authoring = config.force_authoring;
-	let backoff_authoring_blocks  = <Option<()>>::None;
+	let backoff_authoring_blocks = <Option<()>>::None;
 	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 	let proposer_factory = sc_basic_authorship::ProposerFactory::new(
 		task_manager.spawn_handle(),
@@ -797,26 +798,42 @@ where
 			block_import: instant_finalize::InstantFinalizeBlockImport::new(client.clone()),
 			proposer_factory,
 			create_inherent_data_providers: move |block: Hash, ()| {
-				let current_para_block = client_for_cidp
-					.number(block)
-					.expect("Header lookup should succeed")
-					.expect("Header passed in as parent should be present in backend.");
+				let maybe_current_para_block = client_for_cidp.number(block);
+				let maybe_current_block_head = client_for_cidp.expect_header(block);
 				let client_for_xcm = client_for_cidp.clone();
+				// TODO: hack for now.
+				let additional_key_values = Some(vec![(
+					array_bytes::hex2bytes_unchecked(
+						"1cb6f36e027abb2091cfb5110ab5087f06155b3cd9a8c9e5e9a23fd5dc13a5ed",
+					),
+					cumulus_primitives_aura::Slot::from_timestamp(
+						sp_timestamp::Timestamp::current(),
+						slot_duration,
+					)
+					.encode(),
+				)]);
 
 				async move {
-					let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+					let current_para_block = maybe_current_para_block?
+						.ok_or(sp_blockchain::Error::UnknownBlock(block.to_string()))?;
+					let current_para_block_head =
+						Some(polkadot_primitives::HeadData(maybe_current_block_head?.encode()));
 
+					dbg!(&current_para_block);
+					dbg!(&current_para_block_head);
+
+					let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
 					let slot = sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
 						*timestamp,
 						slot_duration,
 					);
-
 					let mocked_parachain =
 						cumulus_primitives_parachain_inherent::MockValidationDataInherentDataProvider {
 							current_para_block,
+							current_para_block_head,
 							relay_offset: 1000,
 							relay_blocks_per_para_block: 2,
-							para_blocks_per_relay_epoch: 0,
+							para_blocks_per_relay_epoch: 10,
 							relay_randomness_config: (),
 							xcm_config: cumulus_primitives_parachain_inherent::MockXcmConfig::new(
 								&*client_for_xcm,
@@ -826,6 +843,7 @@ where
 							),
 							raw_downward_messages: Vec::new(),
 							raw_horizontal_messages: Vec::new(),
+							additional_key_values,
 						};
 
 					Ok((slot, timestamp, mocked_parachain))
