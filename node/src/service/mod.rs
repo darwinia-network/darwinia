@@ -811,17 +811,11 @@ where
 					.encode(),
 				)]);
 
-				dbg!(para_id);
-
 				async move {
 					let current_para_block = maybe_current_para_block?
 						.ok_or(sp_blockchain::Error::UnknownBlock(block.to_string()))?;
 					let current_para_block_head =
 						Some(polkadot_primitives::HeadData(maybe_current_block_head?.encode()));
-
-					dbg!(&current_para_block);
-					dbg!(&current_para_block_head);
-
 					let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
 					let slot = sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
 						*timestamp,
@@ -833,7 +827,7 @@ where
 							current_para_block_head,
 							relay_offset: 1000,
 							relay_blocks_per_para_block: 2,
-							para_blocks_per_relay_epoch: 10,
+							para_blocks_per_relay_epoch: 0,
 							relay_randomness_config: (),
 							xcm_config: cumulus_primitives_parachain_inherent::MockXcmConfig::new(
 								&*client_for_xcm,
