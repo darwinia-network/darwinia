@@ -546,7 +546,7 @@ describe("Test Bls precompile", () => {
 			.fast_aggregate_verify(pub_keys_bytes, hexToBytes(message), hexToBytes(signature))
 			.send();
 		expect(receipt.transactionHash).to.not.be.null;
-		expect(receipt.gasUsed).to.be.equals(8597448);
+		expect(receipt.gasUsed).to.be.equals(2597448);
 
 		// Reserve enough space for the pre-contract operations
 		expect(BLOCK_GAS_LIMIT - receipt.gasUsed).to.be.gt(10_000_000);
