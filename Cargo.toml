@@ -27,29 +27,10 @@ codec             = { package = "parity-scale-codec", version = "3.6", default-f
 ethereum          = { version = "0.15", default-features = false, features = ["with-codec"] }
 libsecp256k1      = { version = "0.7", default-features = false }
 log               = { version = "0.4" }
-scale-info        = { version = "2.10", default-features = false }
+scale-info        = { version = "2.11", default-features = false }
 sha3              = { version = "0.10" }
 static_assertions = { version = "1.1" }
 strum             = { version = "0.26", default-features = false }
-
-# cumulus
-cumulus-client-cli                    = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
-cumulus-client-collator               = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
-cumulus-client-consensus-aura         = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
-cumulus-client-consensus-common       = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
-cumulus-client-consensus-proposer     = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
-cumulus-client-service                = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
-cumulus-pallet-aura-ext               = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-cumulus-pallet-dmp-queue              = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-cumulus-pallet-parachain-system       = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-cumulus-pallet-session-benchmarking   = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-cumulus-pallet-xcm                    = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-cumulus-pallet-xcmp-queue             = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-cumulus-primitives-core               = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-cumulus-primitives-parachain-inherent = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-cumulus-primitives-utility            = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-cumulus-relay-chain-interface         = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
-parachain-info                        = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 
 # darwinia
 crab-runtime                      = { path = "runtime/crab" }
@@ -109,17 +90,24 @@ xcm-primitives                          = { git = "https://github.com/darwinia-n
 orml-xcm-support = { git = "https://github.com/open-web3-stack/open-runtime-module-library", branch = "polkadot-v1.1.0", default-features = false }
 orml-xtokens     = { git = "https://github.com/open-web3-stack/open-runtime-module-library", branch = "polkadot-v1.1.0", default-features = false }
 
-# polkadot
-pallet-xcm              = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-polkadot-cli            = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
-polkadot-parachain      = { package = "polkadot-parachain-primitives", git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-polkadot-primitives     = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-polkadot-runtime-common = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-xcm                     = { package = "staging-xcm", git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-xcm-builder             = { package = "staging-xcm-builder", git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-xcm-executor            = { package = "staging-xcm-executor", git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-
-# substrate
+# polkadot-sdk
+cumulus-client-cli                         = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-client-collator                    = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-client-consensus-aura              = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-client-consensus-common            = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-client-consensus-proposer          = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-client-service                     = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-pallet-aura-ext                    = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+cumulus-pallet-dmp-queue                   = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+cumulus-pallet-parachain-system            = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false, features = ["parameterized-consensus-hook"] }
+cumulus-pallet-session-benchmarking        = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+cumulus-pallet-xcm                         = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+cumulus-pallet-xcmp-queue                  = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+cumulus-primitives-aura                    = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+cumulus-primitives-core                    = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+cumulus-primitives-parachain-inherent      = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+cumulus-primitives-utility                 = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+cumulus-relay-chain-interface              = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 frame-benchmarking                         = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 frame-benchmarking-cli                     = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 frame-executive                            = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
@@ -129,7 +117,7 @@ frame-system-benchmarking                  = { git = "https://github.com/parityt
 frame-system-rpc-runtime-api               = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 frame-try-runtime                          = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 pallet-assets                              = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
-pallet-aura                                = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+pallet-aura                                = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false, features = ["experimental"] }
 pallet-authorship                          = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 pallet-balances                            = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false, features = ["insecure_zero_ed"] }
 pallet-collective                          = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
@@ -151,6 +139,12 @@ pallet-tx-pause                            = { git = "https://github.com/parityt
 pallet-utility                             = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 pallet-vesting                             = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 pallet-whitelist                           = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+pallet-xcm                                 = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+parachain-info                             = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+polkadot-cli                               = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+polkadot-parachain                         = { package = "polkadot-parachain-primitives", git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+polkadot-primitives                        = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+polkadot-runtime-common                    = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
 sc-basic-authorship                        = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 sc-chain-spec                              = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 sc-cli                                     = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
@@ -194,6 +188,119 @@ substrate-frame-rpc-system                 = { git = "https://github.com/parityt
 substrate-prometheus-endpoint              = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 substrate-test-utils                       = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 substrate-wasm-builder                     = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+xcm                                        = { package = "staging-xcm", git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+xcm-builder                                = { package = "staging-xcm-builder", git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+xcm-executor                               = { package = "staging-xcm-executor", git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.1.0", default-features = false }
+
+[patch."https://github.com/paritytech/polkadot-sdk"]
+cumulus-client-cli                         = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-client-collator                    = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-client-consensus-aura              = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-client-consensus-common            = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-client-consensus-proposer          = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-client-service                     = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-pallet-aura-ext                    = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-pallet-dmp-queue                   = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-pallet-parachain-system            = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-pallet-session-benchmarking        = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-pallet-xcm                         = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-pallet-xcmp-queue                  = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-primitives-aura                    = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-primitives-core                    = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-primitives-parachain-inherent      = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-primitives-utility                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+cumulus-relay-chain-interface              = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+frame-benchmarking                         = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+frame-benchmarking-cli                     = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+frame-executive                            = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+frame-support                              = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+frame-system                               = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+frame-system-benchmarking                  = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+frame-system-rpc-runtime-api               = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+frame-try-runtime                          = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-assets                              = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-aura                                = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-authorship                          = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-balances                            = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-collective                          = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-conviction-voting                   = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-democracy                           = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-identity                            = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-preimage                            = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-proxy                               = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-referenda                           = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-scheduler                           = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-session                             = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-sudo                                = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-timestamp                           = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-transaction-payment                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-transaction-payment-rpc             = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-treasury                            = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-tx-pause                            = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-utility                             = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-vesting                             = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-whitelist                           = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+pallet-xcm                                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+parachain-info                             = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+polkadot-cli                               = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+polkadot-parachain                         = { package = "polkadot-parachain-primitives", git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+polkadot-primitives                        = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+polkadot-runtime-common                    = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-basic-authorship                        = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-chain-spec                              = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-cli                                     = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-client-api                              = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-client-db                               = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-consensus                               = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-consensus-aura                          = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-executor                                = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-keystore                                = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-network                                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-network-sync                            = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-offchain                                = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-rpc                                     = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-rpc-api                                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-service                                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-sysinfo                                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-telemetry                               = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-tracing                                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-transaction-pool                        = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sc-transaction-pool-api                    = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-api                                     = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-arithmetic                              = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-block-builder                           = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-blockchain                              = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-consensus                               = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-consensus-aura                          = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-core                                    = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-database                                = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-debug-derive                            = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-externalities                           = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-inherents                               = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-io                                      = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-keyring                                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-keystore                                = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-offchain                                = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-runtime                                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-session                                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-staking                                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-state-machine                           = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-std                                     = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-storage                                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-timestamp                               = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-transaction-pool                        = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-trie                                    = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-version                                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-wasm-interface                          = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+substrate-build-script-utils               = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+substrate-frame-rpc-system                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+substrate-prometheus-endpoint              = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+substrate-test-utils                       = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+substrate-wasm-builder                     = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+xcm                                        = { package = "staging-xcm", git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+xcm-builder                                = { package = "staging-xcm-builder", git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+xcm-executor                               = { package = "staging-xcm-executor", git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 
 [patch."https://github.com/paritytech/frontier"]
 fc-api                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.1.0-patch" }

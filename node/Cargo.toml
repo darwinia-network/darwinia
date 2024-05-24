@@ -28,6 +28,7 @@ cumulus-client-consensus-aura         = { workspace = true }
 cumulus-client-consensus-common       = { workspace = true }
 cumulus-client-consensus-proposer     = { workspace = true }
 cumulus-client-service                = { workspace = true }
+cumulus-primitives-aura               = { workspace = true, features = ["std"] }
 cumulus-primitives-core               = { workspace = true, features = ["std"] }
 cumulus-primitives-parachain-inherent = { workspace = true, features = ["std"] }
 cumulus-relay-chain-interface         = { workspace = true }
