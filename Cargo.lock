@@ -4184,7 +4184,7 @@ dependencies = [
  "sp-state-machine",
  "sp-storage",
  "sp-trie",
- "sp-wasm-interface 14.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.1.0)",
+ "sp-wasm-interface",
  "thiserror",
  "thousands",
 ]
@@ -9494,7 +9494,7 @@ dependencies = [
  "slotmap",
  "sp-core",
  "sp-maybe-compressed-blob",
- "sp-wasm-interface 14.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.1.0)",
+ "sp-wasm-interface",
  "substrate-build-script-utils",
  "tempfile",
  "tokio",
@@ -11456,7 +11456,7 @@ source = "git+https://github.com/darwinia-network/polkadot-sdk?branch=release-po
 dependencies = [
  "log",
  "sp-core",
- "sp-wasm-interface 14.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.1.0)",
+ "sp-wasm-interface",
  "thiserror",
 ]
 
@@ -11927,7 +11927,7 @@ dependencies = [
  "sp-runtime-interface 17.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.1.0)",
  "sp-trie",
  "sp-version",
- "sp-wasm-interface 14.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.1.0)",
+ "sp-wasm-interface",
  "tracing",
 ]
 
@@ -11938,7 +11938,7 @@ source = "git+https://github.com/darwinia-network/polkadot-sdk?branch=release-po
 dependencies = [
  "sc-allocator",
  "sp-maybe-compressed-blob",
- "sp-wasm-interface 14.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.1.0)",
+ "sp-wasm-interface",
  "thiserror",
  "wasm-instrument",
 ]
@@ -11956,7 +11956,7 @@ dependencies = [
  "sc-allocator",
  "sc-executor-common",
  "sp-runtime-interface 17.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.1.0)",
- "sp-wasm-interface 14.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.1.0)",
+ "sp-wasm-interface",
  "wasmtime",
 ]
 
@@ -13722,7 +13722,7 @@ dependencies = [
  "sp-std",
  "sp-storage",
  "sp-tracing 10.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.1.0)",
- "sp-wasm-interface 14.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.1.0)",
+ "sp-wasm-interface",
  "static_assertions",
 ]
 
@@ -13740,7 +13740,7 @@ dependencies = [
  "sp-std",
  "sp-storage",
  "sp-tracing 10.0.0 (git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.1.0)",
- "sp-wasm-interface 14.0.0 (git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.1.0)",
+ "sp-wasm-interface",
  "static_assertions",
 ]
 
@@ -13976,19 +13976,6 @@ dependencies = [
 name = "sp-wasm-interface"
 version = "14.0.0"
 source = "git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.1.0#a4b6436263c94fae3cdef46a71a0f8fc90fb8d4c"
-dependencies = [
- "anyhow",
- "impl-trait-for-tuples",
- "log",
- "parity-scale-codec",
- "sp-std",
- "wasmtime",
-]
-
-[[package]]
-name = "sp-wasm-interface"
-version = "14.0.0"
-source = "git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.1.0#c8d2251cafadc108ba2f1f8a3208dc547ff38901"
 dependencies = [
  "anyhow",
  "impl-trait-for-tuples",

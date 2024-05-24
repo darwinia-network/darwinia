@@ -27,7 +27,7 @@ codec             = { package = "parity-scale-codec", version = "3.6", default-f
 ethereum          = { version = "0.15", default-features = false, features = ["with-codec"] }
 libsecp256k1      = { version = "0.7", default-features = false }
 log               = { version = "0.4" }
-scale-info        = { version = "2.10", default-features = false }
+scale-info        = { version = "2.11", default-features = false }
 sha3              = { version = "0.10" }
 static_assertions = { version = "1.1" }
 strum             = { version = "0.26", default-features = false }
@@ -292,6 +292,7 @@ sp-timestamp                               = { git = "https://github.com/darwini
 sp-transaction-pool                        = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 sp-trie                                    = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 sp-version                                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
+sp-wasm-interface                          = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 substrate-build-script-utils               = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 substrate-frame-rpc-system                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
 substrate-prometheus-endpoint              = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.1.0" }
