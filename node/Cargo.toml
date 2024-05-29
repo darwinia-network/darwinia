@@ -36,7 +36,7 @@ cumulus-relay-chain-interface         = { workspace = true }
 crab-runtime     = { workspace = true, optional = true }
 darwinia-runtime = { workspace = true, optional = true }
 dc-primitives    = { workspace = true, features = ["std"] }
-koi-runtime = { workspace = true, optional = true }
+koi-runtime      = { workspace = true, optional = true }
 
 # frontier
 fc-api          = { workspace = true }
