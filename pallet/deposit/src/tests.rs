@@ -309,10 +309,10 @@ fn claim_should_work() {
 #[test]
 fn claim_with_penalty_should_work() {
 	new_test_ext().execute_with(|| {
-		assert_eq!(Balances::free_balance(&1), 1_000 * UNIT);
+		assert_eq!(Balances::free_balance(1), 1_000 * UNIT);
 		assert!(Deposit::deposit_of(1).is_none());
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
-		assert_eq!(Balances::free_balance(&1), 999 * UNIT);
+		assert_eq!(Balances::free_balance(1), 999 * UNIT);
 		assert!(Deposit::deposit_of(1).is_some());
 
 		assert_noop!(
@@ -322,7 +322,7 @@ fn claim_with_penalty_should_work() {
 
 		assert_ok!(KtonMinting::mint(&1, UNIT));
 		assert_ok!(Deposit::claim_with_penalty(RuntimeOrigin::signed(1), 0));
-		assert_eq!(Balances::free_balance(&1), 1_000 * UNIT);
+		assert_eq!(Balances::free_balance(1), 1_000 * UNIT);
 		assert_eq!(Assets::balance(0, 1), 999_984_771_573_604_062);
 		assert!(Deposit::deposit_of(1).is_none());
 

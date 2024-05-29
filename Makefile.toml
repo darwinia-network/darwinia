@@ -65,17 +65,17 @@ command = "target/release/darwinia"
 env     = { "FLAGS" = "--chain crab-dev" }
 extend  = "common-run"
 
-[tasks.build-pangolin]
+[tasks.build-koi]
 command = "cargo"
-env     = { "FEATURES" = "pangolin-native" }
+env     = { "FEATURES" = "koi-native" }
 extend  = "common-build"
-[tasks.cbuild-pangolin]
+[tasks.cbuild-koi]
 command = "cross"
-env     = { "FEATURES" = "pangolin-native" }
+env     = { "FEATURES" = "koi-native" }
 extend  = "common-build"
-[tasks.run-pangolin]
+[tasks.run-koi]
 command = "target/release/darwinia"
-env     = { "FLAGS" = "--chain pangolin-dev" }
+env     = { "FLAGS" = "--chain koi-dev" }
 extend  = "common-run"
 
 # Build for runtime benchmarks.
@@ -111,11 +111,11 @@ extend  = "common-build"
 # Build for testnets.
 [tasks.build-tns]
 command = "cargo"
-env     = { "FEATURES" = "pangolin-native" }
+env     = { "FEATURES" = "koi-native" }
 extend  = "common-build"
 [tasks.cbuild-tns]
 command = "cross"
-env     = { "FEATURES" = "pangolin-native" }
+env     = { "FEATURES" = "koi-native" }
 extend  = "common-build"
 
 # Build for mainnets.

@@ -32,14 +32,14 @@ pub use crab::{self as crab_chain_spec, ChainSpec as CrabChainSpec};
 #[cfg(not(feature = "crab-native"))]
 pub type CrabChainSpec = DummyChainSpec;
 
-#[cfg(feature = "pangolin-native")]
-pub mod pangolin;
-#[cfg(feature = "pangolin-native")]
-pub use pangolin::{self as pangolin_chain_spec, ChainSpec as PangolinChainSpec};
-#[cfg(not(feature = "pangolin-native"))]
-pub type PangolinChainSpec = DummyChainSpec;
+#[cfg(feature = "koi-native")]
+pub mod koi;
+#[cfg(feature = "koi-native")]
+pub use koi::{self as koi_chain_spec, ChainSpec as KoiChainSpec};
+#[cfg(not(feature = "koi-native"))]
+pub type KoiChainSpec = DummyChainSpec;
 
-#[cfg(feature = "pangolin-native")]
+#[cfg(feature = "koi-native")]
 mod testnet_keys {
 	pub const C1: &str = "0x0eef9fabb6eb6fed2ab24a842931f8950426070a";
 	pub const C1_AURA: &str = "0xeed007f04d568b2d3bf329945a48c21a8ed030c81ca1dce61ad41c916599f405";
@@ -49,7 +49,7 @@ mod testnet_keys {
 	pub const C3_AURA: &str = "0xe25d860707bd1b88b9851cf40df3af3368cd57e5e82824cabac9c75fe537600f";
 	pub const SUDO: &str = "0x2748def2f9c3cfbbb963002935bc6d2e1c36ce2e";
 }
-#[cfg(feature = "pangolin-native")]
+#[cfg(feature = "koi-native")]
 use testnet_keys::*;
 
 // std

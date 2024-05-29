@@ -110,7 +110,7 @@ jobs:
     strategy:
       matrix:
         runtime:
-          [runtime/darwinia, runtime/crab, runtime/pangolin]
+          [runtime/darwinia, runtime/crab, runtime/koi]
     runs-on: ubuntu-latest
     steps:
       - name: Fetch latest code
@@ -138,8 +138,8 @@ jobs:
               compare-with: "https://crab-rpc.darwiniacommunitydao.xyz",
             },
             {
-              chain: pangolin-dev,
-              compare-with: "https://pangolin-rpc.darwinia.network",
+              chain: koi-dev,
+              compare-with: "https://koi-rpc.darwinia.network",
             },
           ]
     needs: [basic-checks]
@@ -167,7 +167,7 @@ jobs:
           chmod u+x darwinia
           sudo mv darwinia /usr/bin
       - name: Launch darwinia
-        run: darwinia --chain pangolin-dev --tmp --alice --tracing-api debug,trace --frontier-backend-type sql &
+        run: darwinia --chain koi-dev --tmp --alice --tracing-api debug,trace --frontier-backend-type sql &
       - name: Install Node 19
         uses: actions/setup-node@v4
         with:

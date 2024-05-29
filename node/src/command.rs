@@ -256,9 +256,9 @@ pub fn run() -> Result<()> {
 				return $code;
 			}
 
-			#[cfg(feature = "pangolin-native")]
-			if $config.chain_spec.is_pangolin() {
-				let $partials = service::new_partial::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
+			#[cfg(feature = "koi-native")]
+			if $config.chain_spec.is_koi() {
+				let $partials = service::new_partial::<KoiRuntimeApi, KoiRuntimeExecutor>(
 					&$config,
 					&$cli.eth_args.build_eth_rpc_config(),
 				)?;
@@ -266,7 +266,7 @@ pub fn run() -> Result<()> {
 				return $code;
 			}
 
-			panic!("No feature(crab-native, darwinia-native, pangolin-native) is enabled!");
+			panic!("No feature(crab-native, darwinia-native, koi-native) is enabled!");
 		}};
 	}
 
@@ -303,10 +303,10 @@ pub fn run() -> Result<()> {
 				});
 			}
 
-			#[cfg(feature = "pangolin-native")]
-			if chain_spec.is_pangolin() {
+			#[cfg(feature = "koi-native")]
+			if chain_spec.is_koi() {
 				return runner.async_run(|$config| {
-					let $components = service::new_partial::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
+					let $components = service::new_partial::<KoiRuntimeApi, KoiRuntimeExecutor>(
 						&$config,
 						&$cli.eth_args.build_eth_rpc_config()
 					)?;
@@ -316,7 +316,7 @@ pub fn run() -> Result<()> {
 				});
 			}
 
-			panic!("No feature(crab-native, darwinia-native, pangolin-native) is enabled!");
+			panic!("No feature(crab-native, darwinia-native, koi-native) is enabled!");
 		}}
 	}
 
@@ -520,9 +520,9 @@ pub fn run() -> Result<()> {
 						.map_err(Into::into)
 					}
 
-					#[cfg(feature = "pangolin-native")]
-					if chain_spec.is_pangolin() {
-						return service::start_dev_node::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
+					#[cfg(feature = "koi-native")]
+					if chain_spec.is_koi() {
+						return service::start_dev_node::<KoiRuntimeApi, KoiRuntimeExecutor>(
 							config,
 							&eth_rpc_config,
 						)
@@ -564,9 +564,9 @@ pub fn run() -> Result<()> {
 					.map_err(Into::into);
 				}
 
-				#[cfg(feature = "pangolin-native")]
-				if chain_spec.is_pangolin() {
-					return service::start_parachain_node::<PangolinRuntimeApi, PangolinRuntimeExecutor>(
+				#[cfg(feature = "koi-native")]
+				if chain_spec.is_koi() {
+					return service::start_parachain_node::<KoiRuntimeApi, KoiRuntimeExecutor>(
 						config,
 						polkadot_config,
 						collator_options,
@@ -579,7 +579,7 @@ pub fn run() -> Result<()> {
 					.map_err(Into::into);
 				}
 
-				panic!("No feature(crab-native, darwinia-native, pangolin-native) is enabled!");
+				panic!("No feature(crab-native, darwinia-native, koi-native) is enabled!");
 			})
 		},
 	}
@@ -588,7 +588,7 @@ pub fn run() -> Result<()> {
 fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 	let id = if id.is_empty() {
 		let n = get_exec_name().unwrap_or_default();
-		["darwinia", "crab", "pangolin"]
+		["darwinia", "crab", "koi"]
 			.iter()
 			.cloned()
 			.find(|&chain| n.starts_with(chain))
@@ -614,14 +614,14 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 		"darwinia-dev" => Box::new(darwinia_chain_spec::development_config()),
 		#[cfg(feature = "darwinia-native")]
 		"darwinia-local" => Box::new(darwinia_chain_spec::local_config()),
-		#[cfg(feature = "pangolin-native")]
-		"pangolin" => Box::new(pangolin_chain_spec::config()),
-		#[cfg(feature = "pangolin-native")]
-		"pangolin-genesis" => Box::new(pangolin_chain_spec::genesis_config()),
-		#[cfg(feature = "pangolin-native")]
-		"pangolin-dev" => Box::new(pangolin_chain_spec::development_config()),
-		#[cfg(feature = "pangolin-native")]
-		"pangolin-local" => Box::new(pangolin_chain_spec::local_config()),
+		#[cfg(feature = "koi-native")]
+		"koi" => Box::new(koi_chain_spec::config()),
+		#[cfg(feature = "koi-native")]
+		"koi-genesis" => Box::new(koi_chain_spec::genesis_config()),
+		#[cfg(feature = "koi-native")]
+		"koi-dev" => Box::new(koi_chain_spec::development_config()),
+		#[cfg(feature = "koi-native")]
+		"koi-local" => Box::new(koi_chain_spec::local_config()),
 		_ => {
 			let path = PathBuf::from(id);
 			let chain_spec =
@@ -635,11 +635,11 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 				return Ok(Box::new(DarwiniaChainSpec::from_json_file(path)?));
 			}
 
-			if chain_spec.is_pangolin() {
-				return Ok(Box::new(PangolinChainSpec::from_json_file(path)?));
+			if chain_spec.is_koi() {
+				return Ok(Box::new(KoiChainSpec::from_json_file(path)?));
 			}
 
-			panic!("No feature(crab-native, darwinia-native, pangolin-native) is enabled!")
+			panic!("No feature(crab-native, darwinia-native, koi-native) is enabled!")
 		},
 	})
 }
@@ -652,7 +652,7 @@ fn get_exec_name() -> Option<String> {
 }
 
 fn set_default_ss58_version(chain_spec: &dyn IdentifyVariant) {
-	let ss58_version = if chain_spec.is_crab() || chain_spec.is_pangolin() {
+	let ss58_version = if chain_spec.is_crab() || chain_spec.is_koi() {
 		Ss58AddressFormatRegistry::SubstrateAccount
 	} else {
 		Ss58AddressFormatRegistry::DarwiniaAccount

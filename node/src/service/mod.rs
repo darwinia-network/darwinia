@@ -29,8 +29,8 @@ mod instant_finalize;
 pub use crab_runtime::RuntimeApi as CrabRuntimeApi;
 #[cfg(feature = "darwinia-native")]
 pub use darwinia_runtime::RuntimeApi as DarwiniaRuntimeApi;
-#[cfg(feature = "pangolin-native")]
-pub use pangolin_runtime::RuntimeApi as PangolinRuntimeApi;
+#[cfg(feature = "koi-native")]
+pub use koi_runtime::RuntimeApi as KoiRuntimeApi;
 
 // std
 use std::{
@@ -75,9 +75,9 @@ pub trait IdentifyVariant {
 		self.id().starts_with("darwinia")
 	}
 
-	/// Returns if this is a configuration for the `Pangolin` network.
-	fn is_pangolin(&self) -> bool {
-		self.id().starts_with("pangolin")
+	/// Returns if this is a configuration for the `Koi` network.
+	fn is_koi(&self) -> bool {
+		self.id().starts_with("koi")
 	}
 
 	/// Returns true if this configuration is for a development network.
@@ -204,7 +204,7 @@ where
 		client.clone(),
 	);
 	let block_import = ParachainBlockImport::new(client.clone(), backend.clone());
-	let import_queue = parachain_build_import_queue(
+	let import_queue = build_import_queue(
 		client.clone(),
 		block_import.clone(),
 		config,
@@ -543,7 +543,7 @@ where
 }
 
 /// Build the import queue for the parachain runtime.
-pub fn parachain_build_import_queue<RuntimeApi, Executor>(
+pub fn build_import_queue<RuntimeApi, Executor>(
 	client: Arc<FullClient<RuntimeApi, Executor>>,
 	block_import: ParachainBlockImport<RuntimeApi, Executor>,
 	config: &sc_service::Configuration,
@@ -560,32 +560,25 @@ where
 {
 	let slot_duration = cumulus_client_consensus_aura::slot_duration(&*client)?;
 
-	cumulus_client_consensus_aura::import_queue::<
+	Ok(cumulus_client_consensus_aura::equivocation_import_queue::fully_verifying_import_queue::<
 		sp_consensus_aura::sr25519::AuthorityPair,
 		_,
 		_,
 		_,
 		_,
-		_,
-	>(cumulus_client_consensus_aura::ImportQueueParams {
-		block_import,
+	>(
 		client,
-		create_inherent_data_providers: move |_, _| async move {
+		block_import,
+		move |_, _| async move {
 			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
 
-			let slot =
-				sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
-					*timestamp,
-					slot_duration,
-				);
-
-			Ok((slot, timestamp))
+			Ok(timestamp)
 		},
-		registry: config.prometheus_registry(),
-		spawner: &task_manager.spawn_essential_handle(),
+		slot_duration,
+		&task_manager.spawn_essential_handle(),
+		config.prometheus_registry(),
 		telemetry,
-	})
-	.map_err(Into::into)
+	))
 }
 
 /// Start a parachain node.
