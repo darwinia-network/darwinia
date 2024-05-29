@@ -31,9 +31,8 @@ frame_support::parameter_types! {
 	// Restrict the POV size of the Ethereum transactions in the same way as weight limit.
 	pub BlockPovSizeLimit: u64 = NORMAL_DISPATCH_RATIO * MAX_POV_SIZE as u64;
 	pub PrecompilesValue: PangolinPrecompiles<Runtime> = PangolinPrecompiles::<_>::new();
-	// The compute time has increased to 2s after async backing.
 	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(
-		fp_evm::weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK * 4),
+		fp_evm::weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK),
 		0
 	);
 	// TODO: FIX ME. https://github.com/rust-lang/rust/issues/88581

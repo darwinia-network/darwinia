@@ -330,15 +330,6 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
-	impl cumulus_primitives_aura::AuraUnincludedSegmentApi<Block> for Runtime {
-		fn can_build_upon(
-			included_hash: <Block as sp_runtime::traits::Block>::Hash,
-			slot: cumulus_primitives_aura::Slot,
-		) -> bool {
-			ConsensusHook::can_build_upon(included_hash, slot)
-		}
-	}
-
 	impl cumulus_primitives_core::CollectCollationInfo<Block> for Runtime {
 		fn collect_collation_info(header: &<Block as sp_runtime::traits::Block>::Header) -> cumulus_primitives_core::CollationInfo {
 			ParachainSystem::collect_collation_info(header)
