@@ -59,7 +59,8 @@ mod session;
 pub use session::*;
 
 mod aura;
-pub use aura::*;
+
+mod aura_ext;
 
 // Governance stuff.
 mod governance;
