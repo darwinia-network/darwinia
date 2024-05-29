@@ -456,14 +456,12 @@ macro_rules! impl_evm_tests {
 						None,
 						vec![],
 					) {
-						assert_eq!(
-							dispatch_info_with_err.error,
-							DispatchError::Module(ModuleError {
-								index: 37,
-								error: [4, 0, 0, 0],
-								message: Some("GasPriceTooLow")
-							})
-						);
+						// Ignore the pallet index.
+						let DispatchError::Module(e) = dispatch_info_with_err.error else {
+							panic!();
+						};
+
+						assert_eq!((e.error, e.message), ([4, 0, 0, 0], Some("GasPriceTooLow")));
 					}
 				});
 			}
