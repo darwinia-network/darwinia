@@ -30,7 +30,7 @@ use sp_runtime::{
 
 #[test]
 fn signable_message_should_work() {
-	["Darwinia2", "Crab2", "Pangolin2"].iter().for_each(|s| {
+	["Darwinia2", "Crab2", "Koi"].iter().for_each(|s| {
 		assert_eq!(
 			signable_message(s.as_bytes(), &Default::default()),
 			format!(

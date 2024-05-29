@@ -69,7 +69,7 @@ darwinia-staking-traits           = { path = "pallet/staking/traits", default-fe
 dc-inflation                      = { path = "core/inflation", default-features = false }
 dc-primitives                     = { path = "core/primitives", default-features = false }
 dc-types                          = { path = "core/types" }
-pangolin-runtime                  = { path = "runtime/pangolin" }
+koi-runtime                  = { path = "runtime/koi" }
 
 # frontier
 fc-api                         = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v1.1.0" }

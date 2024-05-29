@@ -22,7 +22,7 @@
 //! DATE: 2024-04-17, STEPS: `50`, REPEAT: `20`, LOW RANGE: `[]`, HIGH RANGE: `[]`
 //! WORST CASE MAP SIZE: `1000000`
 //! HOSTNAME: `Xaviers-MacBook-Pro-16.local`, CPU: `<UNKNOWN>`
-//! EXECUTION: , WASM-EXECUTION: Compiled, CHAIN: Some("pangolin-dev"), DB CACHE: 1024
+//! EXECUTION: , WASM-EXECUTION: Compiled, CHAIN: Some("koi-dev"), DB CACHE: 1024
 
 // Executed Command:
 // target/release/darwinia
@@ -35,7 +35,7 @@
 // --heap-pages
 // 4096
 // --chain
-// pangolin-dev
+// koi-dev
 // --output
 // pallet/staking/src/weights.rs
 // --extrinsic

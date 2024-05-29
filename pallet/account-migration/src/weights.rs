@@ -21,7 +21,7 @@
 //! THIS FILE WAS AUTO-GENERATED USING THE SUBSTRATE BENCHMARK CLI VERSION 4.0.0-dev
 //! DATE: 2023-11-17, STEPS: `50`, REPEAT: `20`, LOW RANGE: `[]`, HIGH RANGE: `[]`
 //! WORST CASE MAP SIZE: `1000000`
-//! EXECUTION: , WASM-EXECUTION: Compiled, CHAIN: Some("pangolin-dev"), DB CACHE: 1024
+//! EXECUTION: , WASM-EXECUTION: Compiled, CHAIN: Some("koi-dev"), DB CACHE: 1024
 
 // Executed Command:
 // target/release/darwinia
@@ -34,7 +34,7 @@
 // --heap-pages
 // 4096
 // --chain
-// pangolin-dev
+// koi-dev
 // --output
 // pallet/account-migration/src/weights.rs
 // --extrinsic

@@ -23,7 +23,7 @@ This repo contains the following networks:
 
 * the **[Darwinia Main Network](https://docs.darwinia.network/evm/chains/darwinia/)**, the parachain on the Polkadot.
 * the **[Crab Main Network](https://docs.darwinia.network/evm/chains/crab/)**, the parachain on the Kusama.
-* the **[Pangolin Test Network](https://docs.darwinia.network/evm/chains/pangolin/)**, the official testnet for production networks, the parachain on the Rococo.
+* the **[Koi Test Network](https://docs.darwinia.network/evm/chains/koi/)**, the official testnet for production networks, the parachain on the Rococo.
 
 ## Other Projects
 

@@ -29,8 +29,8 @@ mod instant_finalize;
 pub use crab_runtime::RuntimeApi as CrabRuntimeApi;
 #[cfg(feature = "darwinia-native")]
 pub use darwinia_runtime::RuntimeApi as DarwiniaRuntimeApi;
-#[cfg(feature = "pangolin-native")]
-pub use pangolin_runtime::RuntimeApi as PangolinRuntimeApi;
+#[cfg(feature = "koi-native")]
+pub use koi_runtime::RuntimeApi as KoiRuntimeApi;
 
 // std
 use std::{
@@ -75,9 +75,9 @@ pub trait IdentifyVariant {
 		self.id().starts_with("darwinia")
 	}
 
-	/// Returns if this is a configuration for the `Pangolin` network.
-	fn is_pangolin(&self) -> bool {
-		self.id().starts_with("pangolin")
+	/// Returns if this is a configuration for the `Koi` network.
+	fn is_koi(&self) -> bool {
+		self.id().starts_with("koi")
 	}
 
 	/// Returns true if this configuration is for a development network.

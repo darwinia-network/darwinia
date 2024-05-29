@@ -63,18 +63,18 @@ impl NativeExecutionDispatch for CrabRuntimeExecutor {
 	}
 }
 
-/// Pangolin native executor instance.
-#[cfg(feature = "pangolin-native")]
-pub struct PangolinRuntimeExecutor;
-#[cfg(feature = "pangolin-native")]
-impl NativeExecutionDispatch for PangolinRuntimeExecutor {
+/// Koi native executor instance.
+#[cfg(feature = "koi-native")]
+pub struct KoiRuntimeExecutor;
+#[cfg(feature = "koi-native")]
+impl NativeExecutionDispatch for KoiRuntimeExecutor {
 	type ExtendHostFunctions = HostFunctions;
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-		pangolin_runtime::api::dispatch(method, data)
+		koi_runtime::api::dispatch(method, data)
 	}
 
 	fn native_version() -> NativeVersion {
-		pangolin_runtime::native_version()
+		koi_runtime::native_version()
 	}
 }

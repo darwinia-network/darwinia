@@ -36,10 +36,10 @@ jobs:
             features: darwinia-native,crab-native,evm-tracing
             type: tracing
           - network: testnet
-            features: pangolin-native
+            features: koi-native
             bz2: true
           - network: testnet
-            features: pangolin-native,evm-tracing
+            features: koi-native,evm-tracing
             type: tracing
     steps:
       - name: Free disk space
@@ -100,7 +100,7 @@ jobs:
             type: mainnet
           - name: crab
             type: mainnet
-          - name: pangolin
+          - name: koi
             type: testnet
     steps:
       - name: Fetch latest code
@@ -265,7 +265,7 @@ jobs:
             cat crab-runtime/runtime.md >> node.md
             cat node.tmp.md >> node.md
           else
-            cat pangolin-runtime/runtime.md >> node.md
+            cat koi-runtime/runtime.md >> node.md
             cat node.tmp.md >> node.md
           fi
       - name: Hash file
