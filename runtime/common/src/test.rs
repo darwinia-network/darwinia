@@ -649,7 +649,7 @@ macro_rules! impl_fee_tests {
 
 			fn run_with_system_weight<F>(w: Weight, mut assertions: F)
 			where
-				F: FnMut() -> (),
+				F: FnMut(),
 			{
 				let mut t: sp_io::TestExternalities =
 					<frame_system::GenesisConfig<Runtime>>::default()
