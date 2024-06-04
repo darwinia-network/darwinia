@@ -22,32 +22,31 @@ use crate::*;
 pub struct TxPauseWhitelistedCalls;
 // This conflicts with runtime test.
 // #[cfg(feature = "runtime-benchmarks")]
-// impl frame_support::traits::Contains<pallet_tx_pause::RuntimeCallNameOf<Runtime>>
-// 	for TxPauseWhitelistedCalls
-// {
-// 	fn contains(_: &pallet_tx_pause::RuntimeCallNameOf<Runtime>) -> bool {
-// 		false
-// 	}
-// }
-// #[cfg(not(feature = "runtime-benchmarks"))]
 impl frame_support::traits::Contains<pallet_tx_pause::RuntimeCallNameOf<Runtime>>
 	for TxPauseWhitelistedCalls
 {
-	fn contains(full_name: &pallet_tx_pause::RuntimeCallNameOf<Runtime>) -> bool {
-		let pallet = full_name.0.as_slice();
-
-		// Pallets that can be paused by the tx-pause pallet.
-		!matches!(
-			pallet,
-			b"Balances"
-				| b"Assets" | b"Vesting"
-				| b"Deposit" | b"AccountMigration"
-				| b"DarwiniaStaking"
-				| b"Ethereum" | b"EVM"
-				| b"EthTxForwarder"
-		)
+	fn contains(_: &pallet_tx_pause::RuntimeCallNameOf<Runtime>) -> bool {
+		false
 	}
 }
+// #[cfg(not(feature = "runtime-benchmarks"))]
+// impl frame_support::traits::Contains<pallet_tx_pause::RuntimeCallNameOf<Runtime>>
+// 	for TxPauseWhitelistedCalls
+// {
+// 	fn contains(full_name: &pallet_tx_pause::RuntimeCallNameOf<Runtime>) -> bool {
+// 		let pallet = full_name.0.as_slice();
+
+// 		// Pallets that can be paused by the tx-pause pallet.
+// 		!matches!(
+// 			pallet,
+// 			b"Balances"
+// 				| b"Assets" | b"Vesting"
+// 				| b"Deposit" | b"DarwiniaStaking"
+// 				| b"Ethereum" | b"EVM"
+// 				| b"EthTxForwarder"
+// 		)
+// 	}
+// }
 
 impl pallet_tx_pause::Config for Runtime {
 	type MaxNameLen = ConstU32<256>;

@@ -111,7 +111,7 @@ frame_support::construct_runtime! {
 		AuraExt: cumulus_pallet_aura_ext = 12,
 
 		// Governance stuff.
-		TechnicalCommittee = 13,
+		TechnicalCommittee: pallet_collective::<Instance1> = 13,
 		Treasury: pallet_treasury = 14,
 		ConvictionVoting: pallet_conviction_voting = 15,
 		Referenda: pallet_referenda = 16,
