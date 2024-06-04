@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - "v*"
-      - "pango*"
+      - "koi*"
 
 env:
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
@@ -69,7 +69,7 @@ jobs:
           enable_tar_bz2: ${{ matrix.node.bz2 }}
           skip-build: ${{ env.SKIP_BUILD }}
       - name: Build testnet node
-        if: ${{ startsWith(github.ref, 'refs/tags/pango') && (matrix.node.network == 'testnet') }}
+        if: ${{ startsWith(github.ref, 'refs/tags/koi') && (matrix.node.network == 'testnet') }}
         uses: ./.github/actions/build
         with:
           features: ${{ matrix.node.features }}
@@ -120,7 +120,7 @@ jobs:
         run: |
           SKIP_BUILD=${{ env.SKIP_BUILD }}
           IS_MAINNET=${{ matrix.runtime.type == 'mainnet' && startsWith(github.ref, 'refs/tags/v') }}
-          IS_TESTNET=${{ matrix.runtime.type == 'testnet' && startsWith(github.ref, 'refs/tags/pango') }}
+          IS_TESTNET=${{ matrix.runtime.type == 'testnet' && startsWith(github.ref, 'refs/tags/koi') }}
 
           echo "IS_MAINNET='$IS_MAINNET'" >> $GITHUB_ENV
           echo "IS_TESTNET='$IS_TESTNET'" >> $GITHUB_ENV
@@ -284,4 +284,4 @@ jobs:
             deploy/*
           generate_release_notes: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: ${{ startsWith(github.ref, 'refs/tags/pango') }}
+          prerelease: ${{ startsWith(github.ref, 'refs/tags/koi') }}
