@@ -83,7 +83,7 @@ pub fn development_config() -> ChainSpec {
 		None,
 		Some(properties()),
 		Extensions {
-			relay_chain: "paseo-local".into(), // You MUST set this to the correct network!
+			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 			para_id: 2105,
 		},
 	)
@@ -132,7 +132,7 @@ pub fn local_config() -> ChainSpec {
 		None,
 		Some(properties()),
 		Extensions {
-			relay_chain: "paseo-local".into(), // You MUST set this to the correct network!
+			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 			para_id: 2105,
 		},
 	)
