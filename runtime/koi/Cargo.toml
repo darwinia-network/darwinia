@@ -33,7 +33,6 @@ parachain-info                  = { workspace = true }
 cumulus-pallet-session-benchmarking = { workspace = true, optional = true }
 
 # darwinia
-darwinia-account-migration        = { workspace = true }
 darwinia-asset-limit              = { workspace = true }
 darwinia-common-runtime           = { workspace = true }
 darwinia-deposit                  = { workspace = true }
@@ -155,7 +154,6 @@ std = [
 	"cumulus-pallet-session-benchmarking?/std",
 
 	# darwinia
-	"darwinia-account-migration/std",
 	"darwinia-asset-limit/std",
 	"darwinia-common-runtime/std",
 	"darwinia-deposit/std",
@@ -279,7 +277,6 @@ runtime-benchmarks = [
 	"cumulus-pallet-session-benchmarking/runtime-benchmarks",
 
 	# darwinia
-	"darwinia-account-migration/runtime-benchmarks",
 	"darwinia-common-runtime/runtime-benchmarks",
 	"darwinia-deposit/runtime-benchmarks",
 	"darwinia-ethtx-forwarder/runtime-benchmarks",
@@ -342,7 +339,6 @@ try-runtime = [
 	"parachain-info/try-runtime",
 
 	# darwinia
-	"darwinia-account-migration/try-runtime",
 	"darwinia-asset-limit/try-runtime",
 	"darwinia-deposit/try-runtime",
 	"darwinia-ethtx-forwarder/try-runtime",

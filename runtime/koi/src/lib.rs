@@ -102,46 +102,45 @@ frame_support::construct_runtime! {
 		TransactionPayment: pallet_transaction_payment = 5,
 		Assets: pallet_assets = 6,
 		Deposit: darwinia_deposit = 7,
-		AccountMigration: darwinia_account_migration = 8,
 
 		// Consensus stuff.
-		Authorship: pallet_authorship = 9,
-		DarwiniaStaking: darwinia_staking = 10,
-		Session: pallet_session = 11,
-		Aura: pallet_aura = 12,
-		AuraExt: cumulus_pallet_aura_ext = 13,
+		Authorship: pallet_authorship = 8,
+		DarwiniaStaking: darwinia_staking = 9,
+		Session: pallet_session = 10,
+		Aura: pallet_aura = 11,
+		AuraExt: cumulus_pallet_aura_ext = 12,
 
 		// Governance stuff.
-		TechnicalCommittee: pallet_collective::<Instance2> = 14,
-		Treasury: pallet_treasury = 15,
-		ConvictionVoting: pallet_conviction_voting = 16,
-		Referenda: pallet_referenda = 17,
-		Origins: custom_origins = 18,
-		Whitelist: pallet_whitelist = 19,
+		TechnicalCommittee: pallet_collective::<Instance1> = 13,
+		Treasury: pallet_treasury = 14,
+		ConvictionVoting: pallet_conviction_voting = 15,
+		Referenda: pallet_referenda = 16,
+		Origins: custom_origins = 17,
+		Whitelist: pallet_whitelist = 18,
 
 		// Utility stuff.
-		Sudo: pallet_sudo = 20,
-		Utility: pallet_utility = 21,
-		Identity: pallet_identity = 22,
-		Scheduler: pallet_scheduler = 23,
-		Preimage: pallet_preimage = 24,
-		Proxy: pallet_proxy = 25,
-		TxPause: pallet_tx_pause = 26,
+		Sudo: pallet_sudo = 19,
+		Utility: pallet_utility = 20,
+		Identity: pallet_identity = 21,
+		Scheduler: pallet_scheduler = 22,
+		Preimage: pallet_preimage = 23,
+		Proxy: pallet_proxy = 24,
+		TxPause: pallet_tx_pause = 25,
 
 		// XCM stuff.
-		XcmpQueue: cumulus_pallet_xcmp_queue = 27,
-		PolkadotXcm: pallet_xcm = 28,
-		CumulusXcm: cumulus_pallet_xcm = 29,
-		EthereumXcm: pallet_ethereum_xcm = 30,
-		DmpQueue: cumulus_pallet_dmp_queue = 31,
-		AssetManager: pallet_asset_manager = 32,
-		XTokens: orml_xtokens = 33,
-		AssetLimit: darwinia_asset_limit = 34,
+		XcmpQueue: cumulus_pallet_xcmp_queue = 26,
+		PolkadotXcm: pallet_xcm = 27,
+		CumulusXcm: cumulus_pallet_xcm = 28,
+		EthereumXcm: pallet_ethereum_xcm = 29,
+		DmpQueue: cumulus_pallet_dmp_queue = 30,
+		AssetManager: pallet_asset_manager = 31,
+		XTokens: orml_xtokens = 32,
+		AssetLimit: darwinia_asset_limit = 33,
 
 		// EVM stuff.
-		Ethereum: pallet_ethereum = 35,
-		EVM: pallet_evm = 36,
-		EthTxForwarder: darwinia_ethtx_forwarder = 37,
+		Ethereum: pallet_ethereum = 34,
+		EVM: pallet_evm = 35,
+		EthTxForwarder: darwinia_ethtx_forwarder = 36,
 	}
 }
 
@@ -150,7 +149,6 @@ frame_benchmarking::define_benchmarks! {
 	// cumulus
 	[cumulus_pallet_xcmp_queue, XcmpQueue]
 	// darwinia
-	[darwinia_account_migration, AccountMigration]
 	[darwinia_deposit, Deposit]
 	[darwinia_staking, DarwiniaStaking]
 	// substrate

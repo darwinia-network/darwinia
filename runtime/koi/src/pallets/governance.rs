@@ -23,7 +23,7 @@ pub use origin::{custom_origins, GeneralAdmin};
 mod track;
 use track::*;
 
-pub use pallet_collective::Instance2 as TechnicalCollective;
+pub use pallet_collective::Instance1 as TechnicalCollective;
 
 pub(super) use crate::*;
 

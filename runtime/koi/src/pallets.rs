@@ -46,8 +46,6 @@ mod deposit;
 #[cfg(feature = "runtime-benchmarks")]
 pub use deposit::*;
 
-mod account_migration;
-
 // Consensus stuff.
 mod authorship;
 

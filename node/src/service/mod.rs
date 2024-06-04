@@ -77,7 +77,7 @@ pub trait IdentifyVariant {
 
 	/// Returns if this is a configuration for the `Koi` network.
 	fn is_koi(&self) -> bool {
-		self.id().starts_with("koi")
+		self.id().starts_with("darwinia-koi")
 	}
 
 	/// Returns true if this configuration is for a development network.

@@ -5516,7 +5516,6 @@ dependencies = [
  "cumulus-pallet-xcmp-queue",
  "cumulus-primitives-core",
  "cumulus-primitives-utility",
- "darwinia-account-migration",
  "darwinia-asset-limit",
  "darwinia-common-runtime",
  "darwinia-deposit",
