@@ -54,8 +54,8 @@ fn session_keys(keys: AuraId) -> SessionKeys {
 pub fn development_config() -> ChainSpec {
 	ChainSpec::from_genesis(
 		// Fulfill Polkadot.JS metadata upgrade requirements.
-		"Koi D",
-		"koi-d",
+		"Darwinia Koi D",
+		"darwinia-koi-d",
 		ChainType::Live,
 		move || {
 			testnet_genesis(
@@ -92,8 +92,8 @@ pub fn development_config() -> ChainSpec {
 pub fn local_config() -> ChainSpec {
 	ChainSpec::from_genesis(
 		// Fulfill Polkadot.JS metadata upgrade requirements.
-		"Koi L",
-		"koi-l",
+		"Darwinia Koi L",
+		"darwinia-koi-l",
 		// Fulfill Polkadot.JS metadata upgrade requirements.
 		ChainType::Live,
 		move || {
@@ -140,8 +140,8 @@ pub fn local_config() -> ChainSpec {
 
 pub fn genesis_config() -> ChainSpec {
 	ChainSpec::from_genesis(
-		"Koi",
-		"koi",
+		"Darwinia Koi",
+		"darwinia-koi",
 		ChainType::Live,
 		move || {
 			RuntimeGenesisConfig {

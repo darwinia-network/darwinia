@@ -1,17 +1,17 @@
 # System
 .DS_Store
 
-# Integrated Development Environment
+# Integrated development environment
 .idea
 .vscode
 
-# Package Manager
-## cargo
+# Package manager
+## Cargo
 target
-# nix
+# Nix
 shell.nix
-## npm
+## NPM
 node_modules
 
 # Test data
-test-data
+tmp

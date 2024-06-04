@@ -1,0 +1,23 @@
+[relaychain]
+chain           = "rococo-local"
+default_args    = ["--database=paritydb", "-lparachain=debug"]
+default_command = "tmp/polkadot"
+
+[[relaychain.nodes]]
+name      = "alice"
+validator = true
+[[relaychain.nodes]]
+name      = "bob"
+validator = true
+
+[[parachains]]
+chain = "koi-local"
+id    = 2105
+
+[parachains.collator]
+args    = ["--database=paritydb", "--force-authoring", "-lparachain=debug"]
+command = "tmp/darwinia"
+name    = "collator01"
+
+[settings]
+provider = "native"
