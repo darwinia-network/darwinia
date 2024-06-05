@@ -125,8 +125,7 @@ where
 			a if a == addr(0x602) =>
 				Some(<pallet_evm_precompile_conviction_voting::ConvictionVotingPrecompile<Runtime>>::execute(handle)),
 			// [0x800..) reserved for the experimental precompiles.
-			a if a == addr(0x800) =>
-				Some(<darwinia_precompile_bls12_381::BLS12381<Runtime>>::execute(handle)),
+			a if a == addr(0x800) => Some(Err(precompile_utils::prelude::revert("This precompile is no longer supported."))),
 			_ => None,
 		}
 	}

@@ -59,7 +59,6 @@ darwinia-common-runtime           = { path = "runtime/common", default-features 
 darwinia-deposit                  = { path = "pallet/deposit", default-features = false }
 darwinia-ethtx-forwarder          = { path = "pallet/ethtx-forwarder", default-features = false }
 darwinia-precompile-assets        = { path = "precompile/assets", default-features = false }
-darwinia-precompile-bls12-381     = { path = "precompile/bls12-381", default-features = false }
 darwinia-precompile-deposit       = { path = "precompile/deposit", default-features = false }
 darwinia-precompile-staking       = { path = "precompile/staking", default-features = false }
 darwinia-precompile-state-storage = { path = "precompile/state-storage", default-features = false }
