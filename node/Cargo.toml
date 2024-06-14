@@ -157,21 +157,12 @@ all-natives = [
 crab-native = [
 	# darwinia
 	"crab-runtime",
-
-	# polkadot
-	"polkadot-cli/kusama-native",
 ]
 darwinia-native = [
 	# darwinia
 	"darwinia-runtime",
-
-	# polkadot
-	"polkadot-cli/polkadot-native",
 ]
 koi-native = [
 	# darwinia
 	"koi-runtime",
-
-	# polkadot
-	"polkadot-cli/rococo-native",
 ]
