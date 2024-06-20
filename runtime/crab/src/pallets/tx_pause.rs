@@ -43,8 +43,8 @@ impl frame_support::traits::Contains<pallet_tx_pause::RuntimeCallNameOf<Runtime>
 				| b"Assets" | b"Vesting"
 				| b"Deposit" | b"AccountMigration"
 				| b"DarwiniaStaking"
-				| b"Ethereum" | b"EVM"
-				| b"EthTxForwarder"
+				| b"Ethereum"
+				| b"EVM" | b"EthTxForwarder"
 		)
 	}
 }

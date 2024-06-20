@@ -20,15 +20,15 @@
 use crate::*;
 
 impl pallet_identity::Config for Runtime {
-	// Minimum 100 bytes/UNIT deposited (1 MILLIUNIT/byte).
-	// 258 bytes on-chain.
-	type BasicDeposit = ConstU128<{ darwinia_deposit(1, 258) }>;
+	//   27 | Min encoded size of `Registration`
+	// - 10 | Min encoded size of `IdentityInfo`
+	// -----|
+	//   17 | Min size without `IdentityInfo` (accounted for in byte deposit)
+	type BasicDeposit = ConstU128<{ darwinia_deposit(1, 17) }>;
+	type ByteDeposit = ConstU128<{ darwinia_deposit(0, 1) }>;
 	type Currency = Balances;
-	// 66 bytes on-chain.
-	type FieldDeposit = ConstU128<{ darwinia_deposit(0, 66) }>;
 	type ForceOrigin = RootOr<GeneralAdmin>;
 	type IdentityInformation = IdentityInfo<ConstU32<100>>;
-	type MaxAdditionalFields = ConstU32<100>;
 	type MaxRegistrars = ConstU32<20>;
 	type MaxSubAccounts = ConstU32<100>;
 	type RegistrarOrigin = RootOr<GeneralAdmin>;
