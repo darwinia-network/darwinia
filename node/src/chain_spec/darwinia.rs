@@ -33,12 +33,12 @@ use darwinia_runtime::*;
 use fp_evm::GenesisAccount;
 // substrate
 use sc_chain_spec::Properties;
-use sc_service::ChainType;
+use sc_service::{ChainType, GenericChainSpec};
 use sc_telemetry::TelemetryEndpoints;
 use sp_core::{crypto::UncheckedInto, H160};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec = sc_service::GenericChainSpec<RuntimeGenesisConfig, Extensions>;
+pub type ChainSpec = GenericChainSpec<RuntimeGenesisConfig, Extensions>;
 
 fn properties() -> Properties {
 	super::properties("RING")
