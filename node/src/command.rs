@@ -23,7 +23,7 @@ use cumulus_primitives_core::ParaId;
 // darwinia
 use crate::{
 	chain_spec::*,
-	cli::{Cli, FrontierBackendType, RelayChainCli, Subcommand},
+	cli::{Cli, FrontierBackendType, RelayChainCli, Subcommand, NODE_VERSION},
 	service::{self, *},
 };
 // substrate
@@ -44,7 +44,9 @@ impl SubstrateCli for Cli {
 	}
 
 	fn impl_version() -> String {
-		env!("SUBSTRATE_CLI_IMPL_VERSION").into()
+		let commit_hash = env!("SUBSTRATE_CLI_COMMIT_HASH");
+
+		format!("{NODE_VERSION}-{commit_hash}")
 	}
 
 	fn description() -> String {

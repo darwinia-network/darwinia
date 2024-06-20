@@ -16,6 +16,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+/// The version of the node.
+///
+/// This is the version that is used for versioning this node binary.
+/// By default the `minor` version is bumped in every release. `Major` or `patch` releases are only
+/// expected in very rare cases.
+///
+/// The worker binaries associated to the node binary should ensure that they are using the same
+/// version as the main node that started them.
+pub const NODE_VERSION: &'static str = "6.6.3";
+
 /// Sub-commands supported by the collator.
 #[derive(Debug, clap::Subcommand)]
 pub enum Subcommand {
