@@ -27,6 +27,7 @@ impl pallet_identity::Config for Runtime {
 	// 66 bytes on-chain.
 	type FieldDeposit = ConstU128<{ darwinia_deposit(0, 66) }>;
 	type ForceOrigin = RootOr<GeneralAdmin>;
+	type IdentityInformation = IdentityInfo<ConstU32<100>>;
 	type MaxAdditionalFields = ConstU32<100>;
 	type MaxRegistrars = ConstU32<20>;
 	type MaxSubAccounts = ConstU32<100>;
