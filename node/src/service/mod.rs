@@ -472,11 +472,9 @@ where
 		// Here you can check whether the hardware meets your chains' requirements. Putting a link
 		// in there and swapping out the requirements for your own are probably a good idea. The
 		// requirements for a para-chain are dictated by its relay-chain.
-		if !frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE.check_hardware(&hwbench)
-			&& validator
-		{
+		if let Err(e) = SUBSTRATE_REFERENCE_HARDWARE.check_hardware(&hwbench) {
 			log::warn!(
-				"⚠️  The hardware does not meet the minimal requirements for role 'Authority'."
+				"⚠️  The hardware does not meet the minimal requirements {e} for role 'Authority'.",
 			);
 		}
 
