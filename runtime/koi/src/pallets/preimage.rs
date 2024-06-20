@@ -19,11 +19,21 @@
 // darwinia
 use crate::*;
 
+frame_support::parameter_types! {
+	pub const PreimageBaseDeposit: Balance = deposit(2, 64);
+	pub const PreimageByteDeposit: Balance = deposit(0, 1);
+	pub const PreimageHoldReason: RuntimeHoldReason = RuntimeHoldReason::Preimage(pallet_preimage::HoldReason::Preimage);
+}
+
 impl pallet_preimage::Config for Runtime {
-	type BaseDeposit = ConstU128<{ 500 * UNIT }>;
-	type ByteDeposit = ConstU128<{ darwinia_deposit(0, 1) }>;
+	type Consideration = HoldConsideration<
+		AccountId,
+		Balances,
+		PreimageHoldReason,
+		LinearStoragePrice<PreimageBaseDeposit, PreimageByteDeposit, Balance>,
+	>;
 	type Currency = Balances;
-	type ManagerOrigin = RootOr<GeneralAdmin>;
+	type ManagerOrigin = Root;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = weights::pallet_preimage::WeightInfo<Self>;
 }
