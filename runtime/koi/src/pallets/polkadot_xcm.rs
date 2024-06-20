@@ -282,11 +282,6 @@ pub type XcmRouter = xcm_builder::WithUniqueTopic<(
 	XcmpQueue,
 )>;
 
-#[cfg(feature = "runtime-benchmarks")]
-frame_support::parameter_types! {
-	pub ReachableDest: Option<MultiLocation> = Some(Parent.into());
-}
-
 impl pallet_xcm::Config for Runtime {
 	type AdminOrigin = RootOr<GeneralAdmin>;
 	// ^ Override for AdvertisedXcmVersion default
@@ -296,8 +291,6 @@ impl pallet_xcm::Config for Runtime {
 	type ExecuteXcmOrigin = xcm_builder::EnsureXcmOrigin<RuntimeOrigin, LocalOriginToLocation>;
 	type MaxLockers = ConstU32<8>;
 	type MaxRemoteLockConsumers = ();
-	#[cfg(feature = "runtime-benchmarks")]
-	type ReachableDest = ReachableDest;
 	type RemoteLockConsumerIdentifier = ();
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
