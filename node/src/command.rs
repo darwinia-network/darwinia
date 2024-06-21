@@ -33,7 +33,7 @@ use sc_cli::{
 };
 use sc_service::{
 	config::{BasePath, PrometheusConfig},
-	ChainSpec, DatabaseSource,
+	ChainSpec as ChainSpecT, DatabaseSource,
 };
 use sp_core::crypto::{self, Ss58AddressFormatRegistry};
 use sp_runtime::traits::AccountIdConversion;
@@ -71,7 +71,7 @@ impl SubstrateCli for Cli {
 		2018
 	}
 
-	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
+	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpecT>, String> {
 		load_spec(id)
 	}
 }
@@ -107,7 +107,7 @@ impl SubstrateCli for RelayChainCli {
 		2018
 	}
 
-	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
+	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpecT>, String> {
 		polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id)
 	}
 }
@@ -152,7 +152,7 @@ impl CliConfiguration<Self> for RelayChainCli {
 	fn prometheus_config(
 		&self,
 		default_listen_port: u16,
-		chain_spec: &Box<dyn ChainSpec>,
+		chain_spec: &Box<dyn ChainSpecT>,
 	) -> Result<Option<PrometheusConfig>> {
 		self.base.base.prometheus_config(default_listen_port, chain_spec)
 	}
@@ -222,7 +222,7 @@ impl CliConfiguration<Self> for RelayChainCli {
 
 	fn telemetry_endpoints(
 		&self,
-		chain_spec: &Box<dyn ChainSpec>,
+		chain_spec: &Box<dyn ChainSpecT>,
 	) -> Result<Option<sc_telemetry::TelemetryEndpoints>> {
 		self.base.base.telemetry_endpoints(chain_spec)
 	}
@@ -587,7 +587,7 @@ pub fn run() -> Result<()> {
 	}
 }
 
-fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
+fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpecT>, String> {
 	let id = if id.is_empty() {
 		let n = get_exec_name().unwrap_or_default();
 		["darwinia", "crab", "koi"]
@@ -598,52 +598,34 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 	} else {
 		id
 	};
-
-	Ok(match id.to_lowercase().as_str() {
+	let chain_spec = match id.to_lowercase().as_str() {
 		#[cfg(feature = "crab-native")]
 		"crab" => Box::new(crab_chain_spec::config()),
 		#[cfg(feature = "crab-native")]
 		"crab-genesis" => Box::new(crab_chain_spec::genesis_config()),
 		#[cfg(feature = "crab-native")]
 		"crab-dev" => Box::new(crab_chain_spec::development_config()),
-		#[cfg(feature = "crab-native")]
-		"crab-local" => Box::new(crab_chain_spec::local_config()),
 		#[cfg(feature = "darwinia-native")]
 		"darwinia" => Box::new(darwinia_chain_spec::config()),
 		#[cfg(feature = "darwinia-native")]
 		"darwinia-genesis" => Box::new(darwinia_chain_spec::genesis_config()),
 		#[cfg(feature = "darwinia-native")]
 		"darwinia-dev" => Box::new(darwinia_chain_spec::development_config()),
-		#[cfg(feature = "darwinia-native")]
-		"darwinia-local" => Box::new(darwinia_chain_spec::local_config()),
 		#[cfg(feature = "koi-native")]
 		"koi" => Box::new(koi_chain_spec::config()),
 		#[cfg(feature = "koi-native")]
 		"koi-genesis" => Box::new(koi_chain_spec::genesis_config()),
 		#[cfg(feature = "koi-native")]
 		"koi-dev" => Box::new(koi_chain_spec::development_config()),
-		#[cfg(feature = "koi-native")]
-		"koi-local" => Box::new(koi_chain_spec::local_config()),
 		_ => {
 			let path = PathBuf::from(id);
-			let chain_spec =
-				Box::new(DummyChainSpec::from_json_file(path.clone())?) as Box<dyn ChainSpec>;
+			let chain_spec = Box::new(ChainSpec::from_json_file(path.clone())?);
 
-			if chain_spec.is_crab() {
-				return Ok(Box::new(CrabChainSpec::from_json_file(path)?));
-			}
-
-			if chain_spec.is_darwinia() {
-				return Ok(Box::new(DarwiniaChainSpec::from_json_file(path)?));
-			}
-
-			if chain_spec.is_koi() {
-				return Ok(Box::new(KoiChainSpec::from_json_file(path)?));
-			}
-
-			panic!("No feature(crab-native, darwinia-native, koi-native) is enabled!")
+			chain_spec
 		},
-	})
+	};
+
+	Ok(chain_spec)
 }
 
 fn get_exec_name() -> Option<String> {

@@ -37,306 +37,59 @@ use sc_service::{ChainType, GenericChainSpec};
 use sc_telemetry::TelemetryEndpoints;
 use sp_core::{crypto::UncheckedInto, H160};
 
-/// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec = GenericChainSpec<RuntimeGenesisConfig, Extensions>;
-
-fn properties() -> Properties {
-	super::properties("KRING")
-}
-
-// Generate the session keys from individual elements.
-//
-// The input must be a tuple of individual keys (a single arg for now since we have just one key).
-fn session_keys(keys: AuraId) -> SessionKeys {
-	SessionKeys { aura: keys }
-}
+const PARA_ID: u32 = 2105;
 
 pub fn development_config() -> ChainSpec {
-	ChainSpec::from_genesis(
-		// Fulfill Polkadot.JS metadata upgrade requirements.
-		"Darwinia Koi D",
-		"darwinia-koi-d",
-		ChainType::Live,
-		move || {
-			testnet_genesis(
-				vec![
-					// Bind the `Alice` to `Alith` to make `--alice` available for testnet.
-					(
-						array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
-						get_collator_keys_from_seed("Alice"),
-					),
-				],
-				vec![
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(BALTATHAR),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(CHARLETH),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(DOROTHY),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(ETHAN),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(FAITH),
-				],
-				2105.into(),
-			)
-		},
-		Vec::new(),
-		None,
-		Some(PROTOCOL_ID),
-		None,
-		Some(properties()),
-		Extensions {
-			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: 2105,
-		},
-	)
-}
-
-pub fn local_config() -> ChainSpec {
-	ChainSpec::from_genesis(
-		// Fulfill Polkadot.JS metadata upgrade requirements.
-		"Darwinia Koi L",
-		"darwinia-koi-l",
-		// Fulfill Polkadot.JS metadata upgrade requirements.
-		ChainType::Live,
-		move || {
-			testnet_genesis(
-				vec![
-					// Bind the `Alice` to `Alith` to make `--alice` available for testnet.
-					(
-						array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
-						get_collator_keys_from_seed("Alice"),
-					),
-					// Bind the `Bob` to `Balthar` to make `--bob` available for testnet.
-					(
-						array_bytes::hex_n_into_unchecked::<_, _, 20>(BALTATHAR),
-						get_collator_keys_from_seed("Bob"),
-					),
-					// Bind the `Charlie` to `CHARLETH` to make `--charlie` available for testnet.
-					(
-						array_bytes::hex_n_into_unchecked::<_, _, 20>(CHARLETH),
-						get_collator_keys_from_seed("Charlie"),
-					),
-				],
-				vec![
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(BALTATHAR),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(CHARLETH),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(DOROTHY),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(ETHAN),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(FAITH),
-				],
-				2105.into(),
-			)
-		},
-		Vec::new(),
-		None,
-		Some(PROTOCOL_ID),
-		None,
-		Some(properties()),
-		Extensions {
-			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: 2105,
-		},
-	)
-}
-
-pub fn genesis_config() -> ChainSpec {
-	ChainSpec::from_genesis(
-		"Darwinia Koi",
-		"darwinia-koi",
-		ChainType::Live,
-		move || {
-			RuntimeGenesisConfig {
-				// System stuff.
-				system: SystemConfig { code: WASM_BINARY.unwrap().to_vec(), ..Default::default() },
-				parachain_system: Default::default(),
-				parachain_info: ParachainInfoConfig { parachain_id: 2105.into(), ..Default::default() },
-
-				// Monetary stuff.
-				balances: BalancesConfig {
-					balances: vec![
-						(array_bytes::hex_n_into_unchecked::<_, _, 20>(C1), 10_000 * UNIT),
-						(array_bytes::hex_n_into_unchecked::<_, _, 20>(C2), 10_000 * UNIT),
-						(array_bytes::hex_n_into_unchecked::<_, _, 20>(C3), 10_000 * UNIT),
-					],
-				},
-				transaction_payment: Default::default(),
-				assets: AssetsConfig {
-					assets: vec![(AssetIds::PKton as _, ROOT, true, 1)],
-					metadata: vec![(
-						AssetIds::PKton as _,
-						b"Koi Commitment Token".to_vec(),
-						b"PKTON".to_vec(),
-						18,
-					)],
-					..Default::default()
-				},
-
-				// Consensus stuff.
-				darwinia_staking: DarwiniaStakingConfig {
-					now: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
-					elapsed_time: 0,
-					rate_limit: 20_000_000 * UNIT,
-					collator_count: 3,
-					collators: vec![
-						(array_bytes::hex_n_into_unchecked::<_, _, 20>(C1), UNIT),
-						(array_bytes::hex_n_into_unchecked::<_, _, 20>(C2), UNIT),
-						(array_bytes::hex_n_into_unchecked::<_, _, 20>(C3), UNIT),
-					],
-				},
-				session: SessionConfig {
-					keys: vec![
-						(
-							array_bytes::hex_n_into_unchecked::<_, _, 20>(C1),
-							array_bytes::hex_n_into_unchecked::<_, _, 20>(C1),
-							session_keys(
-								array_bytes::hex2array_unchecked(C1_AURA).unchecked_into(),
-							),
-						),
-						(
-							array_bytes::hex_n_into_unchecked::<_, _, 20>(C2),
-							array_bytes::hex_n_into_unchecked::<_, _, 20>(C2),
-							session_keys(
-								array_bytes::hex2array_unchecked(C2_AURA).unchecked_into(),
-							),
-						),
-						(
-							array_bytes::hex_n_into_unchecked::<_, _, 20>(C3),
-							array_bytes::hex_n_into_unchecked::<_, _, 20>(C3),
-							session_keys(
-								array_bytes::hex2array_unchecked(C3_AURA).unchecked_into(),
-							),
-						),
-					],
-				},
-				aura: Default::default(),
-				aura_ext: Default::default(),
-
-				// Governance stuff.
-				technical_committee: Default::default(),
-				treasury: Default::default(),
-
-				// Utility stuff.
-				sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked::<_, _, 20>(SUDO)) },
-				tx_pause: Default::default(),
-
-				// XCM stuff.
-				polkadot_xcm: PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION), ..Default::default() },
-
-				// EVM stuff.
-				ethereum: Default::default(),
-				evm: EVMConfig {
-					accounts: {
-						BTreeMap::from_iter(
-							KoiPrecompiles::<Runtime>::used_addresses().iter().map(|p| {
-								(
-									p.to_owned(),
-									GenesisAccount {
-										nonce: Default::default(),
-										balance: Default::default(),
-										storage: Default::default(),
-										code: REVERT_BYTECODE.to_vec(),
-									},
-								)
-							}),
-						)
-					},
-					..Default::default()
-				},
-			}
-		},
-		vec![
-			"/dns/g1.testnets.darwinia.network/tcp/30330/p2p/12D3KooWLjJE7oNzQrEM26vUZ1uKuNYhvqjYrEATt1RdoAMTnvL9".parse().unwrap()
-		],
-		TelemetryEndpoints::new(vec![(TELEMETRY_URL.into(), 0)]).ok(),
-		Some(PROTOCOL_ID),
-		None,
-		Some(properties()),
-		Extensions {
-			relay_chain: "paseo".into(), // You MUST set this to the correct network!
-			para_id: 2105,
-		},
-	)
-}
-
-pub fn config() -> ChainSpec {
-	load_config("koi.json", 0)
-}
-
-fn testnet_genesis(
-	collators: Vec<(AccountId, AuraId)>,
-	endowed_accounts: Vec<AccountId>,
-	id: ParaId,
-) -> RuntimeGenesisConfig {
-	RuntimeGenesisConfig {
+	let (collators, endowed_accounts) = dev_accounts::<AccountId>(session_keys);
+	let genesis_config_patch = serde_json::json!({
 		// System stuff.
-		system: SystemConfig { code: WASM_BINARY.unwrap().to_vec(), ..Default::default() },
-		parachain_system: Default::default(),
-		parachain_info: ParachainInfoConfig { parachain_id: id, ..Default::default() },
+		"parachainInfo": { "parachainId": PARA_ID },
 
 		// Monetary stuff.
-		balances: BalancesConfig {
-			balances: endowed_accounts.iter().cloned().map(|k| (k, 100_000_000 * UNIT)).collect(),
+		"balances": {
+			"balances": endowed_accounts.iter().map(|a| (a, 100_000_000 * UNIT)).collect::<Vec<_>>()
 		},
-		transaction_payment: Default::default(),
-		assets: AssetsConfig {
-			assets: vec![(AssetIds::PKton as _, ROOT, true, 1)],
-			metadata: vec![(
-				AssetIds::PKton as _,
-				b"Koi Commitment Token".to_vec(),
-				b"PKTON".to_vec(),
+		"assets": {
+			"assets": [(AssetIds::PKton as _, ROOT, true, 1)],
+			"metadata": [(
+				AssetIds::PKton as u32,
+				b"Koi Commitment Token",
+				b"PKTON",
 				18,
-			)],
-			..Default::default()
+			)]
 		},
 
 		// Consensus stuff.
-		darwinia_staking: DarwiniaStakingConfig {
-			now: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
-			elapsed_time: 0,
-			rate_limit: 20_000_000 * UNIT,
-			collator_count: collators.len() as _,
-			collators: collators.iter().map(|(a, _)| (a.to_owned(), UNIT)).collect(),
+		"darwiniaStaking": {
+			"now": SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
+			"elapsedTime": 0,
+			"rateLimit": 20_000_000 * UNIT,
+			"collatorCount": collators.len(),
+			"collators": collators.iter().map(|(a, _)| (a, UNIT)).collect::<Vec<_>>()
 		},
-		session: SessionConfig {
-			keys: collators
-				.into_iter()
-				.map(|(acc, aura)| {
-					(
-						acc,                // account id
-						acc,                // validator id
-						session_keys(aura), // session keys
-					)
-				})
-				.collect(),
+		"session": {
+			"keys": collators.into_iter().map(|(a, sks)| (a, a, sks)).collect::<Vec<_>>()
 		},
-		aura: Default::default(),
-		aura_ext: Default::default(),
 
 		// Governance stuff.
-		technical_committee: TechnicalCommitteeConfig {
-			members: vec![
+		"technicalCommittee": {
+			"members": [
 				array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
-				array_bytes::hex_n_into_unchecked::<_, _, 20>(BALTATHAR),
-			],
-			..Default::default()
+				array_bytes::hex_n_into_unchecked::<_, _, 20>(BALTATHAR)
+			]
 		},
-		treasury: Default::default(),
 
 		// Utility stuff.
-		sudo: SudoConfig { key: Some(array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH)) },
-		tx_pause: Default::default(),
+		"sudo": { "key": Some(array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH)) },
 
 		// XCM stuff.
-		polkadot_xcm: PolkadotXcmConfig {
-			safe_xcm_version: Some(SAFE_XCM_VERSION),
-			..Default::default()
-		},
+		"polkadotXcm": { "safeXcmVersion": Some(SAFE_XCM_VERSION) },
 
 		// EVM stuff.
-		ethereum: Default::default(),
-		evm: EVMConfig {
-			accounts: {
+		"evm": {
+			"accounts": {
 				BTreeMap::from_iter(
-					KoiPrecompiles::<Runtime>::used_addresses()
+					<KoiPrecompiles<Runtime>>::used_addresses()
 						.iter()
 						.map(|p| {
 							(
@@ -362,8 +115,128 @@ fn testnet_genesis(
 							),
 						]),
 				)
-			},
-			..Default::default()
+			}
+		}
+	});
+
+	ChainSpec::builder(
+		WASM_BINARY.unwrap().to_vec(),
+		Extensions {
+			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
+			para_id: PARA_ID,
 		},
-	}
+	)
+	.with_name("Darwinia Koi D")
+	.with_id("darwinia-koi-d")
+	.with_chain_type(ChainType::Live)
+	.with_protocol_id(PROTOCOL_ID)
+	.with_properties(properties())
+	.with_genesis_config_patch(genesis_config_patch)
+	.build()
+}
+
+pub fn genesis_config() -> ChainSpec {
+	let collators = [
+		(
+			array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(C1),
+			session_keys(array_bytes::hex2array_unchecked(C1_AURA).unchecked_into()),
+		),
+		(
+			array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(C2),
+			session_keys(array_bytes::hex2array_unchecked(C2_AURA).unchecked_into()),
+		),
+		(
+			array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(C3),
+			session_keys(array_bytes::hex2array_unchecked(C3_AURA).unchecked_into()),
+		),
+	];
+	let genesis_config_patch = serde_json::json!({
+		// System stuff.
+		"parachainInfo": { "parachainId": PARA_ID },
+
+		// Monetary stuff.
+		"balances": {
+			"balances": collators.iter().map(|a| (a, 10_000 * UNIT)).collect::<Vec<_>>(),
+		},
+		"assets": {
+			"assets": [(AssetIds::PKton as _, ROOT, true, 1)],
+			"metadata": [(
+				AssetIds::PKton as u32,
+				b"Koi Commitment Token",
+				b"PKTON",
+				18,
+			)]
+		},
+
+		// Consensus stuff.
+		"darwiniaStaking": {
+			"now": SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
+			"elapsedTime": 0,
+			"rateLimit": 20_000_000 * UNIT,
+			"collatorCount": 3,
+			"collators": collators.iter().map(|(a, _)| (a, UNIT)).collect::<Vec<_>>()
+		},
+		"session": {
+			"keys": collators.iter().map(|(a, sks)| (a, a, sks)).collect::<Vec<_>>()
+		},
+
+		// Utility stuff.
+		"sudo": { "key": Some(array_bytes::hex_n_into_unchecked::<_, _, 20>(SUDO)) },
+
+		// XCM stuff.
+		"polkadotXcm": { "safeXcmVersion": Some(SAFE_XCM_VERSION) },
+
+		// EVM stuff.
+		"evm": {
+			"accounts": {
+				BTreeMap::from_iter(
+					<KoiPrecompiles<Runtime>>::used_addresses().iter().map(|p| {
+						(
+							p,
+							GenesisAccount {
+								nonce: Default::default(),
+								balance: Default::default(),
+								storage: Default::default(),
+								code: REVERT_BYTECODE.to_vec(),
+							},
+						)
+					}),
+				)
+			}
+		}
+	});
+
+	ChainSpec::builder(
+		WASM_BINARY.unwrap().to_vec(),
+		Extensions {
+			relay_chain: "paseo".into(), // You MUST set this to the correct network!
+			para_id: PARA_ID,
+		},
+	)
+	.with_name("Darwinia Koi")
+	.with_id("darwinia-koi")
+	.with_chain_type(ChainType::Live)
+	.with_protocol_id(PROTOCOL_ID)
+	.with_properties(properties())
+	.with_genesis_config_patch(genesis_config_patch)
+	.with_boot_nodes(
+		vec!["/dns/g1.testnets.darwinia.network/tcp/30330/p2p/12D3KooWLjJE7oNzQrEM26vUZ1uKuNYhvqjYrEATt1RdoAMTnvL9".parse().unwrap()]
+	)
+	.with_telemetry_endpoints(TelemetryEndpoints::new(vec![(TELEMETRY_URL.into(), 0)]).unwrap())
+	.build()
+}
+
+pub fn config() -> ChainSpec {
+	load_config("koi.json", 0)
+}
+
+fn properties() -> Properties {
+	super::properties("KRING")
+}
+
+// Generate the session keys from individual elements.
+//
+// The input must be a tuple of individual keys (a single arg for now since we have just one key).
+fn session_keys(keys: AuraId) -> SessionKeys {
+	SessionKeys { aura: keys }
 }

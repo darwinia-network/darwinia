@@ -37,311 +37,50 @@ use sc_service::{ChainType, GenericChainSpec};
 use sc_telemetry::TelemetryEndpoints;
 use sp_core::{crypto::UncheckedInto, H160};
 
-/// Specialized `ChainSpec` for the normal parachain runtime.
-pub type ChainSpec = GenericChainSpec<RuntimeGenesisConfig, Extensions>;
+const PARA_ID: u32 = 2105;
 
-fn properties() -> Properties {
-	super::properties("CRAB")
-}
-
-// Generate the session keys from individual elements.
-//
-// The input must be a tuple of individual keys (a single arg for now since we have just one key).
-fn session_keys(keys: AuraId) -> SessionKeys {
-	SessionKeys { aura: keys }
-}
+// FIXME: https://github.com/paritytech/polkadot-sdk/issues/4853.
 
 pub fn development_config() -> ChainSpec {
-	ChainSpec::from_genesis(
-		// Fulfill Polkadot.JS metadata upgrade requirements.
-		"Crab2 D",
-		"crab2-d",
-		ChainType::Live,
-		move || {
-			testnet_genesis(
-				vec![
-					// Bind the `Alice` to `Alith` to make `--alice` available for testnet.
-					(
-						array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
-						get_collator_keys_from_seed("Alice"),
-					),
-				],
-				vec![
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(BALTATHAR),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(CHARLETH),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(DOROTHY),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(ETHAN),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(FAITH),
-				],
-				2105.into(),
-			)
-		},
-		Vec::new(),
-		None,
-		Some(PROTOCOL_ID),
-		None,
-		Some(properties()),
-		Extensions {
-			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: 2105,
-		},
-	)
-}
-
-pub fn local_config() -> ChainSpec {
-	ChainSpec::from_genesis(
-		// Fulfill Polkadot.JS metadata upgrade requirements.
-		"Crab2 L",
-		"crab2-l",
-		ChainType::Live,
-		move || {
-			testnet_genesis(
-				vec![
-					// Bind the `Alice` to `Alith` to make `--alice` available for testnet.
-					(
-						array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
-						get_collator_keys_from_seed("Alice"),
-					),
-					// Bind the `Bob` to `Balthar` to make `--bob` available for testnet.
-					(
-						array_bytes::hex_n_into_unchecked::<_, _, 20>(BALTATHAR),
-						get_collator_keys_from_seed("Bob"),
-					),
-					// Bind the `Charlie` to `CHARLETH` to make `--charlie` available for testnet.
-					(
-						array_bytes::hex_n_into_unchecked::<_, _, 20>(CHARLETH),
-						get_collator_keys_from_seed("Charlie"),
-					),
-				],
-				vec![
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(BALTATHAR),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(CHARLETH),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(DOROTHY),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(ETHAN),
-					array_bytes::hex_n_into_unchecked::<_, _, 20>(FAITH),
-				],
-				2105.into(),
-			)
-		},
-		Vec::new(),
-		None,
-		Some(PROTOCOL_ID),
-		None,
-		Some(properties()),
-		Extensions {
-			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: 2105,
-		},
-	)
-}
-
-pub fn genesis_config() -> ChainSpec {
-	let collators = [
-		(
-			"0x196f03b77a1acd0db080006b04d2f3a991ebbe68",
-			"0xa05255010ee986b9684a444d10a74aa0ecbe781f5002e871665add894752cc7e",
-		),
-		(
-			"0x4D3D5958B948e8d749FaB0236b179fCC55d9aAc0",
-			"0xf8f82edfc6899552e5a32aa381e53723d2c39594638cb8f7e2572fef74b05255",
-		),
-		(
-			"0x7aE2a0914db8bFBdad538b0eAc3Fa473A0e07843",
-			"0xdaf5c4506b82f617245150216a73c0eb4f2603848c02413db66f991846777845",
-		),
-		(
-			"0x9F33a4809aA708d7a399fedBa514e0A0d15EfA85",
-			"0xdcff1219121687391353b17e798b10e87f6e578b2a01e032375f2f14a0712b57",
-		),
-		(
-			"0x0a1287977578F888bdc1c7627781AF1cc000e6ab",
-			"0x28a8af71db9703e6b8960d1dcb742deca13c574f81f781be5dbde84ec8d66d45",
-		),
-		(
-			"0xEB7e82A67CDFA3E742e0f3315Fd4EEd7B05730CC",
-			"0xfee21e4e4865380734882253d27612da0e4413c93e5c817e38b8c5e034de7270",
-		),
-	];
-
-	ChainSpec::from_genesis(
-		"Crab2",
-		"crab2",
-		ChainType::Live,
-		move || {
-			RuntimeGenesisConfig {
-				// System stuff.
-				system: SystemConfig { code: WASM_BINARY.unwrap().to_vec(), ..Default::default() },
-				parachain_system: Default::default(),
-				parachain_info: ParachainInfoConfig { parachain_id: 2105.into(), ..Default::default() },
-
-				// Monetary stuff.
-				balances: BalancesConfig {
-					balances: collators
-						.iter()
-						.map(|(k, _)| (array_bytes::hex_n_into_unchecked::<_, _, 20>(k), 10_000 * UNIT))
-						.collect(),
-				},
-				transaction_payment: Default::default(),
-				assets: AssetsConfig {
-					assets: vec![(AssetIds::CKton as _, ROOT, true, 1)],
-					metadata: vec![(
-						AssetIds::CKton as _,
-						b"Crab Commitment Token".to_vec(),
-						b"CKTON".to_vec(),
-						18,
-					)],
-					..Default::default()
-				},
-				vesting: Default::default(),
-
-				// Consensus stuff.
-				darwinia_staking: DarwiniaStakingConfig {
-					now: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
-					elapsed_time: 0,
-					rate_limit: 20_000_000 * UNIT,
-					collator_count: 6,
-					collators: collators
-						.iter()
-						.map(|(k, _)| (array_bytes::hex_n_into_unchecked::<_, _, 20>(k), 1_000 * UNIT))
-						.collect(),
-				},
-				session: SessionConfig {
-					keys: collators
-						.iter()
-						.map(|(k, a)| {
-							(
-								array_bytes::hex_n_into_unchecked::<_, _, 20>(k),
-								array_bytes::hex_n_into_unchecked::<_, _, 20>(k),
-								session_keys(array_bytes::hex2array_unchecked(a).unchecked_into()),
-							)
-						})
-						.collect(),
-				},
-				aura: Default::default(),
-				aura_ext: Default::default(),
-
-				// Governance stuff.
-				technical_committee: Default::default(),
-				treasury: Default::default(),
-
-				// Utility stuff.
-				tx_pause: Default::default(),
-
-				// XCM stuff.
-				polkadot_xcm: PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION), ..Default::default() },
-
-				// EVM stuff.
-				ethereum: Default::default(),
-				evm: EVMConfig {
-					accounts: {
-						BTreeMap::from_iter(
-							CrabPrecompiles::<Runtime>::used_addresses().iter().map(|p| {
-								(
-									p.to_owned(),
-									GenesisAccount {
-										nonce: Default::default(),
-										balance: Default::default(),
-										storage: Default::default(),
-										code: REVERT_BYTECODE.to_vec(),
-									},
-								)
-							}),
-						)
-					},
-					..Default::default()
-				},
-			}
-		},
-		vec![
-			"/dns/g1.crab2.darwinia.network/tcp/30333/ws/p2p/12D3KooWEDiHG6pjt53HqnfYepnLzp9rFTh8MJrBX7AZeGShBMM4".parse().unwrap()
-		],
-		TelemetryEndpoints::new(vec![(TELEMETRY_URL.into(), 0)]).ok(),
-		Some(PROTOCOL_ID),
-		None,
-		Some(properties()),
-		Extensions {
-			relay_chain: "kusama".into(), // You MUST set this to the correct network!
-			para_id: 2105,
-		},
-	)
-}
-
-pub fn config() -> ChainSpec {
-	load_config("crab2.json", 0)
-}
-
-fn testnet_genesis(
-	collators: Vec<(AccountId, AuraId)>,
-	endowed_accounts: Vec<AccountId>,
-	id: ParaId,
-) -> RuntimeGenesisConfig {
-	RuntimeGenesisConfig {
+	let (collators, endowed_accounts) = dev_accounts::<AccountId>(session_keys);
+	let genesis_config_patch = serde_json::json!({
 		// System stuff.
-		system: SystemConfig { code: WASM_BINARY.unwrap().to_vec(), ..Default::default() },
-		parachain_system: Default::default(),
-		parachain_info: ParachainInfoConfig { parachain_id: id, ..Default::default() },
+		"parachainInfo": { "parachainId": PARA_ID },
 
 		// Monetary stuff.
-		balances: BalancesConfig {
-			balances: endowed_accounts.iter().cloned().map(|k| (k, 100_000_000 * UNIT)).collect(),
+		"balances": {
+			"balances": endowed_accounts.iter().map(|a| (a, 100_000_000 * UNIT)).collect::<Vec<_>>()
 		},
-		transaction_payment: Default::default(),
-		assets: AssetsConfig {
-			assets: vec![(AssetIds::CKton as _, ROOT, true, 1)],
-			metadata: vec![(
-				AssetIds::CKton as _,
-				b"Crab Commitment Token".to_vec(),
-				b"CKTON".to_vec(),
-				18,
-			)],
-			..Default::default()
+		"assets": {
+			"assets": [(AssetIds::CKton as u32, ROOT, true, 1)],
+			"metadata": [(
+				AssetIds::CKton as u32,
+				b"Crab Commitment Token",
+				b"CKTON",
+				18
+			)]
 		},
-		vesting: Default::default(),
 
 		// Consensus stuff.
-		darwinia_staking: DarwiniaStakingConfig {
-			now: SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
-			elapsed_time: 0,
-			rate_limit: 20_000_000 * UNIT,
-			collator_count: collators.len() as _,
-			collators: collators.iter().map(|(a, _)| (a.to_owned(), UNIT)).collect(),
+		"darwiniaStaking": {
+			"now": SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
+			"elapsedTime": 0,
+			"rateLimit": 20_000_000 * UNIT,
+			"collatorCount": collators.len(),
+			"collators": collators.iter().map(|(a, _)| (a, UNIT)).collect::<Vec<_>>()
 		},
-		session: SessionConfig {
-			keys: collators
-				.into_iter()
-				.map(|(acc, aura)| {
-					(
-						acc,                // account id
-						acc,                // validator id
-						session_keys(aura), // session keys
-					)
-				})
-				.collect(),
+		"session": {
+			"keys": collators.into_iter().map(|(a, sks)| (a, a, sks)).collect::<Vec<_>>()
 		},
-		aura: Default::default(),
-		aura_ext: Default::default(),
-
-		// Governance stuff.
-		technical_committee: Default::default(),
-		treasury: Default::default(),
-
-		// Utility stuff.
-		tx_pause: Default::default(),
 
 		// XCM stuff.
-		polkadot_xcm: PolkadotXcmConfig {
-			safe_xcm_version: Some(SAFE_XCM_VERSION),
-			..Default::default()
-		},
+		"polkadotXcm": { "safeXcmVersion": Some(SAFE_XCM_VERSION) },
 
 		// EVM stuff.
-		ethereum: Default::default(),
-		evm: EVMConfig {
-			accounts: {
+		"evm": {
+			"accounts": {
 				BTreeMap::from_iter(
-					CrabPrecompiles::<Runtime>::used_addresses()
+					<CrabPrecompiles<Runtime>>::used_addresses()
 						.iter()
 						.map(|p| {
 							(
@@ -367,8 +106,178 @@ fn testnet_genesis(
 							),
 						]),
 				)
-			},
-			..Default::default()
+			}
+		}
+	});
+
+	ChainSpec::builder(
+		WASM_BINARY.unwrap().to_vec(),
+		Extensions {
+			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
+			para_id: PARA_ID,
 		},
-	}
+	)
+	.with_name("Crab2 D")
+	.with_id("crab2-d")
+	.with_chain_type(ChainType::Live)
+	.with_protocol_id(PROTOCOL_ID)
+	.with_properties(properties())
+	.with_genesis_config_patch(genesis_config_patch)
+	.build()
+}
+
+pub fn genesis_config() -> ChainSpec {
+	let collators = [
+		(
+			array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(
+				"0x196f03b77a1acd0db080006b04d2f3a991ebbe68",
+			),
+			session_keys(
+				array_bytes::hex2array_unchecked(
+					"0xa05255010ee986b9684a444d10a74aa0ecbe781f5002e871665add894752cc7e",
+				)
+				.unchecked_into(),
+			),
+		),
+		(
+			array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(
+				"0x4D3D5958B948e8d749FaB0236b179fCC55d9aAc0",
+			),
+			session_keys(
+				array_bytes::hex2array_unchecked(
+					"0xf8f82edfc6899552e5a32aa381e53723d2c39594638cb8f7e2572fef74b05255",
+				)
+				.unchecked_into(),
+			),
+		),
+		(
+			array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(
+				"0x7aE2a0914db8bFBdad538b0eAc3Fa473A0e07843",
+			),
+			session_keys(
+				array_bytes::hex2array_unchecked(
+					"0xdaf5c4506b82f617245150216a73c0eb4f2603848c02413db66f991846777845",
+				)
+				.unchecked_into(),
+			),
+		),
+		(
+			array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(
+				"0x9F33a4809aA708d7a399fedBa514e0A0d15EfA85",
+			),
+			session_keys(
+				array_bytes::hex2array_unchecked(
+					"0xdcff1219121687391353b17e798b10e87f6e578b2a01e032375f2f14a0712b57",
+				)
+				.unchecked_into(),
+			),
+		),
+		(
+			array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(
+				"0x0a1287977578F888bdc1c7627781AF1cc000e6ab",
+			),
+			session_keys(
+				array_bytes::hex2array_unchecked(
+					"0x28a8af71db9703e6b8960d1dcb742deca13c574f81f781be5dbde84ec8d66d45",
+				)
+				.unchecked_into(),
+			),
+		),
+		(
+			array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(
+				"0xEB7e82A67CDFA3E742e0f3315Fd4EEd7B05730CC",
+			),
+			session_keys(
+				array_bytes::hex2array_unchecked(
+					"0xfee21e4e4865380734882253d27612da0e4413c93e5c817e38b8c5e034de7270",
+				)
+				.unchecked_into(),
+			),
+		),
+	];
+	let genesis_config_patch = serde_json::json!({
+		// System stuff.
+		"parachainInfo": { "parachainId": PARA_ID },
+
+		// Monetary stuff.
+		"balances": {
+			"balances": collators.iter().map(|a| (a, 10_000 * UNIT)).collect::<Vec<_>>()
+		},
+		"assets": {
+			"assets": [(AssetIds::CKton as u32, ROOT, true, 1)],
+			"metadata": [(
+				AssetIds::CKton as u32,
+				b"Crab Commitment Token",
+				b"CKTON",
+				18
+			)]
+		},
+
+		// Consensus stuff.
+		"darwiniaStaking": {
+			"now": SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
+			"elapsedTime": 0,
+			"rateLimit": 20_000_000 * UNIT,
+			"collatorCount": 6,
+			"collators": collators.iter().map(|(a, _)| (a, 1_000 * UNIT)).collect::<Vec<_>>()
+		},
+		session: {
+			"keys": collators.iter().map(|(a, sks)| (a, a, sks)).collect::<Vec<_>>()
+		},
+
+		// XCM stuff.
+		"polkadotXcm": { "safeXcmVersion": Some(SAFE_XCM_VERSION) },
+
+		// EVM stuff.
+		"evm": {
+			"accounts": {
+				BTreeMap::from_iter(
+					<CrabPrecompiles<Runtime>>::used_addresses().iter().map(|p| {
+						(
+							p,
+							GenesisAccount {
+								nonce: Default::default(),
+								balance: Default::default(),
+								storage: Default::default(),
+								code: REVERT_BYTECODE.to_vec(),
+							},
+						)
+					}),
+				)
+			}
+		}
+	});
+
+	ChainSpec::builder(WASM_BINARY.unwrap().to_vec(), Extensions {
+		relay_chain: "kusama".into(), // You MUST set this to the correct network!
+		para_id: PARA_ID,
+	})
+	.with_name("Crab2")
+	.with_id("crab2")
+	.with_chain_type(ChainType::Live)
+	.with_protocol_id(PROTOCOL_ID)
+	.with_properties(properties())
+	.with_genesis_config_patch(genesis_config_patch)
+	.with_boot_nodes(vec![
+		"/dns/g1.crab2.darwinia.network/tcp/30333/ws/p2p/12D3KooWEDiHG6pjt53HqnfYepnLzp9rFTh8MJrBX7AZeGShBMM4".parse().unwrap()
+	])
+	.with_telemetry_endpoints(
+		TelemetryEndpoints::new(vec![(TELEMETRY_URL.into(), 0)]).unwrap()
+	)
+	.build()
+}
+
+pub fn config() -> ChainSpec {
+	load_config("crab2.json", 0)
+}
+
+fn properties() -> Properties {
+	super::properties("CRAB")
+}
+
+// Generate the session keys from individual elements.
+//
+// The input must be a tuple of individual keys (a single arg for now since we have just one key).
+fn session_keys(keys: AuraId) -> SessionKeys {
+	SessionKeys { aura: keys }
 }
