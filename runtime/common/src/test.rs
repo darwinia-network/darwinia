@@ -31,9 +31,6 @@ macro_rules! impl_account_migration_tests {
 			use frame_system::AccountInfo;
 			use pallet_assets::ExistenceReason;
 			use pallet_balances::AccountData;
-			use pallet_identity::{
-				Data, IdentityFields, IdentityInfo, RegistrarInfo, Registration,
-			};
 			use sp_core::{sr25519::Pair, Decode, Encode, Get, Pair as PairT, H160};
 			use sp_keyring::sr25519::Keyring;
 			use sp_runtime::{

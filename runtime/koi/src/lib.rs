@@ -121,7 +121,7 @@ frame_support::construct_runtime! {
 		// Utility stuff.
 		Sudo: pallet_sudo = 19,
 		Utility: pallet_utility = 20,
-		Identity: pallet_identity = 21,
+		// Identity: pallet_identity = 21,
 		Scheduler: pallet_scheduler = 22,
 		Preimage: pallet_preimage = 23,
 		Proxy: pallet_proxy = 24,
@@ -157,7 +157,6 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_balances, Balances]
 	[pallet_collective, TechnicalCommittee]
 	[pallet_conviction_voting, ConvictionVoting]
-	[pallet_identity, Identity]
 	[pallet_preimage, Preimage]
 	[pallet_proxy, Proxy]
 	[pallet_referenda, Referenda]

@@ -68,7 +68,6 @@ use frame_support::{
 };
 use frame_system::{pallet_prelude::*, AccountInfo};
 use pallet_balances::AccountData;
-use pallet_identity::{Judgement, Registration};
 use sp_core::{
 	ed25519::{Public as Ep, Signature as Es},
 	sr25519::{Public as Sp, Signature as Ss},
@@ -109,7 +108,6 @@ pub mod pallet {
 			Lookup = IdentityLookup<AccountId20>,
 		> + pallet_assets::Config<Balance = Balance, AssetId = AssetId>
 		+ pallet_balances::Config<Balance = Balance>
-		+ pallet_identity::Config<Currency = pallet_balances::Pallet<Self>>
 		+ darwinia_deposit::Config
 		+ darwinia_staking::Config
 	{
@@ -134,8 +132,6 @@ pub mod pallet {
 
 	#[pallet::error]
 	pub enum Error<T> {
-		/// Exceed maximum vesting count.
-		ExceedMaxVestings,
 		/// Exceed maximum deposit count.
 		ExceedMaxDeposits,
 		/// The migration destination was already taken by someone.
@@ -162,18 +158,6 @@ pub mod pallet {
 	#[pallet::unbounded]
 	#[pallet::getter(fn deposit_of)]
 	pub type Deposits<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, Vec<Deposit>>;
-
-	/// [`pallet_identity::IdentityOf`] data.
-	///
-	/// <https://github.com/paritytech/substrate/blob/polkadot-v0.9.30/frame/identity/src/lib.rs#L163>
-	#[pallet::storage]
-	#[pallet::getter(fn identity_of)]
-	pub type Identities<T: Config> = StorageMap<
-		_,
-		Twox64Concat,
-		AccountId32,
-		Registration<Balance, ConstU32<100>, ConstU32<100>>,
-	>;
 
 	/// [`darwinia_staking::migration::v2::OldLedger`] data.
 	#[pallet::storage]
@@ -434,34 +418,6 @@ pub mod pallet {
 						asset_details,
 					);
 				}
-			}
-			if let Some(mut i) = <Identities<T>>::take(from) {
-				i.deposit = 0;
-				i.judgements.iter_mut().for_each(|(_, j)| {
-					if let Judgement::FeePaid(f) = j {
-						*f = 0;
-					};
-				});
-
-				migration::put_storage_value(
-					b"Identity",
-					b"IdentityOf",
-					&Twox64Concat::hash(&to.encode()),
-					i,
-				);
-			}
-			{
-				let mut rs = <pallet_identity::Pallet<T>>::registrars();
-
-				for r in rs.iter_mut().flatten() {
-					if r.account.0 == <AccountId32 as AsRef<[u8; 32]>>::as_ref(from)[..20] {
-						r.account = *to;
-
-						break;
-					}
-				}
-
-				migration::put_storage_value(b"Identity", b"Registrars", &[], rs);
 			}
 			if let Some(l) = <Ledgers<T>>::take(from) {
 				if l.staked_ring > 0 {

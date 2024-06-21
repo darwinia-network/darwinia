@@ -42,13 +42,8 @@ pub enum ProxyType {
 	Governance,
 	#[codec(index = 3)]
 	Staking,
-	#[codec(index = 4)]
-	IdentityJudgement,
 	#[codec(index = 5)]
 	CancelProxy,
-	// TODO: Migration.
-	#[codec(index = 6)]
-	EcdsaBridge,
 }
 impl Default for ProxyType {
 	fn default() -> Self {
@@ -84,9 +79,6 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 						| RuntimeCall::Deposit(..)
 						| RuntimeCall::DarwiniaStaking(..)
 				)
-			},
-			ProxyType::IdentityJudgement => {
-				matches!(c, RuntimeCall::Identity(pallet_identity::Call::provide_judgement { .. }))
 			},
 			ProxyType::CancelProxy => {
 				matches!(c, RuntimeCall::Proxy(pallet_proxy::Call::reject_announcement { .. }))

@@ -21,7 +21,6 @@ use crate::*;
 // substrate
 use frame_benchmarking::v2;
 use frame_system::RawOrigin;
-use pallet_identity::{IdentityInfo, Judgement};
 use sp_std::prelude::*;
 
 #[v2::benchmarks]
@@ -68,35 +67,6 @@ mod benchmarks {
 				is_frozen: Default::default(),
 				reason: ExistenceReason::Sufficient,
 				extra: Default::default(),
-			},
-		);
-		<Identities<T>>::insert(
-			from,
-			Registration {
-				judgements: BoundedVec::truncate_from(vec![
-					(Default::default(), Judgement::Unknown);
-					<T as pallet_identity::Config>::MaxRegistrars::get()
-						as usize
-				]),
-				deposit: Default::default(),
-				info: IdentityInfo {
-					additional: BoundedVec::truncate_from(vec![
-						(
-							Default::default(),
-							Default::default()
-						);
-						<T as pallet_identity::Config>::MaxAdditionalFields::get()
-							as usize
-					]),
-					display: Default::default(),
-					legal: Default::default(),
-					web: Default::default(),
-					riot: Default::default(),
-					email: Default::default(),
-					pgp_fingerprint: Some(Default::default()),
-					image: Default::default(),
-					twitter: Default::default(),
-				},
 			},
 		);
 		<Deposits<T>>::insert(

@@ -28,7 +28,6 @@ pub mod pallet_assets;
 pub mod pallet_balances;
 pub mod pallet_collective;
 pub mod pallet_conviction_voting;
-pub mod pallet_identity;
 pub mod pallet_preimage;
 pub mod pallet_proxy;
 pub mod pallet_referenda;

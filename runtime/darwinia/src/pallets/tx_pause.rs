@@ -40,11 +40,11 @@ impl frame_support::traits::Contains<pallet_tx_pause::RuntimeCallNameOf<Runtime>
 		!matches!(
 			pallet,
 			b"Balances"
-				| b"Assets" | b"Vesting"
-				| b"Deposit" | b"AccountMigration"
+				| b"Assets" | b"Deposit"
+				| b"AccountMigration"
 				| b"DarwiniaStaking"
-				| b"Ethereum" | b"EVM"
-				| b"EthTxForwarder"
+				| b"Ethereum"
+				| b"EVM" | b"EthTxForwarder"
 		)
 	}
 }

@@ -198,7 +198,6 @@ impl DispatchValidateT<AccountId, RuntimeCall> for DarwiniaDispatchValidator {
 		if matches!(
 			call,
 			RuntimeCall::Assets(..)
-				| RuntimeCall::Vesting(..)
 				| RuntimeCall::Ethereum(..)
 				| RuntimeCall::EVM(..)
 				| RuntimeCall::EthTxForwarder(..)

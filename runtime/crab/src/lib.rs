@@ -102,7 +102,7 @@ frame_support::construct_runtime! {
 		Balances: pallet_balances = 5,
 		TransactionPayment: pallet_transaction_payment = 6,
 		Assets: pallet_assets = 7,
-		Vesting: pallet_vesting = 8,
+		// Vesting: pallet_vesting = 8,
 		Deposit: darwinia_deposit = 9,
 		AccountMigration: darwinia_account_migration = 10,
 
@@ -131,7 +131,7 @@ frame_support::construct_runtime! {
 		// Utility stuff.
 		// Sudo: pallet_sudo = 25,
 		Utility: pallet_utility = 26,
-		Identity: pallet_identity = 27,
+		// Identity: pallet_identity = 27,
 		Scheduler: pallet_scheduler = 28,
 		Preimage: pallet_preimage = 29,
 		Proxy: pallet_proxy = 30,
@@ -171,7 +171,6 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_balances, Balances]
 	[pallet_collective, TechnicalCommittee]
 	[pallet_conviction_voting, ConvictionVoting]
-	[pallet_identity, Identity]
 	[pallet_preimage, Preimage]
 	[pallet_proxy, Proxy]
 	[pallet_referenda, Referenda]
@@ -181,7 +180,6 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_treasury, Treasury]
 	[pallet_tx_pause, TxPause]
 	[pallet_utility, Utility]
-	[pallet_vesting, Vesting]
 	[pallet_whitelist, Whitelist]
 }
 

@@ -42,8 +42,6 @@ mod transaction_payment;
 mod assets;
 pub use assets::*;
 
-mod vesting;
-
 mod deposit;
 #[cfg(feature = "runtime-benchmarks")]
 pub use deposit::*;

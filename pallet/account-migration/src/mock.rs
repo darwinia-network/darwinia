@@ -175,21 +175,6 @@ impl darwinia_staking::Config for Runtime {
 #[cfg(not(feature = "runtime-benchmarks"))]
 impl darwinia_staking::DepositConfig for Runtime {}
 
-impl pallet_identity::Config for Runtime {
-	type BasicDeposit = ();
-	type Currency = Balances;
-	type FieldDeposit = ();
-	type ForceOrigin = frame_system::EnsureSigned<AccountId>;
-	type MaxAdditionalFields = ();
-	type MaxRegistrars = ();
-	type MaxSubAccounts = ();
-	type RegistrarOrigin = frame_system::EnsureSigned<AccountId>;
-	type RuntimeEvent = RuntimeEvent;
-	type Slashed = ();
-	type SubAccountDeposit = ();
-	type WeightInfo = ();
-}
-
 impl darwinia_account_migration::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
@@ -203,7 +188,6 @@ frame_support::construct_runtime! {
 		Assets: pallet_assets,
 		Deposit: darwinia_deposit,
 		Staking: darwinia_staking,
-		Identity: pallet_identity,
 		AccountMigration: darwinia_account_migration,
 	}
 }
