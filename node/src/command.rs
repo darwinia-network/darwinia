@@ -240,7 +240,7 @@ pub fn run() -> Result<()> {
 		($config:expr, $cli:ident, |$partials:ident| $code:expr) => {{
 			#[cfg(feature = "crab-native")]
 			if $config.chain_spec.is_crab() {
-				let $partials = service::new_partial::<CrabRuntimeApi, CrabRuntimeExecutor>(
+				let $partials = service::new_partial::<CrabRuntimeApi>(
 					&$config,
 					&$cli.eth_args.build_eth_rpc_config(),
 				)?;
@@ -250,7 +250,7 @@ pub fn run() -> Result<()> {
 
 			#[cfg(feature = "darwinia-native")]
 			if $config.chain_spec.is_darwinia() {
-				let $partials = service::new_partial::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
+				let $partials = service::new_partial::<DarwiniaRuntimeApi>(
 					&$config,
 					&$cli.eth_args.build_eth_rpc_config(),
 				)?;
@@ -260,7 +260,7 @@ pub fn run() -> Result<()> {
 
 			#[cfg(feature = "koi-native")]
 			if $config.chain_spec.is_koi() {
-				let $partials = service::new_partial::<KoiRuntimeApi, KoiRuntimeExecutor>(
+				let $partials = service::new_partial::<KoiRuntimeApi>(
 					&$config,
 					&$cli.eth_args.build_eth_rpc_config(),
 				)?;
@@ -282,7 +282,7 @@ pub fn run() -> Result<()> {
 			#[cfg(feature = "crab-native")]
 			if chain_spec.is_crab() {
 				return runner.async_run(|$config| {
-					let $components = service::new_partial::<CrabRuntimeApi, CrabRuntimeExecutor>(
+					let $components = service::new_partial::<CrabRuntimeApi>(
 						&$config,
 						&$cli.eth_args.build_eth_rpc_config()
 					)?;
@@ -295,7 +295,7 @@ pub fn run() -> Result<()> {
 			#[cfg(feature = "darwinia-native")]
 			if chain_spec.is_darwinia() {
 				return runner.async_run(|$config| {
-					let $components = service::new_partial::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
+					let $components = service::new_partial::<DarwiniaRuntimeApi>(
 						&$config,
 						&$cli.eth_args.build_eth_rpc_config()
 					)?;
@@ -308,7 +308,7 @@ pub fn run() -> Result<()> {
 			#[cfg(feature = "koi-native")]
 			if chain_spec.is_koi() {
 				return runner.async_run(|$config| {
-					let $components = service::new_partial::<KoiRuntimeApi, KoiRuntimeExecutor>(
+					let $components = service::new_partial::<KoiRuntimeApi>(
 						&$config,
 						&$cli.eth_args.build_eth_rpc_config()
 					)?;
@@ -506,7 +506,7 @@ pub fn run() -> Result<()> {
 				if chain_spec.is_dev() {
 					#[cfg(feature = "crab-native")]
 					if chain_spec.is_crab() {
-						return service::start_dev_node::<CrabRuntimeApi, CrabRuntimeExecutor>(
+						return service::start_dev_node::<CrabRuntimeApi>(
 							config,
 							&eth_rpc_config,
 						)
@@ -515,7 +515,7 @@ pub fn run() -> Result<()> {
 
 					#[cfg(feature = "darwinia-native")]
 					if chain_spec.is_darwinia() {
-						return service::start_dev_node::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
+						return service::start_dev_node::<DarwiniaRuntimeApi>(
 							config,
 							&eth_rpc_config,
 						)
@@ -524,7 +524,7 @@ pub fn run() -> Result<()> {
 
 					#[cfg(feature = "koi-native")]
 					if chain_spec.is_koi() {
-						return service::start_dev_node::<KoiRuntimeApi, KoiRuntimeExecutor>(
+						return service::start_dev_node::<KoiRuntimeApi>(
 							config,
 							&eth_rpc_config,
 						)
@@ -538,7 +538,7 @@ pub fn run() -> Result<()> {
 
 				#[cfg(feature = "crab-native")]
 				if chain_spec.is_crab() {
-					return service::start_parachain_node::<CrabRuntimeApi, CrabRuntimeExecutor>(
+					return service::start_parachain_node::<CrabRuntimeApi>(
 						config,
 						polkadot_config,
 						collator_options,
@@ -553,7 +553,7 @@ pub fn run() -> Result<()> {
 
 				#[cfg(feature = "darwinia-native")]
 				if chain_spec.is_darwinia() {
-					return service::start_parachain_node::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
+					return service::start_parachain_node::<DarwiniaRuntimeApi>(
 						config,
 						polkadot_config,
 						collator_options,
@@ -568,7 +568,7 @@ pub fn run() -> Result<()> {
 
 				#[cfg(feature = "koi-native")]
 				if chain_spec.is_koi() {
-					return service::start_parachain_node::<KoiRuntimeApi, KoiRuntimeExecutor>(
+					return service::start_parachain_node::<KoiRuntimeApi>(
 						config,
 						polkadot_config,
 						collator_options,
