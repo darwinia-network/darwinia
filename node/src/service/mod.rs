@@ -59,6 +59,22 @@ type ParachainBlockImport<RuntimeApi, Executor> =
 		Arc<FullClient<RuntimeApi, Executor>>,
 		FullBackend,
 	>;
+type Service<RuntimeApi, Executor> = sc_service::PartialComponents<
+	FullClient<RuntimeApi, Executor>,
+	FullBackend,
+	sc_consensus::LongestChain<FullBackend, Block>,
+	sc_consensus::DefaultImportQueue<Block>,
+	sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>,
+	(
+		fc_db::Backend<Block>,
+		Option<fc_rpc_core::types::FilterPool>,
+		fc_rpc_core::types::FeeHistoryCache,
+		fc_rpc_core::types::FeeHistoryCacheLimit,
+		ParachainBlockImport<RuntimeApi, Executor>,
+		Option<sc_telemetry::Telemetry>,
+		Option<sc_telemetry::TelemetryWorkerHandle>,
+	),
+>;
 
 /// Can be called for a `Configuration` to check if it is the specific network.
 pub trait IdentifyVariant {
@@ -134,25 +150,7 @@ impl<Api> RuntimeApiCollection for Api where
 pub fn new_partial<RuntimeApi, Executor>(
 	config: &sc_service::Configuration,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
-) -> Result<
-	sc_service::PartialComponents<
-		FullClient<RuntimeApi, Executor>,
-		FullBackend,
-		sc_consensus::LongestChain<FullBackend, Block>,
-		sc_consensus::DefaultImportQueue<Block>,
-		sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>,
-		(
-			fc_db::Backend<Block>,
-			Option<fc_rpc_core::types::FilterPool>,
-			fc_rpc_core::types::FeeHistoryCache,
-			fc_rpc_core::types::FeeHistoryCacheLimit,
-			ParachainBlockImport<RuntimeApi, Executor>,
-			Option<sc_telemetry::Telemetry>,
-			Option<sc_telemetry::TelemetryWorkerHandle>,
-		),
-	>,
-	sc_service::Error,
->
+) -> Result<Service<RuntimeApi, Executor>, sc_service::Error>
 where
 	RuntimeApi: 'static
 		+ Send
