@@ -263,6 +263,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 			XcmFeesToAccount,
 		>,
 	);
+	type TransactionalProcessor = xcm_builder::FrameTransactionalProcessor;
 	type UniversalAliases = frame_support::traits::Nothing;
 	// Teleporting is disabled.
 	type UniversalLocation = UniversalLocation;
