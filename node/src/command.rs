@@ -419,7 +419,7 @@ pub fn run() -> Result<()> {
 				cmd.run(config, polkadot_config)
 			})
 		},
-		Some(Subcommand::ExportGenesisState(cmd)) =>
+		Some(Subcommand::ExportGenesisHead(cmd)) =>
 			construct_async_run!(|components, cli, cmd, config| {
 				Ok(async move { cmd.run(&*config.chain_spec, &*components.client) })
 			}),
