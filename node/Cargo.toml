@@ -15,7 +15,7 @@ array-bytes = { workspace = true }
 async-trait = { version = "0.1" }
 clap        = { version = "4.4", features = ["derive"] }
 futures     = { version = "0.3" }
-jsonrpsee   = { version = "0.16", features = ["server"] }
+jsonrpsee   = { version = "0.20", features = ["server"] }
 log         = { version = "0.4" }
 serde       = { version = "1.0", features = ["derive"] }
 serde_json  = { version = "1.0" }
