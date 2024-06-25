@@ -26,7 +26,8 @@ frame_support::parameter_types! {
 
 impl cumulus_pallet_parachain_system::Config for Runtime {
 	type CheckAssociatedRelayNumber = cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
-	type DmpMessageHandler = DmpQueue;
+	type DmpQueue =
+		frame_support::traits::EnqueueWithOrigin<MessageQueue, pallet_config::RelayOrigin>;
 	type OnSystemEvent = ();
 	type OutboundXcmpMessageSource = XcmpQueue;
 	type ReservedDmpWeight = ReservedDmpWeight;

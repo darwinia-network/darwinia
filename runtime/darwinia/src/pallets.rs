@@ -87,6 +87,8 @@ mod ethereum_xcm;
 
 mod dmp_queue;
 
+mod message_queue;
+
 mod asset_manager;
 
 mod orml_xtokens;

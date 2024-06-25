@@ -143,6 +143,7 @@ frame_support::construct_runtime! {
 		CumulusXcm: cumulus_pallet_xcm = 34,
 		EthereumXcm: pallet_ethereum_xcm = 44,
 		DmpQueue: cumulus_pallet_dmp_queue = 35,
+		MessageQueue: pallet_message_queue = 39,
 		AssetManager: pallet_asset_manager = 45,
 		XTokens: orml_xtokens = 46,
 		AssetLimit: darwinia_asset_limit = 47,
@@ -151,31 +152,25 @@ frame_support::construct_runtime! {
 		Ethereum: pallet_ethereum = 36,
 		EVM: pallet_evm = 37,
 		EthTxForwarder: darwinia_ethtx_forwarder = 38,
-
-		// // Darwinia <> Crab
-		// BridgeKusamaGrandpa: pallet_bridge_grandpa::<Instance1> = 39,
-		// BridgeKusamaParachain: pallet_bridge_parachains::<Instance1> = 40,
-		// BridgeCrabMessages: pallet_bridge_messages::<Instance1> = 41,
-		// BridgeCrabDispatch: pallet_bridge_dispatch::<Instance1> = 42,
-		// CrabFeeMarket: pallet_fee_market::<Instance1> = 43
 	}
 }
 
 #[cfg(feature = "runtime-benchmarks")]
 frame_benchmarking::define_benchmarks! {
-	// cumulus
-	[cumulus_pallet_xcmp_queue, XcmpQueue]
 	// darwinia
 	[darwinia_account_migration, AccountMigration]
 	[darwinia_deposit, Deposit]
 	[darwinia_staking, DarwiniaStaking]
-	// substrate
+	// polkadot-sdk
+	[cumulus_pallet_parachain_system, ParachainSystem]
+	[cumulus_pallet_xcmp_queue, XcmpQueue]
 	[frame_system, SystemBench::<Runtime>]
 	[pallet_assets, Assets]
 	[pallet_balances, Balances]
 	[pallet_collective, TechnicalCommittee]
 	[pallet_conviction_voting, ConvictionVoting]
 	[pallet_democracy, Democracy]
+	[pallet_message_queue, MessageQueue]
 	[pallet_preimage, Preimage]
 	[pallet_proxy, Proxy]
 	[pallet_referenda, Referenda]

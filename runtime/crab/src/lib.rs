@@ -142,35 +142,30 @@ frame_support::construct_runtime! {
 		PolkadotXcm: pallet_xcm = 33,
 		CumulusXcm: cumulus_pallet_xcm = 34,
 		DmpQueue: cumulus_pallet_dmp_queue = 35,
+		MessageQueue: pallet_message_queue = 39,
 
 		// EVM stuff.
 		Ethereum: pallet_ethereum = 36,
 		EVM: pallet_evm = 37,
 		EthTxForwarder: darwinia_ethtx_forwarder = 38,
-
-		// // Crab <> Darwinia
-		// BridgePolkadotGrandpa: pallet_bridge_grandpa::<Instance1> = 39,
-		// BridgePolkadotParachain: pallet_bridge_parachains::<Instance1> = 40,
-		// BridgeDarwiniaMessages: pallet_bridge_messages::<Instance1> = 41,
-		// BridgeDarwiniaDispatch: pallet_bridge_dispatch::<Instance1> = 42,
-		// DarwiniaFeeMarket: pallet_fee_market::<Instance1> = 43
 	}
 }
 
 #[cfg(feature = "runtime-benchmarks")]
 frame_benchmarking::define_benchmarks! {
-	// cumulus
-	[cumulus_pallet_xcmp_queue, XcmpQueue]
 	// darwinia
 	[darwinia_account_migration, AccountMigration]
 	[darwinia_deposit, Deposit]
 	[darwinia_staking, DarwiniaStaking]
-	// substrate
+	// polkadot-sdk
+	[cumulus_pallet_parachain_system, ParachainSystem]
+	[cumulus_pallet_xcmp_queue, XcmpQueue]
 	[frame_system, SystemBench::<Runtime>]
 	[pallet_assets, Assets]
 	[pallet_balances, Balances]
 	[pallet_collective, TechnicalCommittee]
 	[pallet_conviction_voting, ConvictionVoting]
+	[pallet_message_queue, MessageQueue]
 	[pallet_preimage, Preimage]
 	[pallet_proxy, Proxy]
 	[pallet_referenda, Referenda]

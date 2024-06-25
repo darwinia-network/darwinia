@@ -85,6 +85,8 @@ pub use polkadot_xcm::*;
 
 mod dmp_queue;
 
+mod message_queue;
+
 // EVM stuff.
 mod ethereum;
 

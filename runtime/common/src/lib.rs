@@ -17,11 +17,11 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![deny(unused_crate_dependencies)]
 // TODO:
 // #![deny(missing_docs)]
 
 pub mod gov_origin;
+pub mod message_queue;
 pub mod migration_helper;
 pub mod pallet_config;
 pub mod xcm_configs;
