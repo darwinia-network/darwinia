@@ -32,17 +32,17 @@ pub enum CurrencyId {
 	ForeignAsset(crate::AssetId),
 }
 
-// How to convert from CurrencyId to MultiLocation
+// How to convert from CurrencyId to Location
 pub struct CurrencyIdtoMultiLocation<AssetXConverter>(core::marker::PhantomData<AssetXConverter>);
-impl<AssetXConverter> sp_runtime::traits::Convert<CurrencyId, Option<MultiLocation>>
+impl<AssetXConverter> sp_runtime::traits::Convert<CurrencyId, Option<Location>>
 	for CurrencyIdtoMultiLocation<AssetXConverter>
 where
-	AssetXConverter: sp_runtime::traits::MaybeEquivalence<MultiLocation, crate::AssetId>,
+	AssetXConverter: sp_runtime::traits::MaybeEquivalence<Location, crate::AssetId>,
 {
-	fn convert(currency: CurrencyId) -> Option<MultiLocation> {
+	fn convert(currency: CurrencyId) -> Option<Location> {
 		match currency {
 			CurrencyId::SelfReserve => {
-				let multi: MultiLocation = pallets::polkadot_xcm::AnchoringSelfReserve::get();
+				let multi: Location = pallets::polkadot_xcm::AnchoringSelfReserve::get();
 				Some(multi)
 			},
 			CurrencyId::ForeignAsset(asset) => AssetXConverter::convert_back(&asset),
@@ -55,12 +55,12 @@ frame_support::parameter_types! {
 
 	// This is how we are going to detect whether the asset is a Reserve asset
 	// This however is the chain part only
-	pub SelfLocation: MultiLocation = MultiLocation::here();
+	pub SelfLocation: Location = Location::here();
 	// We need this to be able to catch when someone is trying to execute a non-
 	// cross-chain transfer in xtokens through the absolute path way
-	pub SelfLocationAbsolute: MultiLocation = MultiLocation {
+	pub SelfLocationAbsolute: Location = Location {
 		parents:1,
-		interior: Junctions::X1(
+		interior: Junctions::Junctions::X1(
 			Parachain(ParachainInfo::parachain_id().into())
 		)
 	};

@@ -28,7 +28,7 @@ pub type LocalAssetTransactor = xcm_builder::CurrencyAdapter<
 	Balances,
 	// Use this currency when it is a fungible asset matching the given location or name:
 	xcm_builder::IsConcrete<AnchoringSelfReserve>,
-	// Do a simple punn to convert an AccountId32 MultiLocation into a native chain account ID:
+	// Do a simple punn to convert an AccountId32 Location into a native chain account ID:
 	LocationToAccountId,
 	// Our chain's account ID type (we can't get away without mentioning it explicitly):
 	AccountId,
@@ -54,7 +54,7 @@ pub type ForeignFungiblesTransactor = xcm_builder::FungiblesAdapter<
 			xcm_executor::traits::JustTry,
 		>,
 	),
-	// Do a simple punn to convert an AccountId20 MultiLocation into a native chain account ID:
+	// Do a simple punn to convert an AccountId20 Location into a native chain account ID:
 	LocationToAccountId,
 	// Our chain's account ID type (we can't get away without mentioning it explicitly):
 	AccountId,
@@ -74,7 +74,7 @@ frame_support::parameter_types! {
 	pub const RelayNetwork: NetworkId = NetworkId::Rococo;
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
 }
-/// Type for specifying how a `MultiLocation` can be converted into an `AccountId`. This is used
+/// Type for specifying how a `Location` can be converted into an `AccountId`. This is used
 /// when determining ownership of accounts for asset transacting and when attempting to use XCM
 /// `Transact` in order to determine the dispatch Origin.
 pub type LocationToAccountId = (
@@ -140,9 +140,9 @@ pub type Barrier = xcm_builder::TrailingSetTopicAsId<
 frame_support::parameter_types! {
 	pub const MaxAssetsIntoHolding: u32 = 64;
 	pub const MaxInstructions: u32 = 100;
-	pub AnchoringSelfReserve: MultiLocation = MultiLocation::new(
+	pub AnchoringSelfReserve: Location = Location::new(
 		0,
-		X1(PalletInstance(<Balances as frame_support::traits::PalletInfoAccess>::index() as u8))
+		Junctions::X1(PalletInstance(<Balances as frame_support::traits::PalletInfoAccess>::index() as u8))
 	);
 	pub UniversalLocation: InteriorMultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
 	/// The amount of weight an XCM operation takes. This is a safe overestimate.
