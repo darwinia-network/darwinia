@@ -120,7 +120,8 @@ impl darwinia_staking::Config for Runtime {
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
 	type ShouldEndSession = ShouldEndSession;
-	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;
+	// type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;
+	type WeightInfo = ();
 }
 #[cfg(not(feature = "runtime-benchmarks"))]
 impl darwinia_staking::DepositConfig for Runtime {}

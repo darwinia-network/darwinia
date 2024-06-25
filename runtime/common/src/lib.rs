@@ -31,14 +31,9 @@ pub mod test;
 
 // darwinia
 use dc_primitives::*;
-// substrate
-use frame_support::{
-	sp_runtime::Perbill,
-	weights::{
-		constants::ExtrinsicBaseWeight, FeePolynomial, Weight, WeightToFee as WeightToFeeT,
-		WeightToFeeCoefficient, WeightToFeeCoefficients, WeightToFeePolynomial,
-	},
-};
+// polkadot-sdk
+use frame_support::weights::WeightToFeePolynomial;
+use sp_core::{H160, U256};
 
 #[macro_export]
 macro_rules! fast_runtime_or_not {
@@ -54,7 +49,7 @@ macro_rules! fast_runtime_or_not {
 macro_rules! impl_self_contained_call {
 	() => {
 		impl fp_self_contained::SelfContainedCall for RuntimeCall {
-			type SignedInfo = sp_core::H160;
+			type SignedInfo = H160;
 
 			fn is_self_contained(&self) -> bool {
 				match self {
@@ -156,12 +151,14 @@ pub const fn permill(x: i32) -> sp_runtime::FixedI64 {
 ///   - Setting it to `0` will essentially disable the weight fee.
 ///   - Setting it to `1` will cause the literal `#[weight = x]` values to be charged.
 pub struct WeightToFee;
-impl WeightToFeeT for WeightToFee {
+impl frame_support::weights::WeightToFee for WeightToFee {
 	type Balance = Balance;
 
-	fn weight_to_fee(weight: &Weight) -> Self::Balance {
-		let time_poly: FeePolynomial<Balance> = RefTimeToFee::polynomial().into();
-		let proof_poly: FeePolynomial<Balance> = ProofSizeToFee::polynomial().into();
+	fn weight_to_fee(weight: &frame_support::weights::Weight) -> Self::Balance {
+		let time_poly: frame_support::weights::FeePolynomial<Balance> =
+			RefTimeToFee::polynomial().into();
+		let proof_poly: frame_support::weights::FeePolynomial<Balance> =
+			ProofSizeToFee::polynomial().into();
 
 		// Take the maximum instead of the sum to charge by the more scarce resource.
 		time_poly.eval(weight.ref_time()).max(proof_poly.eval(weight.proof_size()))
@@ -170,18 +167,21 @@ impl WeightToFeeT for WeightToFee {
 
 /// Maps the reference time component of `Weight` to a fee.
 pub struct RefTimeToFee;
-impl WeightToFeePolynomial for RefTimeToFee {
+impl frame_support::weights::WeightToFeePolynomial for RefTimeToFee {
 	type Balance = Balance;
 
-	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
+	fn polynomial() -> frame_support::weights::WeightToFeeCoefficients<Self::Balance> {
 		// Map base extrinsic weight to 1/200 UNIT.
 		let p = UNIT;
-		let q = 200 * Balance::from(ExtrinsicBaseWeight::get().ref_time());
+		let q = 200
+			* Balance::from(
+				frame_support::weights::constants::ExtrinsicBaseWeight::get().ref_time(),
+			);
 
-		smallvec::smallvec![WeightToFeeCoefficient {
+		smallvec::smallvec![frame_support::weights::WeightToFeeCoefficient {
 			degree: 1,
 			negative: false,
-			coeff_frac: Perbill::from_rational(p % q, q),
+			coeff_frac: sp_runtime::Perbill::from_rational(p % q, q),
 			coeff_integer: p / q,
 		}]
 	}
@@ -189,18 +189,18 @@ impl WeightToFeePolynomial for RefTimeToFee {
 
 /// Maps the proof size component of `Weight` to a fee.
 pub struct ProofSizeToFee;
-impl WeightToFeePolynomial for ProofSizeToFee {
+impl frame_support::weights::WeightToFeePolynomial for ProofSizeToFee {
 	type Balance = Balance;
 
-	fn polynomial() -> WeightToFeeCoefficients<Self::Balance> {
+	fn polynomial() -> frame_support::weights::WeightToFeeCoefficients<Self::Balance> {
 		// Map 10kb proof to 1 UNIT.
 		let p = UNIT;
 		let q = 10_000;
 
-		smallvec::smallvec![WeightToFeeCoefficient {
+		smallvec::smallvec![frame_support::weights::WeightToFeeCoefficient {
 			degree: 1,
 			negative: false,
-			coeff_frac: Perbill::from_rational(p % q, q),
+			coeff_frac: sp_runtime::Perbill::from_rational(p % q, q),
 			coeff_integer: p / q,
 		}]
 	}
@@ -237,11 +237,11 @@ where
 }
 
 pub struct FindAuthor<Inner>(core::marker::PhantomData<Inner>);
-impl<Inner> frame_support::traits::FindAuthor<sp_core::H160> for FindAuthor<Inner>
+impl<Inner> frame_support::traits::FindAuthor<H160> for FindAuthor<Inner>
 where
 	Inner: frame_support::traits::FindAuthor<AccountId>,
 {
-	fn find_author<'a, I>(digests: I) -> Option<sp_core::H160>
+	fn find_author<'a, I>(digests: I) -> Option<H160>
 	where
 		I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
 	{
@@ -251,15 +251,15 @@ where
 
 pub struct FixedGasPrice;
 impl pallet_evm::FeeCalculator for FixedGasPrice {
-	fn min_gas_price() -> (sp_core::U256, frame_support::weights::Weight) {
-		(sp_core::U256::from(GWEI), frame_support::weights::Weight::zero())
+	fn min_gas_price() -> (U256, frame_support::weights::Weight) {
+		(U256::from(GWEI), frame_support::weights::Weight::zero())
 	}
 }
 
 pub struct AssetIdConverter;
 impl darwinia_precompile_assets::AccountToAssetId<AccountId, AssetId> for AssetIdConverter {
 	fn account_to_asset_id(account_id: AccountId) -> AssetId {
-		let addr: sp_core::H160 = account_id.into();
+		let addr: H160 = account_id.into();
 		addr.to_low_u64_be()
 	}
 }

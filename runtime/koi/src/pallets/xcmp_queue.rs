@@ -29,12 +29,13 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	>;
 	type RuntimeEvent = RuntimeEvent;
 	type VersionWrapper = ();
-	type WeightInfo = weights::cumulus_pallet_xcmp_queue::WeightInfo<Self>;
+	// type WeightInfo = weights::cumulus_pallet_xcmp_queue::WeightInfo<Self>;
+	type WeightInfo = ();
 	// Enqueue XCMP messages from siblings for later processing.
 	type XcmpQueue = frame_support::traits::TransformOrigin<
 		MessageQueue,
-		AggregateMessageOrigin,
-		ParaId,
-		ParaIdToSibling,
+		cumulus_primitives_core::AggregateMessageOrigin,
+		cumulus_primitives_core::ParaId,
+		message_queue::ParaIdToSibling,
 	>;
 }

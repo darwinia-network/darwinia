@@ -28,12 +28,18 @@ mod pallets;
 pub use pallets::*;
 
 mod migration;
-pub mod weights;
+
+// pub mod weights;
 
 pub use darwinia_common_runtime::*;
 pub use dc_primitives::*;
 
-// substrate
+// crates.io
+use codec::{Decode, Encode, MaxEncodedLen};
+use scale_info::TypeInfo;
+// polkadot-sdk
+use sp_core::{H160, H256, U256};
+use sp_runtime::RuntimeDebug;
 use sp_std::prelude::*;
 
 /// Block type as expected by this runtime.
@@ -324,11 +330,11 @@ sp_api::impl_runtime_apis! {
 
 	impl sp_genesis_builder::GenesisBuilder<Block> for Runtime {
 		fn create_default_config() -> Vec<u8> {
-			sp_genesis_builder::create_default_config::<RuntimeGenesisConfig>()
+			frame_support::genesis_builder_helper::create_default_config::<RuntimeGenesisConfig>()
 		}
 
 		fn build_config(config: Vec<u8>) -> sp_genesis_builder::Result {
-			sp_genesis_builder::build_config::<RuntimeGenesisConfig>(config)
+			frame_support::genesis_builder_helper::build_config::<RuntimeGenesisConfig>(config)
 		}
 	}
 
@@ -343,13 +349,13 @@ sp_api::impl_runtime_apis! {
 			<<Runtime as pallet_evm::Config>::ChainId as sp_core::Get<u64>>::get()
 		}
 
-		fn account_basic(address: sp_core::H160) -> pallet_evm::Account {
+		fn account_basic(address: H160) -> pallet_evm::Account {
 			let (account, _) = EVM::account_basic(&address);
 
 			account
 		}
 
-		fn gas_price() -> sp_core::U256 {
+		fn gas_price() -> U256 {
 			// frontier
 			use pallet_evm::FeeCalculator;
 
@@ -358,33 +364,33 @@ sp_api::impl_runtime_apis! {
 			gas_price
 		}
 
-		fn account_code_at(address: sp_core::H160) -> Vec<u8> {
+		fn account_code_at(address: H160) -> Vec<u8> {
 			pallet_evm::AccountCodes::<Runtime>::get(address)
 		}
 
-		fn author() -> sp_core::H160 {
+		fn author() -> H160 {
 			<pallet_evm::Pallet<Runtime>>::find_author()
 		}
 
-		fn storage_at(address: sp_core::H160, index: sp_core::U256) -> sp_core::H256 {
+		fn storage_at(address: H160, index: U256) -> H256 {
 			let mut tmp = [0u8; 32];
 
 			index.to_big_endian(&mut tmp);
 
-			pallet_evm::AccountStorages::<Runtime>::get(address, sp_core::H256::from_slice(&tmp[..]))
+			pallet_evm::AccountStorages::<Runtime>::get(address, H256::from_slice(&tmp[..]))
 		}
 
 		fn call(
-			from: sp_core::H160,
-			to: sp_core::H160,
+			from: H160,
+			to: H160,
 			data: Vec<u8>,
-			value: sp_core::U256,
-			gas_limit: sp_core::U256,
-			max_fee_per_gas: Option<sp_core::U256>,
-			max_priority_fee_per_gas: Option<sp_core::U256>,
-			nonce: Option<sp_core::U256>,
+			value: U256,
+			gas_limit: U256,
+			max_fee_per_gas: Option<U256>,
+			max_priority_fee_per_gas: Option<U256>,
+			nonce: Option<U256>,
 			estimate: bool,
-			access_list: Option<Vec<(sp_core::H160, Vec<sp_core::H256>)>>,
+			access_list: Option<Vec<(H160, Vec<H256>)>>,
 		) -> Result<pallet_evm::CallInfo, sp_runtime::DispatchError> {
 			// frontier
 			use pallet_evm::Runner;
@@ -434,15 +440,15 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn create(
-			from: sp_core::H160,
+			from: H160,
 			data: Vec<u8>,
-			value: sp_core::U256,
-			gas_limit: sp_core::U256,
-			max_fee_per_gas: Option<sp_core::U256>,
-			max_priority_fee_per_gas: Option<sp_core::U256>,
-			nonce: Option<sp_core::U256>,
+			value: U256,
+			gas_limit: U256,
+			max_fee_per_gas: Option<U256>,
+			max_priority_fee_per_gas: Option<U256>,
+			nonce: Option<U256>,
 			estimate: bool,
-			access_list: Option<Vec<(sp_core::H160, Vec<sp_core::H256>)>>,
+			access_list: Option<Vec<(H160, Vec<H256>)>>,
 		) -> Result<pallet_evm::CreateInfo, sp_runtime::DispatchError> {
 			// frontier
 			use pallet_evm::Runner;
@@ -562,6 +568,7 @@ sp_api::impl_runtime_apis! {
 		fn trace_transaction(
 			_extrinsics: Vec<<Block as sp_runtime::traits::Block>::Extrinsic>,
 			_traced_transaction: &pallet_ethereum::Transaction,
+			_header: &<Block as sp_runtime::traits::Block>::Header,
 		) -> Result<
 			(),
 			sp_runtime::DispatchError,
@@ -569,7 +576,25 @@ sp_api::impl_runtime_apis! {
 			#[cfg(feature = "evm-tracing")]
 			{
 				use moonbeam_evm_tracer::tracer::EvmTracer;
-				use pallet_ethereum::Call::transact;
+				use xcm_primitives::{
+					ETHEREUM_XCM_TRACING_STORAGE_KEY,
+					EthereumXcmTracingStatus
+				};
+				use frame_support::storage::unhashed;
+				use frame_system::pallet_prelude::BlockNumberFor;
+
+				// Tell the CallDispatcher we are tracing a specific Transaction.
+				unhashed::put::<EthereumXcmTracingStatus>(
+					ETHEREUM_XCM_TRACING_STORAGE_KEY,
+					&EthereumXcmTracingStatus::Transaction(traced_transaction.hash()),
+				);
+
+				// Initialize block: calls the "on_initialize" hook on every pallet
+				// in AllPalletsWithSystem.
+				// After pallet message queue was introduced, this must be done only after
+				// enabling XCM tracing by setting ETHEREUM_XCM_TRACING_STORAGE_KEY
+				// in the storage
+				Executive::initialize_block(_header);
 
 				// Apply the a subset of extrinsics: all the substrate-specific or ethereum
 				// transactions that preceded the requested transaction.
@@ -585,10 +610,32 @@ sp_api::impl_runtime_apis! {
 						}
 						_ => Executive::apply_extrinsic(ext),
 					};
+					if let Some(EthereumXcmTracingStatus::TransactionExited) = unhashed::get(
+						ETHEREUM_XCM_TRACING_STORAGE_KEY
+					) {
+						return Ok(());
+					}
 				}
-				Err(sp_runtime::DispatchError::Other(
-					"Failed to find Ethereum transaction among the extrinsics.",
-				))
+
+				if let Some(EthereumXcmTracingStatus::Transaction(_)) = unhashed::get(
+					ETHEREUM_XCM_TRACING_STORAGE_KEY
+				) {
+					// If the transaction was not found, it might be
+					// an eth-xcm transaction that was executed at on_idle
+					replay_on_idle();
+				}
+
+				if let Some(EthereumXcmTracingStatus::TransactionExited) = unhashed::get(
+					ETHEREUM_XCM_TRACING_STORAGE_KEY
+				) {
+					// The transaction was found
+					Ok(())
+				} else {
+					// The transaction was not-found
+					Err(sp_runtime::DispatchError::Other(
+						"Failed to find Ethereum transaction among the extrinsics.",
+					))
+				}
 			}
 			#[cfg(not(feature = "evm-tracing"))]
 			Err(sp_runtime::DispatchError::Other(
@@ -598,7 +645,8 @@ sp_api::impl_runtime_apis! {
 
 		fn trace_block(
 			_extrinsics: Vec<<Block as sp_runtime::traits::Block>::Extrinsic>,
-			_known_transactions: Vec<sp_core::H256>,
+			_known_transactions: Vec<H256>,
+			_header: &<Block as sp_runtime::traits::Block>::Header,
 		) -> Result<
 			(),
 			sp_runtime::DispatchError,
@@ -606,10 +654,24 @@ sp_api::impl_runtime_apis! {
 			#[cfg(feature = "evm-tracing")]
 			{
 				use moonbeam_evm_tracer::tracer::EvmTracer;
-				use pallet_ethereum::Call::transact;
+				use frame_system::pallet_prelude::BlockNumberFor;
+				use xcm_primitives::EthereumXcmTracingStatus;
+
+				// Tell the CallDispatcher we are tracing a full Block.
+				frame_support::storage::unhashed::put::<EthereumXcmTracingStatus>(
+					xcm_primitives::ETHEREUM_XCM_TRACING_STORAGE_KEY,
+					&EthereumXcmTracingStatus::Block,
+				);
 
 				let mut config = <Runtime as pallet_evm::Config>::config().clone();
 				config.estimate = true;
+
+				// Initialize block: calls the "on_initialize" hook on every pallet
+				// in AllPalletsWithSystem.
+				// After pallet message queue was introduced, this must be done only after
+				// enabling XCM tracing by setting ETHEREUM_XCM_TRACING_STORAGE_KEY
+				// in the storage
+				Executive::initialize_block(_header);
 
 				// Apply all extrinsics. Ethereum extrinsics are traced.
 				for ext in _extrinsics.into_iter() {
@@ -629,6 +691,95 @@ sp_api::impl_runtime_apis! {
 					};
 				}
 
+				// Replay on_idle
+				// Some XCM messages with eth-xcm transaction might be executed at on_idle
+				replay_on_idle();
+
+				Ok(())
+			}
+			#[cfg(not(feature = "evm-tracing"))]
+			Err(sp_runtime::DispatchError::Other(
+				"Missing `evm-tracing` compile time feature flag.",
+			))
+		}
+
+		fn trace_call(
+			_header: &<Block as sp_runtime::traits::Block>::Header,
+			_from: H160,
+			_to: H160,
+			_data: Vec<u8>,
+			_value: U256,
+			_gas_limit: U256,
+			_max_fee_per_gas: Option<U256>,
+			_max_priority_fee_per_gas: Option<U256>,
+			_nonce: Option<U256>,
+			_access_list: Option<Vec<(H160, Vec<H256>)>>,
+		) -> Result<(), sp_runtime::DispatchError> {
+			#[cfg(feature = "evm-tracing")]
+			{
+				use moonbeam_evm_tracer::tracer::EvmTracer;
+
+				// Initialize block: calls the "on_initialize" hook on every pallet
+				// in AllPalletsWithSystem.
+				Executive::initialize_block(_header);
+
+				EvmTracer::new().trace(|| {
+					let is_transactional = false;
+					let validate = true;
+					let without_base_extrinsic_weight = true;
+
+
+					// Estimated encoded transaction size must be based on the heaviest transaction
+					// type (EIP1559Transaction) to be compatible with all transaction types.
+					let mut estimated_transaction_len = _data.len() +
+					// pallet ethereum index: 1
+					// transact call index: 1
+					// Transaction enum variant: 1
+					// chain_id 8 bytes
+					// nonce: 32
+					// max_priority_fee_per_gas: 32
+					// max_fee_per_gas: 32
+					// gas_limit: 32
+					// action: 21 (enum varianrt + call address)
+					// value: 32
+					// access_list: 1 (empty vec size)
+					// 65 bytes signature
+					258;
+
+					if _access_list.is_some() {
+						estimated_transaction_len += _access_list.encoded_size();
+					}
+
+					let gas_limit = _gas_limit.min(u64::MAX.into()).low_u64();
+
+					let (weight_limit, proof_size_base_cost) =
+						match <Runtime as pallet_evm::Config>::GasWeightMapping::gas_to_weight(
+							gas_limit,
+							without_base_extrinsic_weight
+						) {
+							weight_limit if weight_limit.proof_size() > 0 => {
+								(Some(weight_limit), Some(estimated_transaction_len as u64))
+							}
+							_ => (None, None),
+						};
+
+					let _ = <Runtime as pallet_evm::Config>::Runner::call(
+						_from,
+						_to,
+						_data,
+						_value,
+						gas_limit,
+						_max_fee_per_gas,
+						_max_priority_fee_per_gas,
+						_nonce,
+						_access_list.unwrap_or_default(),
+						_is_transactional,
+						validate,
+						weight_limit,
+						proof_size_base_cost,
+						<Runtime as pallet_evm::Config>::config(),
+					);
+				});
 				Ok(())
 			}
 			#[cfg(not(feature = "evm-tracing"))]

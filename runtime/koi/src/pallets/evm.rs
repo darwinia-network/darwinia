@@ -18,16 +18,16 @@
 
 // darwinia
 use crate::*;
-// substrate
-use cumulus_primitives_core::relay_chain::MAX_POV_SIZE;
-use frame_support::dispatch::{DispatchClass, GetDispatchInfo, Pays};
 // frontier
 use pallet_evm::{ExitError, IsPrecompileResult, Precompile};
 use pallet_evm_precompile_dispatch::DispatchValidateT;
+// polkadot-sdk
+use cumulus_primitives_core::relay_chain::MAX_POV_SIZE;
+use frame_support::dispatch::{DispatchClass, GetDispatchInfo, Pays};
 
 const BLOCK_GAS_LIMIT: u64 = 20_000_000;
 frame_support::parameter_types! {
-	pub BlockGasLimit: sp_core::U256 = sp_core::U256::from(BLOCK_GAS_LIMIT);
+	pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
 	// Restrict the POV size of the Ethereum transactions in the same way as weight limit.
 	pub BlockPovSizeLimit: u64 = NORMAL_DISPATCH_RATIO * MAX_POV_SIZE as u64;
 	pub PrecompilesValue: KoiPrecompiles<Runtime> = KoiPrecompiles::<_>::new();
@@ -49,7 +49,7 @@ where
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> [sp_core::H160; 26] {
+	pub fn used_addresses() -> [H160; 26] {
 		[
 			addr(0x01),
 			addr(0x02),
@@ -150,7 +150,7 @@ where
 		}
 	}
 
-	fn is_precompile(&self, address: sp_core::H160, _gas: u64) -> IsPrecompileResult {
+	fn is_precompile(&self, address: H160, _gas: u64) -> IsPrecompileResult {
 		IsPrecompileResult::Answer {
 			is_precompile: Self::used_addresses().contains(&address),
 			extra_cost: 0,
@@ -160,7 +160,7 @@ where
 
 pub struct TransactionPaymentGasPrice;
 impl pallet_evm::FeeCalculator for TransactionPaymentGasPrice {
-	fn min_gas_price() -> (sp_core::U256, frame_support::weights::Weight) {
+	fn min_gas_price() -> (U256, frame_support::weights::Weight) {
 		// substrate
 		use frame_support::weights::WeightToFee;
 		use sp_runtime::FixedPointNumber;
@@ -175,33 +175,6 @@ impl pallet_evm::FeeCalculator for TransactionPaymentGasPrice {
 			<Runtime as frame_system::Config>::DbWeight::get().reads(1),
 		)
 	}
-}
-
-impl pallet_evm::Config for Runtime {
-	type AddressMapping = pallet_evm::IdentityAddressMapping;
-	type BlockGasLimit = BlockGasLimit;
-	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
-	type CallOrigin = pallet_evm::EnsureAddressRoot<AccountId>;
-	type ChainId = ConstU64<701>;
-	type Currency = Balances;
-	type FeeCalculator = TransactionPaymentGasPrice;
-	type FindAuthor = FindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
-	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
-	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
-	type OnChargeTransaction = pallet_evm::EVMFungibleAdapter<Balances, ()>;
-	type OnCreate = ();
-	type PrecompilesType = KoiPrecompiles<Self>;
-	type PrecompilesValue = PrecompilesValue;
-	type Runner = pallet_evm::runner::stack::Runner<Self>;
-	type RuntimeEvent = RuntimeEvent;
-	type Timestamp = Timestamp;
-	type WeightInfo = ();
-	type WeightPerGas = WeightPerGas;
-	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
-}
-
-fn addr(a: u64) -> sp_core::H160 {
-	sp_core::H160::from_low_u64_be(a)
 }
 
 /// Validation rule for dispatch precompile
@@ -233,4 +206,33 @@ impl DispatchValidateT<AccountId, RuntimeCall> for DarwiniaDispatchValidator {
 			None
 		}
 	}
+}
+
+fn addr(a: u64) -> H160 {
+	H160::from_low_u64_be(a)
+}
+
+impl pallet_evm::Config for Runtime {
+	type AddressMapping = pallet_evm::IdentityAddressMapping;
+	type BlockGasLimit = BlockGasLimit;
+	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
+	type CallOrigin = pallet_evm::EnsureAddressRoot<Self::AccountId>;
+	type ChainId = ConstU64<701>;
+	type Currency = Balances;
+	type FeeCalculator = TransactionPaymentGasPrice;
+	type FindAuthor = FindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
+	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
+	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
+	type OnChargeTransaction = pallet_evm::EVMFungibleAdapter<Balances, ()>;
+	type OnCreate = ();
+	type PrecompilesType = KoiPrecompiles<Self>;
+	type PrecompilesValue = PrecompilesValue;
+	type Runner = pallet_evm::runner::stack::Runner<Self>;
+	type RuntimeEvent = RuntimeEvent;
+	type SuicideQuickClearLimit = ();
+	type Timestamp = Timestamp;
+	// type WeightInfo = ();
+	type WeightInfo = ();
+	type WeightPerGas = WeightPerGas;
+	type WithdrawOrigin = pallet_evm::EnsureAddressNever<Self::AccountId>;
 }

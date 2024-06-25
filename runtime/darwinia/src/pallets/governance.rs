@@ -50,7 +50,8 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
 	type SetMembersOrigin = RootOr<GeneralAdmin>;
-	type WeightInfo = weights::pallet_collective::WeightInfo<Self>;
+	// type WeightInfo = weights::pallet_collective::WeightInfo<Self>;
+	type WeightInfo = ();
 }
 impl pallet_collective::Config<TechnicalCollective> for Runtime {
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
@@ -62,7 +63,8 @@ impl pallet_collective::Config<TechnicalCollective> for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
 	type SetMembersOrigin = RootOr<GeneralAdmin>;
-	type WeightInfo = weights::pallet_collective::WeightInfo<Self>;
+	// type WeightInfo = weights::pallet_collective::WeightInfo<Self>;
+	type WeightInfo = ();
 }
 
 impl pallet_conviction_voting::Config for Runtime {
@@ -72,7 +74,8 @@ impl pallet_conviction_voting::Config for Runtime {
 	type Polls = Referenda;
 	type RuntimeEvent = RuntimeEvent;
 	type VoteLockingPeriod = ConstU32<{ DAYS }>;
-	type WeightInfo = weights::pallet_conviction_voting::WeightInfo<Self>;
+	// type WeightInfo = weights::pallet_conviction_voting::WeightInfo<Self>;
+	type WeightInfo = ();
 }
 
 pallet_referenda::impl_tracksinfo_get!(TracksInfo, Balance, BlockNumber);
@@ -89,12 +92,13 @@ impl pallet_referenda::Config for Runtime {
 	type Scheduler = Scheduler;
 	type Slash = Treasury;
 	type SubmissionDeposit = ConstU128<{ DARWINIA_PROPOSAL_REQUIREMENT }>;
-	type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
+	type SubmitOrigin = frame_system::EnsureSigned<Self::AccountId>;
 	type Tally = pallet_conviction_voting::TallyOf<Self>;
 	type Tracks = TracksInfo;
 	type UndecidingTimeout = ConstU32<{ 28 * DAYS }>;
 	type Votes = pallet_conviction_voting::VotesOf<Self>;
-	type WeightInfo = weights::pallet_referenda::WeightInfo<Self>;
+	// type WeightInfo = weights::pallet_referenda::WeightInfo<Self>;
+	type WeightInfo = ();
 }
 
 impl custom_origins::Config for Runtime {}
@@ -106,7 +110,8 @@ impl pallet_whitelist::Config for Runtime {
 	type Preimages = Preimage;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = weights::pallet_whitelist::WeightInfo<Self>;
+	// type WeightInfo = weights::pallet_whitelist::WeightInfo<Self>;
+	type WeightInfo = ();
 	type WhitelistOrigin = RootOrAtLeastFourFifth<TechnicalCollective>;
 }
 
@@ -116,22 +121,30 @@ frame_support::parameter_types! {
 
 impl pallet_treasury::Config for Runtime {
 	type ApproveOrigin = RootOr<GeneralAdmin>;
+	type AssetKind = ();
+	type BalanceConverter = frame_support::traits::tokens::UnityAssetBalanceConversion;
+	type Beneficiary = Self::AccountId;
+	type BeneficiaryLookup = Self::Lookup;
 	type Burn = ();
 	type BurnDestination = ();
 	type Currency = Balances;
 	type MaxApprovals = ConstU32<100>;
 	type OnSlash = Treasury;
 	type PalletId = pallet_config::TreasuryPid;
+	type Paymaster =
+		frame_support::traits::tokens::PayFromAccount<Balances, pallet_config::TreasuryAccount>;
+	type PayoutPeriod = ConstU32<{ 28 * DAYS }>;
 	type ProposalBond = ProposalBond;
 	type ProposalBondMaximum = ();
 	type ProposalBondMinimum = ConstU128<DARWINIA_PROPOSAL_REQUIREMENT>;
-	type RejectOrigin = RootOrAll<CouncilCollective>;
+	type RejectOrigin = RootOr<GeneralAdmin>;
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
 	type SpendOrigin = EitherOf<
-		frame_system::EnsureRootWithSuccess<AccountId, pallet_config::MaxBalance>,
+		frame_system::EnsureRootWithSuccess<Self::AccountId, pallet_config::MaxBalance>,
 		Spender,
 	>;
 	type SpendPeriod = ConstU32<{ 28 * DAYS }>;
-	type WeightInfo = weights::pallet_treasury::WeightInfo<Self>;
+	// type WeightInfo = weights::pallet_treasury::WeightInfo<Self>;
+	type WeightInfo = ();
 }

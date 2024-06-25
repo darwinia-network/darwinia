@@ -65,5 +65,6 @@ impl pallet_scheduler::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
 	type ScheduleOrigin = RootOr<GeneralAdmin>;
-	type WeightInfo = weights::pallet_scheduler::WeightInfo<Self>;
+	// type WeightInfo = weights::pallet_scheduler::WeightInfo<Self>;
+	type WeightInfo = ();
 }

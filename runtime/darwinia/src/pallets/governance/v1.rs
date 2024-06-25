@@ -29,7 +29,7 @@ impl pallet_democracy::Config for Runtime {
 	type Currency = Balances;
 	type EnactmentPeriod = ConstU32<ENACTMENT_PERIOD>;
 	// There are no plans to use this yet.
-	type ExternalDefaultOrigin = Root;
+	type ExternalDefaultOrigin = RootOr<GeneralAdmin>;
 	type ExternalMajorityOrigin = RootOrAtLeastHalf<CouncilCollective>;
 	type ExternalOrigin = RootOrAtLeastHalf<CouncilCollective>;
 	type FastTrackOrigin = RootOrAtLeastTwoThird<TechnicalCollective>;
@@ -47,9 +47,10 @@ impl pallet_democracy::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Scheduler = Scheduler;
 	type Slash = Treasury;
-	type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
-	type VetoOrigin = pallet_collective::EnsureMember<AccountId, TechnicalCollective>;
+	type SubmitOrigin = frame_system::EnsureSigned<Self::AccountId>;
+	type VetoOrigin = pallet_collective::EnsureMember<Self::AccountId, TechnicalCollective>;
 	type VoteLockingPeriod = ConstU32<ENACTMENT_PERIOD>;
 	type VotingPeriod = ConstU32<{ 28 * DAYS }>;
-	type WeightInfo = weights::pallet_democracy::WeightInfo<Self>;
+	// type WeightInfo = weights::pallet_democracy::WeightInfo<Self>;
+	type WeightInfo = ();
 }

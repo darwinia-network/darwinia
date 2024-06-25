@@ -20,20 +20,25 @@
 use crate::*;
 
 frame_support::parameter_types! {
-	pub const PreimageBaseDeposit: Balance = deposit(2, 64);
-	pub const PreimageByteDeposit: Balance = deposit(0, 1);
+	pub const PreimageBaseDeposit: Balance = darwinia_deposit(2, 64);
+	pub const PreimageByteDeposit: Balance = darwinia_deposit(0, 1);
 	pub const PreimageHoldReason: RuntimeHoldReason = RuntimeHoldReason::Preimage(pallet_preimage::HoldReason::Preimage);
 }
 
 impl pallet_preimage::Config for Runtime {
-	type Consideration = HoldConsideration<
-		AccountId,
+	type Consideration = frame_support::traits::fungible::HoldConsideration<
+		Self::AccountId,
 		Balances,
 		PreimageHoldReason,
-		LinearStoragePrice<PreimageBaseDeposit, PreimageByteDeposit, Balance>,
+		frame_support::traits::LinearStoragePrice<
+			PreimageBaseDeposit,
+			PreimageByteDeposit,
+			Balance,
+		>,
 	>;
 	type Currency = Balances;
-	type ManagerOrigin = Root;
+	type ManagerOrigin = RootOr<GeneralAdmin>;
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = weights::pallet_preimage::WeightInfo<Self>;
+	// type WeightInfo = weights::pallet_preimage::WeightInfo<Self>;
+	type WeightInfo = ();
 }

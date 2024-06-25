@@ -17,19 +17,17 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // darwinia
-use crate::*;
+use crate::{AssetId, *};
 // polkadot
 use xcm::latest::prelude::*;
 
 // Our currencyId. We distinguish for now between SelfReserve, and Others, defined by their Id.
-#[derive(
-	Clone, Debug, PartialEq, Eq, PartialOrd, Ord, codec::Encode, codec::Decode, scale_info::TypeInfo,
-)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Encode, Decode, TypeInfo)]
 pub enum CurrencyId {
 	// Our native token
 	SelfReserve,
 	// Assets representing other chains native tokens
-	ForeignAsset(crate::AssetId),
+	ForeignAsset(AssetId),
 }
 
 // How to convert from CurrencyId to Location
@@ -37,12 +35,12 @@ pub struct CurrencyIdtoMultiLocation<AssetXConverter>(core::marker::PhantomData<
 impl<AssetXConverter> sp_runtime::traits::Convert<CurrencyId, Option<Location>>
 	for CurrencyIdtoMultiLocation<AssetXConverter>
 where
-	AssetXConverter: sp_runtime::traits::MaybeEquivalence<Location, crate::AssetId>,
+	AssetXConverter: sp_runtime::traits::MaybeEquivalence<Location, AssetId>,
 {
 	fn convert(currency: CurrencyId) -> Option<Location> {
 		match currency {
 			CurrencyId::SelfReserve => {
-				let multi: Location = pallets::polkadot_xcm::AnchoringSelfReserve::get();
+				let multi: Location = SelfReserve::get();
 				Some(multi)
 			},
 			CurrencyId::ForeignAsset(asset) => AssetXConverter::convert_back(&asset),
@@ -58,34 +56,26 @@ frame_support::parameter_types! {
 	pub SelfLocation: Location = Location::here();
 	// We need this to be able to catch when someone is trying to execute a non-
 	// cross-chain transfer in xtokens through the absolute path way
-	pub SelfLocationAbsolute: Location = Location {
-		parents:1,
-		interior: Junctions::Junctions::X1(
-			Parachain(ParachainInfo::parachain_id().into())
-		)
-	};
+	pub SelfLocationAbsolute: Location = Location::new(1, [Parachain(ParachainInfo::parachain_id().into())]);
 }
 
 impl orml_xtokens::Config for Runtime {
-	type AccountIdToMultiLocation = xcm_primitives::AccountIdToMultiLocation<AccountId>;
+	type AccountIdToLocation = xcm_primitives::AccountIdToLocation<Self::AccountId>;
 	type Balance = Balance;
 	type BaseXcmWeight = BaseXcmWeight;
 	type CurrencyId = CurrencyId;
-	type CurrencyIdConvert = CurrencyIdtoMultiLocation<
-		xcm_primitives::AsAssetType<
-			crate::AssetId,
-			pallets::asset_manager::AssetType,
-			AssetManager,
-		>,
-	>;
+	type CurrencyIdConvert =
+		CurrencyIdtoMultiLocation<xcm_primitives::AsAssetType<AssetId, AssetType, AssetManager>>;
+	type LocationsFilter = frame_support::traits::Everything;
 	type MaxAssetsForTransfer = MaxAssetsForTransfer;
 	// We don't have this case: fee_reserve != non_fee_reserve
 	type MinXcmFee = orml_xcm_support::DisabledParachainFee;
-	type MultiLocationsFilter = frame_support::traits::Everything;
+	type RateLimiter = ();
+	type RateLimiterId = ();
 	type ReserveProvider = xcm_primitives::AbsoluteAndRelativeReserve<SelfLocationAbsolute>;
 	type RuntimeEvent = RuntimeEvent;
 	type SelfLocation = SelfLocation;
 	type UniversalLocation = UniversalLocation;
-	type Weigher = pallets::polkadot_xcm::XcmWeigher;
-	type XcmExecutor = xcm_executor::XcmExecutor<pallets::polkadot_xcm::XcmExecutorConfig>;
+	type Weigher = XcmWeigher;
+	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;
 }

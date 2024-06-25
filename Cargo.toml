@@ -72,27 +72,27 @@ dc-types                          = { path = "core/types" }
 koi-runtime                       = { path = "runtime/koi" }
 
 # frontier
-fc-api                         = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730" }
-fc-consensus                   = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730" }
-fc-db                          = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730" }
-fc-mapping-sync                = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730", features = ["sql"] }
-fc-rpc                         = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730", features = ["rpc-binary-search-estimate", "txpool"] }
-fc-rpc-core                    = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730" }
-fc-storage                     = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730" }
-fp-account                     = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730", default-features = false, features = ["serde"] }
-fp-ethereum                    = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730", default-features = false }
-fp-evm                         = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730", default-features = false }
-fp-rpc                         = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730", default-features = false }
-fp-self-contained              = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730", default-features = false, features = ["serde"] }
-pallet-ethereum                = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730", default-features = false, features = ["forbid-evm-reentrancy"] }
-pallet-evm                     = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730", default-features = false, features = ["forbid-evm-reentrancy"] }
-pallet-evm-precompile-blake2   = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730", default-features = false }
-pallet-evm-precompile-bls12381 = { git = "https://github.com/darwinia-network/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730", default-features = false }
-pallet-evm-precompile-bn128    = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730", default-features = false }
-pallet-evm-precompile-dispatch = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730", default-features = false }
-pallet-evm-precompile-modexp   = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730", default-features = false }
-pallet-evm-precompile-simple   = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730", default-features = false }
-precompile-utils               = { git = "https://github.com/paritytech/frontier", rev = "f017a18123eb0802ca1c68c0f707f63aacbbb730", default-features = false }
+fc-api                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2" }
+fc-consensus                   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2" }
+fc-db                          = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2" }
+fc-mapping-sync                = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2", features = ["sql"] }
+fc-rpc                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2", features = ["rpc-binary-search-estimate", "txpool"] }
+fc-rpc-core                    = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2" }
+fc-storage                     = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2" }
+fp-account                     = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2", default-features = false, features = ["serde"] }
+fp-ethereum                    = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2", default-features = false }
+fp-evm                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2", default-features = false }
+fp-rpc                         = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2", default-features = false }
+fp-self-contained              = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2", default-features = false, features = ["serde"] }
+pallet-ethereum                = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2", default-features = false, features = ["forbid-evm-reentrancy"] }
+pallet-evm                     = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2", default-features = false, features = ["forbid-evm-reentrancy"] }
+pallet-evm-precompile-blake2   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2", default-features = false }
+pallet-evm-precompile-bls12381 = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2", default-features = false }
+pallet-evm-precompile-bn128    = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2", default-features = false }
+pallet-evm-precompile-dispatch = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2", default-features = false }
+pallet-evm-precompile-modexp   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2", default-features = false }
+pallet-evm-precompile-simple   = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2", default-features = false }
+precompile-utils               = { git = "https://github.com/darwinia-network/frontier", branch = "polkadot-v1.7.2", default-features = false }
 
 # moonbeam
 moonbeam-evm-tracer                     = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v1.7.2", default-features = false }

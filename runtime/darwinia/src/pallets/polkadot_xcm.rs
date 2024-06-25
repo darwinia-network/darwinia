@@ -17,11 +17,9 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // darwinia
-use crate::*;
+use crate::{AssetId, Assets, *};
 // polkadot
 use xcm::latest::prelude::*;
-// substrate
-use frame_support::traits::Currency;
 
 frame_support::parameter_types! {
 	pub const RelayNetwork: NetworkId = NetworkId::Polkadot;
@@ -29,10 +27,9 @@ frame_support::parameter_types! {
 	pub const MaxInstructions: u32 = 100;
 	/// A temporary weight value for each XCM instruction.
 	/// NOTE: This should be removed after we account for PoV weights.
-	pub const TempFixedXcmWeight: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 0);
-	pub AnchoringSelfReserve: Location = Location::new(
+	pub SelfReserve: Location = Location::new(
 		0,
-		Junctions::X1(PalletInstance(<Balances as frame_support::traits::PalletInfoAccess>::index() as u8))
+		[PalletInstance(<Balances as frame_support::traits::PalletInfoAccess>::index() as u8)]
 	);
 	pub UniversalLocation: InteriorLocation = Parachain(ParachainInfo::parachain_id().into()).into();
 	/// The amount of weight an XCM operation takes. This is a safe overestimate.
@@ -40,25 +37,20 @@ frame_support::parameter_types! {
 	/// Xcm fees will go to the treasury account
 	pub XcmFeesAccount: AccountId = Treasury::account_id();
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
-	pub SelfReserve: Location = Location {
-		parents:0,
-		interior: [
-			PalletInstance(<Balances as PalletInfoAccess>::index() as u8)
-		].into()
-	};
 }
 
-/// Means for transacting assets on this chain.
-pub type LocalAssetTransactor = xcm_builder::CurrencyAdapter<
+/// The transactor for our own chain currency.
+pub type LocalAssetTransactor = xcm_builder::FungibleAdapter<
 	// Use this currency:
 	Balances,
-	// Use this currency when it is a fungible asset matching the given location or name:
-	xcm_builder::IsConcrete<AnchoringSelfReserve>,
-	// Do a simple punn to convert an AccountId32 Location into a native chain account ID:
+	// Use this currency when it is a fungible asset matching any of the locations in
+	// SelfReserveRepresentations
+	xcm_builder::IsConcrete<SelfReserve>,
+	// We can convert the MultiLocations with our converter above:
 	LocationToAccountId,
 	// Our chain's account ID type (we can't get away without mentioning it explicitly):
 	AccountId,
-	// We don't track any teleports.
+	// We dont allow teleport
 	(),
 >;
 // The non-reserve fungible transactor type
@@ -69,13 +61,9 @@ pub type ForeignFungiblesTransactor = xcm_builder::FungiblesAdapter<
 	// Use this currency when it is a fungible asset matching the given location or name:
 	(
 		xcm_builder::ConvertedConcreteId<
-			crate::AssetId,
+			AssetId,
 			Balance,
-			xcm_primitives::AsAssetType<
-				crate::AssetId,
-				pallets::asset_manager::AssetType,
-				AssetManager,
-			>,
+			xcm_primitives::AsAssetType<AssetId, AssetType, AssetManager>,
 			xcm_executor::traits::JustTry,
 		>,
 	),
@@ -88,11 +76,7 @@ pub type ForeignFungiblesTransactor = xcm_builder::FungiblesAdapter<
 	// We dont track any teleports
 	(),
 >;
-pub type AssetTransactors = (
-	// The transactor for our native asset.
-	LocalAssetTransactor,
-	ForeignFungiblesTransactor,
-);
+pub type AssetTransactors = (LocalAssetTransactor, ForeignFungiblesTransactor);
 /// Type for specifying how a `Location` can be converted into an `AccountId`. This is used
 /// when determining ownership of accounts for asset transacting and when attempting to use XCM
 /// `Transact` in order to determine the dispatch Origin.
@@ -104,7 +88,7 @@ pub type LocationToAccountId = (
 	// Straight up local `AccountId20` origins just alias directly to `AccountId`.
 	xcm_builder::AccountKey20Aliases<RelayNetwork, AccountId>,
 	// The rest of locations are converted via hashing it.
-	darwinia_common_runtime::xcm_configs::Account20Hash<AccountId>,
+	xcm_configs::Account20Hash<AccountId>,
 );
 /// This is the type we use to convert an (incoming) XCM origin into a local `Origin` instance,
 /// ready for dispatching a transaction with Xcm's `Transact`. There is an `OriginKind` which can
@@ -138,11 +122,11 @@ pub type Barrier = xcm_builder::TrailingSetTopicAsId<
 					xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
 					// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality
 					// get free execution.
-					xcm_builder::AllowUnpaidExecutionFrom<
-						darwinia_common_runtime::xcm_configs::ParentOrParentsPlurality,
-					>,
+					xcm_builder::AllowUnpaidExecutionFrom<xcm_configs::ParentOrParentsPlurality>,
 					// Subscriptions for version tracking are OK.
-					xcm_builder::AllowSubscriptionsFrom<ParentRelayOrSiblingParachains>,
+					xcm_builder::AllowSubscriptionsFrom<
+						xcm_configs::ParentRelayOrSiblingParachains,
+					>,
 				),
 				UniversalLocation,
 				ConstU32<8>,
@@ -159,13 +143,9 @@ pub type XcmFeesToAccount = xcm_primitives::XcmFeesToAccount<
 	Assets,
 	(
 		xcm_builder::ConvertedConcreteId<
-			crate::AssetId,
+			AssetId,
 			Balance,
-			xcm_primitives::AsAssetType<
-				crate::AssetId,
-				pallets::asset_manager::AssetType,
-				AssetManager,
-			>,
+			xcm_primitives::AsAssetType<AssetId, AssetType, AssetManager>,
 			xcm_executor::traits::JustTry,
 		>,
 	),
@@ -226,7 +206,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type CallDispatcher = XcmCallDispatcher;
 	type FeeManager = ();
 	type IsReserve = orml_xcm_support::MultiNativeAsset<
-		xcm_primitives::AbsoluteAndRelativeReserve<pallets::orml_xtokens::SelfLocationAbsolute>,
+		xcm_primitives::AbsoluteAndRelativeReserve<SelfLocationAbsolute>,
 	>;
 	type IsTeleporter = ();
 	type MaxAssetsIntoHolding = MaxAssetsIntoHolding;
@@ -245,11 +225,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 			Balances,
 			DealWithFees<Runtime>,
 		>,
-		xcm_primitives::FirstAssetTrader<
-			pallets::asset_manager::AssetType,
-			AssetManager,
-			XcmFeesToAccount,
-		>,
+		xcm_primitives::FirstAssetTrader<AssetType, AssetManager, XcmFeesToAccount>,
 	);
 	type TransactionalProcessor = xcm_builder::FrameTransactionalProcessor;
 	type UniversalAliases = frame_support::traits::Nothing;
@@ -260,7 +236,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 }
 
 impl pallet_xcm::Config for Runtime {
-	type AdminOrigin = Root;
+	type AdminOrigin = RootOr<GeneralAdmin>;
 	// ^ Override for AdvertisedXcmVersion default
 	type AdvertisedXcmVersion = pallet_xcm::CurrentXcmVersion;
 	type Currency = Balances;

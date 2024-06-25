@@ -40,7 +40,7 @@ impl pallet_assets::Config for Runtime {
 	type CreateOrigin = frame_support::traits::AsEnsureOriginWithArg<
 		frame_system::EnsureSignedBy<
 			frame_support::traits::IsInVec<pallet_config::AssetCreators>,
-			AccountId,
+			Self::AccountId,
 		>,
 	>;
 	type Currency = Balances;
@@ -52,5 +52,6 @@ impl pallet_assets::Config for Runtime {
 	type RemoveItemsLimit = ConstU32<1000>;
 	type RuntimeEvent = RuntimeEvent;
 	type StringLimit = ConstU32<50>;
-	type WeightInfo = weights::pallet_assets::WeightInfo<Self>;
+	// type WeightInfo = weights::pallet_assets::WeightInfo<Self>;
+	type WeightInfo = ();
 }

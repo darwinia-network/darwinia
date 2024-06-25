@@ -27,11 +27,11 @@ use crate::*;
 	PartialEq,
 	Ord,
 	PartialOrd,
-	codec::Encode,
-	codec::Decode,
-	codec::MaxEncodedLen,
-	scale_info::TypeInfo,
-	sp_runtime::RuntimeDebug,
+	Encode,
+	Decode,
+	MaxEncodedLen,
+	TypeInfo,
+	RuntimeDebug,
 )]
 pub enum ProxyType {
 	#[codec(index = 0)]
@@ -92,7 +92,6 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 			ProxyType::CancelProxy => {
 				matches!(c, RuntimeCall::Proxy(pallet_proxy::Call::reject_announcement { .. }))
 			},
-			_ => false,
 		}
 	}
 
@@ -121,5 +120,6 @@ impl pallet_proxy::Config for Runtime {
 	type ProxyType = ProxyType;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = weights::pallet_proxy::WeightInfo<Self>;
+	// type WeightInfo = weights::pallet_proxy::WeightInfo<Self>;
+	type WeightInfo = ();
 }

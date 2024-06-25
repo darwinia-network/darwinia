@@ -49,5 +49,6 @@ impl darwinia_deposit::Config for Runtime {
 	type MinLockingAmount = ConstU128<UNIT>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = weights::darwinia_deposit::WeightInfo<Self>;
+	// type WeightInfo = weights::darwinia_deposit::WeightInfo<Self>;
+	type WeightInfo = ();
 }

@@ -32,15 +32,16 @@ impl pallet_message_queue::Config for Runtime {
 	>;
 	#[cfg(not(feature = "runtime-benchmarks"))]
 	type MessageProcessor = xcm_builder::ProcessXcmMessage<
-		AggregateMessageOrigin,
+		cumulus_primitives_core::AggregateMessageOrigin,
 		xcm_executor::XcmExecutor<XcmExecutorConfig>,
 		RuntimeCall,
 	>;
 	// The XCMP queue pallet is only ever able to handle the `Sibling(ParaId)` origin:
-	type QueueChangeHandler = NarrowOriginToSibling<XcmpQueue>;
-	type QueuePausedQuery = NarrowOriginToSibling<XcmpQueue>;
+	type QueueChangeHandler = message_queue::NarrowOriginToSibling<XcmpQueue>;
+	type QueuePausedQuery = message_queue::NarrowOriginToSibling<XcmpQueue>;
 	type RuntimeEvent = RuntimeEvent;
 	type ServiceWeight = MessageQueueServiceWeight;
 	type Size = u32;
+	// type WeightInfo = ();
 	type WeightInfo = ();
 }

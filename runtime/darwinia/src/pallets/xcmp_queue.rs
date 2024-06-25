@@ -21,7 +21,7 @@ use crate::*;
 
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type ChannelInfo = ParachainSystem;
-	type ControllerOrigin = Root;
+	type ControllerOrigin = RootOr<GeneralAdmin>;
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
 	type MaxInboundSuspended = sp_core::ConstU32<1_000>;
 	type PriceForSiblingDelivery = polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery<
@@ -29,12 +29,13 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	>;
 	type RuntimeEvent = RuntimeEvent;
 	type VersionWrapper = ();
-	type WeightInfo = weights::cumulus_pallet_xcmp_queue::WeightInfo<Self>;
+	// type WeightInfo = weights::cumulus_pallet_xcmp_queue::WeightInfo<Self>;
+	type WeightInfo = ();
 	// Enqueue XCMP messages from siblings for later processing.
 	type XcmpQueue = frame_support::traits::TransformOrigin<
 		MessageQueue,
-		AggregateMessageOrigin,
-		ParaId,
-		ParaIdToSibling,
+		cumulus_primitives_core::AggregateMessageOrigin,
+		cumulus_primitives_core::ParaId,
+		message_queue::ParaIdToSibling,
 	>;
 }
