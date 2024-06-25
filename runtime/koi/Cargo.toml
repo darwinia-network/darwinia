@@ -77,7 +77,6 @@ pallet-authorship                          = { workspace = true }
 pallet-balances                            = { workspace = true }
 pallet-collective                          = { workspace = true }
 pallet-conviction-voting                   = { workspace = true }
-pallet-democracy                           = { workspace = true }
 pallet-message-queue                       = { workspace = true }
 pallet-preimage                            = { workspace = true }
 pallet-proxy                               = { workspace = true }
@@ -193,7 +192,6 @@ std = [
 	"pallet-balances/std",
 	"pallet-collective/std",
 	"pallet-conviction-voting/std",
-	"pallet-democracy/std",
 	"pallet-message-queue/std",
 	"pallet-preimage/std",
 	"pallet-proxy/std",
@@ -290,7 +288,6 @@ runtime-benchmarks = [
 	"pallet-balances/runtime-benchmarks",
 	"pallet-collective/runtime-benchmarks",
 	"pallet-conviction-voting/runtime-benchmarks",
-	"pallet-democracy/runtime-benchmarks",
 	"pallet-message-queue/runtime-benchmarks",
 	"pallet-preimage/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",
@@ -349,7 +346,6 @@ try-runtime = [
 	"pallet-balances/try-runtime",
 	"pallet-collective/try-runtime",
 	"pallet-conviction-voting/try-runtime",
-	"pallet-democracy/try-runtime",
 	"pallet-message-queue/try-runtime",
 	"pallet-preimage/try-runtime",
 	"pallet-proxy/try-runtime",
