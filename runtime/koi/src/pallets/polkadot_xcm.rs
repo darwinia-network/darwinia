@@ -22,6 +22,31 @@ use crate::*;
 use frame_support::traits::Currency;
 use xcm::latest::prelude::*;
 
+frame_support::parameter_types! {
+	pub const RelayNetwork: NetworkId = NetworkId::Rococo;
+	pub const MaxAssetsIntoHolding: u32 = 64;
+	pub const MaxInstructions: u32 = 100;
+	/// A temporary weight value for each XCM instruction.
+	/// NOTE: This should be removed after we account for PoV weights.
+	pub const TempFixedXcmWeight: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 0);
+	pub AnchoringSelfReserve: Location = Location::new(
+		0,
+		Junctions::X1(PalletInstance(<Balances as frame_support::traits::PalletInfoAccess>::index() as u8))
+	);
+	pub UniversalLocation: InteriorLocation = Parachain(ParachainInfo::parachain_id().into()).into();
+	/// The amount of weight an XCM operation takes. This is a safe overestimate.
+	pub BaseXcmWeight: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 1024);
+	/// Xcm fees will go to the treasury account
+	pub XcmFeesAccount: AccountId = Treasury::account_id();
+	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
+	pub SelfReserve: Location = Location {
+		parents:0,
+		interior: [
+			PalletInstance(<Balances as PalletInfoAccess>::index() as u8)
+		].into()
+	};
+}
+
 /// Means for transacting assets on this chain.
 pub type LocalAssetTransactor = xcm_builder::CurrencyAdapter<
 	// Use this currency:
@@ -35,7 +60,6 @@ pub type LocalAssetTransactor = xcm_builder::CurrencyAdapter<
 	// We don't track any teleports.
 	(),
 >;
-
 // The non-reserve fungible transactor type
 // It will use pallet-assets, and the Id will be matched against AsAssetType
 pub type ForeignFungiblesTransactor = xcm_builder::FungiblesAdapter<
@@ -63,17 +87,11 @@ pub type ForeignFungiblesTransactor = xcm_builder::FungiblesAdapter<
 	// We dont track any teleports
 	(),
 >;
-
 pub type AssetTransactors = (
 	// The transactor for our native asset.
 	LocalAssetTransactor,
 	ForeignFungiblesTransactor,
 );
-
-frame_support::parameter_types! {
-	pub const RelayNetwork: NetworkId = NetworkId::Rococo;
-	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
-}
 /// Type for specifying how a `Location` can be converted into an `AccountId`. This is used
 /// when determining ownership of accounts for asset transacting and when attempting to use XCM
 /// `Transact` in order to determine the dispatch Origin.
@@ -107,7 +125,6 @@ pub type XcmOriginToTransactDispatchOrigin = (
 	// Xcm origins can be represented natively under the Xcm pallet's Xcm origin.
 	pallet_xcm::XcmPassthrough<RuntimeOrigin>,
 );
-
 pub type Barrier = xcm_builder::TrailingSetTopicAsId<
 	xcm_builder::DenyThenTry<
 		xcm_builder::DenyReserveTransferToRelayChain,
@@ -134,38 +151,38 @@ pub type Barrier = xcm_builder::TrailingSetTopicAsId<
 		),
 	>,
 >;
-
-frame_support::parameter_types! {
-	pub const MaxAssetsIntoHolding: u32 = 64;
-	pub const MaxInstructions: u32 = 100;
-	pub AnchoringSelfReserve: Location = Location::new(
-		0,
-		Junctions::X1(PalletInstance(<Balances as frame_support::traits::PalletInfoAccess>::index() as u8))
-	);
-	pub UniversalLocation: InteriorMultiLocation = Parachain(ParachainInfo::parachain_id().into()).into();
-	/// The amount of weight an XCM operation takes. This is a safe overestimate.
-	pub BaseXcmWeight: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 1024);
-	/// Xcm fees will go to the treasury account
-	pub XcmFeesAccount: AccountId = Treasury::account_id();
-	/// A temporary weight value for each XCM instruction.
-	/// NOTE: This should be removed after we account for PoV weights.
-	pub const TempFixedXcmWeight: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 0);
-}
-
-pub struct ToTreasury;
-impl xcm_builder::TakeRevenue for ToTreasury {
-	fn take_revenue(revenue: MultiAsset) {
-		if let MultiAsset { id: Concrete(_location), fun: Fungible(amount) } = revenue {
-			let treasury_account = Treasury::account_id();
-			let _ = Balances::deposit_creating(&treasury_account, amount);
-
-			log::trace!(
-				target: "xcm::weight",
-				"LocalAssetTrader::to_treasury amount: {amount:?}, treasury: {treasury_account:?}"
-			);
-		}
-	}
-}
+/// This is the struct that will handle the revenue from xcm fees
+/// We do not burn anything because we want to mimic exactly what
+/// the sovereign account has
+pub type XcmFeesToAccount = xcm_primitives::XcmFeesToAccount<
+	Assets,
+	(
+		xcm_builder::ConvertedConcreteId<
+			crate::AssetId,
+			Balance,
+			xcm_primitives::AsAssetType<
+				crate::AssetId,
+				pallets::asset_manager::AssetType,
+				AssetManager,
+			>,
+			xcm_executor::traits::JustTry,
+		>,
+	),
+	AccountId,
+	XcmFeesAccount,
+>;
+pub type XcmWeigher = xcm_builder::FixedWeightBounds<BaseXcmWeight, RuntimeCall, MaxInstructions>;
+/// No local origins on this chain are allowed to dispatch XCM sends/executions.
+pub type LocalOriginToLocation =
+	xcm_primitives::SignedToAccountId20<RuntimeOrigin, AccountId, RelayNetwork>;
+/// The means for routing XCM messages which are not for local execution into the right message
+/// queues.
+pub type XcmRouter = xcm_builder::WithUniqueTopic<(
+	// Two routers - use UMP to communicate with the relay chain:
+	cumulus_primitives_utility::ParentAsUmp<ParachainSystem, PolkadotXcm, ()>,
+	// ..and XCMP to communicate with the sibling chains.
+	XcmpQueue,
+)>;
 
 pub struct XcmCallDispatcher;
 impl xcm_executor::traits::CallDispatcher<RuntimeCall> for XcmCallDispatcher {
@@ -195,29 +212,6 @@ impl xcm_executor::traits::CallDispatcher<RuntimeCall> for XcmCallDispatcher {
 	}
 }
 
-/// This is the struct that will handle the revenue from xcm fees
-/// We do not burn anything because we want to mimic exactly what
-/// the sovereign account has
-pub type XcmFeesToAccount = xcm_primitives::XcmFeesToAccount<
-	Assets,
-	(
-		xcm_builder::ConvertedConcreteId<
-			crate::AssetId,
-			Balance,
-			xcm_primitives::AsAssetType<
-				crate::AssetId,
-				pallets::asset_manager::AssetType,
-				AssetManager,
-			>,
-			xcm_executor::traits::JustTry,
-		>,
-	),
-	AccountId,
-	XcmFeesAccount,
->;
-
-pub type XcmWeigher = xcm_builder::FixedWeightBounds<BaseXcmWeight, RuntimeCall, MaxInstructions>;
-
 pub struct XcmExecutorConfig;
 impl xcm_executor::Config for XcmExecutorConfig {
 	type Aliasers = frame_support::traits::Nothing;
@@ -243,16 +237,12 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type SafeCallFilter = frame_support::traits::Everything;
 	type SubscriptionService = PolkadotXcm;
 	type Trader = (
-		xcm_configs::LocalAssetTrader<
-			frame_support::weights::ConstantMultiplier<
-				Balance,
-				darwinia_common_runtime::xcm_configs::XcmBaseWeightFee,
-			>,
-			AnchoringSelfReserve,
+		xcm_builder::UsingComponents<
+			<Runtime as pallet_transaction_payment::Config>::WeightToFee,
+			SelfReserve,
 			AccountId,
 			Balances,
 			DealWithFees<Runtime>,
-			ToTreasury,
 		>,
 		xcm_primitives::FirstAssetTrader<
 			pallets::asset_manager::AssetType,
@@ -267,18 +257,6 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type Weigher = xcm_builder::FixedWeightBounds<TempFixedXcmWeight, RuntimeCall, MaxInstructions>;
 	type XcmSender = XcmRouter;
 }
-
-/// No local origins on this chain are allowed to dispatch XCM sends/executions.
-pub type LocalOriginToLocation =
-	xcm_primitives::SignedToAccountId20<RuntimeOrigin, AccountId, RelayNetwork>;
-/// The means for routing XCM messages which are not for local execution into the right message
-/// queues.
-pub type XcmRouter = xcm_builder::WithUniqueTopic<(
-	// Two routers - use UMP to communicate with the relay chain:
-	cumulus_primitives_utility::ParentAsUmp<ParachainSystem, PolkadotXcm, ()>,
-	// ..and XCMP to communicate with the sibling chains.
-	XcmpQueue,
-)>;
 
 impl pallet_xcm::Config for Runtime {
 	type AdminOrigin = RootOr<GeneralAdmin>;

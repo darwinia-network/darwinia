@@ -67,8 +67,6 @@ mod sudo;
 
 mod utility;
 
-mod identity;
-
 mod scheduler;
 
 mod preimage;

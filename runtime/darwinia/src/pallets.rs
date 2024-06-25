@@ -67,8 +67,6 @@ pub use governance::*;
 // Utility stuff.
 mod utility;
 
-mod identity;
-
 mod scheduler;
 
 mod preimage;

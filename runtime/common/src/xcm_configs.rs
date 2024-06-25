@@ -25,30 +25,15 @@ use dc_primitives::GWEI;
 // polkadot-sdk
 use frame_support::{
 	pallet_prelude::*,
-	traits::{
-		tokens::currency::Currency as CurrencyT, ConstU128, Contains, OnUnbalanced as OnUnbalancedT,
-	},
-	weights::{Weight, WeightToFee as WeightToFeeT},
+	traits::{ConstU128, Contains},
 };
-use sp_core::Get;
 use sp_io::hashing::blake2_256;
-use sp_runtime::traits::{SaturatedConversion, Saturating, Zero};
-use sp_std::{prelude::*, result::Result};
-use xcm::latest::{prelude::*, Weight as XcmWeight};
-use xcm_builder::TakeRevenue;
-use xcm_executor::traits::{ConvertLocation, WeightTrader};
+use sp_std::prelude::*;
+use xcm::latest::prelude::*;
+use xcm_executor::traits::ConvertLocation;
 
 /// Base balance required for the XCM unit weight.
 pub type XcmBaseWeightFee = ConstU128<GWEI>;
-
-frame_support::match_types! {
-	pub type ParentOrParentsPlurality: impl Contains<Location> = {
-		Location { parents: 1, interior: Here } |
-		Location { parents: 1, interior: Junctions::X1(Plurality { id: BodyId::Administration, .. }) }|
-		Location { parents: 1, interior: Junctions::X1(Plurality { id: BodyId::Executive, .. }) }|
-		Location { parents: 1, interior: Junctions::X1(Plurality { id: BodyId::Technical, .. }) }
-	};
-}
 
 /// Struct that converts a given Location into a 20 bytes account id by hashing
 /// with blake2_256 and taking the first 20 bytes
@@ -66,77 +51,16 @@ impl<AccountId: From<[u8; 20]> + Into<[u8; 20]> + Clone> ConvertLocation<Account
 	}
 }
 
-/// Weight trader to set the right price for weight and then places any weight bought into the right
-/// account. Refer to: https://github.com/paritytech/polkadot/blob/release-v0.9.30/xcm/xcm-builder/src/weight.rs#L242-L305
-pub struct LocalAssetTrader<
-	WeightToFee: WeightToFeeT<Balance = Currency::Balance>,
-	AssetId: Get<Location>,
-	AccountId,
-	Currency: CurrencyT<AccountId>,
-	OnUnbalanced: OnUnbalancedT<Currency::NegativeImbalance>,
-	R: TakeRevenue,
->(
-	Weight,
-	Currency::Balance,
-	PhantomData<(WeightToFee, AssetId, AccountId, Currency, OnUnbalanced, R)>,
-);
-impl<
-		WeightToFee: WeightToFeeT<Balance = Currency::Balance>,
-		AssetId: Get<Location>,
-		AccountId,
-		Currency: CurrencyT<AccountId>,
-		OnUnbalanced: OnUnbalancedT<Currency::NegativeImbalance>,
-		R: TakeRevenue,
-	> WeightTrader for LocalAssetTrader<WeightToFee, AssetId, AccountId, Currency, OnUnbalanced, R>
-{
-	fn new() -> Self {
-		Self(Weight::zero(), Zero::zero(), PhantomData)
-	}
-
-	fn buy_weight(
-		&mut self,
-		weight: XcmWeight,
-		payment: Assets,
-		_context: &XcmContext,
-	) -> Result<Assets, XcmError> {
-		log::trace!(target: "xcm::weight", "LocalAssetTrader::buy_weight weight: {:?}, payment:
-		{:?}", weight, payment);
-		let amount = WeightToFee::weight_to_fee(&weight);
-		let u128_amount: u128 = amount.try_into().map_err(|_| XcmError::Overflow)?;
-		let required: Assets = (Concrete(AssetId::get()), u128_amount).into();
-		let unused = payment.checked_sub(required.clone()).map_err(|_| XcmError::TooExpensive)?;
-		self.0 = self.0.saturating_add(weight);
-		self.1 = self.1.saturating_add(amount);
-		R::take_revenue(required);
-		Ok(unused)
-	}
-
-	fn refund_weight(&mut self, weight: XcmWeight, _context: &XcmContext) -> Option<MultiAsset> {
-		log::trace!(target: "xcm::weight", "LocalAssetTrader::refund_weight weight: {:?}",
-		weight);
-		let weight = weight.min(self.0);
-		let amount = WeightToFee::weight_to_fee(&weight);
-		self.0 -= weight;
-		self.1 = self.1.saturating_sub(amount);
-		let amount: u128 = amount.saturated_into();
-		if amount > 0 {
-			Some((AssetId::get(), amount).into())
-		} else {
-			None
-		}
-	}
-}
-impl<
-		WeightToFee: WeightToFeeT<Balance = Currency::Balance>,
-		AssetId: Get<Location>,
-		AccountId,
-		Currency: CurrencyT<AccountId>,
-		OnUnbalanced: OnUnbalancedT<Currency::NegativeImbalance>,
-		R: TakeRevenue,
-	> Drop for LocalAssetTrader<WeightToFee, AssetId, AccountId, Currency, OnUnbalanced, R>
-{
-	fn drop(&mut self) {
-		OnUnbalanced::on_unbalanced(Currency::issue(self.1));
+pub struct ParentOrParentsPlurality;
+impl Contains<Location> for ParentOrParentsPlurality {
+	fn contains(location: &Location) -> bool {
+		matches!(
+			location.unpack(),
+			(1, [])
+				| (1, [Plurality { id: BodyId::Administration, .. }])
+				| (1, [Plurality { id: BodyId::Executive, .. }])
+				| (1, [Plurality { id: BodyId::Technical, .. }])
+		)
 	}
 }
 
@@ -147,11 +71,7 @@ impl<
 pub struct ParentRelayOrSiblingParachains;
 impl Contains<Location> for ParentRelayOrSiblingParachains {
 	fn contains(location: &Location) -> bool {
-		matches!(
-			location,
-			Location { parents: 1, interior: Here }
-				| Location { parents: 1, interior: Junctions::X1(Parachain(_)) }
-		)
+		matches!(location.unpack(), (1, []) | (1, [Parachain(_)]))
 	}
 }
 
