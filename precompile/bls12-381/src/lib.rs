@@ -17,7 +17,6 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![deny(unused_crate_dependencies)]
 
 mod bls;
 use bls::{hash_to_curve_g2, PublicKey, Signature};

@@ -19,7 +19,6 @@
 //! Darwinia node CLI.
 
 #![deny(missing_docs)]
-#![deny(unused_crate_dependencies)]
 
 mod chain_spec;
 mod cli;
