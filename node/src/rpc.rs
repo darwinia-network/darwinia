@@ -21,8 +21,6 @@
 //! used by Substrate nodes. This file extends those RPC definitions with
 //! capabilities that are specific to this project's runtime configuration.
 
-pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};
-
 // std
 use std::{collections::BTreeMap, sync::Arc};
 // darwinia
@@ -105,6 +103,7 @@ where
 	C: 'static
 		+ Send
 		+ Sync
+		+ sc_client_api::AuxStore
 		+ sc_client_api::backend::StorageProvider<Block, BE>
 		+ sc_client_api::BlockchainEvents<Block>
 		+ sc_client_api::UsageProvider<Block>

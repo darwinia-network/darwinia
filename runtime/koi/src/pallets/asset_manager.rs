@@ -24,7 +24,7 @@ use xcm::prelude::*;
 frame_support::parameter_types! {
 	/// 1000 is AssetHub paraId.
 	/// 50 is pallet-assets index on AssetHub.
-	/// 7777 is the id of Test USDT on AssetHub(Rococo).
+	/// 7777 is the id of Test USDT on AssetHub(Paseo).
 	pub UsdtLocation: xcm::v3::Location = xcm::v3::Location::new(
 		1,
 		xcm::v3::prelude::X3(xcm::v3::prelude::Parachain(1000), xcm::v3::prelude::PalletInstance(50), xcm::v3::prelude::GeneralIndex(7777))

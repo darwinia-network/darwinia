@@ -421,7 +421,7 @@ pub fn run() -> Result<()> {
 		},
 		Some(Subcommand::ExportGenesisHead(cmd)) =>
 			construct_async_run!(|components, cli, cmd, config| {
-				Ok(async move { cmd.run(&*config.chain_spec, &*components.client) })
+				Ok(async move { cmd.run(components.client.clone()) })
 			}),
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
@@ -600,28 +600,25 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpecT>, String> {
 	};
 	let chain_spec = match id.to_lowercase().as_str() {
 		#[cfg(feature = "crab-native")]
-		"crab" => Box::new(crab_chain_spec::config()),
+		"crab" => Box::new(crab::config()),
 		#[cfg(feature = "crab-native")]
-		"crab-genesis" => Box::new(crab_chain_spec::genesis_config()),
+		"crab-genesis" => Box::new(crab::genesis_config()),
 		#[cfg(feature = "crab-native")]
-		"crab-dev" => Box::new(crab_chain_spec::development_config()),
+		"crab-dev" => Box::new(crab::development_config()),
 		#[cfg(feature = "darwinia-native")]
-		"darwinia" => Box::new(darwinia_chain_spec::config()),
+		"darwinia" => Box::new(darwinia::config()),
 		#[cfg(feature = "darwinia-native")]
-		"darwinia-genesis" => Box::new(darwinia_chain_spec::genesis_config()),
+		"darwinia-genesis" => Box::new(darwinia::genesis_config()),
 		#[cfg(feature = "darwinia-native")]
-		"darwinia-dev" => Box::new(darwinia_chain_spec::development_config()),
+		"darwinia-dev" => Box::new(darwinia::development_config()),
 		#[cfg(feature = "koi-native")]
-		"koi" => Box::new(koi_chain_spec::config()),
+		"koi" => Box::new(koi::config()),
 		#[cfg(feature = "koi-native")]
-		"koi-genesis" => Box::new(koi_chain_spec::genesis_config()),
+		"koi-genesis" => Box::new(koi::genesis_config()),
 		#[cfg(feature = "koi-native")]
-		"koi-dev" => Box::new(koi_chain_spec::development_config()),
+		"koi-dev" => Box::new(koi::development_config()),
 		_ => {
-			let path = PathBuf::from(id);
-			let chain_spec = Box::new(ChainSpec::from_json_file(path.clone())?);
-
-			chain_spec
+			Box::new(ChainSpec::from_json_file(PathBuf::from(id))?)
 		},
 	};
 

@@ -461,7 +461,9 @@ where
 		// Here you can check whether the hardware meets your chains' requirements. Putting a link
 		// in there and swapping out the requirements for your own are probably a good idea. The
 		// requirements for a para-chain are dictated by its relay-chain.
-		if let Err(e) = SUBSTRATE_REFERENCE_HARDWARE.check_hardware(&hwbench) {
+		if let Err(e) =
+			frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE.check_hardware(&hwbench)
+		{
 			log::warn!(
 				"⚠️  The hardware does not meet the minimal requirements {e} for role 'Authority'.",
 			);
@@ -773,13 +775,13 @@ where
 					);
 
 					let mocked_parachain =
-						cumulus_primitives_parachain_inherent::MockValidationDataInherentDataProvider {
+						cumulus_client_parachain_inherent::MockValidationDataInherentDataProvider {
 							current_para_block,
 							relay_offset: 1000,
 							relay_blocks_per_para_block: 2,
 							para_blocks_per_relay_epoch: 0,
 							relay_randomness_config: (),
-							xcm_config: cumulus_primitives_parachain_inherent::MockXcmConfig::new(
+							xcm_config: cumulus_client_parachain_inherent::MockXcmConfig::new(
 								&*client_for_xcm,
 								block,
 								Default::default(),
@@ -787,6 +789,7 @@ where
 							),
 							raw_downward_messages: Vec::new(),
 							raw_horizontal_messages: Vec::new(),
+							additional_key_values: None,
 						};
 
 					Ok((slot, timestamp, mocked_parachain))

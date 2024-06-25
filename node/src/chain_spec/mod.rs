@@ -46,7 +46,9 @@ use std::{env, fs, thread};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use tokio::runtime::Runtime as TokioRuntime;
 use trauma::{download::Download, downloader::DownloaderBuilder};
-// substrate
+// darwinia
+use dc_primitives::AccountId;
+// polkadot-sdk
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup, GenericChainSpec, Properties};
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{Pair, Public};
@@ -107,9 +109,8 @@ fn get_collator_keys_from_seed(seed: &str) -> AuraId {
 	get_from_seed::<AuraId>(seed)
 }
 
-fn dev_accounts<A, F, Sks>(f: F) -> ([(A, Sks); 1], [A; 6])
+fn dev_accounts<F, Sks>(f: F) -> ([(AccountId, Sks); 1], [AccountId; 6])
 where
-	A: From<[u8; 20]>,
 	F: Fn(AuraId) -> Sks,
 {
 	(
@@ -131,7 +132,7 @@ where
 	)
 }
 
-fn load_config<G, E>(name: &'static str, mut retries: u8) -> GenericChainSpec<G, E>
+fn load_config<E>(name: &'static str, mut retries: u8) -> GenericChainSpec<(), E>
 where
 	E: DeserializeOwned,
 {

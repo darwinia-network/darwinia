@@ -40,7 +40,7 @@ use sp_core::{crypto::UncheckedInto, H160};
 const PARA_ID: u32 = 2105;
 
 pub fn development_config() -> ChainSpec {
-	let (collators, endowed_accounts) = dev_accounts::<AccountId>(session_keys);
+	let (collators, endowed_accounts) = dev_accounts(session_keys);
 	let genesis_config_patch = serde_json::json!({
 		// System stuff.
 		"parachainInfo": { "parachainId": PARA_ID },
@@ -50,9 +50,9 @@ pub fn development_config() -> ChainSpec {
 			"balances": endowed_accounts.iter().map(|a| (a, 100_000_000 * UNIT)).collect::<Vec<_>>()
 		},
 		"assets": {
-			"assets": [(AssetIds::PKton as _, ROOT, true, 1)],
+			"assets": [(AssetIds::KKton as AssetId, ROOT, true, 1)],
 			"metadata": [(
-				AssetIds::PKton as u32,
+				AssetIds::KKton as AssetId,
 				b"Koi Commitment Token",
 				b"PKTON",
 				18,
@@ -87,40 +87,38 @@ pub fn development_config() -> ChainSpec {
 
 		// EVM stuff.
 		"evm": {
-			"accounts": {
-				BTreeMap::from_iter(
-					<KoiPrecompiles<Runtime>>::used_addresses()
-						.iter()
-						.map(|p| {
-							(
-								p.to_owned(),
-								GenesisAccount {
-									nonce: Default::default(),
-									balance: Default::default(),
-									storage: Default::default(),
-									code: REVERT_BYTECODE.to_vec(),
-								},
-							)
-						})
-						.chain([
-							// Benchmarking account.
-							(
-								H160::from_str("1000000000000000000000000000000000000001").unwrap(),
-								GenesisAccount {
-									nonce: 1.into(),
-									balance: (10_000_000 * UNIT).into(),
-									storage: Default::default(),
-									code: vec![0x00],
-								},
-							),
-						]),
-				)
-			}
+			"accounts": BTreeMap::from_iter(
+				<KoiPrecompiles<Runtime>>::used_addresses()
+					.iter()
+					.map(|p| {
+						(
+							p.to_owned(),
+							GenesisAccount {
+								nonce: Default::default(),
+								balance: Default::default(),
+								storage: Default::default(),
+								code: REVERT_BYTECODE.to_vec(),
+							},
+						)
+					})
+					.chain([
+						// Benchmarking account.
+						(
+							H160::from_str("1000000000000000000000000000000000000001").unwrap(),
+							GenesisAccount {
+								nonce: 1.into(),
+								balance: (10_000_000 * UNIT).into(),
+								storage: Default::default(),
+								code: vec![0x00],
+							},
+						),
+					]),
+			)
 		}
 	});
 
 	ChainSpec::builder(
-		WASM_BINARY.unwrap().to_vec(),
+		WASM_BINARY.unwrap(),
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 			para_id: PARA_ID,
@@ -159,9 +157,10 @@ pub fn genesis_config() -> ChainSpec {
 			"balances": collators.iter().map(|a| (a, 10_000 * UNIT)).collect::<Vec<_>>(),
 		},
 		"assets": {
-			"assets": [(AssetIds::PKton as _, ROOT, true, 1)],
+			// TODO: migration.
+			"assets": [(AssetIds::KKton as AssetId, ROOT, true, 1)],
 			"metadata": [(
-				AssetIds::PKton as u32,
+				AssetIds::KKton as AssetId,
 				b"Koi Commitment Token",
 				b"PKTON",
 				18,
@@ -188,26 +187,24 @@ pub fn genesis_config() -> ChainSpec {
 
 		// EVM stuff.
 		"evm": {
-			"accounts": {
-				BTreeMap::from_iter(
-					<KoiPrecompiles<Runtime>>::used_addresses().iter().map(|p| {
-						(
-							p,
-							GenesisAccount {
-								nonce: Default::default(),
-								balance: Default::default(),
-								storage: Default::default(),
-								code: REVERT_BYTECODE.to_vec(),
-							},
-						)
-					}),
-				)
-			}
+			"accounts": BTreeMap::from_iter(
+				<KoiPrecompiles<Runtime>>::used_addresses().iter().map(|p| {
+					(
+						p,
+						GenesisAccount {
+							nonce: Default::default(),
+							balance: Default::default(),
+							storage: Default::default(),
+							code: REVERT_BYTECODE.to_vec(),
+						},
+					)
+				}),
+			)
 		}
 	});
 
 	ChainSpec::builder(
-		WASM_BINARY.unwrap().to_vec(),
+		WASM_BINARY.unwrap(),
 		Extensions {
 			relay_chain: "paseo".into(), // You MUST set this to the correct network!
 			para_id: PARA_ID,

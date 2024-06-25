@@ -75,7 +75,7 @@ where
 		+ fp_rpc::EthereumRuntimeRPCApi<B>
 		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<B>,
 	B: 'static + Send + Sync + sp_runtime::traits::Block<Hash = Hash>,
-	B::Header: sp_api::HeaderT<Number = BlockNumber>,
+	B::Header: sp_runtime::traits::Header<Number = BlockNumber>,
 	BE: 'static + sc_client_api::backend::Backend<B>,
 	BE::State: sc_client_api::backend::StateBackend<Hashing>,
 {

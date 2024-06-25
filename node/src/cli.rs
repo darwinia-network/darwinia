@@ -24,7 +24,7 @@
 ///
 /// The worker binaries associated to the node binary should ensure that they are using the same
 /// version as the main node that started them.
-pub const NODE_VERSION: &'static str = "6.6.3";
+pub const NODE_VERSION: &str = "6.6.3";
 
 /// Sub-commands supported by the collator.
 #[derive(Debug, clap::Subcommand)]

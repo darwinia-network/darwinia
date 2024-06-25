@@ -24,23 +24,21 @@ use std::{
 	str::FromStr,
 	time::{SystemTime, UNIX_EPOCH},
 };
-// cumulus
-use cumulus_primitives_core::ParaId;
 // darwinia
 use super::*;
 use darwinia_runtime::*;
 // frontier
 use fp_evm::GenesisAccount;
-// substrate
+// polkadot-sdk
 use sc_chain_spec::Properties;
-use sc_service::{ChainType, GenericChainSpec};
+use sc_service::ChainType;
 use sc_telemetry::TelemetryEndpoints;
 use sp_core::{crypto::UncheckedInto, H160};
 
 const PARA_ID: u32 = 2046;
 
 pub fn development_config() -> ChainSpec {
-	let (collators, endowed_accounts) = dev_accounts::<AccountId>(session_keys);
+	let (collators, endowed_accounts) = dev_accounts(session_keys);
 	let genesis_config_patch = serde_json::json!({
 		// System stuff.
 		"parachainInfo": { "parachainId": PARA_ID },
@@ -50,9 +48,9 @@ pub fn development_config() -> ChainSpec {
 			"balances": endowed_accounts.iter().map(|a| (a, 100_000_000 * UNIT)).collect::<Vec<_>>()
 		},
 		"assets": {
-			"assets": [(AssetIds::Kton as _, ROOT, true, 1)],
+			"assets": [(AssetIds::Kton as AssetId, ROOT, true, 1)],
 			"metadata": [(
-				AssetIds::Kton as _,
+				AssetIds::Kton as AssetId,
 				b"Darwinia Commitment Token",
 				b"KTON",
 				18
@@ -76,40 +74,38 @@ pub fn development_config() -> ChainSpec {
 
 		// EVM stuff.
 		"evm": {
-			"accounts": {
-				BTreeMap::from_iter(
-					<DarwiniaPrecompiles<Runtime>>::used_addresses()
-						.iter()
-						.map(|p| {
-							(
-								p.to_owned(),
-								GenesisAccount {
-									nonce: Default::default(),
-									balance: Default::default(),
-									storage: Default::default(),
-									code: REVERT_BYTECODE.to_vec(),
-								},
-							)
-						})
-						.chain([
-							// Benchmarking account.
-							(
-								H160::from_str("1000000000000000000000000000000000000001").unwrap(),
-								GenesisAccount {
-									nonce: 1.into(),
-									balance: (10_000_000 * UNIT).into(),
-									storage: Default::default(),
-									code: vec![0x00],
-								},
-							),
-						]),
-				)
-			}
+			"accounts": BTreeMap::from_iter(
+				<DarwiniaPrecompiles<Runtime>>::used_addresses()
+					.iter()
+					.map(|p| {
+						(
+							p.to_owned(),
+							GenesisAccount {
+								nonce: Default::default(),
+								balance: Default::default(),
+								storage: Default::default(),
+								code: REVERT_BYTECODE.to_vec(),
+							},
+						)
+					})
+					.chain([
+						// Benchmarking account.
+						(
+							H160::from_str("1000000000000000000000000000000000000001").unwrap(),
+							GenesisAccount {
+								nonce: 1.into(),
+								balance: (10_000_000 * UNIT).into(),
+								storage: Default::default(),
+								code: vec![0x00],
+							},
+						),
+					]),
+			)
 		}
 	});
 
 	ChainSpec::builder(
-		WASM_BINARY.unwrap().to_vec(),
+		WASM_BINARY.unwrap(),
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 			para_id: PARA_ID,
@@ -191,9 +187,9 @@ pub fn genesis_config() -> ChainSpec {
 			"balances": collators.iter().map(|a| (a, 10_000 * UNIT)).collect::<Vec<_>>()
 		},
 		"assets": {
-			"assets": [(AssetIds::Kton as _, ROOT, true, 1)],
+			"assets": [(AssetIds::Kton as AssetId, ROOT, true, 1)],
 			"metadata": [(
-				AssetIds::Kton as _,
+				AssetIds::Kton as AssetId,
 				b"Darwinia Commitment Token",
 				b"KTON",
 				18
@@ -201,7 +197,7 @@ pub fn genesis_config() -> ChainSpec {
 		},
 
 		// Consensus stuff.
-		"darwiniaStaking" {
+		"darwiniaStaking": {
 			"now": SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
 			"elapsedTime": 0,
 			"rateLimit": 20_000_000 * UNIT,
@@ -217,25 +213,23 @@ pub fn genesis_config() -> ChainSpec {
 
 		// EVM stuff.
 		"evm": {
-			"accounts": {
-				BTreeMap::from_iter(
-					<DarwiniaPrecompiles<Runtime>>::used_addresses().iter().map(|p| {
-						(
-							p,
-							GenesisAccount {
-								nonce: Default::default(),
-								balance: Default::default(),
-								storage: Default::default(),
-								code: REVERT_BYTECODE.to_vec(),
-							},
-						)
-					}),
-				)
-			}
+			"accounts": BTreeMap::from_iter(
+				<DarwiniaPrecompiles<Runtime>>::used_addresses().iter().map(|p| {
+					(
+						p,
+						GenesisAccount {
+							nonce: Default::default(),
+							balance: Default::default(),
+							storage: Default::default(),
+							code: REVERT_BYTECODE.to_vec(),
+						},
+					)
+				}),
+			)
 		}
 	});
 
-	ChainSpec::builder(WASM_BINARY.unwrap().to_vec(), Extensions {
+	ChainSpec::builder(WASM_BINARY.unwrap(), Extensions {
 		relay_chain: "polkadot".into(), // You MUST set this to the correct network!
 		para_id: PARA_ID,
 	})
