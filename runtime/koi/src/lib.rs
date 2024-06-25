@@ -66,7 +66,10 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
-	(migration::CustomOnRuntimeUpgrade, darwinia_staking::migration::v2::MigrateToV2<Runtime>),
+	(
+		migration::CustomOnRuntimeUpgrade,
+		cumulus_pallet_xcmp_queue::migration::v4::MigrationToV4<Runtime>,
+	),
 >;
 
 /// Runtime version.
