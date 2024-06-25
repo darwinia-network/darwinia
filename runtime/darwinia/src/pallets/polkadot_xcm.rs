@@ -122,12 +122,10 @@ pub type Barrier = xcm_builder::TrailingSetTopicAsId<
 					// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality
 					// get free execution.
 					xcm_builder::AllowUnpaidExecutionFrom<
-						darwinia_common_runtime::xcm_configs::ParentOrParentsExecutivePlurality,
+						darwinia_common_runtime::xcm_configs::ParentOrParentsPlurality,
 					>,
 					// Subscriptions for version tracking are OK.
-					xcm_builder::AllowSubscriptionsFrom<
-						darwinia_common_runtime::xcm_configs::ParentOrSiblings,
-					>,
+					xcm_builder::AllowSubscriptionsFrom<ParentRelayOrSiblingParachains>,
 				),
 				UniversalLocation,
 				ConstU32<8>,

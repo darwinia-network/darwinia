@@ -25,7 +25,9 @@ use dc_primitives::GWEI;
 // polkadot-sdk
 use frame_support::{
 	pallet_prelude::*,
-	traits::{tokens::currency::Currency as CurrencyT, ConstU128, OnUnbalanced as OnUnbalancedT},
+	traits::{
+		tokens::currency::Currency as CurrencyT, ConstU128, Contains, OnUnbalanced as OnUnbalancedT,
+	},
 	weights::{Weight, WeightToFee as WeightToFeeT},
 };
 use sp_core::Get;
@@ -40,13 +42,11 @@ use xcm_executor::traits::{ConvertLocation, WeightTrader};
 pub type XcmBaseWeightFee = ConstU128<GWEI>;
 
 frame_support::match_types! {
-	pub type ParentOrParentsExecutivePlurality: impl Contains<Location> = {
+	pub type ParentOrParentsPlurality: impl Contains<Location> = {
 		Location { parents: 1, interior: Here } |
-		Location { parents: 1, interior: Junctions::X1(Plurality { id: BodyId::Executive, .. }) }
-	};
-	pub type ParentOrSiblings: impl Contains<Location> = {
-		Location { parents: 1, interior: Here } |
-		Location { parents: 1, interior: Junctions::X1(_) }
+		Location { parents: 1, interior: Junctions::X1(Plurality { id: BodyId::Administration, .. }) }|
+		Location { parents: 1, interior: Junctions::X1(Plurality { id: BodyId::Executive, .. }) }|
+		Location { parents: 1, interior: Junctions::X1(Plurality { id: BodyId::Technical, .. }) }
 	};
 }
 
@@ -137,6 +137,21 @@ impl<
 {
 	fn drop(&mut self) {
 		OnUnbalanced::on_unbalanced(Currency::issue(self.1));
+	}
+}
+
+/// Filter to check if a given location is the parent Relay Chain or a sibling parachain.
+///
+/// This type should only be used within the context of a parachain, since it does not verify that
+/// the parent is indeed a Relay Chain.
+pub struct ParentRelayOrSiblingParachains;
+impl Contains<Location> for ParentRelayOrSiblingParachains {
+	fn contains(location: &Location) -> bool {
+		matches!(
+			location,
+			Location { parents: 1, interior: Here }
+				| Location { parents: 1, interior: Junctions::X1(Parachain(_)) }
+		)
 	}
 }
 

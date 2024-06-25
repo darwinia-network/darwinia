@@ -19,8 +19,8 @@
 // darwinia
 use crate::*;
 // substrate
-use xcm::latest::prelude::*;
 use frame_support::traits::Currency;
+use xcm::latest::prelude::*;
 
 /// Means for transacting assets on this chain.
 pub type LocalAssetTransactor = xcm_builder::CurrencyAdapter<
@@ -121,12 +121,10 @@ pub type Barrier = xcm_builder::TrailingSetTopicAsId<
 					// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality
 					// get free execution.
 					xcm_builder::AllowExplicitUnpaidExecutionFrom<
-						darwinia_common_runtime::xcm_configs::ParentOrParentsExecutivePlurality,
+						darwinia_common_runtime::xcm_configs::ParentOrParentsPlurality,
 					>,
 					// Subscriptions for version tracking are OK.
-					xcm_builder::AllowSubscriptionsFrom<
-						darwinia_common_runtime::xcm_configs::ParentOrSiblings,
-					>,
+					xcm_builder::AllowSubscriptionsFrom<ParentRelayOrSiblingParachains>,
 				),
 				UniversalLocation,
 				ConstU32<8>,
