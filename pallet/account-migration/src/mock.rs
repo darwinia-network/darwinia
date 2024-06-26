@@ -68,7 +68,6 @@ impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
 	type Block = frame_system::mocking::MockBlock<Self>;
-	type MaxConsumers = frame_support::traits::ConstU32<16>;
 	type Version = Version;
 }
 

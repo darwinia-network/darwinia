@@ -23,12 +23,13 @@ use codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 // frontier
 use precompile_utils::Precompile;
-// parity
+// darwinia
+use crate::*;
+// polkadot-sdk
+use frame_support::derive_impl;
 use sp_core::H160;
 use sp_runtime::BuildStorage;
 use sp_std::prelude::*;
-// darwinia
-use crate::*;
 
 pub type Balance = u128;
 pub type AssetId = u64;
@@ -62,53 +63,24 @@ impl From<Account> for sp_core::H256 {
 	}
 }
 
+#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
-	type BaseCallFilter = frame_support::traits::Everything;
 	type Block = frame_system::mocking::MockBlock<Self>;
-	type BlockHashCount = ();
-	type BlockLength = ();
-	type BlockWeights = ();
-	type DbWeight = ();
-	type Hash = sp_core::H256;
-	type Hashing = sp_runtime::traits::BlakeTwo256;
 	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
-	type MaxConsumers = frame_support::traits::ConstU32<16>;
-	type Nonce = u64;
-	type OnKilledAccount = ();
-	type OnNewAccount = ();
-	type OnSetCode = ();
-	type PalletInfo = PalletInfo;
-	type RuntimeCall = RuntimeCall;
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeOrigin = RuntimeOrigin;
-	type SS58Prefix = ();
-	type SystemWeightInfo = ();
-	type Version = ();
 }
 
+#[derive_impl(pallet_balances::config_preludes::TestDefaultConfig as pallet_balances::DefaultConfig)]
 impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
 	type Balance = Balance;
-	type DustRemoval = ();
-	type ExistentialDeposit = frame_support::traits::ConstU128<0>;
-	type FreezeIdentifier = ();
-	type MaxFreezes = ();
-	type MaxLocks = ();
-	type MaxReserves = ();
-	type ReserveIdentifier = [u8; 8];
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeHoldReason = ();
-	type WeightInfo = ();
+	type ExistentialDeposit = ();
 }
 
-impl pallet_timestamp::Config for Runtime {
-	type MinimumPeriod = ();
-	type Moment = u64;
-	type OnTimestampSet = ();
-	type WeightInfo = ();
-}
+#[derive_impl(pallet_timestamp::config_preludes::TestDefaultConfig as pallet_timestamp::DefaultConfig)]
+impl pallet_timestamp::Config for Runtime {}
+
 pub struct TestPrecompiles<R>(PhantomData<R>);
 impl<R> TestPrecompiles<R>
 where
@@ -179,6 +151,7 @@ impl pallet_evm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Timestamp = Timestamp;
 	type WeightInfo = ();
+	type SuicideQuickClearLimit = ();
 	type WeightPerGas = WeightPerGas;
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
 }

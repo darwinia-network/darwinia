@@ -37,7 +37,6 @@ impl frame_system::Config for Runtime {
 	type AccountId = AccountId;
 	type Block = frame_system::mocking::MockBlock<Self>;
 	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
-	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
 #[derive_impl(pallet_timestamp::config_preludes::TestDefaultConfig as pallet_timestamp::DefaultConfig)]
