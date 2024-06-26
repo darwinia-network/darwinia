@@ -22,7 +22,7 @@ pub use koi_runtime::*;
 use sp_io::TestExternalities;
 use sp_runtime::BuildStorage;
 
-pub const KTON_ID: u64 = AssetIds::PKton as _;
+pub const KTON_ID: u64 = AssetIds::KKton as _;
 
 #[derive(Clone, Default)]
 pub struct ExtBuilder {
