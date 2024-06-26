@@ -2755,6 +2755,7 @@ dependencies = [
  "pallet-collective",
  "pallet-evm",
  "pallet-message-queue",
+ "pallet-treasury",
  "parity-scale-codec",
  "scale-info",
  "smallvec",

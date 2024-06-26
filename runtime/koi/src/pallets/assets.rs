@@ -25,17 +25,17 @@ pub enum AssetIds {
 }
 
 impl pallet_assets::Config for Runtime {
-	type ApprovalDeposit = ConstU128<0>;
+	type ApprovalDeposit = ();
 	#[cfg(feature = "runtime-benchmarks")]
 	type AssetAccountDeposit = ConstU128<1>;
 	#[cfg(not(feature = "runtime-benchmarks"))]
-	type AssetAccountDeposit = ConstU128<0>;
-	type AssetDeposit = ConstU128<0>;
+	type AssetAccountDeposit = ();
+	type AssetDeposit = ();
 	type AssetId = AssetId;
 	type AssetIdParameter = codec::Compact<AssetId>;
 	type Balance = Balance;
 	#[cfg(feature = "runtime-benchmarks")]
-	type BenchmarkHelper = AssetsBenchmarkHelper;
+	type BenchmarkHelper = benchmark_helper::Assets;
 	type CallbackHandle = ();
 	type CreateOrigin = frame_support::traits::AsEnsureOriginWithArg<
 		frame_system::EnsureSignedBy<
@@ -47,8 +47,8 @@ impl pallet_assets::Config for Runtime {
 	type Extra = ();
 	type ForceOrigin = RootOr<GeneralAdmin>;
 	type Freezer = ();
-	type MetadataDepositBase = ConstU128<0>;
-	type MetadataDepositPerByte = ConstU128<0>;
+	type MetadataDepositBase = ();
+	type MetadataDepositPerByte = ();
 	type RemoveItemsLimit = ConstU32<1000>;
 	type RuntimeEvent = RuntimeEvent;
 	type StringLimit = ConstU32<50>;

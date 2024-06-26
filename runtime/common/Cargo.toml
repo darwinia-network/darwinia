@@ -26,7 +26,6 @@ pallet-evm = { workspace = true }
 cumulus-primitives-core = { workspace = true }
 frame-support           = { workspace = true }
 frame-system            = { workspace = true }
-pallet-assets           = { workspace = true, optional = true }
 pallet-authorship       = { workspace = true }
 pallet-balances         = { workspace = true }
 pallet-collective       = { workspace = true }
@@ -37,6 +36,9 @@ sp-runtime              = { workspace = true }
 sp-std                  = { workspace = true }
 xcm                     = { workspace = true }
 xcm-executor            = { workspace = true }
+# polkadot-sdk optional
+pallet-assets   = { workspace = true, optional = true }
+pallet-treasury = { workspace = true, optional = true }
 
 [features]
 default = ["std"]
@@ -71,6 +73,7 @@ std = [
 	"xcm/std",
 	# polkadot-sdk optional
 	"pallet-assets?/std",
+	"pallet-treasury?/std",
 ]
 
 test = []
@@ -85,4 +88,5 @@ runtime-benchmarks = [
 	"sp-runtime/runtime-benchmarks",
 	# polkadot-sdk optional
 	"pallet-assets/runtime-benchmarks",
+	"pallet-treasury/runtime-benchmarks",
 ]

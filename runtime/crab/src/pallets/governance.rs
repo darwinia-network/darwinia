@@ -97,6 +97,8 @@ impl pallet_treasury::Config for Runtime {
 	type ApproveOrigin = RootOr<GeneralAdmin>;
 	type AssetKind = ();
 	type BalanceConverter = frame_support::traits::tokens::UnityAssetBalanceConversion;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = benchmark_helper::Treasury;
 	type Beneficiary = Self::AccountId;
 	type BeneficiaryLookup = Self::Lookup;
 	type Burn = ();

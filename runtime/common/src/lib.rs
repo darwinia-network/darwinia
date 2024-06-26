@@ -20,6 +20,8 @@
 // TODO:
 // #![deny(missing_docs)]
 
+#[cfg(feature = "runtime-benchmarks")]
+pub mod benchmark_helper;
 pub mod gov_origin;
 pub mod message_queue;
 pub mod migration_helper;
@@ -261,14 +263,5 @@ impl darwinia_precompile_assets::AccountToAssetId<AccountId, AssetId> for AssetI
 	fn account_to_asset_id(account_id: AccountId) -> AssetId {
 		let addr: H160 = account_id.into();
 		addr.to_low_u64_be()
-	}
-}
-/// Helper for pallet-assets benchmarking.
-#[cfg(feature = "runtime-benchmarks")]
-pub struct AssetsBenchmarkHelper;
-#[cfg(feature = "runtime-benchmarks")]
-impl pallet_assets::BenchmarkHelper<codec::Compact<u64>> for AssetsBenchmarkHelper {
-	fn create_asset_id_parameter(id: u32) -> codec::Compact<u64> {
-		u64::from(id).into()
 	}
 }
