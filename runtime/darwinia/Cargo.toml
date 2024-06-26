@@ -12,11 +12,10 @@ substrate-wasm-builder = { workspace = true, optional = true }
 
 [dependencies]
 # crates.io
-codec             = { workspace = true, package = "parity-scale-codec" }
-log               = { workspace = true }
-scale-info        = { workspace = true }
-static_assertions = { workspace = true }
-strum             = { workspace = true, features = ["derive"] }
+codec      = { workspace = true, package = "parity-scale-codec" }
+log        = { workspace = true }
+scale-info = { workspace = true }
+strum      = { workspace = true, features = ["derive"] }
 # crates.io optional
 # TODO: optional
 array-bytes = { workspace = true }
@@ -66,6 +65,7 @@ cumulus-pallet-dmp-queue                   = { workspace = true }
 cumulus-pallet-parachain-system            = { workspace = true }
 cumulus-pallet-xcm                         = { workspace = true }
 cumulus-pallet-xcmp-queue                  = { workspace = true }
+cumulus-primitives-aura                    = { workspace = true }
 cumulus-primitives-core                    = { workspace = true }
 cumulus-primitives-utility                 = { workspace = true }
 frame-executive                            = { workspace = true }
@@ -180,6 +180,7 @@ std = [
 	"cumulus-pallet-parachain-system/std",
 	"cumulus-pallet-xcm/std",
 	"cumulus-pallet-xcmp-queue/std",
+	"cumulus-primitives-aura/std",
 	"cumulus-primitives-core/std",
 	"cumulus-primitives-utility/std",
 	"frame-executive/std",

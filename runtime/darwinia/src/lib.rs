@@ -128,7 +128,7 @@ frame_support::construct_runtime! {
 		// Governance stuff.
 		// PhragmenElection: pallet_elections_phragmen = 21,
 		// TechnicalMembership: pallet_membership::<Instance1> = 22,
-		Council: pallet_collective::<Instance1> = 19,
+		// Council: pallet_collective::<Instance1> = 19,
 		TechnicalCommittee: pallet_collective::<Instance2> = 20,
 		Treasury: pallet_treasury = 23,
 		// Tips: pallet_tips = 24,
@@ -345,6 +345,15 @@ sp_api::impl_runtime_apis! {
 	impl cumulus_primitives_core::CollectCollationInfo<Block> for Runtime {
 		fn collect_collation_info(header: &<Block as sp_runtime::traits::Block>::Header) -> cumulus_primitives_core::CollationInfo {
 			ParachainSystem::collect_collation_info(header)
+		}
+	}
+
+	impl cumulus_primitives_aura::AuraUnincludedSegmentApi<Block> for Runtime {
+		fn can_build_upon(
+			included_hash: <Block as sp_runtime::traits::Block>::Hash,
+			slot: cumulus_primitives_aura::Slot,
+		) -> bool {
+			ConsensusHook::can_build_upon(included_hash, slot)
 		}
 	}
 

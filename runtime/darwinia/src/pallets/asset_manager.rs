@@ -44,7 +44,7 @@ impl pallet_asset_manager::AssetRegistrar<Runtime> for AssetRegistrar {
 	fn create_foreign_asset(
 		asset: AssetId,
 		min_balance: Balance,
-		metadata: xcm_configs::AssetRegistrarMetadata,
+		metadata: xcm_config::AssetRegistrarMetadata,
 		is_sufficient: bool,
 	) -> sp_runtime::DispatchResult {
 		Assets::force_create(
@@ -145,7 +145,7 @@ impl TryFrom<Location> for AssetType {
 impl pallet_asset_manager::Config for Runtime {
 	type AssetId = AssetId;
 	type AssetRegistrar = AssetRegistrar;
-	type AssetRegistrarMetadata = xcm_configs::AssetRegistrarMetadata;
+	type AssetRegistrarMetadata = xcm_config::AssetRegistrarMetadata;
 	type Balance = Balance;
 	type ForeignAssetModifierOrigin = RootOr<GeneralAdmin>;
 	type ForeignAssetType = AssetType;

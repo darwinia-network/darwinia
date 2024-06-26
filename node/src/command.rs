@@ -508,6 +508,7 @@ pub fn run() -> Result<()> {
 					if chain_spec.is_crab() {
 						return service::start_dev_node::<CrabRuntimeApi>(
 							config,
+							id,
 							&eth_rpc_config,
 						)
 						.map_err(Into::into);
@@ -517,6 +518,7 @@ pub fn run() -> Result<()> {
 					if chain_spec.is_darwinia() {
 						return service::start_dev_node::<DarwiniaRuntimeApi>(
 							config,
+							id,
 							&eth_rpc_config,
 						)
 						.map_err(Into::into)
@@ -526,6 +528,7 @@ pub fn run() -> Result<()> {
 					if chain_spec.is_koi() {
 						return service::start_dev_node::<KoiRuntimeApi>(
 							config,
+							id,
 							&eth_rpc_config,
 						)
 						.map_err(Into::into)

@@ -74,7 +74,6 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 			ProxyType::Governance => matches!(
 				c,
 				RuntimeCall::ConvictionVoting(..)
-					| RuntimeCall::Council(..)
 					| RuntimeCall::Referenda(..)
 					| RuntimeCall::TechnicalCommittee(..)
 					| RuntimeCall::Treasury(..)

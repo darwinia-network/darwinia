@@ -19,6 +19,7 @@ dc-primitives              = { workspace = true }
 
 # frontier
 fp-account = { workspace = true }
+fp-evm     = { workspace = true }
 pallet-evm = { workspace = true }
 
 # polkadot-sdk
@@ -51,6 +52,7 @@ std = [
 
 	# frontier
 	"fp-account/std",
+	"fp-evm/std",
 	"pallet-evm/std",
 
 	# polkadot-sdk

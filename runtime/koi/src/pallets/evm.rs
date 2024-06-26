@@ -22,21 +22,10 @@ use crate::*;
 use pallet_evm::{ExitError, IsPrecompileResult, Precompile};
 use pallet_evm_precompile_dispatch::DispatchValidateT;
 // polkadot-sdk
-use cumulus_primitives_core::relay_chain::MAX_POV_SIZE;
 use frame_support::dispatch::{DispatchClass, GetDispatchInfo, Pays};
 
-const BLOCK_GAS_LIMIT: u64 = 20_000_000;
 frame_support::parameter_types! {
-	pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
-	// Restrict the POV size of the Ethereum transactions in the same way as weight limit.
-	pub BlockPovSizeLimit: u64 = NORMAL_DISPATCH_RATIO * MAX_POV_SIZE as u64;
 	pub PrecompilesValue: KoiPrecompiles<Runtime> = KoiPrecompiles::<_>::new();
-	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(
-		fp_evm::weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK),
-		0
-	);
-	// TODO: FIX ME. https://github.com/rust-lang/rust/issues/88581
-	pub GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(BlockPovSizeLimit::get()) + 1;
 }
 
 pub struct KoiPrecompiles<R>(core::marker::PhantomData<R>);
@@ -167,7 +156,7 @@ impl pallet_evm::FeeCalculator for TransactionPaymentGasPrice {
 			TransactionPayment::next_fee_multiplier()
 				.saturating_mul_int::<Balance>(
 					<Runtime as pallet_transaction_payment::Config>::WeightToFee::weight_to_fee(
-						&WeightPerGas::get(),
+						&pallet_config::WeightPerGas::get(),
 					),
 				)
 				.into(),
@@ -213,14 +202,14 @@ fn addr(a: u64) -> H160 {
 
 impl pallet_evm::Config for Runtime {
 	type AddressMapping = pallet_evm::IdentityAddressMapping;
-	type BlockGasLimit = BlockGasLimit;
+	type BlockGasLimit = pallet_config::BlockGasLimit;
 	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
 	type CallOrigin = pallet_evm::EnsureAddressRoot<Self::AccountId>;
 	type ChainId = ConstU64<701>;
 	type Currency = Balances;
 	type FeeCalculator = TransactionPaymentGasPrice;
 	type FindAuthor = FindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
-	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
+	type GasLimitPovSizeRatio = pallet_config::GasLimitPovSizeRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = pallet_evm::EVMFungibleAdapter<Balances, ()>;
 	type OnCreate = ();
@@ -232,6 +221,6 @@ impl pallet_evm::Config for Runtime {
 	type Timestamp = Timestamp;
 	// type WeightInfo = ();
 	type WeightInfo = ();
-	type WeightPerGas = WeightPerGas;
+	type WeightPerGas = pallet_config::WeightPerGas;
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<Self::AccountId>;
 }

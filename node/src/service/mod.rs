@@ -39,10 +39,11 @@ use std::{
 use futures::FutureExt;
 // darwinia
 use dc_primitives::*;
-// substrate
-use sc_client_api::Backend;
+// polkadot-sdk
+use sc_client_api::{Backend, HeaderBackend};
 use sc_consensus::ImportQueue;
 use sc_network::NetworkBlock;
+use sp_core::Encode;
 
 #[cfg(all(feature = "runtime-benchmarks", feature = "evm-tracing"))]
 type HostFunctions = (
@@ -121,7 +122,8 @@ impl IdentifyVariant for Box<dyn sc_service::ChainSpec> {
 
 /// A set of APIs that darwinia-like runtimes must implement.
 pub trait RuntimeApiCollection:
-	cumulus_primitives_core::CollectCollationInfo<Block>
+	cumulus_primitives_aura::AuraUnincludedSegmentApi<Block>
+	+ cumulus_primitives_core::CollectCollationInfo<Block>
 	+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 	+ fp_rpc::EthereumRuntimeRPCApi<Block>
 	+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
@@ -137,7 +139,8 @@ pub trait RuntimeApiCollection:
 {
 }
 impl<Api> RuntimeApiCollection for Api where
-	Api: cumulus_primitives_core::CollectCollationInfo<Block>
+	Api: cumulus_primitives_aura::AuraUnincludedSegmentApi<Block>
+		+ cumulus_primitives_core::CollectCollationInfo<Block>
 		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
 		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
@@ -250,6 +253,7 @@ where
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
 	SC: FnOnce(
 		Arc<FullClient<RuntimeApi>>,
+		Arc<FullBackend>,
 		ParachainBlockImport<RuntimeApi>,
 		Option<&substrate_prometheus_endpoint::Registry>,
 		Option<sc_telemetry::TelemetryHandle>,
@@ -285,7 +289,6 @@ where
 				telemetry_worker_handle,
 			),
 	} = new_partial::<RuntimeApi>(&parachain_config, eth_rpc_config)?;
-
 	let (relay_chain_interface, collator_key) =
 		cumulus_client_service::build_relay_chain_interface(
 			polkadot_config,
@@ -297,12 +300,10 @@ where
 		)
 		.await
 		.map_err(|e| sc_service::Error::Application(Box::new(e) as Box<_>))?;
-
 	let validator = parachain_config.role.is_authority();
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let import_queue_service = import_queue.service();
 	let net_config = sc_network::config::FullNetworkConfiguration::new(&parachain_config.network);
-
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		cumulus_client_service::build_network(cumulus_client_service::BuildNetworkParams {
 			parachain_config: &parachain_config,
@@ -380,7 +381,6 @@ where
 		let collator = parachain_config.role.is_authority();
 		let eth_rpc_config = eth_rpc_config.clone();
 		let sync_service = sync_service.clone();
-
 		let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 		let pending_create_inherent_data_providers = move |_, ()| async move {
 			let current = sp_timestamp::InherentDataProvider::from_system_time();
@@ -510,6 +510,7 @@ where
 	if validator {
 		start_consensus(
 			client.clone(),
+			backend.clone(),
 			block_import,
 			prometheus_registry.as_ref(),
 			telemetry.as_ref().map(|t| t.handle()),
@@ -588,6 +589,7 @@ where
 		cumulus_client_service::CollatorSybilResistance::Resistant, // Aura
 		para_id,
 		|client,
+		 backend,
 		 block_import,
 		 prometheus_registry,
 		 telemetry,
@@ -616,11 +618,17 @@ where
 				announce_block,
 				client.clone(),
 			);
-			let params = cumulus_client_consensus_aura::collators::basic::Params {
+			let params = cumulus_client_consensus_aura::collators::lookahead::Params {
 				create_inherent_data_providers: move |_, ()| async move { Ok(()) },
 				block_import,
-				para_client: client,
+				para_client: client.clone(),
+				para_backend: backend.clone(),
 				relay_client: relay_chain_interface,
+				code_hash_provider: move |block_hash| {
+					client.code_at(block_hash).ok().map(|c| {
+						cumulus_primitives_core::relay_chain::ValidationCode::from(c).hash()
+					})
+				},
 				sync_oracle,
 				keystore,
 				collator_key,
@@ -631,12 +639,14 @@ where
 				proposer,
 				collator_service,
 				// Very limited proposal time.
-				authoring_duration: Duration::from_millis(500),
-				collation_request_receiver: None,
+				authoring_duration: Duration::from_millis(1_500),
+				reinitialize: false,
 			};
-			let fut = cumulus_client_consensus_aura::collators::basic::run::<
+			let fut = cumulus_client_consensus_aura::collators::lookahead::run::<
 				Block,
 				sp_consensus_aura::sr25519::AuthorityPair,
+				_,
+				_,
 				_,
 				_,
 				_,
@@ -660,17 +670,15 @@ where
 /// !!! WARNING: DO NOT USE ELSEWHERE
 pub fn start_dev_node<RuntimeApi>(
 	mut config: sc_service::Configuration,
+	para_id: cumulus_primitives_core::ParaId,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> Result<sc_service::TaskManager, sc_service::error::Error>
 where
-	RuntimeApi: sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>> + Send + Sync + 'static,
+	RuntimeApi: 'static + Send + Sync + sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>>,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
 	RuntimeApi::RuntimeApi:
 		sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>,
 {
-	// substrate
-	use sc_client_api::HeaderBackend;
-
 	let sc_service::PartialComponents {
 		client,
 		backend,
@@ -691,7 +699,6 @@ where
 			),
 	} = new_partial::<RuntimeApi>(&config, eth_rpc_config)?;
 	let net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
-
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		sc_service::build_network(sc_service::BuildNetworkParams {
 			config: &config,
@@ -729,7 +736,8 @@ where
 	}
 
 	let force_authoring = config.force_authoring;
-	let backoff_authoring_blocks: Option<()> = None;
+	let backoff_authoring_blocks = None::<()>;
+	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 	let proposer_factory = sc_basic_authorship::ProposerFactory::new(
 		task_manager.spawn_handle(),
 		client.clone(),
@@ -737,8 +745,6 @@ where
 		None,
 		None,
 	);
-
-	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 	let client_for_cidp = client.clone();
 	if config.role.is_authority() {
 		let aura = sc_consensus_aura::start_aura::<
@@ -754,29 +760,31 @@ where
 			_,
 			_,
 		>(sc_consensus_aura::StartAuraParams {
-			slot_duration: sc_consensus_aura::slot_duration(&*client)?,
+			slot_duration,
 			client: client.clone(),
 			select_chain,
 			block_import: instant_finalize::InstantFinalizeBlockImport::new(client.clone()),
 			proposer_factory,
 			create_inherent_data_providers: move |block: Hash, ()| {
-				let current_para_block = client_for_cidp
-					.number(block)
-					.expect("Header lookup should succeed")
-					.expect("Header passed in as parent should be present in backend.");
+				let maybe_current_para_block = client_for_cidp.number(block);
+				let maybe_current_block_head = client_for_cidp.expect_header(block);
 				let client_for_xcm = client_for_cidp.clone();
 
 				async move {
+					let current_para_block = maybe_current_para_block?
+						.ok_or(sp_blockchain::Error::UnknownBlock(block.to_string()))?;
+					let current_para_block_head =
+						Some(polkadot_primitives::HeadData(maybe_current_block_head?.encode()));
 					let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
-
 					let slot = sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
 						*timestamp,
 						slot_duration,
 					);
-
 					let mocked_parachain =
 						cumulus_client_parachain_inherent::MockValidationDataInherentDataProvider {
 							current_para_block,
+							para_id,
+							current_para_block_head,
 							relay_offset: 1000,
 							relay_blocks_per_para_block: 2,
 							para_blocks_per_relay_epoch: 0,
@@ -784,7 +792,6 @@ where
 							xcm_config: cumulus_client_parachain_inherent::MockXcmConfig::new(
 								&*client_for_xcm,
 								block,
-								Default::default(),
 								Default::default(),
 							),
 							raw_downward_messages: Vec::new(),
@@ -860,8 +867,6 @@ where
 		let collator = config.role.is_authority();
 		let eth_rpc_config = eth_rpc_config.clone();
 		let sync_service = sync_service.clone();
-
-		let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 		let pending_create_inherent_data_providers = move |_, ()| async move {
 			let current = sp_timestamp::InherentDataProvider::from_system_time();
 			let next_slot = current.timestamp().as_millis() + slot_duration.as_millis();

@@ -24,7 +24,7 @@ pub mod gov_origin;
 pub mod message_queue;
 pub mod migration_helper;
 pub mod pallet_config;
-pub mod xcm_configs;
+pub mod xcm_config;
 
 #[cfg(feature = "test")]
 pub mod test;
@@ -171,9 +171,9 @@ impl frame_support::weights::WeightToFeePolynomial for RefTimeToFee {
 	type Balance = Balance;
 
 	fn polynomial() -> frame_support::weights::WeightToFeeCoefficients<Self::Balance> {
-		// Map base extrinsic weight to 1/200 UNIT.
+		// Map base extrinsic weight to 1/800 UNIT.
 		let p = UNIT;
-		let q = 200
+		let q = 800
 			* Balance::from(
 				frame_support::weights::constants::ExtrinsicBaseWeight::get().ref_time(),
 			);

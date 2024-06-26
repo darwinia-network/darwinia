@@ -88,7 +88,7 @@ pub type LocationToAccountId = (
 	// Straight up local `AccountId20` origins just alias directly to `AccountId`.
 	xcm_builder::AccountKey20Aliases<RelayNetwork, AccountId>,
 	// The rest of locations are converted via hashing it.
-	xcm_configs::Account20Hash<AccountId>,
+	xcm_config::Account20Hash<AccountId>,
 );
 /// This is the type we use to convert an (incoming) XCM origin into a local `Origin` instance,
 /// ready for dispatching a transaction with Xcm's `Transact`. There is an `OriginKind` which can
@@ -122,11 +122,9 @@ pub type Barrier = xcm_builder::TrailingSetTopicAsId<
 					xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
 					// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality
 					// get free execution.
-					xcm_builder::AllowUnpaidExecutionFrom<xcm_configs::ParentOrParentsPlurality>,
+					xcm_builder::AllowUnpaidExecutionFrom<xcm_config::ParentOrParentsPlurality>,
 					// Subscriptions for version tracking are OK.
-					xcm_builder::AllowSubscriptionsFrom<
-						xcm_configs::ParentRelayOrSiblingParachains,
-					>,
+					xcm_builder::AllowSubscriptionsFrom<xcm_config::ParentRelayOrSiblingParachains>,
 				),
 				UniversalLocation,
 				ConstU32<8>,

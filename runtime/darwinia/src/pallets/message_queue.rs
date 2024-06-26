@@ -19,10 +19,6 @@
 // darwinia
 use crate::*;
 
-frame_support::parameter_types! {
-	pub MessageQueueServiceWeight: frame_support::weights::Weight = sp_runtime::Perbill::from_percent(35) * RuntimeBlockWeights::get().max_block;
-}
-
 impl pallet_message_queue::Config for Runtime {
 	type HeapSize = sp_core::ConstU32<{ 64 * 1024 }>;
 	type MaxStale = sp_core::ConstU32<8>;
@@ -40,7 +36,7 @@ impl pallet_message_queue::Config for Runtime {
 	type QueueChangeHandler = message_queue::NarrowOriginToSibling<XcmpQueue>;
 	type QueuePausedQuery = message_queue::NarrowOriginToSibling<XcmpQueue>;
 	type RuntimeEvent = RuntimeEvent;
-	type ServiceWeight = MessageQueueServiceWeight;
+	type ServiceWeight = pallet_config::MessageQueueServiceWeight;
 	type Size = u32;
 	// type WeightInfo = ();
 	type WeightInfo = ();
