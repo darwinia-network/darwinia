@@ -23,7 +23,7 @@ pub use crate as darwinia_ethtx_forwarder;
 // crates.io
 use sha3::Digest;
 // polkadot-sdk
-use frame_support::{derive_impl, traits::ConstU64};
+use frame_support::derive_impl;
 use sp_runtime::BuildStorage;
 use sp_std::prelude::*;
 
@@ -41,7 +41,7 @@ impl frame_system::Config for Runtime {
 #[derive_impl(pallet_balances::config_preludes::TestDefaultConfig as pallet_balances::DefaultConfig)]
 impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
-	type ExistentialDeposit = ConstU64<0>;
+	type ExistentialDeposit = ();
 }
 
 #[derive_impl(pallet_timestamp::config_preludes::TestDefaultConfig as pallet_timestamp::DefaultConfig)]
