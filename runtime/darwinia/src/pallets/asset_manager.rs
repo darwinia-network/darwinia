@@ -70,7 +70,7 @@ impl pallet_asset_manager::AssetRegistrar<Runtime> for AssetRegistrar {
 	fn destroy_foreign_asset(asset: AssetId) -> sp_runtime::DispatchResult {
 		// Mark the asset as destroying
 		Assets::start_destroy(RuntimeOrigin::root(), asset.into())?;
-		
+
 		Ok(())
 	}
 

@@ -617,9 +617,7 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpecT>, String> {
 		"koi-genesis" => Box::new(koi::genesis_config()),
 		#[cfg(feature = "koi-native")]
 		"koi-dev" => Box::new(koi::development_config()),
-		_ => {
-			Box::new(ChainSpec::from_json_file(PathBuf::from(id))?)
-		},
+		_ => Box::new(ChainSpec::from_json_file(PathBuf::from(id))?),
 	};
 
 	Ok(chain_spec)
