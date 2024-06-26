@@ -19,7 +19,8 @@
 pub use crate as darwinia_account_migration;
 pub use dc_primitives::*;
 
-// substrate
+// polkadot-sdk
+use frame_support::derive_impl;
 use sp_io::TestExternalities;
 use sp_runtime::BuildStorage;
 
@@ -62,53 +63,26 @@ pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 frame_support::parameter_types! {
 	pub const Version: sp_version::RuntimeVersion = VERSION;
 }
-#[frame_support::derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
+#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
-	type BaseCallFilter = frame_support::traits::Everything;
 	type Block = frame_system::mocking::MockBlock<Self>;
-	type BlockHashCount = ();
-	type BlockLength = ();
-	type BlockWeights = ();
-	type DbWeight = ();
-	type Hash = sp_core::H256;
-	type Hashing = sp_runtime::traits::BlakeTwo256;
-	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
-	type Nonce = Nonce;
-	type OnKilledAccount = ();
-	type OnNewAccount = ();
-	type OnSetCode = ();
-	type PalletInfo = PalletInfo;
-	type RuntimeCall = RuntimeCall;
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeOrigin = RuntimeOrigin;
-	type SS58Prefix = ();
-	type SystemWeightInfo = ();
 	type Version = Version;
 }
 
+#[derive_impl(pallet_timestamp::config_preludes::TestDefaultConfig as pallet_timestamp::DefaultConfig)]
 impl pallet_timestamp::Config for Runtime {
 	type MinimumPeriod = ();
 	type Moment = Moment;
-	type OnTimestampSet = ();
-	type WeightInfo = ();
 }
 
+#[derive_impl(pallet_balances::config_preludes::TestDefaultConfig as pallet_balances::DefaultConfig)]
 impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
 	type Balance = Balance;
-	type DustRemoval = ();
 	type ExistentialDeposit = ();
-	type FreezeIdentifier = ();
-	type MaxFreezes = ();
-	type MaxLocks = ();
-	type MaxReserves = ();
-	type ReserveIdentifier = [u8; 8];
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeHoldReason = ();
-	type WeightInfo = ();
 }
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -119,6 +93,7 @@ impl pallet_assets::BenchmarkHelper<codec::Compact<AssetId>> for BenchmarkHelper
 		(id as u64).into()
 	}
 }
+#[derive_impl(pallet_assets::config_preludes::TestDefaultConfig as pallet_assets::DefaultConfig)]
 impl pallet_assets::Config for Runtime {
 	type ApprovalDeposit = ();
 	type AssetAccountDeposit = ();

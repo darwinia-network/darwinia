@@ -19,7 +19,7 @@
 pub use crate as darwinia_deposit;
 pub use dc_types::{AssetId, Balance, Moment, UNIT};
 
-// substrate
+// polkadot-sdk
 use frame_support::derive_impl;
 use sp_io::TestExternalities;
 use sp_runtime::BuildStorage;
@@ -28,10 +28,6 @@ use sp_runtime::BuildStorage;
 impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type Block = frame_system::mocking::MockBlock<Self>;
-	type PalletInfo = PalletInfo;
-	type RuntimeCall = RuntimeCall;
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeOrigin = RuntimeOrigin;
 }
 
 #[derive_impl(pallet_timestamp::config_preludes::TestDefaultConfig as pallet_timestamp::DefaultConfig)]
@@ -45,7 +41,6 @@ impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
 	type Balance = Balance;
 	type ExistentialDeposit = ();
-	type RuntimeEvent = RuntimeEvent;
 }
 
 #[cfg(feature = "runtime-benchmarks")]
