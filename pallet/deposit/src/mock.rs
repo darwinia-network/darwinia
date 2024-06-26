@@ -17,12 +17,14 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 pub use crate as darwinia_deposit;
-pub use dc_types::{AssetId, Balance, Moment, UNIT};
+pub use dc_types::{Balance, Moment, UNIT};
 
 // polkadot-sdk
 use frame_support::derive_impl;
 use sp_io::TestExternalities;
 use sp_runtime::BuildStorage;
+
+pub type AssetId = u32;
 
 #[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Runtime {
@@ -43,14 +45,6 @@ impl pallet_balances::Config for Runtime {
 	type ExistentialDeposit = ();
 }
 
-#[cfg(feature = "runtime-benchmarks")]
-pub enum BenchmarkHelper {}
-#[cfg(feature = "runtime-benchmarks")]
-impl pallet_assets::BenchmarkHelper<codec::Compact<AssetId>> for BenchmarkHelper {
-	fn create_asset_id_parameter(id: u32) -> codec::Compact<AssetId> {
-		(id as u64).into()
-	}
-}
 impl pallet_assets::Config for Runtime {
 	type ApprovalDeposit = ();
 	type AssetAccountDeposit = ();
@@ -59,7 +53,7 @@ impl pallet_assets::Config for Runtime {
 	type AssetIdParameter = codec::Compact<AssetId>;
 	type Balance = Balance;
 	#[cfg(feature = "runtime-benchmarks")]
-	type BenchmarkHelper = BenchmarkHelper;
+	type BenchmarkHelper = ();
 	type CallbackHandle = ();
 	type CreateOrigin = frame_support::traits::AsEnsureOriginWithArg<
 		frame_system::EnsureSignedBy<frame_support::traits::IsInVec<()>, Self::AccountId>,

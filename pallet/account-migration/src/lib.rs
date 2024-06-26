@@ -82,7 +82,7 @@ use sp_std::prelude::*;
 pub mod pallet {
 	use super::*;
 
-	pub(crate) const KTON_ID: u64 = 1026;
+	pub(crate) const KTON_ID: AssetId = 1026;
 
 	/// The migration destination was already taken by someone.
 	pub(crate) const E_ACCOUNT_ALREADY_EXISTED: u8 = 0;

@@ -32,7 +32,7 @@ use sp_runtime::BuildStorage;
 use sp_std::prelude::*;
 
 pub type Balance = u128;
-pub type AssetId = u64;
+pub type AssetId = u32;
 pub type InternalCall = ERC20AssetsCall<Runtime, AssetIdConverter>;
 pub type AccountId = H160;
 
@@ -52,7 +52,7 @@ impl Into<H160> for Account {
 			Account::Alice => H160::repeat_byte(0xAA),
 			Account::Bob => H160::repeat_byte(0xBB),
 			Account::Charlie => H160::repeat_byte(0xCC),
-			Account::Precompile => addr(TEST_ID),
+			Account::Precompile => addr_of(TEST_ID),
 		}
 	}
 }
@@ -92,7 +92,7 @@ where
 	}
 
 	pub fn used_addresses() -> [H160; 1] {
-		[addr(TEST_ID)]
+		[addr_of(TEST_ID)]
 	}
 }
 
@@ -103,7 +103,7 @@ where
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<EvmResult<PrecompileOutput>> {
 		match handle.code_address() {
-			a if a == addr(TEST_ID) => Some(<ERC20Assets<R, AssetIdConverter>>::execute(handle)),
+			a if a == addr_of(TEST_ID) => Some(<ERC20Assets<R, AssetIdConverter>>::execute(handle)),
 			_ => None,
 		}
 	}
@@ -115,14 +115,11 @@ where
 		}
 	}
 }
-fn addr(a: u64) -> H160 {
-	H160::from_low_u64_be(a)
-}
 
 pub struct AssetIdConverter;
 impl AccountToAssetId<AccountId, AssetId> for AssetIdConverter {
 	fn account_to_asset_id(account_id: AccountId) -> AssetId {
-		account_id.to_low_u64_be()
+		account_id.to_low_u64_be() as _
 	}
 }
 
@@ -156,14 +153,6 @@ impl pallet_evm::Config for Runtime {
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
 }
 
-#[cfg(feature = "runtime-benchmarks")]
-pub enum BenchmarkHelper {}
-#[cfg(feature = "runtime-benchmarks")]
-impl pallet_assets::BenchmarkHelper<codec::Compact<AssetId>> for BenchmarkHelper {
-	fn create_asset_id_parameter(id: u32) -> codec::Compact<AssetId> {
-		(id as u64).into()
-	}
-}
 impl pallet_assets::Config for Runtime {
 	type ApprovalDeposit = ();
 	type AssetAccountDeposit = ();
@@ -172,7 +161,7 @@ impl pallet_assets::Config for Runtime {
 	type AssetIdParameter = codec::Compact<AssetId>;
 	type Balance = Balance;
 	#[cfg(feature = "runtime-benchmarks")]
-	type BenchmarkHelper = BenchmarkHelper;
+	type BenchmarkHelper = ();
 	type CallbackHandle = ();
 	type CreateOrigin = frame_support::traits::AsEnsureOriginWithArg<
 		frame_system::EnsureSignedBy<frame_support::traits::IsInVec<()>, AccountId>,
@@ -200,18 +189,17 @@ frame_support::construct_runtime! {
 }
 
 #[derive(Default)]
-pub(crate) struct ExtBuilder {
+pub struct ExtBuilder {
 	// endowed accounts with balances
 	balances: Vec<(AccountId, Balance)>,
 }
-
 impl ExtBuilder {
-	pub(crate) fn with_balances(mut self, balances: Vec<(AccountId, Balance)>) -> Self {
+	pub fn with_balances(mut self, balances: Vec<(AccountId, Balance)>) -> Self {
 		self.balances = balances;
 		self
 	}
 
-	pub(crate) fn build(self) -> sp_io::TestExternalities {
+	pub fn build(self) -> sp_io::TestExternalities {
 		let mut t = <frame_system::GenesisConfig<Runtime>>::default()
 			.build_storage()
 			.expect("Frame system builds valid default genesis config");
@@ -224,4 +212,11 @@ impl ExtBuilder {
 		ext.execute_with(|| System::set_block_number(1));
 		ext
 	}
+}
+
+fn addr_of<V>(v: V) -> H160
+where
+	V: Into<u64>,
+{
+	H160::from_low_u64_be(v.into())
 }

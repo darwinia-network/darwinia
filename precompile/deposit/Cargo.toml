@@ -32,7 +32,7 @@ scale-info = { workspace = true, features = ["std"] }
 # moonbeam
 precompile-utils = { workspace = true, features = ["std", "testing"] }
 
-# substrate
+# polkadot-sdk
 pallet-balances  = { workspace = true, features = ["std"] }
 pallet-timestamp = { workspace = true, features = ["std"] }
 sp-io            = { workspace = true, features = ["std"] }
