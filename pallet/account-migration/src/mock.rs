@@ -68,6 +68,7 @@ impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
 	type Block = frame_system::mocking::MockBlock<Self>;
+	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
 	type Version = Version;
 }
 
@@ -92,7 +93,6 @@ impl pallet_assets::BenchmarkHelper<codec::Compact<AssetId>> for BenchmarkHelper
 		(id as u64).into()
 	}
 }
-#[derive_impl(pallet_assets::config_preludes::TestDefaultConfig as pallet_assets::DefaultConfig)]
 impl pallet_assets::Config for Runtime {
 	type ApprovalDeposit = ();
 	type AssetAccountDeposit = ();
