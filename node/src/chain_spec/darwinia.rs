@@ -184,7 +184,7 @@ pub fn genesis_config() -> ChainSpec {
 
 		// Monetary stuff.
 		"balances": {
-			"balances": collators.iter().map(|a| (a, 10_000 * UNIT)).collect::<Vec<_>>()
+			"balances": collators.iter().map(|(a, _)| (a, 10_000 * UNIT)).collect::<Vec<_>>()
 		},
 		"assets": {
 			"assets": [(AssetIds::Kton as AssetId, ROOT, true, 1)],

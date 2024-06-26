@@ -765,11 +765,21 @@ where
 			select_chain,
 			block_import: instant_finalize::InstantFinalizeBlockImport::new(client.clone()),
 			proposer_factory,
-			create_inherent_data_providers: move |block: Hash, ()| {
+			create_inherent_data_providers: move |block, ()| {
 				let maybe_current_para_block = client_for_cidp.number(block);
 				let maybe_current_block_head = client_for_cidp.expect_header(block);
 				let client_for_xcm = client_for_cidp.clone();
-
+				// TODO: hack for now.
+				let additional_key_values = Some(vec![(
+					array_bytes::hex2bytes_unchecked(
+						"1cb6f36e027abb2091cfb5110ab5087f06155b3cd9a8c9e5e9a23fd5dc13a5ed",
+					),
+					cumulus_primitives_aura::Slot::from_timestamp(
+						sp_timestamp::Timestamp::current(),
+						slot_duration,
+					)
+					.encode(),
+				)]);
 				async move {
 					let current_para_block = maybe_current_para_block?
 						.ok_or(sp_blockchain::Error::UnknownBlock(block.to_string()))?;
@@ -796,7 +806,7 @@ where
 							),
 							raw_downward_messages: Vec::new(),
 							raw_horizontal_messages: Vec::new(),
-							additional_key_values: None,
+							additional_key_values,
 						};
 
 					Ok((slot, timestamp, mocked_parachain))

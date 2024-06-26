@@ -24,8 +24,6 @@ use std::{
 	str::FromStr,
 	time::{SystemTime, UNIX_EPOCH},
 };
-// cumulus
-use cumulus_primitives_core::ParaId;
 // darwinia
 use super::*;
 use koi_runtime::*;
@@ -33,7 +31,7 @@ use koi_runtime::*;
 use fp_evm::GenesisAccount;
 // substrate
 use sc_chain_spec::Properties;
-use sc_service::{ChainType, GenericChainSpec};
+use sc_service::ChainType;
 use sc_telemetry::TelemetryEndpoints;
 use sp_core::{crypto::UncheckedInto, H160};
 
@@ -74,13 +72,13 @@ pub fn development_config() -> ChainSpec {
 		// Governance stuff.
 		"technicalCommittee": {
 			"members": [
-				array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
-				array_bytes::hex_n_into_unchecked::<_, _, 20>(BALTATHAR)
+				array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(ALITH),
+				array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(BALTATHAR)
 			]
 		},
 
 		// Utility stuff.
-		"sudo": { "key": Some(array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH)) },
+		"sudo": { "key": Some(array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(ALITH)) },
 
 		// XCM stuff.
 		"polkadotXcm": { "safeXcmVersion": Some(SAFE_XCM_VERSION) },
@@ -154,7 +152,7 @@ pub fn genesis_config() -> ChainSpec {
 
 		// Monetary stuff.
 		"balances": {
-			"balances": collators.iter().map(|a| (a, 10_000 * UNIT)).collect::<Vec<_>>(),
+			"balances": collators.iter().map(|(a, _)| (a, 10_000 * UNIT)).collect::<Vec<_>>(),
 		},
 		"assets": {
 			// TODO: migration.
@@ -180,7 +178,7 @@ pub fn genesis_config() -> ChainSpec {
 		},
 
 		// Utility stuff.
-		"sudo": { "key": Some(array_bytes::hex_n_into_unchecked::<_, _, 20>(SUDO)) },
+		"sudo": { "key": Some(array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(SUDO)) },
 
 		// XCM stuff.
 		"polkadotXcm": { "safeXcmVersion": Some(SAFE_XCM_VERSION) },
