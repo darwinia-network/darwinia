@@ -1630,7 +1630,6 @@ dependencies = [
  "darwinia-deposit",
  "darwinia-ethtx-forwarder",
  "darwinia-precompile-assets",
- "darwinia-precompile-bls12-381",
  "darwinia-precompile-deposit",
  "darwinia-precompile-staking",
  "darwinia-precompile-state-storage",
@@ -2832,24 +2831,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-precompile-bls12-381"
-version = "6.6.3"
-dependencies = [
- "ark-bls12-381",
- "ark-ec",
- "ark-ff",
- "ark-serialize",
- "ark-std",
- "fp-evm",
- "frame-support",
- "pallet-evm",
- "precompile-utils 0.1.0",
- "rand",
- "sha2 0.10.8",
- "sp-std 14.0.0 (git+https://github.com/paritytech/polkadot-sdk?branch=release-polkadot-v1.7.2)",
-]
-
-[[package]]
 name = "darwinia-precompile-deposit"
 version = "6.6.3"
 dependencies = [
@@ -2928,7 +2909,6 @@ dependencies = [
  "darwinia-deposit",
  "darwinia-ethtx-forwarder",
  "darwinia-precompile-assets",
- "darwinia-precompile-bls12-381",
  "darwinia-precompile-deposit",
  "darwinia-precompile-staking",
  "darwinia-precompile-state-storage",
@@ -5773,7 +5753,6 @@ dependencies = [
  "darwinia-deposit",
  "darwinia-ethtx-forwarder",
  "darwinia-precompile-assets",
- "darwinia-precompile-bls12-381",
  "darwinia-precompile-deposit",
  "darwinia-precompile-staking",
  "darwinia-precompile-state-storage",

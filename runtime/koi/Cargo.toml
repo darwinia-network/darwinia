@@ -26,7 +26,6 @@ darwinia-common-runtime           = { workspace = true }
 darwinia-deposit                  = { workspace = true }
 darwinia-ethtx-forwarder          = { workspace = true }
 darwinia-precompile-assets        = { workspace = true }
-darwinia-precompile-bls12-381     = { workspace = true }
 darwinia-precompile-deposit       = { workspace = true }
 darwinia-precompile-staking       = { workspace = true }
 darwinia-precompile-state-storage = { workspace = true }
@@ -141,7 +140,6 @@ std = [
 	"darwinia-deposit/std",
 	"darwinia-ethtx-forwarder/std",
 	"darwinia-precompile-assets/std",
-	"darwinia-precompile-bls12-381/std",
 	"darwinia-precompile-deposit/std",
 	"darwinia-precompile-staking/std",
 	"darwinia-precompile-state-storage/std",

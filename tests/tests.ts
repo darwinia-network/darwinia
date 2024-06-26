@@ -8,5 +8,4 @@ import "./ethereum/test-block";
 import "./ethereum/test-opcodes";
 import "./ethereum/test-events";
 import "./ethereum/test-gas";
-import "./ethereum/test-bls";
 import "./ethereum/test-tracing";
