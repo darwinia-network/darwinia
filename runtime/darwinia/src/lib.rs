@@ -132,7 +132,7 @@ frame_support::construct_runtime! {
 		TechnicalCommittee: pallet_collective::<Instance2> = 20,
 		Treasury: pallet_treasury = 23,
 		// Tips: pallet_tips = 24,
-		Democracy: pallet_democracy = 18,
+		// Democracy: pallet_democracy = 18,
 		ConvictionVoting: pallet_conviction_voting = 48,
 		Referenda: pallet_referenda = 49,
 		Origins: custom_origins = 50,
@@ -179,7 +179,6 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_balances, Balances]
 	[pallet_collective, TechnicalCommittee]
 	[pallet_conviction_voting, ConvictionVoting]
-	[pallet_democracy, Democracy]
 	[pallet_message_queue, MessageQueue]
 	[pallet_preimage, Preimage]
 	[pallet_proxy, Proxy]

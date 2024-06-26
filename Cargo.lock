@@ -2937,7 +2937,6 @@ dependencies = [
  "pallet-balances",
  "pallet-collective",
  "pallet-conviction-voting",
- "pallet-democracy",
  "pallet-ethereum",
  "pallet-ethereum-xcm",
  "pallet-evm",

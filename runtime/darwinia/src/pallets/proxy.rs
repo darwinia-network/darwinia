@@ -75,7 +75,6 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 				c,
 				RuntimeCall::ConvictionVoting(..)
 					| RuntimeCall::Council(..)
-					| RuntimeCall::Democracy(..)
 					| RuntimeCall::Referenda(..)
 					| RuntimeCall::TechnicalCommittee(..)
 					| RuntimeCall::Treasury(..)
