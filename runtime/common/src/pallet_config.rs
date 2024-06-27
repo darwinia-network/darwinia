@@ -11,8 +11,7 @@ const AVERAGE_ON_INITIALIZE_RATIO: sp_runtime::Perbill = sp_runtime::Perbill::fr
 /// We allow `Normal` extrinsics to fill up the block up to 75%, the rest can be used by
 /// `Operational` extrinsics.
 pub const NORMAL_DISPATCH_RATIO: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(75);
-/// We allow for 0.5 of a second of compute with a 12 second average block time.
-const WEIGHT_MILLISECS_PER_BLOCK: u64 = 500;
+const WEIGHT_MILLISECS_PER_BLOCK: u64 = 2_000;
 pub const MAXIMUM_BLOCK_WEIGHT: frame_support::weights::Weight =
 	frame_support::weights::Weight::from_parts(
 		frame_support::weights::constants::WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2),
@@ -75,7 +74,7 @@ frame_support::parameter_types! {
 	// Restrict the POV size of the Ethereum transactions in the same way as weight limit.
 	pub BlockPovSizeLimit: u64 = NORMAL_DISPATCH_RATIO * cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64;
 	pub WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(
-		fp_evm::weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK * 4),
+		fp_evm::weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK),
 		0
 	);
 	// FIXME: https://github.com/rust-lang/rust/issues/88581
