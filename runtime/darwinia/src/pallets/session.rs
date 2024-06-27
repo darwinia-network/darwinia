@@ -41,6 +41,5 @@ impl pallet_session::Config for Runtime {
 	type ValidatorId = Self::AccountId;
 	// We don't have stash and controller, thus we don't need the convert as well.
 	type ValidatorIdOf = darwinia_staking::IdentityCollator;
-	// type WeightInfo = weights::pallet_session::WeightInfo<Self>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_session::WeightInfo<Self>;
 }

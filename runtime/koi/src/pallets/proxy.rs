@@ -111,6 +111,5 @@ impl pallet_proxy::Config for Runtime {
 	type ProxyType = ProxyType;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
-	// type WeightInfo = weights::pallet_proxy::WeightInfo<Self>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_proxy::WeightInfo<Self>;
 }

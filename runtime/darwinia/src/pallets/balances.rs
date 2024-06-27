@@ -32,6 +32,5 @@ impl pallet_balances::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeFreezeReason = RuntimeFreezeReason;
 	type RuntimeHoldReason = RuntimeHoldReason;
-	// type WeightInfo = weights::pallet_balances::WeightInfo<Self>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_balances::WeightInfo<Self>;
 }

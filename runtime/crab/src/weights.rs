@@ -20,6 +20,7 @@
 
 #![allow(clippy::unnecessary_cast)]
 
+pub mod cumulus_pallet_parachain_system;
 pub mod cumulus_pallet_xcmp_queue;
 pub mod darwinia_account_migration;
 pub mod darwinia_deposit;
@@ -29,6 +30,7 @@ pub mod pallet_assets;
 pub mod pallet_balances;
 pub mod pallet_collective;
 pub mod pallet_conviction_voting;
+pub mod pallet_message_queue;
 pub mod pallet_preimage;
 pub mod pallet_proxy;
 pub mod pallet_referenda;

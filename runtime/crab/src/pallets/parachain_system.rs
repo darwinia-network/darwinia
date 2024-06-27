@@ -31,6 +31,6 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 	type ReservedXcmpWeight = pallet_config::ReservedXcmpWeight;
 	type RuntimeEvent = RuntimeEvent;
 	type SelfParaId = parachain_info::Pallet<Self>;
-	type WeightInfo = ();
+	type WeightInfo = weights::cumulus_pallet_parachain_system::WeightInfo<Self>;
 	type XcmpMessageHandler = XcmpQueue;
 }

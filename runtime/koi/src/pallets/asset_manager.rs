@@ -145,6 +145,5 @@ impl pallet_asset_manager::Config for Runtime {
 	type ForeignAssetModifierOrigin = RootOr<GeneralAdmin>;
 	type ForeignAssetType = AssetType;
 	type RuntimeEvent = RuntimeEvent;
-	// type WeightInfo = pallet_asset_manager::weights::SubstrateWeight<Runtime>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_asset_manager::WeightInfo<Self>;
 }

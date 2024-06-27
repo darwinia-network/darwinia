@@ -22,6 +22,5 @@ use crate::*;
 impl pallet_sudo::Config for Runtime {
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
-	// type WeightInfo = pallet_sudo::weights::SubstrateWeight<Self>;
-	type WeightInfo = ();
+	type WeightInfo = pallet_sudo::weights::SubstrateWeight<Self>;
 }

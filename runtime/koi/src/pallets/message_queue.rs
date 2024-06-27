@@ -38,6 +38,5 @@ impl pallet_message_queue::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type ServiceWeight = pallet_config::MessageQueueServiceWeight;
 	type Size = u32;
-	// type WeightInfo = ();
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_message_queue::WeightInfo<Self>;
 }

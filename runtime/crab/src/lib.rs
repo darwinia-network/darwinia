@@ -29,7 +29,7 @@ pub use pallets::*;
 
 mod migration;
 
-// pub mod weights;
+mod weights;
 
 pub use darwinia_common_runtime::*;
 pub use dc_primitives::*;
@@ -175,6 +175,7 @@ frame_benchmarking::define_benchmarks! {
 	[pallet_balances, Balances]
 	[pallet_collective, TechnicalCommittee]
 	[pallet_conviction_voting, ConvictionVoting]
+	[pallet_evm, EVM]
 	[pallet_message_queue, MessageQueue]
 	[pallet_preimage, Preimage]
 	[pallet_proxy, Proxy]

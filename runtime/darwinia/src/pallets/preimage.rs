@@ -39,6 +39,5 @@ impl pallet_preimage::Config for Runtime {
 	type Currency = Balances;
 	type ManagerOrigin = RootOr<GeneralAdmin>;
 	type RuntimeEvent = RuntimeEvent;
-	// type WeightInfo = weights::pallet_preimage::WeightInfo<Self>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_preimage::WeightInfo<Self>;
 }

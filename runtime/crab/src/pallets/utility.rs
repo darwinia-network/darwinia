@@ -23,6 +23,5 @@ impl pallet_utility::Config for Runtime {
 	type PalletsOrigin = OriginCaller;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
-	// type WeightInfo = weights::pallet_utility::WeightInfo<Self>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_utility::WeightInfo<Self>;
 }

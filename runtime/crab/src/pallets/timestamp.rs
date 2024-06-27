@@ -27,6 +27,5 @@ impl pallet_timestamp::Config for Runtime {
 	type OnTimestampSet = Aura;
 	#[cfg(feature = "runtime-benchmarks")]
 	type OnTimestampSet = ();
-	// type WeightInfo = weights::pallet_timestamp::WeightInfo<Self>;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_timestamp::WeightInfo<Self>;
 }

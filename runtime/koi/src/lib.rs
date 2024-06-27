@@ -29,7 +29,7 @@ pub use pallets::*;
 
 mod migration;
 
-// pub mod weights;
+mod weights;
 
 pub use darwinia_common_runtime::*;
 pub use dc_primitives::*;
@@ -164,9 +164,11 @@ frame_benchmarking::define_benchmarks! {
 	[cumulus_pallet_xcmp_queue, XcmpQueue]
 	[frame_system, SystemBench::<Runtime>]
 	[pallet_assets, Assets]
+	[pallet_asset_manager, AssetManager]
 	[pallet_balances, Balances]
 	[pallet_collective, TechnicalCommittee]
 	[pallet_conviction_voting, ConvictionVoting]
+	[pallet_evm, EVM]
 	[pallet_message_queue, MessageQueue]
 	[pallet_preimage, Preimage]
 	[pallet_proxy, Proxy]
