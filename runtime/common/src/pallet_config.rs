@@ -78,6 +78,6 @@ frame_support::parameter_types! {
 		fp_evm::weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK * 4),
 		0
 	);
-	// TODO: FIX ME. https://github.com/rust-lang/rust/issues/88581
+	// FIXME: https://github.com/rust-lang/rust/issues/88581
 	pub GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(BlockPovSizeLimit::get()) + 1;
 }

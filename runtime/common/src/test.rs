@@ -473,10 +473,13 @@ macro_rules! impl_weight_tests {
 				use pallet_balances::WeightInfo;
 
 				let block = pallet_config::RuntimeBlockWeights::get().max_block;
-				let base = pallet_config::RuntimeBlockWeights::get().get(DispatchClass::Normal).base_extrinsic;
+				let base = pallet_config::RuntimeBlockWeights::get()
+					.get(DispatchClass::Normal)
+					.base_extrinsic;
 				let transfer_allow_death =
 					base + weights::pallet_balances::WeightInfo::<Runtime>::transfer_allow_death();
-				let fit = block.checked_div_per_component(&transfer_allow_death).unwrap_or_default();
+				let fit =
+					block.checked_div_per_component(&transfer_allow_death).unwrap_or_default();
 
 				assert!(fit >= 1000, "{} should be at least 1000", fit);
 			}
@@ -487,7 +490,9 @@ macro_rules! impl_weight_tests {
 				// substrate
 				use pallet_balances::WeightInfo;
 
-				let base = pallet_config::RuntimeBlockWeights::get().get(DispatchClass::Normal).base_extrinsic;
+				let base = pallet_config::RuntimeBlockWeights::get()
+					.get(DispatchClass::Normal)
+					.base_extrinsic;
 				let transfer_allow_death =
 					base + weights::pallet_balances::WeightInfo::<Runtime>::transfer_allow_death();
 				let fee = WeightToFee::weight_to_fee(&transfer_allow_death);
@@ -594,7 +599,10 @@ macro_rules! impl_fee_tests {
 			fn multiplier_can_grow_from_zero() {
 				let minimum_multiplier = MinimumMultiplier::get();
 				let target = TargetBlockFullness::get()
-					* pallet_config::RuntimeBlockWeights::get().get(DispatchClass::Normal).max_total.unwrap();
+					* pallet_config::RuntimeBlockWeights::get()
+						.get(DispatchClass::Normal)
+						.max_total
+						.unwrap();
 				// if the min is too small, then this will not change, and we are doomed forever.
 				// the weight is 1/100th bigger than target.
 				run_with_system_weight(target.saturating_mul(101) / 100, || {
@@ -618,7 +626,9 @@ macro_rules! impl_fee_tests {
 			fn test_evm_fee_adjustment() {
 				ExtBuilder::default().build().execute_with(|| {
 					let sim = |fullness: Perbill, num_blocks: u64| -> U256 {
-						let block_weight = pallet_config::NORMAL_DISPATCH_RATIO * pallet_config::MAXIMUM_BLOCK_WEIGHT * fullness;
+						let block_weight = pallet_config::NORMAL_DISPATCH_RATIO
+							* pallet_config::MAXIMUM_BLOCK_WEIGHT
+							* fullness;
 						for i in 0..num_blocks {
 							System::set_block_number(i as u32);
 							System::set_block_consumed_resources(block_weight, 0);
@@ -757,10 +767,9 @@ macro_rules! impl_maintenance_tests {
 						RuntimeOrigin::root(),
 						full_name(b"Balances", b"transfer_allow_death")
 					));
-					assert_ok!(RuntimeCall::Balances(pallet_balances::Call::transfer_allow_death {
-						dest: to,
-						value: 1,
-					})
+					assert_ok!(RuntimeCall::Balances(
+						pallet_balances::Call::transfer_allow_death { dest: to, value: 1 }
+					)
 					.dispatch(RuntimeOrigin::signed(from)));
 				});
 			}
