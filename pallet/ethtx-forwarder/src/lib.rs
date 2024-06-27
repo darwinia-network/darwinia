@@ -230,8 +230,9 @@ impl<T: Config> Pallet<T> {
 				transaction_data.gas_limit.unique_saturated_into(),
 				true,
 			) {
-				weight_limit if weight_limit.proof_size() > 0 =>
-					(Some(weight_limit), Some(proof_size_base_cost(&transaction))),
+				weight_limit if weight_limit.proof_size() > 0 => {
+					(Some(weight_limit), Some(transaction_data.proof_size_base_cost()))
+				},
 				_ => (None, None),
 			};
 
@@ -288,17 +289,6 @@ impl From<TransactionValidationError> for TxErrorWrapper {
 			TransactionValidationError::UnknownError => TxErrorWrapper::UnknownError,
 		}
 	}
-}
-
-// TODO: Reuse the frontier implementation
-fn proof_size_base_cost(transaction: &Transaction) -> u64 {
-	transaction
-		.encode()
-		.len()
-		// pallet index
-		.saturating_add(1)
-		// call index
-		.saturating_add(1) as u64
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Encode, Decode, TypeInfo)]
