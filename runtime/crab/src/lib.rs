@@ -24,12 +24,12 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+pub mod weights;
+
 mod pallets;
 pub use pallets::*;
 
 mod migration;
-
-mod weights;
 
 pub use darwinia_common_runtime::*;
 pub use dc_primitives::*;

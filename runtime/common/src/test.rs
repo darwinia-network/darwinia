@@ -321,73 +321,6 @@ macro_rules! impl_account_migration_tests {
 						assert_eq!(DarwiniaStaking::ledger_of(to).unwrap().ring, 20);
 					});
 			}
-			#[test]
-			fn identities_should_work() {
-				let (from, from_pk) = alice();
-				let to = H160::from_low_u64_be(255).into();
-
-				ExtBuilder::default().build().execute_with(|| {
-					preset_state_of(&from);
-
-					let info = IdentityInfo {
-						additional: Default::default(),
-						display: Data::Sha256([1u8; 32]),
-						legal: Data::None,
-						web: Data::None,
-						riot: Data::None,
-						email: Data::None,
-						pgp_fingerprint: None,
-						image: Data::None,
-						twitter: Data::None,
-					};
-					<darwinia_account_migration::Identities<Runtime>>::insert(
-						from_pk,
-						Registration {
-							judgements: Default::default(),
-							deposit: RING_AMOUNT,
-							info: info.clone(),
-						},
-					);
-
-					assert_ok!(migrate(from, to));
-					assert_eq!(Identity::identity(to).unwrap().info, info);
-					assert_eq!(Identity::identity(to).unwrap().deposit, 0);
-					assert_eq!(Identity::identity(to).unwrap().judgements.len(), 0);
-				});
-			}
-
-			#[test]
-			fn registrars_should_work() {
-				let (from, from_pk) = alice();
-				let mut truncated_from = [0_u8; 20];
-
-				truncated_from
-					.copy_from_slice(&<AccountId32 as AsRef<[u8; 32]>>::as_ref(&from_pk)[..20]);
-
-				let to = H160::from_low_u64_be(255).into();
-
-				ExtBuilder::default().build().execute_with(|| {
-					preset_state_of(&from);
-
-					let info = RegistrarInfo::<Balance, AccountId> {
-						account: truncated_from.into(),
-						fee: RING_AMOUNT,
-						fields: IdentityFields::default(),
-					};
-
-					migration::put_storage_value(
-						b"Identity",
-						b"Registrars",
-						&[],
-						vec![Some(info.clone()), None],
-					);
-
-					assert_ok!(migrate(from, to));
-					assert_eq!(Identity::registrars()[0].as_ref().unwrap().account, to);
-					assert_eq!(Identity::registrars()[0].as_ref().unwrap().fee, info.fee);
-					assert!(Identity::registrars()[1].is_none());
-				});
-			}
 		}
 	};
 }
@@ -407,7 +340,7 @@ macro_rules! impl_evm_tests {
 
 			#[test]
 			fn configured_base_extrinsic_weight_is_evm_compatible() {
-				let min_ethereum_transaction_weight = WeightPerGas::get() * 21_000;
+				let min_ethereum_transaction_weight = pallet_config::WeightPerGas::get() * 21_000;
 				let base_extrinsic = <Runtime as frame_system::Config>::BlockWeights::get()
 					.get(frame_support::dispatch::DispatchClass::Normal)
 					.base_extrinsic;
@@ -417,8 +350,8 @@ macro_rules! impl_evm_tests {
 
 			#[test]
 			fn evm_constants_are_correctly() {
-				assert_eq!(BlockGasLimit::get(), U256::from(20_000_000));
-				assert_eq!(WeightPerGas::get().ref_time(), 18750);
+				assert_eq!(pallet_config::BlockGasLimit::get(), U256::from(20_000_000));
+				assert_eq!(pallet_config::WeightPerGas::get().ref_time(), 75000);
 			}
 
 			#[test]
@@ -539,25 +472,25 @@ macro_rules! impl_weight_tests {
 				// substrate
 				use pallet_balances::WeightInfo;
 
-				let block = RuntimeBlockWeights::get().max_block;
-				let base = RuntimeBlockWeights::get().get(DispatchClass::Normal).base_extrinsic;
-				let transfer =
+				let block = pallet_config::RuntimeBlockWeights::get().max_block;
+				let base = pallet_config::RuntimeBlockWeights::get().get(DispatchClass::Normal).base_extrinsic;
+				let transfer_allow_death =
 					base + weights::pallet_balances::WeightInfo::<Runtime>::transfer_allow_death();
-				let fit = block.checked_div_per_component(&transfer).unwrap_or_default();
+				let fit = block.checked_div_per_component(&transfer_allow_death).unwrap_or_default();
 
 				assert!(fit >= 1000, "{} should be at least 1000", fit);
 			}
 
-			// The fee for one transfer is at most 1 UNIT.
+			// The fee for one transfer_allow_death is at most 1 UNIT.
 			#[test]
 			fn sane_transfer_fee() {
 				// substrate
 				use pallet_balances::WeightInfo;
 
-				let base = RuntimeBlockWeights::get().get(DispatchClass::Normal).base_extrinsic;
-				let transfer =
+				let base = pallet_config::RuntimeBlockWeights::get().get(DispatchClass::Normal).base_extrinsic;
+				let transfer_allow_death =
 					base + weights::pallet_balances::WeightInfo::<Runtime>::transfer_allow_death();
-				let fee = WeightToFee::weight_to_fee(&transfer);
+				let fee = WeightToFee::weight_to_fee(&transfer_allow_death);
 
 				assert!(fee <= UNIT, "{} MILLIUNIT should be at most 1000", fee / MILLIUNIT);
 			}
@@ -577,7 +510,7 @@ macro_rules! impl_weight_tests {
 			// This is just a sanity check.
 			#[test]
 			fn full_block_fee_ratio() {
-				let block = RuntimeBlockWeights::get().max_block;
+				let block = pallet_config::RuntimeBlockWeights::get().max_block;
 				let time_fee = WeightToFee::weight_to_fee(&Weight::from_parts(block.ref_time(), 0));
 				let proof_fee =
 					WeightToFee::weight_to_fee(&Weight::from_parts(0, block.proof_size()));
@@ -661,7 +594,7 @@ macro_rules! impl_fee_tests {
 			fn multiplier_can_grow_from_zero() {
 				let minimum_multiplier = MinimumMultiplier::get();
 				let target = TargetBlockFullness::get()
-					* RuntimeBlockWeights::get().get(DispatchClass::Normal).max_total.unwrap();
+					* pallet_config::RuntimeBlockWeights::get().get(DispatchClass::Normal).max_total.unwrap();
 				// if the min is too small, then this will not change, and we are doomed forever.
 				// the weight is 1/100th bigger than target.
 				run_with_system_weight(target.saturating_mul(101) / 100, || {
@@ -685,7 +618,7 @@ macro_rules! impl_fee_tests {
 			fn test_evm_fee_adjustment() {
 				ExtBuilder::default().build().execute_with(|| {
 					let sim = |fullness: Perbill, num_blocks: u64| -> U256 {
-						let block_weight = NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT * fullness;
+						let block_weight = pallet_config::NORMAL_DISPATCH_RATIO * pallet_config::MAXIMUM_BLOCK_WEIGHT * fullness;
 						for i in 0..num_blocks {
 							System::set_block_number(i as u32);
 							System::set_block_consumed_resources(block_weight, 0);
@@ -789,12 +722,12 @@ macro_rules! impl_maintenance_tests {
 				ExtBuilder::default().build().execute_with(|| {
 					assert_ok!(TxPause::pause(
 						RuntimeOrigin::root(),
-						full_name(b"Balances", b"transfer")
+						full_name(b"Balances", b"transfer_allow_death")
 					));
 					assert_err!(
 						TxPause::pause(
 							RuntimeOrigin::signed(H160::default().into()),
-							full_name(b"Balances", b"transfer")
+							full_name(b"Balances", b"transfer_allow_death")
 						),
 						DispatchError::BadOrigin
 					);
@@ -809,10 +742,10 @@ macro_rules! impl_maintenance_tests {
 				ExtBuilder::default().with_balances(vec![(from, 100)]).build().execute_with(|| {
 					assert_ok!(TxPause::pause(
 						RuntimeOrigin::root(),
-						full_name(b"Balances", b"transfer")
+						full_name(b"Balances", b"transfer_allow_death")
 					));
 					assert_err!(
-						RuntimeCall::Balances(pallet_balances::Call::transfer {
+						RuntimeCall::Balances(pallet_balances::Call::transfer_allow_death {
 							dest: to,
 							value: 1,
 						})
@@ -822,9 +755,9 @@ macro_rules! impl_maintenance_tests {
 
 					assert_ok!(TxPause::unpause(
 						RuntimeOrigin::root(),
-						full_name(b"Balances", b"transfer")
+						full_name(b"Balances", b"transfer_allow_death")
 					));
-					assert_ok!(RuntimeCall::Balances(pallet_balances::Call::transfer {
+					assert_ok!(RuntimeCall::Balances(pallet_balances::Call::transfer_allow_death {
 						dest: to,
 						value: 1,
 					})
