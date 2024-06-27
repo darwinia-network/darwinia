@@ -585,12 +585,11 @@ sp_api::impl_runtime_apis! {
 					EthereumXcmTracingStatus
 				};
 				use frame_support::storage::unhashed;
-				use frame_system::pallet_prelude::BlockNumberFor;
 
 				// Tell the CallDispatcher we are tracing a specific Transaction.
 				unhashed::put::<EthereumXcmTracingStatus>(
 					ETHEREUM_XCM_TRACING_STORAGE_KEY,
-					&EthereumXcmTracingStatus::Transaction(traced_transaction.hash()),
+					&EthereumXcmTracingStatus::Transaction(_traced_transaction.hash()),
 				);
 
 				// Initialize block: calls the "on_initialize" hook on every pallet
@@ -604,7 +603,7 @@ sp_api::impl_runtime_apis! {
 				// transactions that preceded the requested transaction.
 				for ext in _extrinsics.into_iter() {
 					let _ = match &ext.0.function {
-						RuntimeCall::Ethereum(transact { transaction }) => {
+						RuntimeCall::Ethereum(pallet_ethereum::Call::transact { transaction }) => {
 							if transaction == _traced_transaction {
 								EvmTracer::new().trace(|| Executive::apply_extrinsic(ext));
 								return Ok(());
@@ -658,7 +657,6 @@ sp_api::impl_runtime_apis! {
 			#[cfg(feature = "evm-tracing")]
 			{
 				use moonbeam_evm_tracer::tracer::EvmTracer;
-				use frame_system::pallet_prelude::BlockNumberFor;
 				use xcm_primitives::EthereumXcmTracingStatus;
 
 				// Tell the CallDispatcher we are tracing a full Block.
@@ -680,7 +678,7 @@ sp_api::impl_runtime_apis! {
 				// Apply all extrinsics. Ethereum extrinsics are traced.
 				for ext in _extrinsics.into_iter() {
 					match &ext.0.function {
-						RuntimeCall::Ethereum(transact { transaction }) => {
+						RuntimeCall::Ethereum(pallet_ethereum::Call::transact { transaction }) => {
 							if _known_transactions.contains(&transaction.hash()) {
 								// Each known extrinsic is a new call stack.
 								EvmTracer::emit_new();
@@ -721,6 +719,7 @@ sp_api::impl_runtime_apis! {
 		) -> Result<(), sp_runtime::DispatchError> {
 			#[cfg(feature = "evm-tracing")]
 			{
+				use pallet_evm::{GasWeightMapping, Runner};
 				use moonbeam_evm_tracer::tracer::EvmTracer;
 
 				// Initialize block: calls the "on_initialize" hook on every pallet
@@ -777,7 +776,7 @@ sp_api::impl_runtime_apis! {
 						_max_priority_fee_per_gas,
 						_nonce,
 						_access_list.unwrap_or_default(),
-						_is_transactional,
+						is_transactional,
 						validate,
 						weight_limit,
 						proof_size_base_cost,
@@ -881,6 +880,28 @@ sp_api::impl_runtime_apis! {
 			// have a backtrace here.
 			Executive::try_execute_block(block, state_root_check, signature_check, select).unwrap()
 		}
+	}
+}
+
+// Helper function to replay the "on_idle" hook for all pallets, we need this for
+// evm-tracing because some ethereum-xcm transactions might be executed at on_idle.
+//
+// We need to make sure that we replay on_idle exactly the same way as the
+// original block execution, but unfortunatly frame executive diosn't provide a function
+// to replay only on_idle, so we need to copy here some code inside frame executive.
+#[cfg(feature = "evm-tracing")]
+fn replay_on_idle() {
+	use frame_support::traits::OnIdle;
+	use frame_system::pallet_prelude::BlockNumberFor;
+
+	let weight = <frame_system::Pallet<Runtime>>::block_weight();
+	let max_weight = pallet_config::RuntimeBlockWeights::get().max_block;
+	let remaining_weight = max_weight.saturating_sub(weight.total());
+	if remaining_weight.all_gt(frame_support::weights::Weight::zero()) {
+		let _ = <AllPalletsWithSystem as OnIdle<BlockNumberFor<Runtime>>>::on_idle(
+			<frame_system::Pallet<Runtime>>::block_number(),
+			remaining_weight,
+		);
 	}
 }
 
