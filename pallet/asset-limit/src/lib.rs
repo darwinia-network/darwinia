@@ -23,7 +23,6 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
-#![deny(unused_crate_dependencies)]
 
 #[frame_support::pallet]
 pub mod pallet {

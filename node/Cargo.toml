@@ -15,22 +15,12 @@ array-bytes = { workspace = true }
 async-trait = { version = "0.1" }
 clap        = { version = "4.4", features = ["derive"] }
 futures     = { version = "0.3" }
-jsonrpsee   = { version = "0.16", features = ["server"] }
-log         = { version = "0.4" }
+jsonrpsee   = { version = "0.20", features = ["server"] }
+log         = { workspace = true }
 serde       = { version = "1.0", features = ["derive"] }
+serde_json  = { version = "1.0", features = ["arbitrary_precision"] }
 tokio       = { version = "1.33" }
 trauma      = { version = "2.2" }
-
-# cumulus
-cumulus-client-cli                    = { workspace = true }
-cumulus-client-collator               = { workspace = true }
-cumulus-client-consensus-aura         = { workspace = true }
-cumulus-client-consensus-common       = { workspace = true }
-cumulus-client-consensus-proposer     = { workspace = true }
-cumulus-client-service                = { workspace = true }
-cumulus-primitives-core               = { workspace = true, features = ["std"] }
-cumulus-primitives-parachain-inherent = { workspace = true, features = ["std"] }
-cumulus-relay-chain-interface         = { workspace = true }
 
 # darwinia
 crab-runtime     = { workspace = true, optional = true }
@@ -54,46 +44,56 @@ moonbeam-rpc-debug            = { workspace = true }
 moonbeam-rpc-primitives-debug = { workspace = true, features = ["std"] }
 moonbeam-rpc-trace            = { workspace = true }
 
-# polkadot
-polkadot-cli        = { workspace = true }
-polkadot-primitives = { workspace = true, features = ["std"] }
-xcm                 = { workspace = true, features = ["std"] }
-
-# substrate
-frame-benchmarking             = { workspace = true, optional = true, features = ["std"] }
-frame-benchmarking-cli         = { workspace = true }
-pallet-transaction-payment-rpc = { workspace = true }
-sc-basic-authorship            = { workspace = true }
-sc-chain-spec                  = { workspace = true }
-sc-cli                         = { workspace = true }
-sc-client-api                  = { workspace = true }
-sc-consensus                   = { workspace = true }
-sc-consensus-aura              = { workspace = true }
-sc-executor                    = { workspace = true }
-sc-network                     = { workspace = true }
-sc-network-sync                = { workspace = true }
-sc-offchain                    = { workspace = true }
-sc-rpc                         = { workspace = true }
-sc-service                     = { workspace = true }
-sc-sysinfo                     = { workspace = true }
-sc-telemetry                   = { workspace = true }
-sc-tracing                     = { workspace = true }
-sc-transaction-pool            = { workspace = true }
-sc-transaction-pool-api        = { workspace = true }
-sp-api                         = { workspace = true, features = ["std"] }
-sp-block-builder               = { workspace = true, features = ["std"] }
-sp-blockchain                  = { workspace = true }
-sp-consensus-aura              = { workspace = true, features = ["std"] }
-sp-core                        = { workspace = true, features = ["std"] }
-sp-inherents                   = { workspace = true, features = ["std"] }
-sp-keystore                    = { workspace = true }
-sp-offchain                    = { workspace = true, features = ["std"] }
-sp-runtime                     = { workspace = true, features = ["std"] }
-sp-session                     = { workspace = true, features = ["std"] }
-sp-timestamp                   = { workspace = true, features = ["std"] }
-sp-transaction-pool            = { workspace = true, features = ["std"] }
-substrate-frame-rpc-system     = { workspace = true }
-substrate-prometheus-endpoint  = { workspace = true }
+# polkadot-sdk
+cumulus-client-cli                    = { workspace = true }
+cumulus-client-collator               = { workspace = true }
+cumulus-client-consensus-aura         = { workspace = true }
+cumulus-client-consensus-common       = { workspace = true }
+cumulus-client-consensus-proposer     = { workspace = true }
+cumulus-client-parachain-inherent     = { workspace = true }
+cumulus-client-service                = { workspace = true }
+cumulus-primitives-aura               = { workspace = true, features = ["std"] }
+cumulus-primitives-core               = { workspace = true, features = ["std"] }
+cumulus-primitives-parachain-inherent = { workspace = true, features = ["std"] }
+cumulus-relay-chain-interface         = { workspace = true }
+frame-benchmarking                    = { workspace = true, optional = true, features = ["std"] }
+frame-benchmarking-cli                = { workspace = true }
+pallet-transaction-payment-rpc        = { workspace = true }
+polkadot-cli                          = { workspace = true }
+polkadot-primitives                   = { workspace = true, features = ["std"] }
+sc-basic-authorship                   = { workspace = true }
+sc-chain-spec                         = { workspace = true }
+sc-cli                                = { workspace = true }
+sc-client-api                         = { workspace = true }
+sc-consensus                          = { workspace = true }
+sc-consensus-aura                     = { workspace = true }
+sc-executor                           = { workspace = true }
+sc-network                            = { workspace = true }
+sc-network-sync                       = { workspace = true }
+sc-offchain                           = { workspace = true }
+sc-rpc                                = { workspace = true }
+sc-service                            = { workspace = true }
+sc-sysinfo                            = { workspace = true }
+sc-telemetry                          = { workspace = true }
+sc-tracing                            = { workspace = true }
+sc-transaction-pool                   = { workspace = true }
+sc-transaction-pool-api               = { workspace = true }
+sp-api                                = { workspace = true, features = ["std"] }
+sp-block-builder                      = { workspace = true, features = ["std"] }
+sp-blockchain                         = { workspace = true }
+sp-consensus-aura                     = { workspace = true, features = ["std"] }
+sp-core                               = { workspace = true, features = ["std"] }
+sp-inherents                          = { workspace = true, features = ["std"] }
+sp-io                                 = { workspace = true, features = ["std"] }
+sp-keystore                           = { workspace = true }
+sp-offchain                           = { workspace = true, features = ["std"] }
+sp-runtime                            = { workspace = true, features = ["std"] }
+sp-session                            = { workspace = true, features = ["std"] }
+sp-timestamp                          = { workspace = true, features = ["std"] }
+sp-transaction-pool                   = { workspace = true, features = ["std"] }
+substrate-frame-rpc-system            = { workspace = true }
+substrate-prometheus-endpoint         = { workspace = true }
+xcm                                   = { workspace = true, features = ["std"] }
 
 [features]
 default = [
@@ -157,21 +157,12 @@ all-natives = [
 crab-native = [
 	# darwinia
 	"crab-runtime",
-
-	# polkadot
-	"polkadot-cli/kusama-native",
 ]
 darwinia-native = [
 	# darwinia
 	"darwinia-runtime",
-
-	# polkadot
-	"polkadot-cli/polkadot-native",
 ]
 koi-native = [
 	# darwinia
 	"koi-runtime",
-
-	# polkadot
-	"polkadot-cli/rococo-native",
 ]

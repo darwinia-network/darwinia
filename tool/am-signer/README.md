@@ -2,7 +2,7 @@
 
 ```sh
 # Build
-cargo build
+cargo b
 # Get more detail
 target/debug/am-signer --help
 

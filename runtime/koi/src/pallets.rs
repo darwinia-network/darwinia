@@ -26,7 +26,6 @@ pub use shared_imports::*;
 
 // System stuffs.
 mod system;
-pub use system::*;
 
 mod parachain_system;
 
@@ -55,8 +54,7 @@ mod session;
 pub use session::*;
 
 mod aura;
-
-mod aura_ext;
+pub use aura::*;
 
 // Governance stuff.
 mod governance;
@@ -66,8 +64,6 @@ pub use governance::*;
 mod sudo;
 
 mod utility;
-
-mod identity;
 
 mod scheduler;
 
@@ -87,9 +83,13 @@ mod ethereum_xcm;
 
 mod dmp_queue;
 
+mod message_queue;
+
 mod asset_manager;
+pub use asset_manager::*;
 
 mod orml_xtokens;
+pub use orml_xtokens::*;
 
 mod asset_limit;
 

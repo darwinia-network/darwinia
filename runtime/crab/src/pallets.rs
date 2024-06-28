@@ -26,7 +26,6 @@ pub use shared_imports::*;
 
 // System stuffs.
 mod system;
-pub use system::*;
 
 mod parachain_system;
 
@@ -41,8 +40,6 @@ mod transaction_payment;
 
 mod assets;
 pub use assets::*;
-
-mod vesting;
 
 mod deposit;
 #[cfg(feature = "runtime-benchmarks")]
@@ -59,8 +56,7 @@ mod session;
 pub use session::*;
 
 mod aura;
-
-mod aura_ext;
+pub use aura::*;
 
 // Governance stuff.
 mod governance;
@@ -68,8 +64,6 @@ pub use governance::*;
 
 // Utility stuff.
 mod utility;
-
-mod identity;
 
 mod scheduler;
 
@@ -86,6 +80,8 @@ mod polkadot_xcm;
 pub use polkadot_xcm::*;
 
 mod dmp_queue;
+
+mod message_queue;
 
 // EVM stuff.
 mod ethereum;

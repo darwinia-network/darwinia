@@ -24,14 +24,14 @@ use crate::*;
 // frontier
 use precompile_utils::Precompile;
 // substrate
-use frame_support::StorageHasher;
+use frame_support::{derive_impl, StorageHasher};
 use sp_core::H160;
 use sp_runtime::BuildStorage;
 use sp_std::{marker::PhantomData, prelude::*};
 
-pub(crate) type Balance = u64;
-pub(crate) type AccountId = H160;
-pub(crate) type PCall = StateStorageCall<Runtime, StorageFilter>;
+pub type Balance = u64;
+pub type AccountId = H160;
+pub type PCall = StateStorageCall<Runtime, StorageFilter>;
 
 #[derive(Clone, Encode, Decode, Debug, MaxEncodedLen, TypeInfo)]
 pub enum Account {
@@ -48,54 +48,23 @@ impl Into<H160> for Account {
 	}
 }
 
+#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
-	type BaseCallFilter = frame_support::traits::Everything;
 	type Block = frame_system::mocking::MockBlock<Self>;
-	type BlockHashCount = ();
-	type BlockLength = ();
-	type BlockWeights = ();
-	type DbWeight = ();
-	type Hash = sp_core::H256;
-	type Hashing = sp_runtime::traits::BlakeTwo256;
 	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
-	type MaxConsumers = frame_support::traits::ConstU32<16>;
-	type Nonce = u64;
-	type OnKilledAccount = ();
-	type OnNewAccount = ();
-	type OnSetCode = ();
-	type PalletInfo = PalletInfo;
-	type RuntimeCall = RuntimeCall;
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeOrigin = RuntimeOrigin;
-	type SS58Prefix = ();
-	type SystemWeightInfo = ();
-	type Version = ();
 }
 
+#[derive_impl(pallet_balances::config_preludes::TestDefaultConfig as pallet_balances::DefaultConfig)]
 impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
 	type Balance = Balance;
-	type DustRemoval = ();
-	type ExistentialDeposit = frame_support::traits::ConstU64<0>;
-	type FreezeIdentifier = ();
-	type MaxFreezes = ();
-	type MaxHolds = ();
-	type MaxLocks = ();
-	type MaxReserves = ();
-	type ReserveIdentifier = [u8; 8];
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeHoldReason = ();
-	type WeightInfo = ();
+	type ExistentialDeposit = ();
 }
 
-impl pallet_timestamp::Config for Runtime {
-	type MinimumPeriod = ();
-	type Moment = u64;
-	type OnTimestampSet = ();
-	type WeightInfo = ();
-}
+#[derive_impl(pallet_timestamp::config_preludes::TestDefaultConfig as pallet_timestamp::DefaultConfig)]
+impl pallet_timestamp::Config for Runtime {}
 
 pub struct StorageFilter;
 impl StorageFilterT for StorageFilter {
@@ -164,6 +133,7 @@ impl pallet_evm::Config for Runtime {
 	type PrecompilesValue = PrecompilesValue;
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
 	type RuntimeEvent = RuntimeEvent;
+	type SuicideQuickClearLimit = ();
 	type Timestamp = Timestamp;
 	type WeightInfo = ();
 	type WeightPerGas = WeightPerGas;
@@ -180,18 +150,18 @@ frame_support::construct_runtime! {
 }
 
 #[derive(Default)]
-pub(crate) struct ExtBuilder {
+pub struct ExtBuilder {
 	// endowed accounts with balances
 	balances: Vec<(AccountId, Balance)>,
 }
 
 impl ExtBuilder {
-	pub(crate) fn with_balances(mut self, balances: Vec<(AccountId, Balance)>) -> Self {
+	pub fn with_balances(mut self, balances: Vec<(AccountId, Balance)>) -> Self {
 		self.balances = balances;
 		self
 	}
 
-	pub(crate) fn build(self) -> sp_io::TestExternalities {
+	pub fn build(self) -> sp_io::TestExternalities {
 		let mut t = <frame_system::GenesisConfig<Runtime>>::default()
 			.build_storage()
 			.expect("Frame system builds valid default genesis config");

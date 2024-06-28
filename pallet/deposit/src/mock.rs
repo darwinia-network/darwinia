@@ -17,69 +17,34 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 pub use crate as darwinia_deposit;
-pub use dc_types::{AssetId, Balance, Moment, UNIT};
+pub use dc_types::{Balance, Moment, UNIT};
 
-// substrate
+// polkadot-sdk
+use frame_support::derive_impl;
 use sp_io::TestExternalities;
 use sp_runtime::BuildStorage;
 
+pub type AssetId = u32;
+
+#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
-	type AccountId = u32;
-	type BaseCallFilter = frame_support::traits::Everything;
 	type Block = frame_system::mocking::MockBlock<Self>;
-	type BlockHashCount = ();
-	type BlockLength = ();
-	type BlockWeights = ();
-	type DbWeight = ();
-	type Hash = sp_core::H256;
-	type Hashing = sp_runtime::traits::BlakeTwo256;
-	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
-	type MaxConsumers = frame_support::traits::ConstU32<16>;
-	type Nonce = u64;
-	type OnKilledAccount = ();
-	type OnNewAccount = ();
-	type OnSetCode = ();
-	type PalletInfo = PalletInfo;
-	type RuntimeCall = RuntimeCall;
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeOrigin = RuntimeOrigin;
-	type SS58Prefix = ();
-	type SystemWeightInfo = ();
-	type Version = ();
 }
 
+#[derive_impl(pallet_timestamp::config_preludes::TestDefaultConfig as pallet_timestamp::DefaultConfig)]
 impl pallet_timestamp::Config for Runtime {
 	type MinimumPeriod = ();
 	type Moment = Moment;
-	type OnTimestampSet = ();
-	type WeightInfo = ();
 }
 
+#[derive_impl(pallet_balances::config_preludes::TestDefaultConfig as pallet_balances::DefaultConfig)]
 impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
 	type Balance = Balance;
-	type DustRemoval = ();
-	type ExistentialDeposit = frame_support::traits::ConstU128<0>;
-	type FreezeIdentifier = ();
-	type MaxFreezes = ();
-	type MaxHolds = ();
-	type MaxLocks = ();
-	type MaxReserves = ();
-	type ReserveIdentifier = [u8; 8];
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeHoldReason = ();
-	type WeightInfo = ();
+	type ExistentialDeposit = ();
 }
 
-#[cfg(feature = "runtime-benchmarks")]
-pub enum BenchmarkHelper {}
-#[cfg(feature = "runtime-benchmarks")]
-impl pallet_assets::BenchmarkHelper<codec::Compact<AssetId>> for BenchmarkHelper {
-	fn create_asset_id_parameter(id: u32) -> codec::Compact<AssetId> {
-		(id as u64).into()
-	}
-}
 impl pallet_assets::Config for Runtime {
 	type ApprovalDeposit = ();
 	type AssetAccountDeposit = ();
@@ -88,14 +53,14 @@ impl pallet_assets::Config for Runtime {
 	type AssetIdParameter = codec::Compact<AssetId>;
 	type Balance = Balance;
 	#[cfg(feature = "runtime-benchmarks")]
-	type BenchmarkHelper = BenchmarkHelper;
+	type BenchmarkHelper = ();
 	type CallbackHandle = ();
 	type CreateOrigin = frame_support::traits::AsEnsureOriginWithArg<
-		frame_system::EnsureSignedBy<frame_support::traits::IsInVec<()>, u32>,
+		frame_system::EnsureSignedBy<frame_support::traits::IsInVec<()>, Self::AccountId>,
 	>;
 	type Currency = Balances;
 	type Extra = ();
-	type ForceOrigin = frame_system::EnsureRoot<u32>;
+	type ForceOrigin = frame_system::EnsureRoot<Self::AccountId>;
 	type Freezer = ();
 	type MetadataDepositBase = ();
 	type MetadataDepositPerByte = ();
@@ -107,7 +72,7 @@ impl pallet_assets::Config for Runtime {
 
 pub enum KtonMinting {}
 impl darwinia_deposit::SimpleAsset for KtonMinting {
-	type AccountId = u32;
+	type AccountId = <Runtime as frame_system::Config>::AccountId;
 
 	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
 		Assets::mint(RuntimeOrigin::signed(0), 0.into(), *beneficiary, amount)

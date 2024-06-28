@@ -20,24 +20,12 @@
 
 #[cfg(feature = "darwinia-native")]
 pub mod darwinia;
-#[cfg(feature = "darwinia-native")]
-pub use darwinia::{self as darwinia_chain_spec, ChainSpec as DarwiniaChainSpec};
-#[cfg(not(feature = "darwinia-native"))]
-pub type DarwiniaChainSpec = DummyChainSpec;
 
 #[cfg(feature = "crab-native")]
 pub mod crab;
-#[cfg(feature = "crab-native")]
-pub use crab::{self as crab_chain_spec, ChainSpec as CrabChainSpec};
-#[cfg(not(feature = "crab-native"))]
-pub type CrabChainSpec = DummyChainSpec;
 
 #[cfg(feature = "koi-native")]
 pub mod koi;
-#[cfg(feature = "koi-native")]
-pub use koi::{self as koi_chain_spec, ChainSpec as KoiChainSpec};
-#[cfg(not(feature = "koi-native"))]
-pub type KoiChainSpec = DummyChainSpec;
 
 #[cfg(feature = "koi-native")]
 mod testnet_keys {
@@ -58,14 +46,14 @@ use std::{env, fs, thread};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use tokio::runtime::Runtime as TokioRuntime;
 use trauma::{download::Download, downloader::DownloaderBuilder};
-// substrate
+// darwinia
+use dc_primitives::AccountId;
+// polkadot-sdk
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup, GenericChainSpec, Properties};
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{Pair, Public};
 
-// Dummy chain spec, in case when we don't have the native runtime.
-#[allow(unused)]
-pub type DummyChainSpec = sc_chain_spec::GenericChainSpec<(), Extensions>;
+pub type ChainSpec = sc_service::GenericChainSpec<(), Extensions>;
 
 const TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit";
 
@@ -112,15 +100,39 @@ fn properties(token_symbol: &str) -> Properties {
 }
 
 fn get_collator_keys_from_seed(seed: &str) -> AuraId {
+	fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
+		TPublic::Pair::from_string(&format!("//{}", seed), None)
+			.expect("static values are valid; qed")
+			.public()
+	}
+
 	get_from_seed::<AuraId>(seed)
 }
-fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
-	TPublic::Pair::from_string(&format!("//{}", seed), None)
-		.expect("static values are valid; qed")
-		.public()
+
+fn dev_accounts<F, Sks>(f: F) -> ([(AccountId, Sks); 1], [AccountId; 6])
+where
+	F: Fn(AuraId) -> Sks,
+{
+	(
+		[
+			// Bind the `Alice` to `Alith` to make `--alice` work for development.
+			(
+				array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
+				f(get_collator_keys_from_seed("Alice")),
+			),
+		],
+		[
+			array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
+			array_bytes::hex_n_into_unchecked::<_, _, 20>(BALTATHAR),
+			array_bytes::hex_n_into_unchecked::<_, _, 20>(CHARLETH),
+			array_bytes::hex_n_into_unchecked::<_, _, 20>(DOROTHY),
+			array_bytes::hex_n_into_unchecked::<_, _, 20>(ETHAN),
+			array_bytes::hex_n_into_unchecked::<_, _, 20>(FAITH),
+		],
+	)
 }
 
-fn load_config<G, E>(name: &'static str, mut retries: u8) -> GenericChainSpec<G, E>
+fn load_config<E>(name: &'static str, mut retries: u8) -> GenericChainSpec<(), E>
 where
 	E: DeserializeOwned,
 {

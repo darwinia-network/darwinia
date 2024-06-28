@@ -69,10 +69,10 @@ jobs:
             ${{ matrix.action }}-${{ env.CACHE_VERSION }}-${{ runner.os }}-
       - name: Action ${{ matrix.action }}
         if: matrix.action == 'build'
-        run: cargo build --locked -p darwinia --features all-natives,evm-tracing --profile ci-dev
+        run: cargo b --locked -p darwinia --no-default-features --features all-natives,evm-tracing --profile ci-dev
       - name: Action ${{ matrix.action }}
         if: matrix.action == 'test'
-        run: SKIP_WASM_BUILD=1 cargo test --locked --features all-natives,runtime-benchmarks --profile ci-dev
+        run: SKIP_WASM_BUILD=1 cargo t --locked --no-default-features --features all-natives,runtime-benchmarks --profile ci-dev
       - name: Configure artifacts
         if: matrix.action == 'build'
         run: |
@@ -109,8 +109,7 @@ jobs:
     if: github.event_name == 'push' || !github.event.pull_request.draft
     strategy:
       matrix:
-        runtime:
-          [runtime/darwinia, runtime/crab, runtime/koi]
+        runtime: [runtime/darwinia, runtime/crab, runtime/koi]
     runs-on: ubuntu-latest
     steps:
       - name: Fetch latest code

@@ -26,11 +26,11 @@ impl pallet_balances::Config for Runtime {
 	type ExistentialDeposit = pallet_config::ExistentialDeposit;
 	type FreezeIdentifier = ();
 	type MaxFreezes = ();
-	type MaxHolds = ();
 	type MaxLocks = ConstU32<50>;
 	type MaxReserves = ConstU32<50>;
 	type ReserveIdentifier = [u8; 8];
 	type RuntimeEvent = RuntimeEvent;
-	type RuntimeHoldReason = ();
+	type RuntimeFreezeReason = RuntimeFreezeReason;
+	type RuntimeHoldReason = RuntimeHoldReason;
 	type WeightInfo = weights::pallet_balances::WeightInfo<Self>;
 }

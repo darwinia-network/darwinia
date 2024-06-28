@@ -1,4 +1,4 @@
-// substrate
+// polkadot-sdk
 pub use frame_support::migration;
 
 /// Pallet migration helper.

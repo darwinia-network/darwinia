@@ -20,7 +20,8 @@
 use crate::*;
 
 impl cumulus_pallet_dmp_queue::Config for Runtime {
-	type ExecuteOverweightOrigin = Root;
+	type DmpSink =
+		frame_support::traits::EnqueueWithOrigin<MessageQueue, pallet_config::RelayOrigin>;
 	type RuntimeEvent = RuntimeEvent;
-	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;
+	type WeightInfo = ();
 }

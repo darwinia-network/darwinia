@@ -17,7 +17,6 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![deny(unused_crate_dependencies)]
 
 #[cfg(test)]
 mod mock;
@@ -232,7 +231,7 @@ impl<T: Config> Pallet<T> {
 				true,
 			) {
 				weight_limit if weight_limit.proof_size() > 0 =>
-					(Some(weight_limit), Some(proof_size_base_cost(&transaction))),
+					(Some(weight_limit), Some(transaction_data.proof_size_base_cost())),
 				_ => (None, None),
 			};
 
@@ -289,17 +288,6 @@ impl From<TransactionValidationError> for TxErrorWrapper {
 			TransactionValidationError::UnknownError => TxErrorWrapper::UnknownError,
 		}
 	}
-}
-
-// TODO: Reuse the frontier implementation
-fn proof_size_base_cost(transaction: &Transaction) -> u64 {
-	transaction
-		.encode()
-		.len()
-		// pallet index
-		.saturating_add(1)
-		// call index
-		.saturating_add(1) as u64
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Encode, Decode, TypeInfo)]

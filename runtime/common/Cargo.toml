@@ -19,24 +19,26 @@ dc-primitives              = { workspace = true }
 
 # frontier
 fp-account = { workspace = true }
+fp-evm     = { workspace = true }
 pallet-evm = { workspace = true }
 
-# polkadot
-xcm          = { workspace = true }
-xcm-builder  = { workspace = true }
-xcm-executor = { workspace = true }
-
-# substrate
-frame-support     = { workspace = true }
-frame-system      = { workspace = true }
-pallet-assets     = { workspace = true, optional = true }
-pallet-authorship = { workspace = true }
-pallet-balances   = { workspace = true }
-pallet-collective = { workspace = true }
-sp-core           = { workspace = true }
-sp-io             = { workspace = true }
-sp-runtime        = { workspace = true }
-sp-std            = { workspace = true }
+# polkadot-sdk
+cumulus-primitives-core = { workspace = true }
+frame-support           = { workspace = true }
+frame-system            = { workspace = true }
+pallet-authorship       = { workspace = true }
+pallet-balances         = { workspace = true }
+pallet-collective       = { workspace = true }
+pallet-message-queue    = { workspace = true }
+sp-core                 = { workspace = true }
+sp-io                   = { workspace = true }
+sp-runtime              = { workspace = true }
+sp-std                  = { workspace = true }
+xcm                     = { workspace = true }
+xcm-executor            = { workspace = true }
+# polkadot-sdk optional
+pallet-assets   = { workspace = true, optional = true }
+pallet-treasury = { workspace = true, optional = true }
 
 [features]
 default = ["std"]
@@ -52,29 +54,40 @@ std = [
 
 	# frontier
 	"fp-account/std",
+	"fp-evm/std",
 	"pallet-evm/std",
 
-	# polkadot
-	"xcm-builder/std",
-	"xcm-executor/std",
-	"xcm/std",
-
-	# substrate
+	# polkadot-sdk
+	"cumulus-primitives-core/std",
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-authorship/std",
 	"pallet-balances/std",
 	"pallet-collective/std",
+	"pallet-message-queue/std",
 	"sp-core/std",
 	"sp-io/std",
 	"sp-runtime/std",
 	"sp-std/std",
-	# substrate optional
+	"xcm-executor/std",
+	"xcm/std",
+	# polkadot-sdk optional
 	"pallet-assets?/std",
+	"pallet-treasury?/std",
 ]
 
 test = []
 
 runtime-benchmarks = [
+	# polkadot-sdk
+	"cumulus-primitives-core/runtime-benchmarks",
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
+	"pallet-balances/runtime-benchmarks",
+	"pallet-collective/runtime-benchmarks",
+	"pallet-message-queue/runtime-benchmarks",
+	"sp-runtime/runtime-benchmarks",
+	# polkadot-sdk optional
 	"pallet-assets/runtime-benchmarks",
+	"pallet-treasury/runtime-benchmarks",
 ]

@@ -21,12 +21,20 @@ use crate::*;
 
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type ChannelInfo = ParachainSystem;
-	type ControllerOrigin = Root;
+	type ControllerOrigin = RootOr<GeneralAdmin>;
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
-	type ExecuteOverweightOrigin = Root;
-	type PriceForSiblingDelivery = ();
+	type MaxInboundSuspended = sp_core::ConstU32<1_000>;
+	type PriceForSiblingDelivery = polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery<
+		cumulus_primitives_core::ParaId,
+	>;
 	type RuntimeEvent = RuntimeEvent;
 	type VersionWrapper = ();
 	type WeightInfo = weights::cumulus_pallet_xcmp_queue::WeightInfo<Self>;
-	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;
+	// Enqueue XCMP messages from siblings for later processing.
+	type XcmpQueue = frame_support::traits::TransformOrigin<
+		MessageQueue,
+		cumulus_primitives_core::AggregateMessageOrigin,
+		cumulus_primitives_core::ParaId,
+		message_queue::ParaIdToSibling,
+	>;
 }

@@ -61,7 +61,7 @@ runs:
             --name=build-darwinia \
             -v=$(pwd):/build \
             darwinia-network/build-tool:latest \
-              cargo build --release --locked \
+              cargo b --release --locked \
                 -p darwinia \
                 --no-default-features \
                 --features=$FEATURES

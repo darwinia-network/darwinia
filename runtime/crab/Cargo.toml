@@ -7,31 +7,18 @@ readme            = "README.md"
 version.workspace = true
 
 [build-dependencies]
-# substrate optional
+# polkadot-sdk optional
 substrate-wasm-builder = { workspace = true, optional = true }
 
 [dependencies]
 # crates.io
-codec             = { workspace = true, package = "parity-scale-codec" }
-log               = { workspace = true }
-scale-info        = { workspace = true }
-static_assertions = { workspace = true }
-strum             = { workspace = true, features = ["derive"] }
+codec      = { workspace = true, package = "parity-scale-codec" }
+log        = { workspace = true }
+scale-info = { workspace = true }
+strum      = { workspace = true, features = ["derive"] }
 # crates.io optional
 # TODO: optional
 array-bytes = { workspace = true }
-
-# cumulus
-cumulus-pallet-aura-ext         = { workspace = true }
-cumulus-pallet-dmp-queue        = { workspace = true }
-cumulus-pallet-parachain-system = { workspace = true }
-cumulus-pallet-xcm              = { workspace = true }
-cumulus-pallet-xcmp-queue       = { workspace = true }
-cumulus-primitives-core         = { workspace = true }
-cumulus-primitives-utility      = { workspace = true }
-parachain-info                  = { workspace = true }
-# cumulus optional
-cumulus-pallet-session-benchmarking = { workspace = true, optional = true }
 
 # darwinia
 darwinia-account-migration        = { workspace = true }
@@ -64,15 +51,15 @@ pallet-evm-precompile-conviction-voting = { workspace = true }
 precompile-utils                        = { workspace = true }
 xcm-primitives                          = { workspace = true }
 
-# polkadot
-pallet-xcm              = { workspace = true }
-polkadot-parachain      = { workspace = true }
-polkadot-runtime-common = { workspace = true }
-xcm                     = { workspace = true }
-xcm-builder             = { workspace = true }
-xcm-executor            = { workspace = true }
-
-# substrate
+# polkadot-sdk
+cumulus-pallet-aura-ext                    = { workspace = true }
+cumulus-pallet-dmp-queue                   = { workspace = true }
+cumulus-pallet-parachain-system            = { workspace = true }
+cumulus-pallet-xcm                         = { workspace = true }
+cumulus-pallet-xcmp-queue                  = { workspace = true }
+cumulus-primitives-aura                    = { workspace = true }
+cumulus-primitives-core                    = { workspace = true }
+cumulus-primitives-utility                 = { workspace = true }
 frame-executive                            = { workspace = true }
 frame-support                              = { workspace = true }
 frame-system                               = { workspace = true }
@@ -83,8 +70,7 @@ pallet-authorship                          = { workspace = true }
 pallet-balances                            = { workspace = true }
 pallet-collective                          = { workspace = true }
 pallet-conviction-voting                   = { workspace = true }
-pallet-democracy                           = { workspace = true }
-pallet-identity                            = { workspace = true }
+pallet-message-queue                       = { workspace = true }
 pallet-preimage                            = { workspace = true }
 pallet-proxy                               = { workspace = true }
 pallet-referenda                           = { workspace = true }
@@ -96,13 +82,17 @@ pallet-transaction-payment-rpc-runtime-api = { workspace = true }
 pallet-treasury                            = { workspace = true }
 pallet-tx-pause                            = { workspace = true }
 pallet-utility                             = { workspace = true }
-pallet-vesting                             = { workspace = true }
 pallet-whitelist                           = { workspace = true }
+pallet-xcm                                 = { workspace = true }
+parachain-info                             = { workspace = true }
+polkadot-parachain                         = { workspace = true }
+polkadot-runtime-common                    = { workspace = true }
 sp-api                                     = { workspace = true }
 sp-block-builder                           = { workspace = true }
 sp-consensus-aura                          = { workspace = true }
 sp-core                                    = { workspace = true }
 sp-debug-derive                            = { workspace = true, optional = true, features = ["force-debug"] }
+sp-genesis-builder                         = { workspace = true }
 sp-inherents                               = { workspace = true }
 sp-offchain                                = { workspace = true }
 sp-runtime                                 = { workspace = true }
@@ -111,19 +101,22 @@ sp-staking                                 = { workspace = true }
 sp-std                                     = { workspace = true }
 sp-transaction-pool                        = { workspace = true }
 sp-version                                 = { workspace = true }
-# substrate optional
-frame-benchmarking        = { workspace = true, optional = true }
-frame-system-benchmarking = { workspace = true, optional = true }
-frame-try-runtime         = { workspace = true, optional = true }
+xcm                                        = { workspace = true }
+xcm-builder                                = { workspace = true }
+xcm-executor                               = { workspace = true }
+# polkadot-sdk optional
+cumulus-pallet-session-benchmarking = { workspace = true, optional = true }
+frame-benchmarking                  = { workspace = true, optional = true }
+frame-system-benchmarking           = { workspace = true, optional = true }
+frame-try-runtime                   = { workspace = true, optional = true }
 
 [dev-dependencies]
 # darwinia
 darwinia-common-runtime = { workspace = true, features = ["std", "test"] }
-# polkadot
+# polkadot-sdk
 polkadot-primitives = { workspace = true, features = ["std"] }
-# substrate
-sp-io      = { workspace = true, features = ["std"] }
-sp-keyring = { workspace = true }
+sp-io               = { workspace = true, features = ["std"] }
+sp-keyring          = { workspace = true }
 
 [features]
 default = ["std"]
@@ -133,18 +126,6 @@ std = [
 	"log/std",
 	"scale-info/std",
 	"strum/std",
-
-	# cumulus
-	"cumulus-pallet-aura-ext/std",
-	"cumulus-pallet-dmp-queue/std",
-	"cumulus-pallet-parachain-system/std",
-	"cumulus-pallet-xcm/std",
-	"cumulus-pallet-xcmp-queue/std",
-	"cumulus-primitives-core/std",
-	"cumulus-primitives-utility/std",
-	"parachain-info/std",
-	# cumulus optional
-	"cumulus-pallet-session-benchmarking?/std",
 
 	# darwinia
 	"darwinia-account-migration/std",
@@ -177,15 +158,15 @@ std = [
 	"precompile-utils/std",
 	"xcm-primitives/std",
 
-	# polkadot
-	"pallet-xcm/std",
-	"polkadot-parachain/std",
-	"polkadot-runtime-common/std",
-	"xcm-builder/std",
-	"xcm-executor/std",
-	"xcm/std",
-
-	# substrate
+	# polkadot-sdk
+	"cumulus-pallet-aura-ext/std",
+	"cumulus-pallet-dmp-queue/std",
+	"cumulus-pallet-parachain-system/std",
+	"cumulus-pallet-xcm/std",
+	"cumulus-pallet-xcmp-queue/std",
+	"cumulus-primitives-aura/std",
+	"cumulus-primitives-core/std",
+	"cumulus-primitives-utility/std",
 	"frame-executive/std",
 	"frame-support/std",
 	"frame-system-rpc-runtime-api/std",
@@ -196,8 +177,7 @@ std = [
 	"pallet-balances/std",
 	"pallet-collective/std",
 	"pallet-conviction-voting/std",
-	"pallet-democracy/std",
-	"pallet-identity/std",
+	"pallet-message-queue/std",
 	"pallet-preimage/std",
 	"pallet-proxy/std",
 	"pallet-referenda/std",
@@ -209,13 +189,17 @@ std = [
 	"pallet-treasury/std",
 	"pallet-tx-pause/std",
 	"pallet-utility/std",
-	"pallet-vesting/std",
 	"pallet-whitelist/std",
+	"pallet-xcm/std",
+	"parachain-info/std",
+	"polkadot-parachain/std",
+	"polkadot-runtime-common/std",
 	"sp-api/std",
 	"sp-block-builder/std",
 	"sp-consensus-aura/std",
 	"sp-core/std",
 	"sp-debug-derive?/std",
+	"sp-genesis-builder/std",
 	"sp-inherents/std",
 	"sp-offchain/std",
 	"sp-runtime/std",
@@ -224,7 +208,11 @@ std = [
 	"sp-std/std",
 	"sp-transaction-pool/std",
 	"sp-version/std",
-	# substrate optional
+	"xcm-builder/std",
+	"xcm-executor/std",
+	"xcm/std",
+	# polkadot-sdk optional
+	"cumulus-pallet-session-benchmarking?/std",
 	"frame-benchmarking?/std",
 	"frame-system-benchmarking?/std",
 	"frame-try-runtime?/std",
@@ -256,12 +244,6 @@ runtime-benchmarks = [
 	# TODO: optional
 	# "array-bytes
 
-	# cumulus
-	"cumulus-pallet-parachain-system/runtime-benchmarks",
-	"cumulus-pallet-xcmp-queue/runtime-benchmarks",
-	# cumulus optional
-	"cumulus-pallet-session-benchmarking/runtime-benchmarks",
-
 	# darwinia
 	"darwinia-account-migration/runtime-benchmarks",
 	"darwinia-common-runtime/runtime-benchmarks",
@@ -278,22 +260,17 @@ runtime-benchmarks = [
 	# moonbeam
 	"xcm-primitives/runtime-benchmarks",
 
-	# polkadot
-	"pallet-xcm/runtime-benchmarks",
-	"polkadot-parachain/runtime-benchmarks",
-	"polkadot-runtime-common/runtime-benchmarks",
-	"xcm-builder/runtime-benchmarks",
-	"xcm-executor/runtime-benchmarks",
-
-	# substrate
+	# polkadot-sdk
+	"cumulus-pallet-parachain-system/runtime-benchmarks",
+	"cumulus-pallet-xcmp-queue/runtime-benchmarks",
+	"cumulus-primitives-core/runtime-benchmarks",
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
 	"pallet-assets/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
 	"pallet-collective/runtime-benchmarks",
 	"pallet-conviction-voting/runtime-benchmarks",
-	"pallet-democracy/runtime-benchmarks",
-	"pallet-identity/runtime-benchmarks",
+	"pallet-message-queue/runtime-benchmarks",
 	"pallet-preimage/runtime-benchmarks",
 	"pallet-proxy/runtime-benchmarks",
 	"pallet-referenda/runtime-benchmarks",
@@ -302,24 +279,21 @@ runtime-benchmarks = [
 	"pallet-treasury/runtime-benchmarks",
 	"pallet-tx-pause/runtime-benchmarks",
 	"pallet-utility/runtime-benchmarks",
-	"pallet-vesting/runtime-benchmarks",
 	"pallet-whitelist/runtime-benchmarks",
+	"pallet-xcm/runtime-benchmarks",
+	"polkadot-parachain/runtime-benchmarks",
+	"polkadot-runtime-common/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
-	# substrate optional
+	"xcm-builder/runtime-benchmarks",
+	"xcm-executor/runtime-benchmarks",
+	# polkadot-sdk optional
+	"cumulus-pallet-session-benchmarking/runtime-benchmarks",
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-system-benchmarking/runtime-benchmarks",
 	"sp-staking/runtime-benchmarks",
 ]
 
 try-runtime = [
-	# cumulus
-	"cumulus-pallet-aura-ext/try-runtime",
-	"cumulus-pallet-dmp-queue/try-runtime",
-	"cumulus-pallet-parachain-system/try-runtime",
-	"cumulus-pallet-xcm/try-runtime",
-	"cumulus-pallet-xcmp-queue/try-runtime",
-	"parachain-info/try-runtime",
-
 	# darwinia
 	"darwinia-account-migration/try-runtime",
 	"darwinia-deposit/try-runtime",
@@ -331,11 +305,12 @@ try-runtime = [
 	"pallet-ethereum/try-runtime",
 	"pallet-evm/try-runtime",
 
-	# polkadot
-	"pallet-xcm/try-runtime",
-	"polkadot-runtime-common/try-runtime",
-
-	# substrate
+	# polkadot-sdk
+	"cumulus-pallet-aura-ext/try-runtime",
+	"cumulus-pallet-dmp-queue/try-runtime",
+	"cumulus-pallet-parachain-system/try-runtime",
+	"cumulus-pallet-xcm/try-runtime",
+	"cumulus-pallet-xcmp-queue/try-runtime",
 	"frame-executive/try-runtime",
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",
@@ -345,8 +320,7 @@ try-runtime = [
 	"pallet-balances/try-runtime",
 	"pallet-collective/try-runtime",
 	"pallet-conviction-voting/try-runtime",
-	"pallet-democracy/try-runtime",
-	"pallet-identity/try-runtime",
+	"pallet-message-queue/try-runtime",
 	"pallet-preimage/try-runtime",
 	"pallet-proxy/try-runtime",
 	"pallet-referenda/try-runtime",
@@ -357,10 +331,11 @@ try-runtime = [
 	"pallet-treasury/try-runtime",
 	"pallet-tx-pause/try-runtime",
 	"pallet-utility/try-runtime",
-	"pallet-vesting/try-runtime",
 	"pallet-whitelist/try-runtime",
+	"pallet-xcm/try-runtime",
+	"parachain-info/try-runtime",
+	"polkadot-runtime-common/try-runtime",
 	"sp-runtime/try-runtime",
-	# substrate optional
+	# polkadot-sdk optional
 	"frame-try-runtime/try-runtime",
-	"sp-runtime/try-runtime",
 ]

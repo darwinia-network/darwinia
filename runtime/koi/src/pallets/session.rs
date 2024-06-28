@@ -38,7 +38,7 @@ impl pallet_session::Config for Runtime {
 	type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
 	type SessionManager = DarwiniaStaking;
 	type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
-	type ValidatorId = <Self as frame_system::Config>::AccountId;
+	type ValidatorId = Self::AccountId;
 	// We don't have stash and controller, thus we don't need the convert as well.
 	type ValidatorIdOf = darwinia_staking::IdentityCollator;
 	type WeightInfo = weights::pallet_session::WeightInfo<Self>;

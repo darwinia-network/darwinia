@@ -18,9 +18,6 @@
 
 //! Service and service factory implementation. Specialized wrapper over substrate service.
 
-pub mod executors;
-pub use executors::*;
-
 pub mod frontier;
 
 mod instant_finalize;
@@ -42,23 +39,54 @@ use std::{
 use futures::FutureExt;
 // darwinia
 use dc_primitives::*;
-// substrate
-use sc_client_api::Backend;
+// polkadot-sdk
+use sc_client_api::{Backend, HeaderBackend};
 use sc_consensus::ImportQueue;
 use sc_network::NetworkBlock;
+use sp_core::Encode;
+
+#[cfg(all(feature = "runtime-benchmarks", feature = "evm-tracing"))]
+type HostFunctions = (
+	frame_benchmarking::benchmarking::HostFunctions,
+	moonbeam_primitives_ext::moonbeam_ext::HostFunctions,
+	sp_io::SubstrateHostFunctions,
+);
+#[cfg(all(feature = "runtime-benchmarks", not(feature = "evm-tracing")))]
+type HostFunctions =
+	(frame_benchmarking::benchmarking::HostFunctions, sp_io::SubstrateHostFunctions);
+#[cfg(all(not(feature = "runtime-benchmarks"), feature = "evm-tracing"))]
+type HostFunctions =
+	(moonbeam_primitives_ext::moonbeam_ext::HostFunctions, sp_io::SubstrateHostFunctions);
+#[cfg(not(any(feature = "evm-tracing", feature = "runtime-benchmarks")))]
+type HostFunctions = sp_io::SubstrateHostFunctions;
 
 /// Full client backend type.
 type FullBackend = sc_service::TFullBackend<Block>;
 /// Full client type.
-type FullClient<RuntimeApi, Executor> =
-	sc_service::TFullClient<Block, RuntimeApi, sc_executor::NativeElseWasmExecutor<Executor>>;
+type FullClient<RuntimeApi> =
+	sc_service::TFullClient<Block, RuntimeApi, sc_executor::WasmExecutor<HostFunctions>>;
 /// Parachain specific block import.
-type ParachainBlockImport<RuntimeApi, Executor> =
-	cumulus_client_consensus_common::ParachainBlockImport<
-		Block,
-		Arc<FullClient<RuntimeApi, Executor>>,
-		FullBackend,
-	>;
+type ParachainBlockImport<RuntimeApi> = cumulus_client_consensus_common::ParachainBlockImport<
+	Block,
+	Arc<FullClient<RuntimeApi>>,
+	FullBackend,
+>;
+type Service<RuntimeApi> = sc_service::PartialComponents<
+	FullClient<RuntimeApi>,
+	FullBackend,
+	sc_consensus::LongestChain<FullBackend, Block>,
+	sc_consensus::DefaultImportQueue<Block>,
+	sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi>>,
+	(
+		fc_db::Backend<Block>,
+		Option<fc_rpc_core::types::FilterPool>,
+		fc_rpc_core::types::FeeHistoryCache,
+		fc_rpc_core::types::FeeHistoryCacheLimit,
+		ParachainBlockImport<RuntimeApi>,
+		Option<sc_telemetry::Telemetry>,
+		Option<sc_telemetry::TelemetryWorkerHandle>,
+	),
+>;
 
 /// Can be called for a `Configuration` to check if it is the specific network.
 pub trait IdentifyVariant {
@@ -94,7 +122,8 @@ impl IdentifyVariant for Box<dyn sc_service::ChainSpec> {
 
 /// A set of APIs that darwinia-like runtimes must implement.
 pub trait RuntimeApiCollection:
-	cumulus_primitives_core::CollectCollationInfo<Block>
+	cumulus_primitives_aura::AuraUnincludedSegmentApi<Block>
+	+ cumulus_primitives_core::CollectCollationInfo<Block>
 	+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 	+ fp_rpc::EthereumRuntimeRPCApi<Block>
 	+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
@@ -110,7 +139,8 @@ pub trait RuntimeApiCollection:
 {
 }
 impl<Api> RuntimeApiCollection for Api where
-	Api: cumulus_primitives_core::CollectCollationInfo<Block>
+	Api: cumulus_primitives_aura::AuraUnincludedSegmentApi<Block>
+		+ cumulus_primitives_core::CollectCollationInfo<Block>
 		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
 		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
@@ -131,35 +161,13 @@ impl<Api> RuntimeApiCollection for Api where
 /// Use this macro if you don't actually need the full service, but just the builder in order to
 /// be able to perform chain operations.
 #[allow(clippy::type_complexity)]
-pub fn new_partial<RuntimeApi, Executor>(
+pub fn new_partial<RuntimeApi>(
 	config: &sc_service::Configuration,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
-) -> Result<
-	sc_service::PartialComponents<
-		FullClient<RuntimeApi, Executor>,
-		FullBackend,
-		sc_consensus::LongestChain<FullBackend, Block>,
-		sc_consensus::DefaultImportQueue<Block>,
-		sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>,
-		(
-			fc_db::Backend<Block>,
-			Option<fc_rpc_core::types::FilterPool>,
-			fc_rpc_core::types::FeeHistoryCache,
-			fc_rpc_core::types::FeeHistoryCacheLimit,
-			ParachainBlockImport<RuntimeApi, Executor>,
-			Option<sc_telemetry::Telemetry>,
-			Option<sc_telemetry::TelemetryWorkerHandle>,
-		),
-	>,
-	sc_service::Error,
->
+) -> Result<Service<RuntimeApi>, sc_service::Error>
 where
-	RuntimeApi: 'static
-		+ Send
-		+ Sync
-		+ sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>,
+	RuntimeApi: 'static + Send + Sync + sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>>,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
-	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
 	let telemetry = config
 		.telemetry_endpoints
@@ -171,19 +179,7 @@ where
 			Ok((worker, telemetry))
 		})
 		.transpose()?;
-	let heap_pages =
-		config.default_heap_pages.map_or(sc_executor::DEFAULT_HEAP_ALLOC_STRATEGY, |h| {
-			sc_executor::HeapAllocStrategy::Static { extra_pages: h as _ }
-		});
-	let wasm_executor = sc_executor::WasmExecutor::builder()
-		.with_execution_method(config.wasm_method)
-		.with_max_runtime_instances(config.max_runtime_instances)
-		.with_runtime_cache_size(config.runtime_cache_size)
-		.with_onchain_heap_alloc_strategy(heap_pages)
-		.with_offchain_heap_alloc_strategy(heap_pages)
-		.build();
-	let executor =
-		<sc_executor::NativeElseWasmExecutor<Executor>>::new_with_wasm_executor(wasm_executor);
+	let executor = sc_service::new_wasm_executor::<HostFunctions>(config);
 	let (client, backend, keystore_container, task_manager) =
 		sc_service::new_full_parts::<Block, RuntimeApi, _>(
 			config,
@@ -242,7 +238,7 @@ where
 /// This is the actual implementation that is abstract over the executor and the runtime api.
 #[allow(clippy::too_many_arguments)]
 #[sc_tracing::logging::prefix_logs_with("Parachain")]
-async fn start_node_impl<RuntimeApi, Executor, SC>(
+async fn start_node_impl<RuntimeApi, SC>(
 	parachain_config: sc_service::Configuration,
 	polkadot_config: sc_service::Configuration,
 	collator_options: cumulus_client_cli::CollatorOptions,
@@ -251,22 +247,19 @@ async fn start_node_impl<RuntimeApi, Executor, SC>(
 	start_consensus: SC,
 	hwbench: Option<sc_sysinfo::HwBench>,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
-) -> sc_service::error::Result<(sc_service::TaskManager, Arc<FullClient<RuntimeApi, Executor>>)>
+) -> sc_service::error::Result<(sc_service::TaskManager, Arc<FullClient<RuntimeApi>>)>
 where
-	RuntimeApi: 'static
-		+ Send
-		+ Sync
-		+ sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>,
+	RuntimeApi: 'static + Send + Sync + sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>>,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
-	Executor: 'static + sc_executor::NativeExecutionDispatch,
 	SC: FnOnce(
-		Arc<FullClient<RuntimeApi, Executor>>,
-		ParachainBlockImport<RuntimeApi, Executor>,
+		Arc<FullClient<RuntimeApi>>,
+		Arc<FullBackend>,
+		ParachainBlockImport<RuntimeApi>,
 		Option<&substrate_prometheus_endpoint::Registry>,
 		Option<sc_telemetry::TelemetryHandle>,
 		&sc_service::TaskManager,
 		Arc<dyn cumulus_relay_chain_interface::RelayChainInterface>,
-		Arc<sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi, Executor>>>,
+		Arc<sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi>>>,
 		Arc<sc_network_sync::SyncingService<Block>>,
 		sp_keystore::KeystorePtr,
 		Duration,
@@ -295,8 +288,7 @@ where
 				mut telemetry,
 				telemetry_worker_handle,
 			),
-	} = new_partial::<RuntimeApi, Executor>(&parachain_config, eth_rpc_config)?;
-
+	} = new_partial::<RuntimeApi>(&parachain_config, eth_rpc_config)?;
 	let (relay_chain_interface, collator_key) =
 		cumulus_client_service::build_relay_chain_interface(
 			polkadot_config,
@@ -308,12 +300,10 @@ where
 		)
 		.await
 		.map_err(|e| sc_service::Error::Application(Box::new(e) as Box<_>))?;
-
 	let validator = parachain_config.role.is_authority();
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let import_queue_service = import_queue.service();
 	let net_config = sc_network::config::FullNetworkConfiguration::new(&parachain_config.network);
-
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		cumulus_client_service::build_network(cumulus_client_service::BuildNetworkParams {
 			parachain_config: &parachain_config,
@@ -391,7 +381,6 @@ where
 		let collator = parachain_config.role.is_authority();
 		let eth_rpc_config = eth_rpc_config.clone();
 		let sync_service = sync_service.clone();
-
 		let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 		let pending_create_inherent_data_providers = move |_, ()| async move {
 			let current = sp_timestamp::InherentDataProvider::from_system_time();
@@ -472,11 +461,11 @@ where
 		// Here you can check whether the hardware meets your chains' requirements. Putting a link
 		// in there and swapping out the requirements for your own are probably a good idea. The
 		// requirements for a para-chain are dictated by its relay-chain.
-		if !frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE.check_hardware(&hwbench)
-			&& validator
+		if let Err(e) =
+			frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE.check_hardware(&hwbench)
 		{
 			log::warn!(
-				"⚠️  The hardware does not meet the minimal requirements for role 'Authority'."
+				"⚠️  The hardware does not meet the minimal requirements {e} for role 'Authority'.",
 			);
 		}
 
@@ -521,6 +510,7 @@ where
 	if validator {
 		start_consensus(
 			client.clone(),
+			backend.clone(),
 			block_import,
 			prometheus_registry.as_ref(),
 			telemetry.as_ref().map(|t| t.handle()),
@@ -543,20 +533,16 @@ where
 }
 
 /// Build the import queue for the parachain runtime.
-pub fn build_import_queue<RuntimeApi, Executor>(
-	client: Arc<FullClient<RuntimeApi, Executor>>,
-	block_import: ParachainBlockImport<RuntimeApi, Executor>,
+pub fn build_import_queue<RuntimeApi>(
+	client: Arc<FullClient<RuntimeApi>>,
+	block_import: ParachainBlockImport<RuntimeApi>,
 	config: &sc_service::Configuration,
 	telemetry: Option<sc_telemetry::TelemetryHandle>,
 	task_manager: &sc_service::TaskManager,
 ) -> Result<sc_consensus::DefaultImportQueue<Block>, sc_service::Error>
 where
-	RuntimeApi: 'static
-		+ Send
-		+ Sync
-		+ sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>,
+	RuntimeApi: 'static + Send + Sync + sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>>,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
-	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
 	let slot_duration = cumulus_client_consensus_aura::slot_duration(&*client)?;
 
@@ -582,31 +568,28 @@ where
 }
 
 /// Start a parachain node.
-pub async fn start_parachain_node<RuntimeApi, Executor>(
+pub async fn start_parachain_node<RuntimeApi>(
 	parachain_config: sc_service::Configuration,
 	polkadot_config: sc_service::Configuration,
 	collator_options: cumulus_client_cli::CollatorOptions,
 	para_id: cumulus_primitives_core::ParaId,
 	hwbench: Option<sc_sysinfo::HwBench>,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
-) -> sc_service::error::Result<(sc_service::TaskManager, Arc<FullClient<RuntimeApi, Executor>>)>
+) -> sc_service::error::Result<(sc_service::TaskManager, Arc<FullClient<RuntimeApi>>)>
 where
-	RuntimeApi: sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>
-		+ Send
-		+ Sync
-		+ 'static,
+	RuntimeApi: sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>> + Send + Sync + 'static,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
 	RuntimeApi::RuntimeApi:
 		sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>,
-	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
-	start_node_impl::<RuntimeApi, Executor, _>(
+	start_node_impl::<RuntimeApi, _>(
 		parachain_config,
 		polkadot_config,
 		collator_options,
 		cumulus_client_service::CollatorSybilResistance::Resistant, // Aura
 		para_id,
 		|client,
+		 backend,
 		 block_import,
 		 prometheus_registry,
 		 telemetry,
@@ -635,11 +618,17 @@ where
 				announce_block,
 				client.clone(),
 			);
-			let params = cumulus_client_consensus_aura::collators::basic::Params {
+			let params = cumulus_client_consensus_aura::collators::lookahead::Params {
 				create_inherent_data_providers: move |_, ()| async move { Ok(()) },
 				block_import,
-				para_client: client,
+				para_client: client.clone(),
+				para_backend: backend.clone(),
 				relay_client: relay_chain_interface,
+				code_hash_provider: move |block_hash| {
+					client.code_at(block_hash).ok().map(|c| {
+						cumulus_primitives_core::relay_chain::ValidationCode::from(c).hash()
+					})
+				},
 				sync_oracle,
 				keystore,
 				collator_key,
@@ -650,11 +639,14 @@ where
 				proposer,
 				collator_service,
 				// Very limited proposal time.
-				authoring_duration: Duration::from_millis(500),
+				authoring_duration: Duration::from_millis(1_500),
+				reinitialize: false,
 			};
-			let fut = cumulus_client_consensus_aura::collators::basic::run::<
+			let fut = cumulus_client_consensus_aura::collators::lookahead::run::<
 				Block,
 				sp_consensus_aura::sr25519::AuthorityPair,
+				_,
+				_,
 				_,
 				_,
 				_,
@@ -676,23 +668,17 @@ where
 
 /// Start a dev node which can seal instantly.
 /// !!! WARNING: DO NOT USE ELSEWHERE
-pub fn start_dev_node<RuntimeApi, Executor>(
+pub fn start_dev_node<RuntimeApi>(
 	mut config: sc_service::Configuration,
+	para_id: cumulus_primitives_core::ParaId,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> Result<sc_service::TaskManager, sc_service::error::Error>
 where
-	RuntimeApi: sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi, Executor>>
-		+ Send
-		+ Sync
-		+ 'static,
+	RuntimeApi: 'static + Send + Sync + sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>>,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
 	RuntimeApi::RuntimeApi:
 		sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>,
-	Executor: 'static + sc_executor::NativeExecutionDispatch,
 {
-	// substrate
-	use sc_client_api::HeaderBackend;
-
 	let sc_service::PartialComponents {
 		client,
 		backend,
@@ -711,9 +697,8 @@ where
 				_telemetry,
 				_telemetry_worker_handle,
 			),
-	} = new_partial::<RuntimeApi, Executor>(&config, eth_rpc_config)?;
+	} = new_partial::<RuntimeApi>(&config, eth_rpc_config)?;
 	let net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
-
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		sc_service::build_network(sc_service::BuildNetworkParams {
 			config: &config,
@@ -724,6 +709,7 @@ where
 			import_queue,
 			block_announce_validator_builder: None,
 			warp_sync_params: None,
+			block_relay: None,
 		})?;
 
 	if config.offchain_worker.enabled {
@@ -750,7 +736,8 @@ where
 	}
 
 	let force_authoring = config.force_authoring;
-	let backoff_authoring_blocks: Option<()> = None;
+	let backoff_authoring_blocks = None::<()>;
+	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 	let proposer_factory = sc_basic_authorship::ProposerFactory::new(
 		task_manager.spawn_handle(),
 		client.clone(),
@@ -758,8 +745,6 @@ where
 		None,
 		None,
 	);
-
-	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 	let client_for_cidp = client.clone();
 	if config.role.is_authority() {
 		let aura = sc_consensus_aura::start_aura::<
@@ -775,41 +760,53 @@ where
 			_,
 			_,
 		>(sc_consensus_aura::StartAuraParams {
-			slot_duration: sc_consensus_aura::slot_duration(&*client)?,
+			slot_duration,
 			client: client.clone(),
 			select_chain,
 			block_import: instant_finalize::InstantFinalizeBlockImport::new(client.clone()),
 			proposer_factory,
-			create_inherent_data_providers: move |block: Hash, ()| {
-				let current_para_block = client_for_cidp
-					.number(block)
-					.expect("Header lookup should succeed")
-					.expect("Header passed in as parent should be present in backend.");
+			create_inherent_data_providers: move |block, ()| {
+				let maybe_current_para_block = client_for_cidp.number(block);
+				let maybe_current_block_head = client_for_cidp.expect_header(block);
 				let client_for_xcm = client_for_cidp.clone();
-
+				// TODO: hack for now.
+				let additional_key_values = Some(vec![(
+					array_bytes::hex2bytes_unchecked(
+						"1cb6f36e027abb2091cfb5110ab5087f06155b3cd9a8c9e5e9a23fd5dc13a5ed",
+					),
+					cumulus_primitives_aura::Slot::from_timestamp(
+						sp_timestamp::Timestamp::current(),
+						slot_duration,
+					)
+					.encode(),
+				)]);
 				async move {
+					let current_para_block = maybe_current_para_block?
+						.ok_or(sp_blockchain::Error::UnknownBlock(block.to_string()))?;
+					let current_para_block_head =
+						Some(polkadot_primitives::HeadData(maybe_current_block_head?.encode()));
 					let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
-
 					let slot = sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
 						*timestamp,
 						slot_duration,
 					);
-
 					let mocked_parachain =
-						cumulus_primitives_parachain_inherent::MockValidationDataInherentDataProvider {
+						cumulus_client_parachain_inherent::MockValidationDataInherentDataProvider {
 							current_para_block,
+							para_id,
+							current_para_block_head,
 							relay_offset: 1000,
 							relay_blocks_per_para_block: 2,
 							para_blocks_per_relay_epoch: 0,
 							relay_randomness_config: (),
-							xcm_config: cumulus_primitives_parachain_inherent::MockXcmConfig::new(
+							xcm_config: cumulus_client_parachain_inherent::MockXcmConfig::new(
 								&*client_for_xcm,
 								block,
-								Default::default(),
 								Default::default(),
 							),
 							raw_downward_messages: Vec::new(),
 							raw_horizontal_messages: Vec::new(),
+							additional_key_values,
 						};
 
 					Ok((slot, timestamp, mocked_parachain))
@@ -880,8 +877,6 @@ where
 		let collator = config.role.is_authority();
 		let eth_rpc_config = eth_rpc_config.clone();
 		let sync_service = sync_service.clone();
-
-		let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 		let pending_create_inherent_data_providers = move |_, ()| async move {
 			let current = sp_timestamp::InherentDataProvider::from_system_time();
 			let next_slot = current.timestamp().as_millis() + slot_duration.as_millis();

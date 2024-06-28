@@ -23,7 +23,7 @@ use cumulus_primitives_core::ParaId;
 // darwinia
 use crate::{
 	chain_spec::*,
-	cli::{Cli, FrontierBackendType, RelayChainCli, Subcommand},
+	cli::{Cli, FrontierBackendType, RelayChainCli, Subcommand, NODE_VERSION},
 	service::{self, *},
 };
 // substrate
@@ -33,7 +33,7 @@ use sc_cli::{
 };
 use sc_service::{
 	config::{BasePath, PrometheusConfig},
-	ChainSpec, DatabaseSource,
+	ChainSpec as ChainSpecT, DatabaseSource,
 };
 use sp_core::crypto::{self, Ss58AddressFormatRegistry};
 use sp_runtime::traits::AccountIdConversion;
@@ -44,7 +44,9 @@ impl SubstrateCli for Cli {
 	}
 
 	fn impl_version() -> String {
-		env!("SUBSTRATE_CLI_IMPL_VERSION").into()
+		let commit_hash = env!("SUBSTRATE_CLI_COMMIT_HASH");
+
+		format!("{NODE_VERSION}-{commit_hash}")
 	}
 
 	fn description() -> String {
@@ -69,7 +71,7 @@ impl SubstrateCli for Cli {
 		2018
 	}
 
-	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
+	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpecT>, String> {
 		load_spec(id)
 	}
 }
@@ -105,7 +107,7 @@ impl SubstrateCli for RelayChainCli {
 		2018
 	}
 
-	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
+	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpecT>, String> {
 		polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id)
 	}
 }
@@ -150,7 +152,7 @@ impl CliConfiguration<Self> for RelayChainCli {
 	fn prometheus_config(
 		&self,
 		default_listen_port: u16,
-		chain_spec: &Box<dyn ChainSpec>,
+		chain_spec: &Box<dyn ChainSpecT>,
 	) -> Result<Option<PrometheusConfig>> {
 		self.base.base.prometheus_config(default_listen_port, chain_spec)
 	}
@@ -220,7 +222,7 @@ impl CliConfiguration<Self> for RelayChainCli {
 
 	fn telemetry_endpoints(
 		&self,
-		chain_spec: &Box<dyn ChainSpec>,
+		chain_spec: &Box<dyn ChainSpecT>,
 	) -> Result<Option<sc_telemetry::TelemetryEndpoints>> {
 		self.base.base.telemetry_endpoints(chain_spec)
 	}
@@ -238,7 +240,7 @@ pub fn run() -> Result<()> {
 		($config:expr, $cli:ident, |$partials:ident| $code:expr) => {{
 			#[cfg(feature = "crab-native")]
 			if $config.chain_spec.is_crab() {
-				let $partials = service::new_partial::<CrabRuntimeApi, CrabRuntimeExecutor>(
+				let $partials = service::new_partial::<CrabRuntimeApi>(
 					&$config,
 					&$cli.eth_args.build_eth_rpc_config(),
 				)?;
@@ -248,7 +250,7 @@ pub fn run() -> Result<()> {
 
 			#[cfg(feature = "darwinia-native")]
 			if $config.chain_spec.is_darwinia() {
-				let $partials = service::new_partial::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
+				let $partials = service::new_partial::<DarwiniaRuntimeApi>(
 					&$config,
 					&$cli.eth_args.build_eth_rpc_config(),
 				)?;
@@ -258,7 +260,7 @@ pub fn run() -> Result<()> {
 
 			#[cfg(feature = "koi-native")]
 			if $config.chain_spec.is_koi() {
-				let $partials = service::new_partial::<KoiRuntimeApi, KoiRuntimeExecutor>(
+				let $partials = service::new_partial::<KoiRuntimeApi>(
 					&$config,
 					&$cli.eth_args.build_eth_rpc_config(),
 				)?;
@@ -280,7 +282,7 @@ pub fn run() -> Result<()> {
 			#[cfg(feature = "crab-native")]
 			if chain_spec.is_crab() {
 				return runner.async_run(|$config| {
-					let $components = service::new_partial::<CrabRuntimeApi, CrabRuntimeExecutor>(
+					let $components = service::new_partial::<CrabRuntimeApi>(
 						&$config,
 						&$cli.eth_args.build_eth_rpc_config()
 					)?;
@@ -293,7 +295,7 @@ pub fn run() -> Result<()> {
 			#[cfg(feature = "darwinia-native")]
 			if chain_spec.is_darwinia() {
 				return runner.async_run(|$config| {
-					let $components = service::new_partial::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
+					let $components = service::new_partial::<DarwiniaRuntimeApi>(
 						&$config,
 						&$cli.eth_args.build_eth_rpc_config()
 					)?;
@@ -306,7 +308,7 @@ pub fn run() -> Result<()> {
 			#[cfg(feature = "koi-native")]
 			if chain_spec.is_koi() {
 				return runner.async_run(|$config| {
-					let $components = service::new_partial::<KoiRuntimeApi, KoiRuntimeExecutor>(
+					let $components = service::new_partial::<KoiRuntimeApi>(
 						&$config,
 						&$cli.eth_args.build_eth_rpc_config()
 					)?;
@@ -417,9 +419,9 @@ pub fn run() -> Result<()> {
 				cmd.run(config, polkadot_config)
 			})
 		},
-		Some(Subcommand::ExportGenesisState(cmd)) =>
+		Some(Subcommand::ExportGenesisHead(cmd)) =>
 			construct_async_run!(|components, cli, cmd, config| {
-				Ok(async move { cmd.run(&*config.chain_spec, &*components.client) })
+				Ok(async move { cmd.run(components.client.clone()) })
 			}),
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
@@ -504,8 +506,9 @@ pub fn run() -> Result<()> {
 				if chain_spec.is_dev() {
 					#[cfg(feature = "crab-native")]
 					if chain_spec.is_crab() {
-						return service::start_dev_node::<CrabRuntimeApi, CrabRuntimeExecutor>(
+						return service::start_dev_node::<CrabRuntimeApi>(
 							config,
+							id,
 							&eth_rpc_config,
 						)
 						.map_err(Into::into);
@@ -513,8 +516,9 @@ pub fn run() -> Result<()> {
 
 					#[cfg(feature = "darwinia-native")]
 					if chain_spec.is_darwinia() {
-						return service::start_dev_node::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
+						return service::start_dev_node::<DarwiniaRuntimeApi>(
 							config,
+							id,
 							&eth_rpc_config,
 						)
 						.map_err(Into::into)
@@ -522,8 +526,9 @@ pub fn run() -> Result<()> {
 
 					#[cfg(feature = "koi-native")]
 					if chain_spec.is_koi() {
-						return service::start_dev_node::<KoiRuntimeApi, KoiRuntimeExecutor>(
+						return service::start_dev_node::<KoiRuntimeApi>(
 							config,
+							id,
 							&eth_rpc_config,
 						)
 						.map_err(Into::into)
@@ -536,7 +541,7 @@ pub fn run() -> Result<()> {
 
 				#[cfg(feature = "crab-native")]
 				if chain_spec.is_crab() {
-					return service::start_parachain_node::<CrabRuntimeApi, CrabRuntimeExecutor>(
+					return service::start_parachain_node::<CrabRuntimeApi>(
 						config,
 						polkadot_config,
 						collator_options,
@@ -551,7 +556,7 @@ pub fn run() -> Result<()> {
 
 				#[cfg(feature = "darwinia-native")]
 				if chain_spec.is_darwinia() {
-					return service::start_parachain_node::<DarwiniaRuntimeApi, DarwiniaRuntimeExecutor>(
+					return service::start_parachain_node::<DarwiniaRuntimeApi>(
 						config,
 						polkadot_config,
 						collator_options,
@@ -566,7 +571,7 @@ pub fn run() -> Result<()> {
 
 				#[cfg(feature = "koi-native")]
 				if chain_spec.is_koi() {
-					return service::start_parachain_node::<KoiRuntimeApi, KoiRuntimeExecutor>(
+					return service::start_parachain_node::<KoiRuntimeApi>(
 						config,
 						polkadot_config,
 						collator_options,
@@ -585,7 +590,7 @@ pub fn run() -> Result<()> {
 	}
 }
 
-fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
+fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpecT>, String> {
 	let id = if id.is_empty() {
 		let n = get_exec_name().unwrap_or_default();
 		["darwinia", "crab", "koi"]
@@ -596,52 +601,29 @@ fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 	} else {
 		id
 	};
-
-	Ok(match id.to_lowercase().as_str() {
+	let chain_spec = match id.to_lowercase().as_str() {
 		#[cfg(feature = "crab-native")]
-		"crab" => Box::new(crab_chain_spec::config()),
+		"crab" => Box::new(crab::config()),
 		#[cfg(feature = "crab-native")]
-		"crab-genesis" => Box::new(crab_chain_spec::genesis_config()),
+		"crab-genesis" => Box::new(crab::genesis_config()),
 		#[cfg(feature = "crab-native")]
-		"crab-dev" => Box::new(crab_chain_spec::development_config()),
-		#[cfg(feature = "crab-native")]
-		"crab-local" => Box::new(crab_chain_spec::local_config()),
+		"crab-dev" => Box::new(crab::development_config()),
 		#[cfg(feature = "darwinia-native")]
-		"darwinia" => Box::new(darwinia_chain_spec::config()),
+		"darwinia" => Box::new(darwinia::config()),
 		#[cfg(feature = "darwinia-native")]
-		"darwinia-genesis" => Box::new(darwinia_chain_spec::genesis_config()),
+		"darwinia-genesis" => Box::new(darwinia::genesis_config()),
 		#[cfg(feature = "darwinia-native")]
-		"darwinia-dev" => Box::new(darwinia_chain_spec::development_config()),
-		#[cfg(feature = "darwinia-native")]
-		"darwinia-local" => Box::new(darwinia_chain_spec::local_config()),
+		"darwinia-dev" => Box::new(darwinia::development_config()),
 		#[cfg(feature = "koi-native")]
-		"koi" => Box::new(koi_chain_spec::config()),
+		"koi" => Box::new(koi::config()),
 		#[cfg(feature = "koi-native")]
-		"koi-genesis" => Box::new(koi_chain_spec::genesis_config()),
+		"koi-genesis" => Box::new(koi::genesis_config()),
 		#[cfg(feature = "koi-native")]
-		"koi-dev" => Box::new(koi_chain_spec::development_config()),
-		#[cfg(feature = "koi-native")]
-		"koi-local" => Box::new(koi_chain_spec::local_config()),
-		_ => {
-			let path = PathBuf::from(id);
-			let chain_spec =
-				Box::new(DummyChainSpec::from_json_file(path.clone())?) as Box<dyn ChainSpec>;
+		"koi-dev" => Box::new(koi::development_config()),
+		_ => Box::new(ChainSpec::from_json_file(PathBuf::from(id))?),
+	};
 
-			if chain_spec.is_crab() {
-				return Ok(Box::new(CrabChainSpec::from_json_file(path)?));
-			}
-
-			if chain_spec.is_darwinia() {
-				return Ok(Box::new(DarwiniaChainSpec::from_json_file(path)?));
-			}
-
-			if chain_spec.is_koi() {
-				return Ok(Box::new(KoiChainSpec::from_json_file(path)?));
-			}
-
-			panic!("No feature(crab-native, darwinia-native, koi-native) is enabled!")
-		},
-	})
+	Ok(chain_spec)
 }
 
 fn get_exec_name() -> Option<String> {

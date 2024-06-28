@@ -16,24 +16,31 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+// crates.io
+use codec::Encode;
 // darwinia
-use crate::*;
+use dc_primitives::*;
+// polkadot-sdk
+use sp_core::crypto::FromEntropy;
 
-impl pallet_identity::Config for Runtime {
-	// Minimum 100 bytes/UNIT deposited (1 MILLIUNIT/byte).
-	// 258 bytes on-chain.
-	type BasicDeposit = ConstU128<{ darwinia_deposit(1, 258) }>;
-	type Currency = Balances;
-	// 66 bytes on-chain.
-	type FieldDeposit = ConstU128<{ darwinia_deposit(0, 66) }>;
-	type ForceOrigin = RootOr<GeneralAdmin>;
-	type MaxAdditionalFields = ConstU32<100>;
-	type MaxRegistrars = ConstU32<20>;
-	type MaxSubAccounts = ConstU32<100>;
-	type RegistrarOrigin = RootOr<GeneralAdmin>;
-	type RuntimeEvent = RuntimeEvent;
-	type Slashed = Treasury;
-	// 53 bytes on-chain.
-	type SubAccountDeposit = ConstU128<{ darwinia_deposit(1, 53) }>;
-	type WeightInfo = weights::pallet_identity::WeightInfo<Self>;
+/// Helper for pallet-assets benchmarking.
+pub enum Assets {}
+impl pallet_assets::BenchmarkHelper<codec::Compact<u64>> for Assets {
+	fn create_asset_id_parameter(id: u32) -> codec::Compact<u64> {
+		u64::from(id).into()
+	}
+}
+
+pub enum Treasury {}
+impl<AssetKind> pallet_treasury::ArgumentsFactory<AssetKind, AccountId> for Treasury
+where
+	AssetKind: FromEntropy,
+{
+	fn create_asset_kind(seed: u32) -> AssetKind {
+		AssetKind::from_entropy(&mut seed.encode().as_slice()).unwrap()
+	}
+
+	fn create_beneficiary(seed: [u8; 32]) -> AccountId {
+		<[u8; 20]>::from_entropy(&mut seed.as_slice()).unwrap().into()
+	}
 }

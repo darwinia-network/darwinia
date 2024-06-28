@@ -22,72 +22,32 @@ pub use crate as darwinia_ethtx_forwarder;
 
 // crates.io
 use sha3::Digest;
-// substrate
-use sp_core::H160;
+// polkadot-sdk
+use frame_support::derive_impl;
 use sp_runtime::BuildStorage;
 use sp_std::prelude::*;
 
+pub type AccountId = sp_core::H160;
 pub type Balance = u64;
-pub type AccountId = H160;
 
-frame_support::parameter_types! {
-	pub const BlockHashCount: u64 = 250;
-}
+#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
-	type BaseCallFilter = frame_support::traits::Everything;
 	type Block = frame_system::mocking::MockBlock<Self>;
-	type BlockHashCount = ();
-	type BlockLength = ();
-	type BlockWeights = ();
-	type DbWeight = ();
-	type Hash = sp_core::H256;
-	type Hashing = sp_runtime::traits::BlakeTwo256;
 	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
-	type MaxConsumers = frame_support::traits::ConstU32<16>;
-	type Nonce = u64;
-	type OnKilledAccount = ();
-	type OnNewAccount = ();
-	type OnSetCode = ();
-	type PalletInfo = PalletInfo;
-	type RuntimeCall = RuntimeCall;
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeOrigin = RuntimeOrigin;
-	type SS58Prefix = ();
-	type SystemWeightInfo = ();
-	type Version = ();
 }
 
+#[derive_impl(pallet_balances::config_preludes::TestDefaultConfig as pallet_balances::DefaultConfig)]
 impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
-	type Balance = Balance;
-	type DustRemoval = ();
 	type ExistentialDeposit = ();
-	type FreezeIdentifier = ();
-	type MaxFreezes = ();
-	type MaxHolds = ();
-	type MaxLocks = ();
-	type MaxReserves = ();
-	type ReserveIdentifier = [u8; 8];
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeHoldReason = ();
-	type WeightInfo = ();
 }
 
-frame_support::parameter_types! {
-	pub const MinimumPeriod: u64 = 6000 / 2;
-}
-impl pallet_timestamp::Config for Runtime {
-	type MinimumPeriod = MinimumPeriod;
-	type Moment = u64;
-	type OnTimestampSet = ();
-	type WeightInfo = ();
-}
+#[derive_impl(pallet_timestamp::config_preludes::TestDefaultConfig as pallet_timestamp::DefaultConfig)]
+impl pallet_timestamp::Config for Runtime {}
 
 frame_support::parameter_types! {
-	pub const TransactionByteFee: u64 = 1;
-	pub const ChainId: u64 = 888;
 	pub const BlockGasLimit: sp_core::U256 = sp_core::U256::MAX;
 	pub const WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(20_000, 0);
 }
@@ -102,7 +62,7 @@ impl pallet_evm::Config for Runtime {
 	type BlockGasLimit = BlockGasLimit;
 	type BlockHashMapping = pallet_evm::SubstrateBlockHashMapping<Self>;
 	type CallOrigin = pallet_evm::EnsureAddressRoot<AccountId>;
-	type ChainId = ChainId;
+	type ChainId = frame_support::traits::ConstU64<888>;
 	type Currency = Balances;
 	type FeeCalculator = FixedGasPrice;
 	type FindAuthor = ();
@@ -114,6 +74,7 @@ impl pallet_evm::Config for Runtime {
 	type PrecompilesValue = ();
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
 	type RuntimeEvent = RuntimeEvent;
+	type SuicideQuickClearLimit = ();
 	type Timestamp = Timestamp;
 	type WeightInfo = ();
 	type WeightPerGas = WeightPerGas;
@@ -130,7 +91,7 @@ impl pallet_ethereum::Config for Runtime {
 	type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
 }
 
-impl crate::Config for Runtime {
+impl darwinia_ethtx_forwarder::Config for Runtime {
 	type ForwardEthOrigin = crate::EnsureRuntimeEthOrigin;
 	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
 }
@@ -206,11 +167,10 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 	}
 }
 
-pub(crate) struct AccountInfo {
+pub struct AccountInfo {
 	pub address: sp_core::H160,
 }
-
-pub(crate) fn address_build(seed: u8) -> AccountInfo {
+pub fn address_build(seed: u8) -> AccountInfo {
 	let raw_private_key = [seed + 1; 32];
 	let secret_key = libsecp256k1::SecretKey::parse_slice(&raw_private_key).unwrap();
 	let raw_public_key = &libsecp256k1::PublicKey::from_secret_key(&secret_key).serialize()[1..65];
@@ -224,18 +184,17 @@ pub(crate) fn address_build(seed: u8) -> AccountInfo {
 }
 
 #[derive(Default)]
-pub(crate) struct ExtBuilder {
+pub struct ExtBuilder {
 	// endowed accounts with balances
 	balances: Vec<(AccountId, Balance)>,
 }
-
 impl ExtBuilder {
-	pub(crate) fn with_balances(mut self, balances: Vec<(AccountId, Balance)>) -> Self {
+	pub fn with_balances(mut self, balances: Vec<(AccountId, Balance)>) -> Self {
 		self.balances = balances;
 		self
 	}
 
-	pub(crate) fn build(self) -> sp_io::TestExternalities {
+	pub fn build(self) -> sp_io::TestExternalities {
 		let mut t = <frame_system::GenesisConfig<Runtime>>::default()
 			.build_storage()
 			.expect("Frame system builds valid default genesis config");

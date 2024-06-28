@@ -21,60 +21,35 @@ pub use crate as darwinia_staking;
 // darwinia
 use dc_types::{Balance, Moment, UNIT};
 // substrate
-use frame_support::traits::{Currency, OnInitialize};
+use frame_support::{
+	derive_impl,
+	traits::{Currency, OnInitialize},
+};
 use sp_io::TestExternalities;
 use sp_runtime::{BuildStorage, RuntimeAppPublic};
 
-type BlockNumber = u64;
-type AccountId = u32;
+pub type AccountId = u32;
+pub type BlockNumber = frame_system::pallet_prelude::BlockNumberFor<Runtime>;
 
+#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
-	type BaseCallFilter = frame_support::traits::Everything;
 	type Block = frame_system::mocking::MockBlock<Self>;
-	type BlockHashCount = ();
-	type BlockLength = ();
-	type BlockWeights = ();
-	type DbWeight = ();
-	type Hash = sp_core::H256;
-	type Hashing = sp_runtime::traits::BlakeTwo256;
 	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
-	type MaxConsumers = frame_support::traits::ConstU32<16>;
-	type Nonce = u64;
-	type OnKilledAccount = ();
-	type OnNewAccount = ();
-	type OnSetCode = ();
-	type PalletInfo = PalletInfo;
-	type RuntimeCall = RuntimeCall;
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeOrigin = RuntimeOrigin;
-	type SS58Prefix = ();
-	type SystemWeightInfo = ();
-	type Version = ();
 }
 
+#[derive_impl(pallet_timestamp::config_preludes::TestDefaultConfig as pallet_timestamp::DefaultConfig)]
 impl pallet_timestamp::Config for Runtime {
 	type MinimumPeriod = ();
 	type Moment = Moment;
-	type OnTimestampSet = ();
-	type WeightInfo = ();
 }
 
+#[derive_impl(pallet_balances::config_preludes::TestDefaultConfig as pallet_balances::DefaultConfig)]
 impl pallet_balances::Config for Runtime {
 	type AccountStore = System;
 	type Balance = Balance;
-	type DustRemoval = ();
-	type ExistentialDeposit = frame_support::traits::ConstU128<0>;
-	type FreezeIdentifier = ();
-	type MaxFreezes = ();
-	type MaxHolds = ();
-	type MaxLocks = ();
-	type MaxReserves = ();
-	type ReserveIdentifier = [u8; 8];
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeHoldReason = ();
-	type WeightInfo = ();
+	type ExistentialDeposit = ();
 }
 
 pub enum KtonMinting {}
@@ -149,15 +124,24 @@ impl pallet_session::Config for Runtime {
 
 frame_support::parameter_types! {
 	pub const TreasuryPalletId: frame_support::PalletId = frame_support::PalletId(*b"da/trsry");
+	pub TreasuryAccount: AccountId = Treasury::account_id();
 }
 impl pallet_treasury::Config for Runtime {
 	type ApproveOrigin = frame_system::EnsureRoot<AccountId>;
+	type AssetKind = ();
+	type BalanceConverter = frame_support::traits::tokens::UnityAssetBalanceConversion;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = ();
+	type Beneficiary = AccountId;
+	type BeneficiaryLookup = Self::Lookup;
 	type Burn = ();
 	type BurnDestination = ();
 	type Currency = Balances;
 	type MaxApprovals = ();
 	type OnSlash = ();
 	type PalletId = TreasuryPalletId;
+	type Paymaster = frame_support::traits::tokens::PayFromAccount<Balances, TreasuryAccount>;
+	type PayoutPeriod = ();
 	type ProposalBond = ();
 	type ProposalBondMaximum = ();
 	type ProposalBondMinimum = ();

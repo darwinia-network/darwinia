@@ -27,11 +27,11 @@ use crate::*;
 	PartialEq,
 	Ord,
 	PartialOrd,
-	codec::Encode,
-	codec::Decode,
-	codec::MaxEncodedLen,
-	scale_info::TypeInfo,
-	sp_runtime::RuntimeDebug,
+	Encode,
+	Decode,
+	MaxEncodedLen,
+	TypeInfo,
+	RuntimeDebug,
 )]
 pub enum ProxyType {
 	#[codec(index = 0)]
@@ -42,15 +42,15 @@ pub enum ProxyType {
 	Governance,
 	#[codec(index = 3)]
 	Staking,
-	#[codec(index = 4)]
-	IdentityJudgement,
+	// TODO: Migration
+	// #[codec(index = 4)]
+	// IdentityJudgement,
 	#[codec(index = 5)]
 	CancelProxy,
-	// TODO: Migration.
-	#[codec(index = 6)]
-	EcdsaBridge,
-	#[codec(index = 7)]
-	SubstrateBridge,
+	// #[codec(index = 6)]
+	// EcdsaBridge,
+	// #[codec(index = 7)]
+	// SubstrateBridge,
 }
 impl Default for ProxyType {
 	fn default() -> Self {
@@ -65,7 +65,6 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 				c,
 				RuntimeCall::Balances(..)
 					| RuntimeCall::Assets(..)
-					| RuntimeCall::Vesting(pallet_vesting::Call::vested_transfer { .. })
 					// Might contains transfer
 					| RuntimeCall::Utility(..)
 					| RuntimeCall::Proxy(..)
@@ -88,13 +87,9 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 						| RuntimeCall::DarwiniaStaking(..)
 				)
 			},
-			ProxyType::IdentityJudgement => {
-				matches!(c, RuntimeCall::Identity(pallet_identity::Call::provide_judgement { .. }))
-			},
 			ProxyType::CancelProxy => {
 				matches!(c, RuntimeCall::Proxy(pallet_proxy::Call::reject_announcement { .. }))
 			},
-			_ => false,
 		}
 	}
 

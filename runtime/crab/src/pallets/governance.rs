@@ -27,21 +27,10 @@ pub use pallet_collective::Instance2 as TechnicalCollective;
 
 pub(super) use crate::*;
 
-pub const COLLECTIVE_DESIRED_MEMBERS: u32 = 7;
-pub const COLLECTIVE_MAX_MEMBERS: u32 = 100;
-pub const COLLECTIVE_MAX_PROPOSALS: u32 = 100;
-
-// Make sure that there are no more than `COLLECTIVE_MAX_MEMBERS` members elected via phragmen.
-static_assertions::const_assert!(COLLECTIVE_DESIRED_MEMBERS <= COLLECTIVE_MAX_MEMBERS);
-
-frame_support::parameter_types! {
-	pub MaxProposalWeight: frame_support::weights::Weight = sp_runtime::Perbill::from_percent(50) * RuntimeBlockWeights::get().max_block;
-}
-
 impl pallet_collective::Config<TechnicalCollective> for Runtime {
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
-	type MaxMembers = ConstU32<COLLECTIVE_MAX_MEMBERS>;
-	type MaxProposalWeight = MaxProposalWeight;
+	type MaxMembers = ConstU32<100>;
+	type MaxProposalWeight = pallet_config::MaxProposalWeight;
 	type MaxProposals = ConstU32<100>;
 	type MotionDuration = ConstU32<{ 3 * DAYS }>;
 	type Proposal = RuntimeCall;
@@ -75,7 +64,7 @@ impl pallet_referenda::Config for Runtime {
 	type Scheduler = Scheduler;
 	type Slash = Treasury;
 	type SubmissionDeposit = ConstU128<{ DARWINIA_PROPOSAL_REQUIREMENT }>;
-	type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
+	type SubmitOrigin = frame_system::EnsureSigned<Self::AccountId>;
 	type Tally = pallet_conviction_voting::TallyOf<Self>;
 	type Tracks = TracksInfo;
 	type UndecidingTimeout = ConstU32<{ 14 * DAYS }>;
@@ -102,12 +91,21 @@ frame_support::parameter_types! {
 
 impl pallet_treasury::Config for Runtime {
 	type ApproveOrigin = RootOr<GeneralAdmin>;
+	type AssetKind = ();
+	type BalanceConverter = frame_support::traits::tokens::UnityAssetBalanceConversion;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = benchmark_helper::Treasury;
+	type Beneficiary = Self::AccountId;
+	type BeneficiaryLookup = Self::Lookup;
 	type Burn = ();
 	type BurnDestination = ();
 	type Currency = Balances;
 	type MaxApprovals = ConstU32<100>;
 	type OnSlash = Treasury;
 	type PalletId = pallet_config::TreasuryPid;
+	type Paymaster =
+		frame_support::traits::tokens::PayFromAccount<Balances, pallet_config::TreasuryAccount>;
+	type PayoutPeriod = ConstU32<{ 14 * DAYS }>;
 	type ProposalBond = ProposalBond;
 	type ProposalBondMaximum = ();
 	type ProposalBondMinimum = ConstU128<DARWINIA_PROPOSAL_REQUIREMENT>;
@@ -115,7 +113,7 @@ impl pallet_treasury::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
 	type SpendOrigin = EitherOf<
-		frame_system::EnsureRootWithSuccess<AccountId, pallet_config::MaxBalance>,
+		frame_system::EnsureRootWithSuccess<Self::AccountId, pallet_config::MaxBalance>,
 		Spender,
 	>;
 	type SpendPeriod = ConstU32<{ 14 * DAYS }>;
