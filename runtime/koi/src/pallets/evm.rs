@@ -220,7 +220,6 @@ impl pallet_evm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SuicideQuickClearLimit = ();
 	type Timestamp = Timestamp;
-	// TODO: benchmark.
 	type WeightInfo = ();
 	type WeightPerGas = pallet_config::WeightPerGas;
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<Self::AccountId>;
