@@ -45,11 +45,13 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	use sp_std::str::FromStr;
+	// core
+	use core::str::FromStr;
 
 	const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
 	// DOT equals to the 0x405 in the pallet-evm runtime.
 	const ADDRESS: &str = "0x0000000000000000000000000000000000000405";
+
 	if let Ok(addr) = H160::from_str(ADDRESS) {
 		EVM::create_account(addr, REVERT_BYTECODE.to_vec());
 	}
