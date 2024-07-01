@@ -63,7 +63,7 @@ fn migrate() -> frame_support::weights::Weight {
 		Some(100),
 		None,
 	);
-	let w = 103;
+	let mut w = 103;
 
 	w += migration_helper::PalletCleaner {
 		name: b"Council",

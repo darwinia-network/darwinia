@@ -56,6 +56,22 @@ fn migrate() -> frame_support::weights::Weight {
 		EVM::create_account(addr, REVERT_BYTECODE.to_vec());
 	}
 
+	let mut w = 3;
+
+	w += migration_helper::PalletCleaner {
+		name: b"Identity",
+		values: &[b"Registrars"],
+		maps: &[
+			b"IdentityOf",
+			b"SuperOf",
+			b"SubsOf",
+			b"UsernameAuthorities",
+			b"AccountOfUsername",
+			b"PendingUsernames",
+		],
+	}
+	.remove_all();
+
 	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(2, 3)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(2, w)
 }
