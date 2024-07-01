@@ -29,6 +29,9 @@ frame_support::parameter_types! {
 		1,
 		xcm::v3::prelude::X3(xcm::v3::prelude::Parachain(1000), xcm::v3::prelude::PalletInstance(50), xcm::v3::prelude::GeneralIndex(7777))
 	);
+
+	// Relaychain native token DOT
+	pub DotLocation: xcm::v3::Location = xcm::v3::Location::parent();
 }
 
 // We instruct how to register the Assets
@@ -103,20 +106,18 @@ impl From<xcm::v3::Location> for AssetType {
 // We simply hash the `AssetType` and take the lowest 128 bits.
 impl From<AssetType> for crate::AssetId {
 	fn from(asset: AssetType) -> crate::AssetId {
-		use sp_runtime::traits::Hash;
-
 		match asset {
-			AssetType::Xcm(id) =>
-				if id == UsdtLocation::get() {
-					1027
-				} else {
-					let mut result: [u8; 8] = [0_u8; 8];
-					let hash: sp_core::H256 = id.using_encoded(dc_primitives::Hashing::hash);
+			AssetType::Xcm(id) if id == UsdtLocation::get() => 1027,
+			AssetType::Xcm(id) if id == DotLocation::get() => 1029,
+			AssetType::Xcm(id) => {
+				use sp_runtime::traits::Hash;
 
-					result.copy_from_slice(&hash.as_fixed_bytes()[0..8]);
+				let mut result: [u8; 8] = [0_u8; 8];
+				let hash: sp_core::H256 = id.using_encoded(dc_primitives::Hashing::hash);
+				result.copy_from_slice(&hash.as_fixed_bytes()[0..8]);
 
-					u64::from_le_bytes(result)
-				},
+				u64::from_le_bytes(result)
+			},
 		}
 	}
 }

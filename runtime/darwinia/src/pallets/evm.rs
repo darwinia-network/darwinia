@@ -37,7 +37,7 @@ where
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> [H160; 18] {
+	pub fn used_addresses() -> [sp_core::H160; 19] {
 		[
 			addr(0x01),
 			addr(0x02),
@@ -53,6 +53,7 @@ where
 			addr(0x402), // For KTON asset.
 			addr(0x403), // For Tether USDT.
 			addr(0x404), // For PINK.
+			addr(0x405), // For DOT.
 			addr(0x600),
 			addr(0x601),
 			addr(0x602),

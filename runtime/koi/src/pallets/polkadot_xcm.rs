@@ -112,32 +112,25 @@ pub type XcmOriginToTransactDispatchOrigin = (
 	// Xcm origins can be represented natively under the Xcm pallet's Xcm origin.
 	pallet_xcm::XcmPassthrough<RuntimeOrigin>,
 );
-pub type Barrier = xcm_builder::TrailingSetTopicAsId<
-	xcm_builder::DenyThenTry<
-		xcm_builder::DenyReserveTransferToRelayChain,
+
+pub type Barrier = xcm_builder::TrailingSetTopicAsId<(
+	xcm_builder::TakeWeightCredit,
+	xcm_builder::WithComputedOrigin<
 		(
-			xcm_builder::TakeWeightCredit,
-			xcm_builder::WithComputedOrigin<
-				(
-					// If the message is one that immediately attemps to pay for execution, then
-					// allow it.
-					xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
-					// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality
-					// get free execution.
-					xcm_builder::AllowExplicitUnpaidExecutionFrom<
-						xcm_config::ParentOrParentsPlurality,
-					>,
-					// Subscriptions for version tracking are OK.
-					xcm_builder::AllowSubscriptionsFrom<xcm_config::ParentRelayOrSiblingParachains>,
-				),
-				UniversalLocation,
-				ConstU32<8>,
-			>,
-			// Expected responses are OK.
-			xcm_builder::AllowKnownQueryResponses<PolkadotXcm>,
+			// If the message is one that immediately attemps to pay for execution, then
+			// allow it.
+			xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
+			xcm_builder::AllowExplicitUnpaidExecutionFrom<xcm_config::ParentOrParentsPlurality>,
+			// Subscriptions for version tracking are OK.
+			xcm_builder::AllowSubscriptionsFrom<xcm_config::ParentRelayOrSiblingParachains>,
 		),
+		UniversalLocation,
+		ConstU32<8>,
 	>,
->;
+	// Expected responses are OK.
+	xcm_builder::AllowKnownQueryResponses<PolkadotXcm>,
+)>;
+
 /// This is the struct that will handle the revenue from xcm fees
 /// We do not burn anything because we want to mimic exactly what
 /// the sovereign account has
