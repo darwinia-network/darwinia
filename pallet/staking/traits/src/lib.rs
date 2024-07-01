@@ -26,7 +26,7 @@ use core::fmt::Debug;
 // crates.io
 use codec::{FullCodec, MaxEncodedLen};
 use scale_info::TypeInfo;
-// substrate
+// polkadot-sdk
 use sp_runtime::{DispatchError, DispatchResult};
 
 /// Stake trait that stake items must be implemented.

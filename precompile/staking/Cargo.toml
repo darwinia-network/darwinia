@@ -17,7 +17,7 @@ darwinia-staking = { workspace = true }
 # moonbeam
 precompile-utils = { workspace = true }
 
-# substrate
+# polkadot-sdk
 frame-support = { workspace = true }
 frame-system  = { workspace = true }
 sp-core       = { workspace = true }
@@ -35,7 +35,7 @@ darwinia-deposit = { workspace = true, features = ["std"] }
 # moonbeam
 precompile-utils = { workspace = true, features = ["std", "testing"] }
 
-# substrate
+# polkadot-sdk
 frame-system     = { workspace = true, features = ["std"] }
 pallet-balances  = { workspace = true, features = ["std"] }
 pallet-timestamp = { workspace = true, features = ["std"] }
@@ -54,7 +54,7 @@ std = [
 	# moonbeam
 	"precompile-utils/std",
 
-	# substrate
+	# polkadot-sdk
 	"frame-support/std",
 	"frame-system/std",
 	"sp-core/std",

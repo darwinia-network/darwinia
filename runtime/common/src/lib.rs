@@ -106,7 +106,7 @@ macro_rules! impl_self_contained_call {
 			) -> Option<
 				sp_runtime::DispatchResultWithInfo<sp_runtime::traits::PostDispatchInfoOf<Self>>,
 			> {
-				// substrate
+				// polkadot-sdk
 				use sp_runtime::traits::Dispatchable;
 
 				match self {
@@ -220,7 +220,7 @@ where
 	fn on_unbalanceds<B>(
 		mut fees_then_tips: impl Iterator<Item = pallet_balances::NegativeImbalance<R>>,
 	) {
-		// substrate
+		// polkadot-sdk
 		use frame_support::traits::Currency;
 
 		if fees_then_tips.next().is_some() {

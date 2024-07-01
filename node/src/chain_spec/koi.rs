@@ -29,7 +29,7 @@ use super::*;
 use koi_runtime::*;
 // frontier
 use fp_evm::GenesisAccount;
-// substrate
+// polkadot-sdk
 use sc_chain_spec::Properties;
 use sc_service::ChainType;
 use sc_telemetry::TelemetryEndpoints;

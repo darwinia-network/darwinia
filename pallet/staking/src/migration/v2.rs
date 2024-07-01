@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 // darwinia
 use crate::*;
 use dc_types::UNIT;
-// substrate
+// polkadot-sdk
 use frame_support::traits::OnRuntimeUpgrade;
 #[cfg(feature = "try-runtime")]
 use sp_runtime::TryRuntimeError;

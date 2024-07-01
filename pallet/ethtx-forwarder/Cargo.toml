@@ -17,7 +17,7 @@ fp-ethereum = { workspace = true }
 fp-evm      = { workspace = true }
 pallet-evm  = { workspace = true }
 
-# substrate
+# polkadot-sdk
 frame-support = { workspace = true }
 frame-system  = { workspace = true }
 sp-core       = { workspace = true }
@@ -33,7 +33,7 @@ sha3         = { workspace = true }
 fp-self-contained = { workspace = true, features = ["std"] }
 pallet-ethereum   = { workspace = true, features = ["std"] }
 
-# substrate
+# polkadot-sdk
 pallet-balances  = { workspace = true, features = ["std"] }
 pallet-timestamp = { workspace = true, features = ["std"] }
 sp-io            = { workspace = true, features = ["std"] }
@@ -52,7 +52,7 @@ std = [
 	"fp-evm/std",
 	"pallet-evm/std",
 
-	# substrate
+	# polkadot-sdk
 	"frame-support/std",
 	"frame-system/std",
 	"sp-core/std",
@@ -67,7 +67,7 @@ runtime-benchmarks = [
 ]
 
 try-runtime = [
-	# substrate
+	# polkadot-sdk
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",
 	"pallet-evm/try-runtime",

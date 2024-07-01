@@ -22,7 +22,7 @@ pub use frame_support::traits::{EitherOf, EitherOfDiverse};
 use dc_primitives::AccountId;
 // frontier
 use fp_account::AccountId20;
-// substrate
+// polkadot-sdk
 use frame_system::EnsureRoot;
 use pallet_collective::{EnsureProportionAtLeast, EnsureProportionMoreThan};
 

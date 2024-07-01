@@ -22,7 +22,7 @@ pub mod custom_origins {
 	use strum::EnumString;
 	// darwinia
 	use dc_primitives::{Balance, UNIT};
-	// substrate
+	// polkadot-sdk
 	use frame_support::pallet_prelude::*;
 	use sp_runtime::RuntimeDebug;
 

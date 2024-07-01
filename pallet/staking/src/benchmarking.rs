@@ -20,7 +20,7 @@
 use crate::*;
 use darwinia_deposit::SimpleAsset;
 use dc_types::UNIT;
-// substrate
+// polkadot-sdk
 use frame_benchmarking::v2;
 use frame_system::RawOrigin;
 use sp_std::prelude::*;
@@ -29,7 +29,7 @@ use sp_std::prelude::*;
 mod benchmarks {
 	// darwinia
 	use super::*;
-	// substrate
+	// polkadot-sdk
 	use frame_support::traits::Currency;
 
 	fn deposit_for<T>(who: &T::AccountId, count: u32) -> Vec<DepositId<T>>

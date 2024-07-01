@@ -24,7 +24,7 @@ use crate::mock::{
 use darwinia_deposit::MILLISECS_PER_MONTH;
 // moonbeam
 use precompile_utils::testing::PrecompileTesterExt;
-// substrate
+// polkadot-sdk
 use sp_core::H160;
 
 fn precompiles() -> TestPrecompiles<Runtime> {

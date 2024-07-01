@@ -52,7 +52,7 @@ use ethereum::TransactionAction;
 // darwinia
 use darwinia_ethtx_forwarder::{ForwardEthOrigin, ForwardRequest, TxType};
 use dc_types::{Balance, Moment};
-// substrate
+// polkadot-sdk
 use frame_support::{
 	pallet_prelude::*, traits::Currency, DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound,
 };

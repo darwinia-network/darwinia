@@ -22,7 +22,7 @@ use core::time::Duration;
 use crate::{mock::*, *};
 use darwinia_deposit::Error as DepositError;
 use dc_types::UNIT;
-// substrate
+// polkadot-sdk
 use frame_support::{assert_noop, assert_ok, BoundedVec};
 use sp_runtime::{assert_eq_error_rate, DispatchError, Perbill};
 use substrate_test_utils::assert_eq_uvec;

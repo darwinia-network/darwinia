@@ -13,7 +13,7 @@ dc-types = { workspace = true }
 # frontier
 fp-account = { workspace = true }
 
-# substrate
+# polkadot-sdk
 sp-core    = { workspace = true }
 sp-runtime = { workspace = true }
 
@@ -23,7 +23,7 @@ std = [
 	# frontier
 	"fp-account/std",
 
-	# substrate
+	# polkadot-sdk
 	"sp-core/std",
 	"sp-runtime/std",
 ]

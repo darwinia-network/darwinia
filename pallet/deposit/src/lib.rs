@@ -47,7 +47,7 @@ use codec::FullCodec;
 // darwinia
 use dc_inflation::MILLISECS_PER_YEAR;
 use dc_types::{Balance, Moment};
-// substrate
+// polkadot-sdk
 use frame_support::{
 	pallet_prelude::*,
 	traits::{Currency, ExistenceRequirement::AllowDeath, UnixTime},

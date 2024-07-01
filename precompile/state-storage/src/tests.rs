@@ -26,7 +26,7 @@ use precompile_utils::{
 	prelude::{RuntimeHelper, UnboundedBytes},
 	testing::{PrecompileTesterExt, PrecompilesModifierTester},
 };
-// substrate
+// polkadot-sdk
 use frame_support::{StorageHasher, Twox128};
 
 fn precompiles() -> TestPrecompiles<Runtime> {

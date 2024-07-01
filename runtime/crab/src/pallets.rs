@@ -19,7 +19,7 @@
 mod shared_imports {
 	// darwinia
 	pub use darwinia_common_runtime::gov_origin::*;
-	// substrate
+	// polkadot-sdk
 	pub use sp_runtime::traits::{ConstBool, ConstU128, ConstU16, ConstU32, ConstU64, ConstU8};
 }
 pub use shared_imports::*;

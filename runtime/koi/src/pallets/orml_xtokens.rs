@@ -18,7 +18,7 @@
 
 // darwinia
 use crate::{AssetId, *};
-// polkadot
+// polkadot-sdk
 use xcm::latest::prelude::*;
 
 // Our currencyId. We distinguish for now between SelfReserve, and Others, defined by their Id.

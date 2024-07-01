@@ -18,7 +18,7 @@
 
 // darwinia
 use crate::{mock::*, *};
-// substrate
+// polkadot-sdk
 use frame_support::{assert_noop, assert_ok};
 use frame_system::AccountInfo;
 use pallet_balances::AccountData;

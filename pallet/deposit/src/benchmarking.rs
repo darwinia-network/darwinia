@@ -19,7 +19,7 @@
 // darwinia
 use crate::*;
 use dc_types::UNIT;
-// substrate
+// polkadot-sdk
 use frame_benchmarking::v2;
 use frame_system::RawOrigin;
 use sp_runtime::SaturatedConversion;

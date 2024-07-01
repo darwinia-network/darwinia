@@ -14,7 +14,7 @@ scale-info = { workspace = true }
 # moonbeam
 pallet-asset-manager = { workspace = true }
 
-# substrate
+# polkadot-sdk
 frame-support = { workspace = true }
 frame-system  = { workspace = true }
 
@@ -27,7 +27,7 @@ std = [
     "scale-info/std",
     # moonbeam
     "pallet-asset-manager/std",
-    # substrate
+    # polkadot-sdk
     "frame-support/std",
     "frame-system/std",
 ]
@@ -35,7 +35,7 @@ std = [
 try-runtime = [
     # moonbeam
     "pallet-asset-manager/try-runtime",
-    # substrate
+    # polkadot-sdk
     "frame-support/try-runtime",
     "frame-system/try-runtime",
 ]
