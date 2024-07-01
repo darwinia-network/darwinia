@@ -35,7 +35,7 @@ use scale_info::TypeInfo;
 use fp_ethereum::{TransactionData, ValidatedTransaction};
 use fp_evm::{CheckEvmTransaction, CheckEvmTransactionConfig, TransactionValidationError};
 use pallet_evm::{FeeCalculator, GasWeightMapping};
-// substrate
+// polkadot-sdk
 use frame_support::{traits::EnsureOrigin, PalletError};
 use sp_core::{Get, H160, H256, U256};
 use sp_runtime::{traits::BadOrigin, DispatchError, RuntimeDebug};

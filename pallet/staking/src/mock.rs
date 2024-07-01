@@ -20,7 +20,7 @@ pub use crate as darwinia_staking;
 
 // darwinia
 use dc_types::{Balance, Moment, UNIT};
-// substrate
+// polkadot-sdk
 use frame_support::{
 	derive_impl,
 	traits::{Currency, OnInitialize},
@@ -227,7 +227,7 @@ impl darwinia_staking::IssuingManager<Runtime> for OnCrabSessionEnd {
 pub enum ShouldEndSession {}
 impl frame_support::traits::Get<bool> for ShouldEndSession {
 	fn get() -> bool {
-		// substrate
+		// polkadot-sdk
 		use pallet_session::ShouldEndSession;
 
 		<Runtime as pallet_session::Config>::ShouldEndSession::should_end_session(

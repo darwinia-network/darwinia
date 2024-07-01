@@ -23,7 +23,7 @@ use scale_info::TypeInfo;
 use crate::*;
 // frontier
 use precompile_utils::Precompile;
-// substrate
+// polkadot-sdk
 use frame_support::{derive_impl, StorageHasher};
 use sp_core::H160;
 use sp_runtime::BuildStorage;

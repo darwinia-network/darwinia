@@ -20,7 +20,7 @@
 use crate::{mock::*, ForwardEthOrigin, ForwardRequest, TxType};
 // crates.io
 use ethereum::TransactionSignature;
-// substrate
+// polkadot-sdk
 use frame_support::{assert_err, assert_ok, traits::Currency};
 use sp_core::{H256, U256};
 use sp_runtime::{DispatchError, ModuleError};

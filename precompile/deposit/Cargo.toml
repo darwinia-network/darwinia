@@ -17,7 +17,7 @@ darwinia-deposit = { workspace = true }
 # moonbeam
 precompile-utils = { workspace = true }
 
-# substrate
+# polkadot-sdk
 frame-support = { workspace = true }
 frame-system  = { workspace = true }
 sp-core       = { workspace = true }
@@ -50,7 +50,7 @@ std = [
 	# moonbeam
 	"precompile-utils/std",
 
-	# substrate
+	# polkadot-sdk
 	"frame-support/std",
 	"frame-system/std",
 	"sp-core/std",

@@ -22,7 +22,7 @@ use crate::{
 	Deposit as DepositS, *,
 };
 use darwinia_staking_traits::Stake;
-// substrate
+// polkadot-sdk
 use frame_support::{assert_noop, assert_ok};
 use sp_runtime::TokenError;
 

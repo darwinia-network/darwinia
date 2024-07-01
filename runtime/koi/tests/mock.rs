@@ -18,7 +18,7 @@
 
 pub use koi_runtime::*;
 
-// substrate
+// polkadot-sdk
 use sp_io::TestExternalities;
 use sp_runtime::BuildStorage;
 

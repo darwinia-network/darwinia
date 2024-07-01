@@ -410,7 +410,7 @@ sp_api::impl_runtime_apis! {
 			// frontier
 			use pallet_evm::Runner;
 			use pallet_ethereum::{TransactionData, TransactionAction};
-			// substrate
+			// polkadot-sdk
 			use sp_runtime::traits::{UniqueSaturatedInto, Get};
 
 			let config = if estimate {
@@ -468,7 +468,7 @@ sp_api::impl_runtime_apis! {
 			// frontier
 			use pallet_evm::Runner;
 			use pallet_ethereum::{TransactionData, TransactionAction};
-			// substrate
+			// polkadot-sdk
 			use sp_runtime::traits::{UniqueSaturatedInto, Get};
 
 			let config = if estimate {
@@ -554,7 +554,7 @@ sp_api::impl_runtime_apis! {
 		fn pending_block(
 			xts: Vec<<Block as sp_runtime::traits::Block>::Extrinsic>,
 		) -> (Option<pallet_ethereum::Block>, Option<Vec<fp_rpc::TransactionStatus>>) {
-			// substrate
+			// polkadot-sdk
 			use frame_support::traits::OnFinalize;
 
 			for ext in xts.into_iter() {
@@ -810,7 +810,7 @@ sp_api::impl_runtime_apis! {
 			Vec<frame_benchmarking::BenchmarkList>,
 			Vec<frame_support::traits::StorageInfo>,
 		) {
-			// substrate
+			// polkadot-sdk
 			use frame_benchmarking::*;
 			use frame_support::traits::{StorageInfoTrait};
 			use frame_system_benchmarking::Pallet as SystemBench;
@@ -828,7 +828,7 @@ sp_api::impl_runtime_apis! {
 		fn dispatch_benchmark(
 			config: frame_benchmarking::BenchmarkConfig
 		) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
-			// substrate
+			// polkadot-sdk
 			use frame_benchmarking::*;
 			use frame_support::traits::TrackedStorageKey;
 

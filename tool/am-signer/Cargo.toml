@@ -11,7 +11,7 @@ clap        = { version = "*", features = ["derive"] }
 serde       = { version = "*", features = ["derive"] }
 serde_json  = { version = "*" }
 
-# substrate
+# polkadot-sdk
 sp-core = { git = "https://github.com/paritytech/substrate" }
 
 [workspace]

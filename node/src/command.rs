@@ -18,15 +18,14 @@
 
 // std
 use std::{env, net::SocketAddr, path::PathBuf};
-// cumulus
-use cumulus_primitives_core::ParaId;
 // darwinia
 use crate::{
 	chain_spec::*,
 	cli::{Cli, FrontierBackendType, RelayChainCli, Subcommand, NODE_VERSION},
 	service::{self, *},
 };
-// substrate
+// polkadot-sdk
+use cumulus_primitives_core::ParaId;
 use sc_cli::{
 	CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams, NetworkParams,
 	Result, SharedParams, SubstrateCli,
@@ -437,7 +436,7 @@ pub fn run() -> Result<()> {
 		Some(Subcommand::Benchmark(cmd)) => {
 			// darwinia
 			use dc_primitives::Block;
-			// substrate
+			// polkadot-sdk
 			use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 
 			let runner = cli.create_runner(&**cmd)?;

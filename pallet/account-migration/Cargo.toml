@@ -17,7 +17,7 @@ darwinia-deposit = { workspace = true }
 darwinia-staking = { workspace = true }
 dc-primitives    = { workspace = true }
 
-# substrate
+# polkadot-sdk
 frame-support   = { workspace = true }
 frame-system    = { workspace = true }
 pallet-assets   = { workspace = true }
@@ -26,7 +26,7 @@ sp-core         = { workspace = true }
 sp-io           = { workspace = true }
 sp-runtime      = { workspace = true }
 sp-std          = { workspace = true }
-# substrate optional
+# polkadot-sdk optional
 frame-benchmarking = { workspace = true, optional = true }
 
 [dev-dependencies]
@@ -46,7 +46,7 @@ std = [
 	"darwinia-staking/std",
 	"dc-primitives/std",
 
-	# substrate
+	# polkadot-sdk
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-assets/std",
@@ -55,7 +55,7 @@ std = [
 	"sp-io/std",
 	"sp-runtime/std",
 	"sp-std/std",
-	# substrate optional
+	# polkadot-sdk optional
 	"frame-benchmarking?/std",
 ]
 
@@ -64,7 +64,7 @@ runtime-benchmarks = [
 	"darwinia-deposit/runtime-benchmarks",
 	"darwinia-staking/runtime-benchmarks",
 
-	# substrate
+	# polkadot-sdk
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
@@ -78,7 +78,7 @@ try-runtime = [
 	"darwinia-deposit/try-runtime",
 	"darwinia-staking/try-runtime",
 
-	# substrate
+	# polkadot-sdk
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",
 	"pallet-assets/try-runtime",

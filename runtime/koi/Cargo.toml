@@ -240,7 +240,7 @@ evm-tracing = [
 ]
 
 force-debug = [
-	# substrate
+	# polkadot-sdk
 	"sp-debug-derive",
 ]
 
@@ -250,7 +250,7 @@ fast-runtime = []
 # deployment. This will disable stuff that shouldn't be part of the on-chain wasm
 # to make it smaller like logging for example.
 on-chain-release-build = [
-	# substrate
+	# polkadot-sdk
 	"sp-api/disable-logging",
 ]
 

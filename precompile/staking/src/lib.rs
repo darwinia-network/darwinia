@@ -29,7 +29,7 @@ use core::marker::PhantomData;
 use darwinia_staking::Stake;
 // moonbeam
 use precompile_utils::prelude::*;
-// substrate
+// polkadot-sdk
 use frame_support::{
 	dispatch::{GetDispatchInfo, PostDispatchInfo},
 	traits::OriginTrait,

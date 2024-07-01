@@ -18,7 +18,7 @@
 
 // darwinia
 use crate::{AssetId, Assets, *};
-// polkadot
+// polkadot-sdk
 use xcm::latest::prelude::*;
 
 frame_support::parameter_types! {

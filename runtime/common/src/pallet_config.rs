@@ -1,6 +1,6 @@
 // darwinia
 use dc_primitives::*;
-// substrate
+// polkadot-sdk
 use sp_core::U256;
 use sp_runtime::traits::AccountIdConversion;
 use sp_std::prelude::*;

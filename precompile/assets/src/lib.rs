@@ -25,7 +25,7 @@ mod tests;
 
 // std
 use core::marker::PhantomData;
-// substrate
+// polkadot-sdk
 use frame_support::{
 	dispatch::{GetDispatchInfo, PostDispatchInfo},
 	sp_runtime::traits::{Dispatchable, StaticLookup},

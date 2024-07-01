@@ -18,7 +18,7 @@
 
 // darwinia
 use crate::*;
-// substrate
+// polkadot-sdk
 use frame_support::traits::Currency;
 
 fast_runtime_or_not!(DURATION, BlockNumber, 5 * MINUTES, 14 * DAYS);
@@ -89,7 +89,7 @@ impl darwinia_staking::IssuingManager<Runtime> for OnCrabSessionEnd {
 pub enum ShouldEndSession {}
 impl frame_support::traits::Get<bool> for ShouldEndSession {
 	fn get() -> bool {
-		// substrate
+		// polkadot-sdk
 		use pallet_session::ShouldEndSession;
 
 		<Runtime as pallet_session::Config>::ShouldEndSession::should_end_session(

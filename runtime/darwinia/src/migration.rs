@@ -19,7 +19,7 @@
 // darwinia
 #[allow(unused_imports)]
 use crate::*;
-// substrate
+// polkadot-sdk
 #[allow(unused_imports)]
 use frame_support::{migration, storage::unhashed};
 
@@ -63,5 +63,5 @@ fn migrate() -> frame_support::weights::Weight {
 	);
 
 	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(2, 3)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(2, 103)
 }

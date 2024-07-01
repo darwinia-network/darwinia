@@ -14,7 +14,7 @@ pallet-evm = { workspace = true }
 # moonbeam
 precompile-utils = { workspace = true }
 
-# substrate
+# polkadot-sdk
 frame-support = { workspace = true }
 frame-system  = { workspace = true }
 pallet-assets = { workspace = true }
@@ -31,7 +31,7 @@ sha3       = { workspace = true }
 # moonbeam
 precompile-utils = { workspace = true, features = ["std", "testing"] }
 
-# substrate
+# polkadot-sdk
 pallet-balances  = { workspace = true, features = ["std"] }
 pallet-timestamp = { workspace = true, features = ["std"] }
 sp-core          = { workspace = true, features = ["std"] }
@@ -48,7 +48,7 @@ std = [
 	# moonbeam
 	"precompile-utils/std",
 
-	# substrate
+	# polkadot-sdk
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-assets/std",
@@ -58,7 +58,7 @@ std = [
 ]
 
 runtime-benchmarks = [
-	# substrate
+	# polkadot-sdk
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
 	"pallet-assets/runtime-benchmarks",

@@ -26,7 +26,7 @@
 
 #[frame_support::pallet]
 pub mod pallet {
-	// substrate
+	// polkadot-sdk
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 

@@ -7,7 +7,7 @@ use std::{
 // crates.io
 use clap::{Parser, ValueEnum};
 use serde::Serialize;
-// substrate
+// polkadot-sdk
 use sp_core::{ed25519::Pair as Ep, sr25519::Pair as Sp, Pair as _};
 
 #[derive(Parser)]

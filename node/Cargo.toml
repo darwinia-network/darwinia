@@ -124,13 +124,11 @@ runtime-benchmarks = [
 	"darwinia-runtime?/runtime-benchmarks",
 	"koi-runtime?/runtime-benchmarks",
 
-	# polkadot
-	"polkadot-cli/runtime-benchmarks",
-	"polkadot-primitives/runtime-benchmarks",
-
-	# substrate
+	# polkadot-sdk
 	"frame-benchmarking",
 	"frame-benchmarking-cli/runtime-benchmarks",
+	"polkadot-cli/runtime-benchmarks",
+	"polkadot-primitives/runtime-benchmarks",
 	"sc-service/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 ]
@@ -141,10 +139,8 @@ try-runtime = [
 	"darwinia-runtime?/try-runtime",
 	"koi-runtime?/try-runtime",
 
-	# polkadot
+	# polkadot-sdk
 	"polkadot-cli/try-runtime",
-
-	# substrate
 	"sp-runtime/try-runtime",
 ]
 

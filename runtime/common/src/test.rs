@@ -24,7 +24,7 @@ macro_rules! impl_account_migration_tests {
 			use super::mock::*;
 			use darwinia_deposit::Deposit as DepositS;
 			use darwinia_staking::migration::v2::OldLedger;
-			// substrate
+			// polkadot-sdk
 			use frame_support::{
 				assert_err, assert_ok, migration, Blake2_128Concat, StorageHasher,
 			};
@@ -333,7 +333,7 @@ macro_rules! impl_evm_tests {
 			use super::mock::*;
 			// frontier
 			use pallet_evm_precompile_dispatch::DispatchValidateT;
-			// substrate
+			// polkadot-sdk
 			use frame_support::assert_err;
 			use sp_core::{H160, U256};
 			use sp_runtime::{DispatchError, ModuleError};
@@ -459,7 +459,7 @@ macro_rules! impl_weight_tests {
 		mod weight {
 			// darwinia
 			use super::mock::*;
-			// substrate
+			// polkadot-sdk
 			use frame_support::{
 				dispatch::DispatchClass,
 				weights::{Weight, WeightToFee as WeightToFeeT},
@@ -469,7 +469,7 @@ macro_rules! impl_weight_tests {
 			// We can fit at least 1000 transfers in a block.
 			#[test]
 			fn sane_block_weight() {
-				// substrate
+				// polkadot-sdk
 				use pallet_balances::WeightInfo;
 
 				let block = pallet_config::RuntimeBlockWeights::get().max_block;
@@ -487,7 +487,7 @@ macro_rules! impl_weight_tests {
 			// The fee for one transfer_allow_death is at most 1 UNIT.
 			#[test]
 			fn sane_transfer_fee() {
-				// substrate
+				// polkadot-sdk
 				use pallet_balances::WeightInfo;
 
 				let base = pallet_config::RuntimeBlockWeights::get()
@@ -569,7 +569,7 @@ macro_rules! impl_fee_tests {
 			use super::mock::*;
 			// frontier
 			use fp_evm::FeeCalculator;
-			// substrate
+			// polkadot-sdk
 			use frame_support::{
 				dispatch::DispatchClass, pallet_prelude::Weight, traits::OnFinalize,
 			};
@@ -714,7 +714,7 @@ macro_rules! impl_maintenance_tests {
 		mod maintenance_test {
 			// darwinia
 			use super::mock::*;
-			// substrate
+			// polkadot-sdk
 			use frame_support::{assert_err, assert_ok};
 			use pallet_tx_pause::RuntimeCallNameOf;
 			use sp_core::H160;

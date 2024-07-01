@@ -27,7 +27,7 @@ mod tests;
 use core::marker::PhantomData;
 // moonbeam
 use precompile_utils::prelude::*;
-// substrate
+// polkadot-sdk
 use frame_support::{
 	dispatch::{GetDispatchInfo, PostDispatchInfo},
 	traits::OriginTrait,

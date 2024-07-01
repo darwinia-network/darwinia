@@ -29,7 +29,7 @@ pallet-session    = { workspace = true }
 sp-core           = { workspace = true }
 sp-runtime        = { workspace = true }
 sp-std            = { workspace = true }
-# substrate optional
+# polkadot-sdk optional
 frame-benchmarking = { workspace = true, optional = true }
 
 [dev-dependencies]
@@ -39,7 +39,7 @@ pretty_env_logger = { version = "0.5" }
 # darwinia
 darwinia-deposit = { workspace = true, features = ["std"] }
 
-# substrate
+# polkadot-sdk
 dc-inflation         = { workspace = true, features = ["std"] }
 pallet-balances      = { workspace = true, features = ["std"] }
 pallet-session       = { workspace = true, features = ["std"] }
@@ -73,7 +73,7 @@ std = [
 	"sp-core/std",
 	"sp-runtime/std",
 	"sp-std/std",
-	# substrate optional
+	# polkadot-sdk optional
 	"frame-benchmarking?/std",
 ]
 
@@ -83,7 +83,7 @@ runtime-benchmarks = [
 	"darwinia-ethtx-forwarder/runtime-benchmarks",
 	"darwinia-staking-traits/runtime-benchmarks",
 
-	# substrate
+	# polkadot-sdk
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
@@ -93,7 +93,7 @@ runtime-benchmarks = [
 try-runtime = [
 	# darwinia
 	"darwinia-ethtx-forwarder/try-runtime",
-	# substrate
+	# polkadot-sdk
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",
 	"pallet-authorship/try-runtime",

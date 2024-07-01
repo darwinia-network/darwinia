@@ -37,7 +37,7 @@
 //   --repeat=100
 
 pub mod constants {
-	// substrate
+	// polkadot-sdk
 	use frame_support::weights::{constants::WEIGHT_REF_TIME_PER_NANOS, Weight};
 
 	frame_support::parameter_types! {

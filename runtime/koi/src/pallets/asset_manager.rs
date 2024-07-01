@@ -73,7 +73,7 @@ impl pallet_asset_manager::AssetRegistrar<Runtime> for AssetRegistrar {
 	}
 
 	fn destroy_asset_dispatch_info_weight(asset: AssetId) -> frame_support::weights::Weight {
-		// substrate
+		// polkadot-sdk
 		use frame_support::dispatch::GetDispatchInfo;
 
 		// The dispatch info of destroy

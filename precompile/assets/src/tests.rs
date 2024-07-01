@@ -28,7 +28,7 @@ use precompile_utils::{
 	prelude::{Address, UnboundedBytes},
 	testing::{PrecompileTesterExt, PrecompilesModifierTester},
 };
-// substrate
+// polkadot-sdk
 use frame_support::assert_ok;
 use sp_core::{H256, U256};
 use sp_std::str::from_utf8;

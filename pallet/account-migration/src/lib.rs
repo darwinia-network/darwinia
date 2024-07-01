@@ -58,7 +58,7 @@ pub use weights::WeightInfo;
 use darwinia_deposit::Deposit;
 use darwinia_staking::{migration::v2::OldLedger, Ledger};
 use dc_primitives::{AccountId as AccountId20, AssetId, Balance, Nonce};
-// substrate
+// polkadot-sdk
 use frame_support::{
 	migration,
 	pallet_prelude::*,

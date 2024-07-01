@@ -37,7 +37,7 @@ use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
 //  moonbeam
 use moonbeam_rpc_debug::{DebugHandler, DebugRequester};
 use moonbeam_rpc_trace::{CacheRequester as TraceFilterCacheRequester, CacheTask};
-// substrate
+// polkadot-sdk
 use sc_network_sync::SyncingService;
 use sc_service::{Configuration, TaskManager};
 use substrate_prometheus_endpoint::Registry as PrometheusRegistry;

@@ -128,7 +128,7 @@ where
 		NetApiServer, TxPool, TxPoolApiServer, Web3, Web3ApiServer,
 	};
 	use fp_rpc::NoTransactionConverter;
-	// substrate
+	// polkadot-sdk
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
 	use substrate_frame_rpc_system::{System, SystemApiServer};
 

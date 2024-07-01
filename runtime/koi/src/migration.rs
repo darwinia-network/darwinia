@@ -19,7 +19,7 @@
 // darwinia
 #[allow(unused_imports)]
 use crate::*;
-// substrate
+// polkadot-sdk
 #[allow(unused_imports)]
 use frame_support::{migration, storage::unhashed};
 
