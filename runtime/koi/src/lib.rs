@@ -398,7 +398,7 @@ sp_api::impl_runtime_apis! {
 			// frontier
 			use pallet_evm::Runner;
 			use pallet_ethereum::{TransactionData, TransactionAction};
-			// polkadot-sdk
+			// substrate
 			use sp_runtime::traits::{UniqueSaturatedInto, Get};
 
 			let config = if estimate {
@@ -456,7 +456,7 @@ sp_api::impl_runtime_apis! {
 			// frontier
 			use pallet_evm::Runner;
 			use pallet_ethereum::{TransactionData, TransactionAction};
-			// polkadot-sdk
+			// substrate
 			use sp_runtime::traits::{UniqueSaturatedInto, Get};
 
 			let config = if estimate {
@@ -542,7 +542,7 @@ sp_api::impl_runtime_apis! {
 		fn pending_block(
 			xts: Vec<<Block as sp_runtime::traits::Block>::Extrinsic>,
 		) -> (Option<pallet_ethereum::Block>, Option<Vec<fp_rpc::TransactionStatus>>) {
-			// polkadot-sdk
+			// substrate
 			use frame_support::traits::OnFinalize;
 
 			for ext in xts.into_iter() {
@@ -799,7 +799,7 @@ sp_api::impl_runtime_apis! {
 			Vec<frame_benchmarking::BenchmarkList>,
 			Vec<frame_support::traits::StorageInfo>,
 		) {
-			// polkadot-sdk
+			// substrate
 			use cumulus_pallet_session_benchmarking::Pallet as SessionBench;
 			use frame_benchmarking::*;
 			use frame_support::traits::StorageInfoTrait;
@@ -817,7 +817,7 @@ sp_api::impl_runtime_apis! {
 		fn dispatch_benchmark(
 			config: frame_benchmarking::BenchmarkConfig
 		) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
-			// polkadot-sdk
+			// substrate
 			use frame_benchmarking::*;
 			use frame_support::traits::TrackedStorageKey;
 
@@ -887,7 +887,7 @@ sp_api::impl_runtime_apis! {
 // evm-tracing because some ethereum-xcm transactions might be executed at on_idle.
 //
 // We need to make sure that we replay on_idle exactly the same way as the
-// original block execution, but unfortunatly frame executive diosn't provide a function
+// original block execution, but unfortunately frame executive doesn't provide a function
 // to replay only on_idle, so we need to copy here some code inside frame executive.
 #[cfg(feature = "evm-tracing")]
 fn replay_on_idle() {

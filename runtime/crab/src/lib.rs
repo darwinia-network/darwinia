@@ -892,7 +892,7 @@ sp_api::impl_runtime_apis! {
 // evm-tracing because some ethereum-xcm transactions might be executed at on_idle.
 //
 // We need to make sure that we replay on_idle exactly the same way as the
-// original block execution, but unfortunatly frame executive diosn't provide a function
+// original block execution, but unfortunately frame executive doesn't provide a function
 // to replay only on_idle, so we need to copy here some code inside frame executive.
 #[cfg(feature = "evm-tracing")]
 fn replay_on_idle() {

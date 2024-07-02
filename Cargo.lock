@@ -2741,6 +2741,7 @@ dependencies = [
 name = "darwinia-common-runtime"
 version = "6.6.3"
 dependencies = [
+ "array-bytes 6.2.3",
  "cumulus-primitives-core",
  "darwinia-precompile-assets",
  "dc-primitives",

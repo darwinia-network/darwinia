@@ -40,6 +40,10 @@ xcm-executor            = { workspace = true }
 pallet-assets   = { workspace = true, optional = true }
 pallet-treasury = { workspace = true, optional = true }
 
+[dev-dependencies]
+# crates.io
+array-bytes = { workspace = true }
+
 [features]
 default = ["std"]
 std = [
