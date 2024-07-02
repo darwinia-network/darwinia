@@ -7,6 +7,7 @@ use dc_primitives::{AccountId, Balance};
 // polkadot-sdk
 use frame_support::traits::ReservableCurrency;
 use sp_runtime::traits::AppendZerosInput;
+use sp_std::prelude::*;
 
 /// Pallet migration helper.
 pub struct PalletCleaner {
