@@ -65,11 +65,6 @@ pub enum Subcommand {
 	/// Errors since the binary was not build with `--features runtime-benchmarks`.
 	#[cfg(not(feature = "runtime-benchmarks"))]
 	Benchmark,
-
-	/// Try-runtime has migrated to a standalone
-	/// [CLI](<https://github.com/paritytech/try-runtime-cli>). The subcommand exists as a stub and
-	/// deprecation notice. It will be removed entirely some time after Janurary 2024.
-	TryRuntime,
 }
 
 #[derive(Debug, clap::Parser)]
