@@ -38,11 +38,13 @@ impl PalletCleaner {
 	}
 }
 
-pub fn migrate_identity_of<C>() -> u64
+pub fn migrate_identity<C>() -> u64
 where
 	C: ReservableCurrency<AccountId, Balance = Balance>,
 {
-	migration::storage_iter_with_suffix::<Registration>(b"Identity", b"IdentityOf", &[])
+	let w = migration::clear_storage_prefix(b"AccountMigration", b"Identities", &[], None, None)
+		.backend;
+	let w1 = migration::storage_iter_with_suffix::<Registration>(b"Identity", b"IdentityOf", &[])
 		.drain()
 		.fold(0, |acc, (k, v)| {
 			if k.len() > 20 {
@@ -63,7 +65,9 @@ where
 			} else {
 				acc
 			}
-		})
+		});
+
+	(w + w1) as _
 }
 
 #[cfg_attr(test, derive(Debug, PartialEq))]

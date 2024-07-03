@@ -51,7 +51,7 @@ fn migrate() -> frame_support::weights::Weight {
 		maps: &[b"SuperOf", b"SubsOf", b"Registrars"],
 	}
 	.remove_all();
-	w += migration_helper::migrate_identity_of::<pallet_balances::Pallet<Runtime>>();
+	w += migration_helper::migrate_identity::<pallet_balances::Pallet<Runtime>>();
 
 	// frame_support::weights::Weight::zero()
 	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, w)
