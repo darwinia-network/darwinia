@@ -5,38 +5,38 @@ default_to_workspace = false
 WASM_BUILD_WORKSPACE_HINT = "${CARGO_MAKE_WORKING_DIRECTORY}"
 
 [tasks.check]
-args         = ["check"]
-command      = "cargo"
-env          = { "SKIP_WASM_BUILD" = "1" }
+args    = ["check"]
+command = "cargo"
+env     = { "SKIP_WASM_BUILD" = "1" }
 
 [tasks.clippy]
-args         = ["clippy"]
-command      = "cargo"
-env          = { "SKIP_WASM_BUILD" = "1" }
+args    = ["clippy"]
+command = "cargo"
+env     = { "SKIP_WASM_BUILD" = "1" }
 
 [tasks.common-build]
 args = [
-	"build",
-	"--locked",
-	"-p",
-	"darwinia",
-	"--release",
-	"--no-default-features",
 	"--features",
+	"--locked",
+	"--no-default-features",
+	"--release",
+	"-p",
 	"@@split(FEATURES, )",
+	"build",
+	"darwinia",
 ]
 [tasks.common-run]
 args = [
-	"--unsafe-ws-external",
-	"--unsafe-rpc-external",
-	"--rpc-methods",
-	"unsafe",
-	"--rpc-cors",
-	"all",
-	"--tmp",
 	"--alice",
 	"--collator",
+	"--rpc-cors",
+	"--rpc-methods",
+	"--tmp",
+	"--unsafe-rpc-external",
+	"--unsafe-ws-external",
 	"@@split(FLAGS, )",
+	"all",
+	"unsafe",
 ]
 
 [tasks.build-darwinia]
@@ -129,8 +129,8 @@ env     = { "FEATURES" = "crab-native,darwinia-native" }
 extend  = "common-build"
 
 [tasks.build-all]
-args    = ["build", "--locked", "--release", "--all-features"]
+args    = ["--all-features", "--locked", "--release", "build"]
 command = "cargo"
 [tasks.cbuild-all]
-args    = ["build", "--locked", "--release", "--all-features"]
+args    = ["--all-features", "--locked", "--release", "build"]
 command = "cross"
