@@ -73,7 +73,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ${{ env.DOCKER_REGISTRY }}
       - name: Publish docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v5
         with:
           push: true
           context: .

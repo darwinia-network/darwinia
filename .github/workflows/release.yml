@@ -210,7 +210,7 @@ jobs:
           registry: ${{ env.DOCKER_REGISTRY }}
       - name: Publish
         if: ${{ env.SKIP_BUILD != 'true' }}
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v5
         with:
           push: true
           context: .
@@ -218,7 +218,7 @@ jobs:
           tags: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}:sha-${{ env.SHA }}
       - name: Publish with tag
         if: ${{ env.SKIP_BUILD != 'true' }}
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v5
         with:
           push: true
           context: .
