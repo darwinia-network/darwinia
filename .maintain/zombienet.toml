@@ -14,24 +14,29 @@ name      = "bob"
 validator = true
 
 [[parachains]]
-chain = "koi-genesis"
-id    = 2105
+chain           = "koi-genesis"
+force_decorator = "generic-evm"
+id              = 2105
 [parachains.collator]
 args     = ["--database=paritydb", "--force-authoring", "-lparachain=debug"]
 command  = "tmp/darwinia"
 name     = "C1"
 rpc_port = 10000
+
 [[parachains]]
-chain = "koi-genesis"
-id    = 2105
+chain           = "koi-genesis"
+force_decorator = "generic-evm"
+id              = 2105
 [parachains.collator]
 args     = ["--database=paritydb", "--force-authoring", "-lparachain=debug"]
 command  = "tmp/darwinia"
 name     = "C2"
 rpc_port = 10001
+
 [[parachains]]
-chain = "koi-genesis"
-id    = 2105
+chain           = "koi-genesis"
+force_decorator = "generic-evm"
+id              = 2105
 [parachains.collator]
 args     = ["--database=paritydb", "--force-authoring", "-lparachain=debug"]
 command  = "tmp/darwinia"
