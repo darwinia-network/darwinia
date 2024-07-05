@@ -872,7 +872,7 @@ sp_api::impl_runtime_apis! {
 
 			let weight = Executive::try_runtime_upgrade(checks).unwrap();
 
-			(weight, RuntimeBlockWeights::get().max_block)
+			(weight, pallet_config::RuntimeBlockWeights::get().max_block)
 		}
 
 		fn execute_block(
