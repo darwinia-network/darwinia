@@ -1,5 +1,6 @@
 ## {{ .Env.CHAIN | strings.Title }}
-<h4 align="right">Upgrade Priority LOW :green_circle:</h4>
+<h3 align="right">Upgrade Priority HIGH :red_circle:</h3>
+<h3 align="center">!!All the nodes must be upgraded due to the new asynchronous backing feature!!</h4>
 
 #### Whitelist Hash
 ```
