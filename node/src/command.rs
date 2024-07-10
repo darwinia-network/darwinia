@@ -17,7 +17,7 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // std
-use std::{env, net::SocketAddr, path::PathBuf};
+use std::{env, fs, io::ErrorKind, net::SocketAddr, path::PathBuf, result::Result as StdResult};
 // darwinia
 use crate::{
 	chain_spec::*,
@@ -70,7 +70,7 @@ impl SubstrateCli for Cli {
 		2018
 	}
 
-	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpecT>, String> {
+	fn load_spec(&self, id: &str) -> StdResult<Box<dyn ChainSpecT>, String> {
 		load_spec(id)
 	}
 }
@@ -106,7 +106,7 @@ impl SubstrateCli for RelayChainCli {
 		2018
 	}
 
-	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpecT>, String> {
+	fn load_spec(&self, id: &str) -> StdResult<Box<dyn ChainSpecT>, String> {
 		polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id)
 	}
 }
@@ -364,6 +364,7 @@ pub fn run() -> Result<()> {
 			runner.sync_run(|config| {
 				// Remove Frontier off-chain db
 				let db_config_dir = frontier::db_config_dir(&config);
+
 				match cli.eth_args.frontier_backend_type {
 					FrontierBackendType::KeyValue => {
 						let frontier_database_config = match config.database {
@@ -382,15 +383,17 @@ pub fn run() -> Result<()> {
 								.into())
 							}
 						};
+
 						cmd.base.run(frontier_database_config)?;
 					}
 					FrontierBackendType::Sql => {
 						let db_path = db_config_dir.join("sql");
-						match std::fs::remove_dir_all(&db_path) {
+
+						match fs::remove_dir_all(&db_path) {
 							Ok(_) => {
 								println!("{:?} removed.", &db_path);
 							}
-							Err(ref err) if err.kind() == std::io::ErrorKind::NotFound => {
+							Err(ref err) if err.kind() == ErrorKind::NotFound => {
 								eprintln!("{:?} did not exist.", &db_path);
 							}
 							Err(err) => {
@@ -429,6 +432,7 @@ pub fn run() -> Result<()> {
 			set_default_ss58_version(chain_spec);
 			runner.sync_run(|_config| {
 				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
+
 				cmd.run(&*spec)
 			})
 		},
@@ -473,29 +477,26 @@ pub fn run() -> Result<()> {
 
 			runner.run_node_until_exit(|config| async move {
 				let chain_spec = &config.chain_spec;
-				let hwbench = (!cli.no_hardware_benchmarks).then_some(
-					config.database.path().map(|database_path| {
-						let _ = std::fs::create_dir_all(database_path);
-						sc_sysinfo::gather_hwbench(Some(database_path))
-					})).flatten();
 
 				set_default_ss58_version(chain_spec);
 
-				let para_id = Extensions::try_get(&*config.chain_spec)
-					.map(|e| e.para_id)
-					.ok_or("Could not find parachain ID in chain-spec.")?;
 				let polkadot_cli = RelayChainCli::new(
 					&config,
 					[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
 				);
+				let tokio_handle = config.tokio_handle.clone();
+				let para_id = Extensions::try_get(&*config.chain_spec)
+					.map(|e| e.para_id)
+					.ok_or("Could not find parachain ID in chain-spec.")?;
 				let id = ParaId::from(para_id);
 				let parachain_account =
 					AccountIdConversion::<polkadot_primitives::AccountId>::into_account_truncating(&id);
-				let tokio_handle = config.tokio_handle.clone();
+				let no_hardware_benchmarks = cli.no_hardware_benchmarks;
+				let storage_monitor = cli.storage_monitor;
 				let eth_rpc_config = cli.eth_args.build_eth_rpc_config();
 
-				log::info!("Parachain id: {:?}", id);
-				log::info!("Parachain Account: {}", parachain_account);
+				log::info!("Parachain id: {id:?}");
+				log::info!("Parachain Account: {parachain_account}");
 				log::info!(
 					"Is collating: {}",
 					if config.role.is_authority() { "yes" } else { "no" }
@@ -544,7 +545,8 @@ pub fn run() -> Result<()> {
 						polkadot_config,
 						collator_options,
 						id,
-						hwbench,
+						no_hardware_benchmarks,
+						storage_monitor,
 						&eth_rpc_config,
 					)
 					.await
@@ -559,7 +561,8 @@ pub fn run() -> Result<()> {
 						polkadot_config,
 						collator_options,
 						id,
-						hwbench,
+						no_hardware_benchmarks,
+						storage_monitor,
 						&eth_rpc_config,
 					)
 					.await
@@ -574,7 +577,8 @@ pub fn run() -> Result<()> {
 						polkadot_config,
 						collator_options,
 						id,
-						hwbench,
+						no_hardware_benchmarks,
+						storage_monitor,
 						&eth_rpc_config,
 					)
 					.await
@@ -588,7 +592,7 @@ pub fn run() -> Result<()> {
 	}
 }
 
-fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpecT>, String> {
+fn load_spec(id: &str) -> StdResult<Box<dyn ChainSpecT>, String> {
 	let id = if id.is_empty() {
 		let n = get_exec_name().unwrap_or_default();
 		["darwinia", "crab", "koi"]

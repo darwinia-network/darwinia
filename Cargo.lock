@@ -2674,6 +2674,7 @@ dependencies = [
  "sc-offchain",
  "sc-rpc",
  "sc-service",
+ "sc-storage-monitor",
  "sc-sysinfo",
  "sc-telemetry",
  "sc-tracing",

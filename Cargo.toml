@@ -116,7 +116,7 @@ frame-system-benchmarking                  = { git = "https://github.com/darwini
 frame-system-rpc-runtime-api               = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2", default-features = false }
 frame-try-runtime                          = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2", default-features = false }
 pallet-assets                              = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2", default-features = false }
-pallet-aura                                = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2", default-features = false, features = ["experimental"]}
+pallet-aura                                = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2", default-features = false, features = ["experimental"] }
 pallet-authorship                          = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2", default-features = false }
 pallet-balances                            = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2", default-features = false, features = ["insecure_zero_ed"] }
 pallet-collective                          = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2", default-features = false }
@@ -156,6 +156,7 @@ sc-offchain                                = { git = "https://github.com/darwini
 sc-rpc                                     = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2" }
 sc-rpc-api                                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2" }
 sc-service                                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2" }
+sc-storage-monitor                         = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2" }
 sc-sysinfo                                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2" }
 sc-telemetry                               = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2" }
 sc-tracing                                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2" }

@@ -90,6 +90,9 @@ pub struct Cli {
 	#[arg(long)]
 	pub no_hardware_benchmarks: bool,
 
+	#[clap(flatten)]
+	pub storage_monitor: sc_storage_monitor::StorageMonitorParams,
+
 	/// Relay chain arguments
 	#[arg(raw = true)]
 	pub relay_chain_args: Vec<String>,
