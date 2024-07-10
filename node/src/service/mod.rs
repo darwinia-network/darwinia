@@ -160,7 +160,6 @@ impl<Api> RuntimeApiCollection for Api where
 ///
 /// Use this macro if you don't actually need the full service, but just the builder in order to
 /// be able to perform chain operations.
-#[allow(clippy::type_complexity)]
 pub fn new_partial<RuntimeApi>(
 	config: &sc_service::Configuration,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
@@ -245,7 +244,8 @@ async fn start_node_impl<RuntimeApi, SC>(
 	sybil_resistance_level: cumulus_client_service::CollatorSybilResistance,
 	para_id: cumulus_primitives_core::ParaId,
 	start_consensus: SC,
-	hwbench: Option<sc_sysinfo::HwBench>,
+	no_hardware_benchmarks: bool,
+	storage_monitor: sc_storage_monitor::StorageMonitorParams,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> sc_service::error::Result<(sc_service::TaskManager, Arc<FullClient<RuntimeApi>>)>
 where
@@ -289,6 +289,14 @@ where
 				telemetry_worker_handle,
 			),
 	} = new_partial::<RuntimeApi>(&parachain_config, eth_rpc_config)?;
+	let database_path = parachain_config.database.path().map(|p| p.to_path_buf());
+	let hwbench = (!no_hardware_benchmarks)
+		.then_some(database_path.as_ref().map(|p| {
+			let _ = std::fs::create_dir_all(p);
+
+			sc_sysinfo::gather_hwbench(Some(p))
+		}))
+		.flatten();
 	let (relay_chain_interface, collator_key) =
 		cumulus_client_service::build_relay_chain_interface(
 			polkadot_config,
@@ -458,6 +466,7 @@ where
 
 	if let Some(hwbench) = hwbench {
 		sc_sysinfo::print_hwbench(&hwbench);
+
 		// Here you can check whether the hardware meets your chains' requirements. Putting a link
 		// in there and swapping out the requirements for your own are probably a good idea. The
 		// requirements for a para-chain are dictated by its relay-chain.
@@ -477,6 +486,14 @@ where
 				sc_sysinfo::initialize_hwbench_telemetry(telemetry_handle, hwbench),
 			);
 		}
+	}
+	if let Some(database_path) = database_path {
+		sc_storage_monitor::StorageMonitorService::try_spawn(
+			storage_monitor,
+			database_path,
+			&task_manager.spawn_essential_handle(),
+		)
+		.map_err(|e| sc_service::Error::Application(e.into()))?;
 	}
 
 	let announce_block = {
@@ -573,7 +590,8 @@ pub async fn start_parachain_node<RuntimeApi>(
 	polkadot_config: sc_service::Configuration,
 	collator_options: cumulus_client_cli::CollatorOptions,
 	para_id: cumulus_primitives_core::ParaId,
-	hwbench: Option<sc_sysinfo::HwBench>,
+	no_hardware_benchmarks: bool,
+	storage_monitor: sc_storage_monitor::StorageMonitorParams,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> sc_service::error::Result<(sc_service::TaskManager, Arc<FullClient<RuntimeApi>>)>
 where
@@ -660,7 +678,8 @@ where
 
 			Ok(())
 		},
-		hwbench,
+		no_hardware_benchmarks,
+		storage_monitor,
 		eth_rpc_config,
 	)
 	.await
