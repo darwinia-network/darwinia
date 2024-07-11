@@ -94,7 +94,7 @@ where
 			ForwardEthOrigin::ForwardEth(sender).into(),
 			req,
 		) {
-			log::error!("failed to call `nominateNewOwner` due to {e:?}");
+			log::error!("failed to call `acceptOwnershipFromOldDistribution` due to {e:?}");
 		}
 	}
 }
