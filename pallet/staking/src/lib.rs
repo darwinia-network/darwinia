@@ -971,7 +971,7 @@ where
 	PalletId(*b"da/staki").into_account_truncating()
 }
 
-/// The address of the `RewardsDistribution` contract.
+/// The address of the `StakingRewardDistribution` contract.
 /// 0x0DBFbb1Ab6e42F89661B4f98d5d0acdBE21d1ffC.
 pub struct KtonRewardDistributionContract;
 impl<T> Get<T> for KtonRewardDistributionContract
