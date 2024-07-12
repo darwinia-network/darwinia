@@ -83,3 +83,137 @@ pub struct AssetRegistrarMetadata {
 	pub decimals: u8,
 	pub is_frozen: bool,
 }
+
+#[macro_export]
+macro_rules! impl_xcm_call_dispatcher_tracing {
+	{} => {
+		type CallResult = Result<
+			sp_runtime::traits::PostDispatchInfoOf<RuntimeCall>,
+			sp_runtime::DispatchErrorWithPostInfo<sp_runtime::traits::PostDispatchInfoOf<RuntimeCall>>
+		>;
+
+		pub struct XcmCallDispatcher;
+		impl xcm_executor::traits::CallDispatcher<RuntimeCall> for XcmCallDispatcher {
+			fn dispatch(call: RuntimeCall, origin: RuntimeOrigin) -> CallResult {
+				if let Ok(raw_origin) = TryInto::<frame_system::RawOrigin<AccountId>>::try_into(origin.clone().caller) {
+					match (call.clone(), raw_origin) {
+						(
+							RuntimeCall::EthereumXcm(pallet_ethereum_xcm::Call::transact { xcm_transaction }) |
+							RuntimeCall::EthereumXcm(pallet_ethereum_xcm::Call::transact_through_proxy {
+								xcm_transaction, ..
+							 }),
+							 frame_system::RawOrigin::Signed(account_id)
+						) => {
+							use crate::EthereumXcm;
+							use moonbeam_evm_tracer::tracer::EvmTracer;
+							use xcm_primitives::{
+								XcmToEthereum,
+								EthereumXcmTracingStatus,
+								ETHEREUM_XCM_TRACING_STORAGE_KEY
+							};
+							use frame_support::storage::unhashed;
+							use frame_support::traits::Get;
+
+							let dispatch_call = || {
+								RuntimeCall::dispatch(
+									call,
+									pallet_ethereum_xcm::Origin::XcmEthereumTransaction(
+										account_id.into()
+									).into()
+								)
+							};
+
+							return match unhashed::get(
+								ETHEREUM_XCM_TRACING_STORAGE_KEY
+							) {
+								// This runtime instance is used for tracing.
+								Some(tracing_status) => match tracing_status {
+									// Tracing a block, all calls are done using environmental.
+									EthereumXcmTracingStatus::Block => {
+										// Each known extrinsic is a new call stack.
+										EvmTracer::emit_new();
+										let mut res: Option<CallResult> = None;
+										EvmTracer::new().trace(|| {
+											res = Some(dispatch_call());
+										});
+										res.expect("Invalid dispatch result")
+									},
+									// Tracing a transaction, the one matching the trace request
+									// is done using environmental, the rest dispatched normally.
+									EthereumXcmTracingStatus::Transaction(traced_transaction_hash) => {
+										let transaction_hash = xcm_transaction.into_transaction_v2(
+											EthereumXcm::nonce(),
+											<Runtime as pallet_evm::Config>::ChainId::get()
+										)
+										.expect("Invalid transaction conversion")
+										.hash();
+										if transaction_hash == traced_transaction_hash {
+											let mut res: Option<CallResult> = None;
+											EvmTracer::new().trace(|| {
+												res = Some(dispatch_call());
+											});
+											// Tracing runtime work is done, just signal instance exit.
+											unhashed::put::<EthereumXcmTracingStatus>(
+												xcm_primitives::ETHEREUM_XCM_TRACING_STORAGE_KEY,
+												&EthereumXcmTracingStatus::TransactionExited,
+											);
+											return res.expect("Invalid dispatch result");
+										}
+										dispatch_call()
+									},
+									// Tracing a transaction that has already been found and
+									// executed. There's no need to dispatch the rest of the
+									// calls.
+									EthereumXcmTracingStatus::TransactionExited => Ok(frame_support::dispatch::PostDispatchInfo {
+										actual_weight: None,
+										pays_fee: frame_support::pallet_prelude::Pays::No,
+									}),
+								},
+								// This runtime instance is importing a block.
+								None => dispatch_call()
+							};
+						},
+						_ => {}
+					}
+				}
+				RuntimeCall::dispatch(call, origin)
+			}
+		}
+	}
+}
+
+#[macro_export]
+macro_rules! impl_xcm_call_dispatcher {
+	() => {
+		pub struct XcmCallDispatcher;
+		impl xcm_executor::traits::CallDispatcher<RuntimeCall> for XcmCallDispatcher {
+			fn dispatch(
+				call: RuntimeCall,
+				origin: RuntimeOrigin,
+			) -> Result<
+				sp_runtime::traits::PostDispatchInfoOf<RuntimeCall>,
+				sp_runtime::DispatchErrorWithPostInfo<
+					sp_runtime::traits::PostDispatchInfoOf<RuntimeCall>,
+				>,
+			> {
+				if let Ok(raw_origin) =
+					TryInto::<frame_system::RawOrigin<AccountId>>::try_into(origin.clone().caller)
+				{
+					if let (
+						RuntimeCall::EthereumXcm(pallet_ethereum_xcm::Call::transact { .. }),
+						frame_system::RawOrigin::Signed(account_id),
+					) = (call.clone(), raw_origin)
+					{
+						return RuntimeCall::dispatch(
+							call,
+							pallet_ethereum_xcm::Origin::XcmEthereumTransaction(account_id.into())
+								.into(),
+						);
+					}
+				}
+
+				RuntimeCall::dispatch(call, origin)
+			}
+		}
+	};
+}
