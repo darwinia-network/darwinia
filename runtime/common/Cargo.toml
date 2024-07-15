@@ -80,6 +80,8 @@ std = [
 	"pallet-treasury?/std",
 ]
 
+non-async = []
+
 test = []
 
 runtime-benchmarks = [

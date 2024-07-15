@@ -61,6 +61,9 @@ pub type Block = sp_runtime::generic::Block<Header, sp_runtime::OpaqueExtrinsic>
 
 /// Maximum number of blocks simultaneously accepted by the Runtime, not yet included
 /// into the relay chain.
+#[cfg(feature = "non-async")]
+pub const UNINCLUDED_SEGMENT_CAPACITY: u32 = 1;
+#[cfg(not(feature = "non-async"))]
 pub const UNINCLUDED_SEGMENT_CAPACITY: u32 = 3;
 /// How many parachain blocks are processed by the relay chain per parent. Limits the
 /// number of blocks authored per slot.
@@ -71,6 +74,9 @@ pub const RELAY_CHAIN_SLOT_DURATION_MILLIS: u32 = 6_000;
 // NOTE: Currently it is not possible to change the slot duration after the chain has started.
 //       Attempting to do so will brick block production.
 /// Slot duration.
+#[cfg(feature = "non-async")]
+pub const SLOT_DURATION: u64 = 12_000;
+#[cfg(not(feature = "non-async"))]
 pub const SLOT_DURATION: u64 = 6_000;
 
 // Time is measured by number of blocks.

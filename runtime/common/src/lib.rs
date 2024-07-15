@@ -175,7 +175,11 @@ impl frame_support::weights::WeightToFeePolynomial for RefTimeToFee {
 	fn polynomial() -> frame_support::weights::WeightToFeeCoefficients<Self::Balance> {
 		// Map base extrinsic weight to 1/800 UNIT.
 		let p = UNIT;
-		let q = 800
+		#[cfg(feature = "non-async")]
+		let base = 200;
+		#[cfg(not(feature = "non-async"))]
+		let base = 800;
+		let q = base
 			* Balance::from(
 				frame_support::weights::constants::ExtrinsicBaseWeight::get().ref_time(),
 			);
