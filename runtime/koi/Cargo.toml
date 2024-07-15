@@ -16,6 +16,7 @@ array-bytes = { workspace = true }
 codec       = { workspace = true, package = "parity-scale-codec" }
 log         = { workspace = true }
 scale-info  = { workspace = true }
+smallvec    = { version = "1.10" }
 strum       = { workspace = true, features = ["derive"] }
 
 # darwinia

@@ -50,7 +50,7 @@ impl frame_support::traits::PrivilegeCmp<OriginCaller> for OriginPrivilegeCmp {
 
 impl pallet_scheduler::Config for Runtime {
 	type MaxScheduledPerBlock = ConstU32<50>;
-	type MaximumWeight = pallet_config::MaximumSchedulerWeight;
+	type MaximumWeight = crate::pallet_config::MaximumSchedulerWeight;
 	type OriginPrivilegeCmp = OriginPrivilegeCmp;
 	type PalletsOrigin = OriginCaller;
 	type Preimages = Preimage;

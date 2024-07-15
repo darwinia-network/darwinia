@@ -20,7 +20,7 @@
 use crate::*;
 
 impl pallet_timestamp::Config for Runtime {
-	type MinimumPeriod = ();
+	type MinimumPeriod = ConstU64<{ SLOT_DURATION / 2 }>;
 	/// A timestamp: milliseconds since the unix epoch.
 	type Moment = u64;
 	#[cfg(not(feature = "runtime-benchmarks"))]
