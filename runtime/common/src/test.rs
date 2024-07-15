@@ -327,7 +327,7 @@ macro_rules! impl_account_migration_tests {
 
 #[macro_export]
 macro_rules! impl_evm_tests {
-	() => {
+	($non_async:expr) => {
 		mod evm {
 			// darwinia
 			use super::mock::*;
@@ -351,7 +351,10 @@ macro_rules! impl_evm_tests {
 			#[test]
 			fn evm_constants_are_correctly() {
 				assert_eq!(pallet_config::BlockGasLimit::get(), U256::from(20_000_000));
-				assert_eq!(pallet_config::WeightPerGas::get().ref_time(), 75000);
+				assert_eq!(
+					pallet_config::WeightPerGas::get().ref_time(),
+					if $non_async { 18750 } else { 75000 }
+				);
 			}
 
 			#[test]

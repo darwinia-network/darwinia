@@ -11,6 +11,9 @@ const AVERAGE_ON_INITIALIZE_RATIO: sp_runtime::Perbill = sp_runtime::Perbill::fr
 /// We allow `Normal` extrinsics to fill up the block up to 75%, the rest can be used by
 /// `Operational` extrinsics.
 pub const NORMAL_DISPATCH_RATIO: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(75);
+#[cfg(feature = "non-async")]
+const WEIGHT_MILLISECS_PER_BLOCK: u64 = 500;
+#[cfg(not(feature = "non-async"))]
 const WEIGHT_MILLISECS_PER_BLOCK: u64 = 2_000;
 #[cfg(feature = "non-async")]
 pub const MAXIMUM_BLOCK_WEIGHT: frame_support::weights::Weight =
