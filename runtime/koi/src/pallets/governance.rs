@@ -109,8 +109,10 @@ impl pallet_treasury::Config for Runtime {
 	type MaxApprovals = ConstU32<100>;
 	type OnSlash = Treasury;
 	type PalletId = crate::pallet_config::TreasuryPid;
-	type Paymaster =
-		frame_support::traits::tokens::PayFromAccount<Balances, crate::pallet_config::TreasuryAccount>;
+	type Paymaster = frame_support::traits::tokens::PayFromAccount<
+		Balances,
+		crate::pallet_config::TreasuryAccount,
+	>;
 	type PayoutPeriod = Time1;
 	type ProposalBond = ProposalBond;
 	type ProposalBondMaximum = ();
