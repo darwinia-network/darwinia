@@ -24,14 +24,11 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-pub mod weights;
-
-mod pallets;
-pub use pallets::*;
-
-mod migration;
-
-pub mod pallet_config;
+pub const UNINCLUDED_SEGMENT_CAPACITY: u32 = 3;
+pub const SLOT_DURATION: u64 = 6_000;
+pub const MINUTES: BlockNumber = 60_000 / (SLOT_DURATION as BlockNumber);
+pub const HOURS: BlockNumber = MINUTES * 60;
+pub const DAYS: BlockNumber = HOURS * 24;
 pub struct WeightToFee;
 impl frame_support::weights::WeightToFee for WeightToFee {
 	type Balance = Balance;
@@ -69,6 +66,14 @@ impl frame_support::weights::WeightToFeePolynomial for RefTimeToFee {
 		}]
 	}
 }
+pub mod pallet_config;
+
+pub mod weights;
+
+mod pallets;
+pub use pallets::*;
+
+mod migration;
 
 use darwinia_common_runtime::*;
 pub use dc_primitives::*;
