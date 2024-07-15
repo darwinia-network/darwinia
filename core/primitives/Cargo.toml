@@ -27,5 +27,3 @@ std = [
 	"sp-core/std",
 	"sp-runtime/std",
 ]
-
-non-async = []

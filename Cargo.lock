@@ -5816,6 +5816,7 @@ dependencies = [
  "polkadot-runtime-common",
  "precompile-utils 0.1.0",
  "scale-info",
+ "smallvec",
  "sp-api",
  "sp-block-builder",
  "sp-consensus-aura",

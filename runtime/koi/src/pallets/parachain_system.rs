@@ -24,11 +24,11 @@ impl cumulus_pallet_parachain_system::Config for Runtime {
 		cumulus_pallet_parachain_system::RelayNumberMonotonicallyIncreases;
 	type ConsensusHook = ConsensusHook;
 	type DmpQueue =
-		frame_support::traits::EnqueueWithOrigin<MessageQueue, pallet_config::RelayOrigin>;
+		frame_support::traits::EnqueueWithOrigin<MessageQueue, crate::pallet_config::RelayOrigin>;
 	type OnSystemEvent = ();
 	type OutboundXcmpMessageSource = XcmpQueue;
-	type ReservedDmpWeight = pallet_config::ReservedDmpWeight;
-	type ReservedXcmpWeight = pallet_config::ReservedXcmpWeight;
+	type ReservedDmpWeight = crate::pallet_config::ReservedDmpWeight;
+	type ReservedXcmpWeight = crate::pallet_config::ReservedXcmpWeight;
 	type RuntimeEvent = RuntimeEvent;
 	type SelfParaId = parachain_info::Pallet<Self>;
 	type WeightInfo = weights::cumulus_pallet_parachain_system::WeightInfo<Self>;

@@ -34,7 +34,6 @@ pub mod test;
 // darwinia
 use dc_primitives::*;
 // polkadot-sdk
-use frame_support::weights::WeightToFeePolynomial;
 use sp_core::{H160, U256};
 
 #[macro_export]
@@ -157,6 +156,9 @@ impl frame_support::weights::WeightToFee for WeightToFee {
 	type Balance = Balance;
 
 	fn weight_to_fee(weight: &frame_support::weights::Weight) -> Self::Balance {
+		// polkadot-sdk
+		use frame_support::weights::WeightToFeePolynomial;
+
 		let time_poly: frame_support::weights::FeePolynomial<Balance> =
 			RefTimeToFee::polynomial().into();
 		let proof_poly: frame_support::weights::FeePolynomial<Balance> =
@@ -173,13 +175,9 @@ impl frame_support::weights::WeightToFeePolynomial for RefTimeToFee {
 	type Balance = Balance;
 
 	fn polynomial() -> frame_support::weights::WeightToFeeCoefficients<Self::Balance> {
-		// Map base extrinsic weight to 1/800 UNIT.
+		// Map base extrinsic weight to 1/200 UNIT.
 		let p = UNIT;
-		#[cfg(feature = "non-async")]
-		let base = 200;
-		#[cfg(not(feature = "non-async"))]
-		let base = 800;
-		let q = base
+		let q = 200
 			* Balance::from(
 				frame_support::weights::constants::ExtrinsicBaseWeight::get().ref_time(),
 			);

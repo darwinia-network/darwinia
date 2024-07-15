@@ -36,7 +36,7 @@ type Time2 = ConstU32<TIME_2>;
 impl pallet_collective::Config<TechnicalCollective> for Runtime {
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
 	type MaxMembers = ConstU32<100>;
-	type MaxProposalWeight = pallet_config::MaxProposalWeight;
+	type MaxProposalWeight = crate::pallet_config::MaxProposalWeight;
 	type MaxProposals = ConstU32<100>;
 	type MotionDuration = Time1;
 	type Proposal = RuntimeCall;
@@ -108,9 +108,9 @@ impl pallet_treasury::Config for Runtime {
 	type Currency = Balances;
 	type MaxApprovals = ConstU32<100>;
 	type OnSlash = Treasury;
-	type PalletId = pallet_config::TreasuryPid;
+	type PalletId = crate::pallet_config::TreasuryPid;
 	type Paymaster =
-		frame_support::traits::tokens::PayFromAccount<Balances, pallet_config::TreasuryAccount>;
+		frame_support::traits::tokens::PayFromAccount<Balances, crate::pallet_config::TreasuryAccount>;
 	type PayoutPeriod = Time1;
 	type ProposalBond = ProposalBond;
 	type ProposalBondMaximum = ();
@@ -119,7 +119,7 @@ impl pallet_treasury::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
 	type SpendOrigin = EitherOf<
-		frame_system::EnsureRootWithSuccess<Self::AccountId, pallet_config::MaxBalance>,
+		frame_system::EnsureRootWithSuccess<Self::AccountId, crate::pallet_config::MaxBalance>,
 		Spender,
 	>;
 	type SpendPeriod = Time1;

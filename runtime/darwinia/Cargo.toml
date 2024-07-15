@@ -23,7 +23,7 @@ array-bytes = { workspace = true }
 # darwinia
 darwinia-account-migration        = { workspace = true }
 darwinia-asset-limit              = { workspace = true }
-darwinia-common-runtime           = { workspace = true, features = ["non-async"] }
+darwinia-common-runtime           = { workspace = true }
 darwinia-deposit                  = { workspace = true }
 darwinia-ethtx-forwarder          = { workspace = true }
 darwinia-precompile-assets        = { workspace = true }
@@ -32,7 +32,7 @@ darwinia-precompile-staking       = { workspace = true }
 darwinia-precompile-state-storage = { workspace = true }
 darwinia-staking                  = { workspace = true }
 dc-inflation                      = { workspace = true }
-dc-primitives                     = { workspace = true, features = ["non-async"] }
+dc-primitives                     = { workspace = true }
 
 # frontier
 fp-evm                         = { workspace = true }

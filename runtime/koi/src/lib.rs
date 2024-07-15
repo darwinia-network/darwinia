@@ -31,7 +31,46 @@ pub use pallets::*;
 
 mod migration;
 
-pub use darwinia_common_runtime::*;
+pub mod pallet_config;
+pub struct WeightToFee;
+impl frame_support::weights::WeightToFee for WeightToFee {
+	type Balance = Balance;
+
+	fn weight_to_fee(weight: &frame_support::weights::Weight) -> Self::Balance {
+		// polkadot-sdk
+		use frame_support::weights::WeightToFeePolynomial;
+
+		let time_poly: frame_support::weights::FeePolynomial<Balance> =
+			RefTimeToFee::polynomial().into();
+		let proof_poly: frame_support::weights::FeePolynomial<Balance> =
+			darwinia_common_runtime::ProofSizeToFee::polynomial().into();
+
+		// Take the maximum instead of the sum to charge by the more scarce resource.
+		time_poly.eval(weight.ref_time()).max(proof_poly.eval(weight.proof_size()))
+	}
+}
+pub struct RefTimeToFee;
+impl frame_support::weights::WeightToFeePolynomial for RefTimeToFee {
+	type Balance = Balance;
+
+	fn polynomial() -> frame_support::weights::WeightToFeeCoefficients<Self::Balance> {
+		// Map base extrinsic weight to 1/800 UNIT.
+		let p = UNIT;
+		let q = 800
+			* Balance::from(
+				frame_support::weights::constants::ExtrinsicBaseWeight::get().ref_time(),
+			);
+
+		smallvec::smallvec![frame_support::weights::WeightToFeeCoefficient {
+			degree: 1,
+			negative: false,
+			coeff_frac: sp_runtime::Perbill::from_rational(p % q, q),
+			coeff_integer: p / q,
+		}]
+	}
+}
+
+use darwinia_common_runtime::*;
 pub use dc_primitives::*;
 
 // crates.io
@@ -863,7 +902,7 @@ sp_api::impl_runtime_apis! {
 
 			let weight = Executive::try_runtime_upgrade(checks).unwrap();
 
-			(weight, pallet_config::RuntimeBlockWeights::get().max_block)
+			(weight, crate::pallet_config::RuntimeBlockWeights::get().max_block)
 		}
 
 		fn execute_block(
@@ -891,7 +930,7 @@ fn replay_on_idle() {
 	use frame_system::pallet_prelude::BlockNumberFor;
 
 	let weight = <frame_system::Pallet<Runtime>>::block_weight();
-	let max_weight = pallet_config::RuntimeBlockWeights::get().max_block;
+	let max_weight = crate::pallet_config::RuntimeBlockWeights::get().max_block;
 	let remaining_weight = max_weight.saturating_sub(weight.total());
 	if remaining_weight.all_gt(frame_support::weights::Weight::zero()) {
 		let _ = <AllPalletsWithSystem as OnIdle<BlockNumberFor<Runtime>>>::on_idle(
