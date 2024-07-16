@@ -83,14 +83,20 @@ impl<O: Into<Result<ForwardEthOrigin, O>> + From<ForwardEthOrigin>> EnsureOrigin
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::*;
+	use frame_support::pallet_prelude::{ValueQuery, *};
 	use frame_system::pallet_prelude::*;
 
 	#[pallet::pallet]
+	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
 	#[pallet::origin]
 	pub type Origin = ForwardEthOrigin;
+
+	/// The hashes of the transactions that have been forwarded, used in the EVM tracing.
+	#[pallet::storage]
+	#[pallet::getter(fn transaction_hashes)]
+	pub type TransactionHashes<T: Config> = StorageValue<_, Vec<H256>, ValueQuery>;
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config + pallet_evm::Config {
@@ -123,6 +129,8 @@ pub mod pallet {
 			let source = ensure_forward_transact(origin)?;
 
 			let transaction = Self::validated_transaction(source, request)?;
+			TransactionHashes::<T>::append(transaction.hash());
+
 			T::ValidatedTransaction::apply(source, transaction).map(|(post_info, _)| post_info)
 		}
 	}
@@ -230,8 +238,9 @@ impl<T: Config> Pallet<T> {
 				transaction_data.gas_limit.unique_saturated_into(),
 				true,
 			) {
-				weight_limit if weight_limit.proof_size() > 0 =>
-					(Some(weight_limit), Some(transaction_data.proof_size_base_cost())),
+				weight_limit if weight_limit.proof_size() > 0 => {
+					(Some(weight_limit), Some(transaction_data.proof_size_base_cost()))
+				},
 				_ => (None, None),
 			};
 

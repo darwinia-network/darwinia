@@ -44,6 +44,25 @@ fn mocked_request() -> ForwardRequest {
 }
 
 #[test]
+fn forward_transaction_hashes_works() {
+	let alice = address_build(1);
+	ExtBuilder::default()
+		.with_balances(vec![(alice.address, 1_000_000_000_000)])
+		.build()
+		.execute_with(|| {
+			let request = mocked_request();
+			(0..10).for_each(|_| {
+				let _ = EthTxForwarder::forward_transact(
+					ForwardEthOrigin::ForwardEth(alice.address).into(),
+					request.clone(),
+				);
+			});
+
+			assert_eq!(EthTxForwarder::transaction_hashes().len(), 10);
+		});
+}
+
+#[test]
 fn forward_request_works() {
 	let alice = address_build(1);
 	ExtBuilder::default()
