@@ -637,7 +637,13 @@ sp_api::impl_runtime_apis! {
 				// After pallet message queue was introduced, this must be done only after
 				// enabling XCM tracing by setting ETHEREUM_XCM_TRACING_STORAGE_KEY
 				// in the storage
-				Executive::initialize_block(_header);
+
+				if EthTxForwarder::transaction_hashes().contains(&_traced_transaction.hash()) {
+					EvmTracer::new().trace(|| Executive::initialize_block(_header));
+					return Ok(());
+				} else {
+					Executive::initialize_block(_header);
+				}
 
 				// Apply the a subset of extrinsics: all the substrate-specific or ethereum
 				// transactions that preceded the requested transaction.
@@ -713,7 +719,12 @@ sp_api::impl_runtime_apis! {
 				// After pallet message queue was introduced, this must be done only after
 				// enabling XCM tracing by setting ETHEREUM_XCM_TRACING_STORAGE_KEY
 				// in the storage
-				Executive::initialize_block(_header);
+				if _known_transactions.iter().any(|hash| EthTxForwarder::transaction_hashes().contains(&hash)) {
+					EvmTracer::emit_new();
+					EvmTracer::new().trace(|| Executive::initialize_block(_header));
+				} else {
+					Executive::initialize_block(_header);
+				}
 
 				// Apply all extrinsics. Ethereum extrinsics are traced.
 				for ext in _extrinsics.into_iter() {
