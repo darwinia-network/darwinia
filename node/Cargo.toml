@@ -102,11 +102,23 @@ default = [
 	"darwinia-native",
 ]
 
-fast-runtime = [
+all-natives = [
 	# darwinia
-	"crab-runtime?/fast-runtime",
-	"darwinia-runtime?/fast-runtime",
-	"koi-runtime?/fast-runtime",
+	"crab-native",
+	"darwinia-native",
+	"koi-native",
+]
+crab-native = [
+	# darwinia
+	"crab-runtime",
+]
+darwinia-native = [
+	# darwinia
+	"darwinia-runtime",
+]
+koi-native = [
+	# darwinia
+	"koi-runtime",
 ]
 
 evm-tracing = [
@@ -134,21 +146,14 @@ runtime-benchmarks = [
 	"sp-runtime/runtime-benchmarks",
 ]
 
-all-natives = [
+dev = [
 	# darwinia
-	"crab-native",
-	"darwinia-native",
-	"koi-native",
+	"crab-runtime?/dev",
+	"darwinia-runtime?/dev",
 ]
-crab-native = [
+fast-runtime = [
 	# darwinia
-	"crab-runtime",
-]
-darwinia-native = [
-	# darwinia
-	"darwinia-runtime",
-]
-koi-native = [
-	# darwinia
-	"koi-runtime",
+	"crab-runtime?/fast-runtime",
+	"darwinia-runtime?/fast-runtime",
+	"koi-runtime?/fast-runtime",
 ]
