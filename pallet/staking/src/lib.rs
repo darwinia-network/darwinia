@@ -994,11 +994,13 @@ where
 /// `StakingRewardDistribution` contact notification interface.
 pub trait KtonStakerNotification {
 	/// Construct the notification.
-	fn construct_notification(amount: Balance) -> Option<ForwardRequest>;
+	fn construct_notification(_amount: Balance) -> Option<ForwardRequest> {
+		None
+	}
 	/// Notify the KTON staker contract.
 	fn notify(_sender: H160, _notification: Option<ForwardRequest>) {}
 }
-// impl KtonStakerNotification for () {}
+impl KtonStakerNotification for () {}
 /// `StakingRewardDistribution` contact notifier.
 ///
 /// https://github.com/darwinia-network/KtonDAO/blob/2de20674f2ef90b749ade746d0768c7bda356402/src/staking/KtonDAOVault.sol#L40.
@@ -1037,7 +1039,6 @@ where
 			input,
 			gas_limit: U256::from(1_000_000),
 		})
-
 	}
 
 	fn notify(sender: H160, notification: Option<ForwardRequest>) {

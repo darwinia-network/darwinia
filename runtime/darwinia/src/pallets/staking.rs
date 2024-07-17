@@ -22,6 +22,8 @@ use crate::*;
 use frame_support::traits::Currency;
 
 fast_runtime_or_not!(DURATION, BlockNumber, 5 * MINUTES, 14 * DAYS);
+#[cfg(feature = "evm-tracing")]
+darwinia_common_runtime::impl_kton_staker_notifier_tracing!();
 
 pub enum RingStaking {}
 impl darwinia_staking::Stake for RingStaking {
@@ -115,7 +117,10 @@ impl darwinia_staking::Config for Runtime {
 	type IssuingManager = OnDarwiniaSessionEnd;
 	type Kton = KtonStaking;
 	type KtonRewardDistributionContract = darwinia_staking::KtonRewardDistributionContract;
+	#[cfg(not(feature = "evm-tracing"))]
 	type KtonStakerNotifier = darwinia_staking::KtonStakerNotifier<Self>;
+	#[cfg(feature = "evm-tracing")]
+	type KtonStakerNotifier = KtonStakerNotifierTracing<Self>;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;

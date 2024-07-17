@@ -619,7 +619,6 @@ sp_api::impl_runtime_apis! {
 		> {
 			#[cfg(feature = "evm-tracing")]
 			{
-				log::error!("bear: --- started to trace transaction, tx_hash: {:?} ---", _traced_transaction.hash());
 				use moonbeam_evm_tracer::tracer::EvmTracer;
 				use xcm_primitives::{
 					ETHEREUM_XCM_TRACING_STORAGE_KEY,
@@ -646,7 +645,6 @@ sp_api::impl_runtime_apis! {
 					let _ = match &ext.0.function {
 						RuntimeCall::Ethereum(pallet_ethereum::Call::transact { transaction }) => {
 							if transaction == _traced_transaction {
-								EvmTracer::emit_new();
 								EvmTracer::new().trace(|| Executive::apply_extrinsic(ext));
 								return Ok(());
 							} else {
