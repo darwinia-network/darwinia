@@ -651,7 +651,11 @@ pub mod pallet {
 			reward(account_id(), actual_reward_to_ring);
 			reward(T::KtonRewardDistributionContract::get(), reward_to_kton);
 
-			T::KtonStakerNotifier::notify(reward_to_kton);
+			let sender = H160([
+				109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0,
+			]);
+			let notification = T::KtonStakerNotifier::construct_notification(reward_to_kton);
+			T::KtonStakerNotifier::notify(sender, notification);
 		}
 
 		/// Pay the reward to the collator and its nominators.
@@ -989,10 +993,12 @@ where
 
 /// `StakingRewardDistribution` contact notification interface.
 pub trait KtonStakerNotification {
+	/// Construct the notification.
+	fn construct_notification(amount: Balance) -> Option<ForwardRequest>;
 	/// Notify the KTON staker contract.
-	fn notify(_: Balance) {}
+	fn notify(_sender: H160, _notification: Option<ForwardRequest>) {}
 }
-impl KtonStakerNotification for () {}
+// impl KtonStakerNotification for () {}
 /// `StakingRewardDistribution` contact notifier.
 ///
 /// https://github.com/darwinia-network/KtonDAO/blob/2de20674f2ef90b749ade746d0768c7bda356402/src/staking/KtonDAOVault.sol#L40.
@@ -1003,7 +1009,7 @@ where
 	T::RuntimeOrigin: Into<Result<ForwardEthOrigin, T::RuntimeOrigin>> + From<ForwardEthOrigin>,
 	<T as frame_system::Config>::AccountId: Into<H160>,
 {
-	fn notify(amount: Balance) {
+	fn construct_notification(amount: Balance) -> Option<ForwardRequest> {
 		let krd_contract = T::KtonRewardDistributionContract::get().into();
 		#[allow(deprecated)]
 		let function = Function {
@@ -1021,27 +1027,29 @@ where
 			Ok(i) => i,
 			Err(e) => {
 				log::error!("failed to encode input due to {e:?}");
-
-				return;
+				return None;
 			},
 		};
-		let req = ForwardRequest {
+		Some(ForwardRequest {
 			tx_type: TxType::LegacyTransaction,
 			action: TransactionAction::Call(krd_contract),
 			value: U256::from(amount),
 			input,
 			gas_limit: U256::from(1_000_000),
-		};
-		// Treasury pallet account.
-		let sender = H160([
-			109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0,
-		]);
+		})
 
-		if let Err(e) = <darwinia_ethtx_forwarder::Pallet<T>>::forward_transact(
-			ForwardEthOrigin::ForwardEth(sender).into(),
-			req,
-		) {
-			log::error!("failed to call `distributeRewards` on `KtonRewardDistributionContract` contract due to {e:?}");
+	}
+
+	fn notify(sender: H160, notification: Option<ForwardRequest>) {
+		if let Some(req) = notification {
+			if let Err(e) = <darwinia_ethtx_forwarder::Pallet<T>>::forward_transact(
+				ForwardEthOrigin::ForwardEth(sender).into(),
+				req,
+			) {
+				log::error!("failed to call `distributeRewards` on `KtonRewardDistributionContract` contract due to {e:?}");
+			}
+		} else {
+			log::error!("failed to construct notification for `distributeRewards` on `KtonRewardDistributionContract` contract");
 		}
 	}
 }

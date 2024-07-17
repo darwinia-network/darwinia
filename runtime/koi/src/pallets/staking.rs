@@ -94,13 +94,66 @@ impl frame_support::traits::Get<bool> for ShouldEndSession {
 	}
 }
 
+pub struct KtonStakerNotifierEvmTracing<T>(core::marker::PhantomData<T>);
+impl<T> darwinia_staking::KtonStakerNotification for KtonStakerNotifierEvmTracing<T>
+where
+	T: darwinia_staking::Config + darwinia_ethtx_forwarder::Config,
+	T::RuntimeOrigin: Into<Result<darwinia_ethtx_forwarder::ForwardEthOrigin, T::RuntimeOrigin>>
+		+ From<darwinia_ethtx_forwarder::ForwardEthOrigin>,
+	<T as frame_system::Config>::AccountId: Into<H160>,
+{
+	fn construct_notification(amount: Balance) -> Option<darwinia_ethtx_forwarder::ForwardRequest> {
+		darwinia_staking::KtonStakerNotifier::<T>::construct_notification(amount)
+	}
+
+	fn notify(sender: H160, notification: Option<darwinia_ethtx_forwarder::ForwardRequest>) {
+		if let Some(status) = frame_support::storage::unhashed::get::<
+			xcm_primitives::EthereumXcmTracingStatus,
+		>(xcm_primitives::ETHEREUM_XCM_TRACING_STORAGE_KEY)
+		{
+			match status {
+				xcm_primitives::EthereumXcmTracingStatus::Block => {
+					moonbeam_evm_tracer::tracer::EvmTracer::emit_new();
+					moonbeam_evm_tracer::tracer::EvmTracer::new().trace(|| {
+						darwinia_staking::KtonStakerNotifier::<T>::notify(sender, notification)
+					});
+				},
+				xcm_primitives::EthereumXcmTracingStatus::Transaction(traced_transaction_hash) => {
+					let transaction = darwinia_ethtx_forwarder::Pallet::<T>::validated_transaction(
+						sender,
+						notification.clone().expect("notification must be a valid request"),
+					)
+					.expect("transaction should be valid");
+					if transaction.hash() == traced_transaction_hash {
+						moonbeam_evm_tracer::tracer::EvmTracer::new().trace(|| {
+							darwinia_staking::KtonStakerNotifier::<T>::notify(sender, notification)
+						});
+						frame_support::storage::unhashed::put::<
+							xcm_primitives::EthereumXcmTracingStatus,
+						>(
+							xcm_primitives::ETHEREUM_XCM_TRACING_STORAGE_KEY,
+							&xcm_primitives::EthereumXcmTracingStatus::TransactionExited,
+						);
+					}
+				},
+				xcm_primitives::EthereumXcmTracingStatus::TransactionExited => {},
+			}
+		} else {
+			darwinia_staking::KtonStakerNotifier::<T>::notify(sender, notification)
+		}
+	}
+}
+
 impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
 	type IssuingManager = OnKoiSessionEnd;
 	type Kton = KtonStaking;
 	type KtonRewardDistributionContract = darwinia_staking::KtonRewardDistributionContract;
+	#[cfg(not(feature = "evm-tracing"))]
 	type KtonStakerNotifier = darwinia_staking::KtonStakerNotifier<Self>;
+	#[cfg(feature = "evm-tracing")]
+	type KtonStakerNotifier = KtonStakerNotifierEvmTracing<Self>;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;

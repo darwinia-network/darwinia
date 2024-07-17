@@ -619,6 +619,7 @@ sp_api::impl_runtime_apis! {
 		> {
 			#[cfg(feature = "evm-tracing")]
 			{
+				log::error!("bear: --- started to trace transaction, tx_hash: {:?} ---", _traced_transaction.hash());
 				use moonbeam_evm_tracer::tracer::EvmTracer;
 				use xcm_primitives::{
 					ETHEREUM_XCM_TRACING_STORAGE_KEY,
@@ -637,13 +638,7 @@ sp_api::impl_runtime_apis! {
 				// After pallet message queue was introduced, this must be done only after
 				// enabling XCM tracing by setting ETHEREUM_XCM_TRACING_STORAGE_KEY
 				// in the storage
-
-				if EthTxForwarder::transaction_hashes().contains(&_traced_transaction.hash()) {
-					EvmTracer::new().trace(|| Executive::initialize_block(_header));
-					return Ok(());
-				} else {
-					Executive::initialize_block(_header);
-				}
+				Executive::initialize_block(_header);
 
 				// Apply the a subset of extrinsics: all the substrate-specific or ethereum
 				// transactions that preceded the requested transaction.
@@ -651,6 +646,7 @@ sp_api::impl_runtime_apis! {
 					let _ = match &ext.0.function {
 						RuntimeCall::Ethereum(pallet_ethereum::Call::transact { transaction }) => {
 							if transaction == _traced_transaction {
+								EvmTracer::emit_new();
 								EvmTracer::new().trace(|| Executive::apply_extrinsic(ext));
 								return Ok(());
 							} else {
@@ -719,12 +715,7 @@ sp_api::impl_runtime_apis! {
 				// After pallet message queue was introduced, this must be done only after
 				// enabling XCM tracing by setting ETHEREUM_XCM_TRACING_STORAGE_KEY
 				// in the storage
-				if _known_transactions.iter().any(|hash| EthTxForwarder::transaction_hashes().contains(&hash)) {
-					EvmTracer::emit_new();
-					EvmTracer::new().trace(|| Executive::initialize_block(_header));
-				} else {
-					Executive::initialize_block(_header);
-				}
+				Executive::initialize_block(_header);
 
 				// Apply all extrinsics. Ethereum extrinsics are traced.
 				for ext in _extrinsics.into_iter() {
