@@ -123,7 +123,6 @@ pub mod pallet {
 			let source = ensure_forward_transact(origin)?;
 
 			let transaction = Self::validated_transaction(source, request)?;
-
 			T::ValidatedTransaction::apply(source, transaction).map(|(post_info, _)| post_info)
 		}
 	}

@@ -26,8 +26,8 @@ pub mod gov_origin;
 pub mod message_queue;
 pub mod migration_helper;
 pub mod pallet_config;
-pub mod xcm_config;
 pub mod staking_config;
+pub mod xcm_config;
 
 #[cfg(feature = "test")]
 pub mod test;
