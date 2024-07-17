@@ -98,6 +98,7 @@ pub fn native_version() -> sp_version::NativeVersion {
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
+#[cfg(not(feature = "dev"))]
 frame_support::construct_runtime! {
 	pub enum Runtime {
 		// System stuff.
@@ -162,6 +163,77 @@ frame_support::construct_runtime! {
 		Ethereum: pallet_ethereum = 36,
 		EVM: pallet_evm = 37,
 		EthTxForwarder: darwinia_ethtx_forwarder = 38,
+	}
+}
+// Create the runtime by composing the FRAME pallets that were previously configured.
+#[cfg(feature = "dev")]
+frame_support::construct_runtime! {
+	pub enum Runtime {
+		// System stuff.
+		System: frame_system = 0,
+		ParachainSystem: cumulus_pallet_parachain_system = 1,
+		Timestamp: pallet_timestamp = 2,
+		ParachainInfo: parachain_info = 3,
+
+		// Monetary stuff.
+		// Leave 4 here.
+		// To keep balances consistent with the existing XCM configurations.
+		Balances: pallet_balances = 5,
+		TransactionPayment: pallet_transaction_payment = 6,
+		Assets: pallet_assets = 7,
+		// Vesting: pallet_vesting = 8,
+		Deposit: darwinia_deposit = 9,
+		AccountMigration: darwinia_account_migration = 10,
+
+		// Consensus stuff.
+		Authorship: pallet_authorship = 11,
+		DarwiniaStaking: darwinia_staking = 12,
+		Session: pallet_session = 13,
+		Aura: pallet_aura = 14,
+		AuraExt: cumulus_pallet_aura_ext = 15,
+		// MessageGadget: darwinia_message_gadget = 16,
+		// EcdsaAuthority: darwinia_ecdsa_authority = 17,
+
+		// Governance stuff.
+		// PhragmenElection: pallet_elections_phragmen = 21,
+		// TechnicalMembership: pallet_membership::<Instance1> = 22,
+		// Council: pallet_collective::<Instance1> = 19,
+		TechnicalCommittee: pallet_collective::<Instance2> = 20,
+		Treasury: pallet_treasury = 23,
+		// Tips: pallet_tips = 24,
+		// Democracy: pallet_democracy = 18,
+		ConvictionVoting: pallet_conviction_voting = 48,
+		Referenda: pallet_referenda = 49,
+		Origins: custom_origins = 50,
+		Whitelist: pallet_whitelist = 51,
+
+		// Utility stuff.
+		// Sudo: pallet_sudo = 25,
+		Utility: pallet_utility = 26,
+		// Identity: pallet_identity = 27,
+		Scheduler: pallet_scheduler = 28,
+		Preimage: pallet_preimage = 29,
+		Proxy: pallet_proxy = 30,
+		// TxPause: pallet_tx_pause = 52,
+
+		// XCM stuff.
+		XcmpQueue: cumulus_pallet_xcmp_queue = 32,
+		PolkadotXcm: pallet_xcm = 33,
+		CumulusXcm: cumulus_pallet_xcm = 34,
+		EthereumXcm: pallet_ethereum_xcm = 44,
+		DmpQueue: cumulus_pallet_dmp_queue = 35,
+		MessageQueue: pallet_message_queue = 39,
+		AssetManager: pallet_asset_manager = 45,
+		XTokens: orml_xtokens = 46,
+		AssetLimit: darwinia_asset_limit = 47,
+
+		// EVM stuff.
+		Ethereum: pallet_ethereum = 36,
+		EVM: pallet_evm = 37,
+		EthTxForwarder: darwinia_ethtx_forwarder = 38,
+
+		// Dev stuff.
+		Sudo: pallet_sudo = 255,
 	}
 }
 

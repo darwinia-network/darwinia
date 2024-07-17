@@ -117,14 +117,11 @@ pub fn development_config() -> ChainSpec {
 
 	ChainSpec::builder(
 		WASM_BINARY.unwrap(),
-		Extensions {
-			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: PARA_ID,
-		},
+		Extensions { relay_chain: "rococo-local".into(), para_id: PARA_ID },
 	)
 	.with_name("Darwinia Koi D")
 	.with_id("darwinia-koi-d")
-	.with_chain_type(ChainType::Live)
+	.with_chain_type(ChainType::Development)
 	.with_protocol_id(PROTOCOL_ID)
 	.with_properties(properties())
 	.with_genesis_config_patch(genesis_config_patch)
@@ -204,7 +201,7 @@ pub fn genesis_config() -> ChainSpec {
 	ChainSpec::builder(
 		WASM_BINARY.unwrap(),
 		Extensions {
-			relay_chain: "paseo".into(), // You MUST set this to the correct network!
+			relay_chain: "paseo".into(),
 			para_id: PARA_ID,
 		},
 	)

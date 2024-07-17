@@ -24,6 +24,9 @@ use std::{
 	str::FromStr,
 	time::{SystemTime, UNIX_EPOCH},
 };
+// crates.io
+#[cfg(feature = "dev")]
+use serde_json::Value;
 // darwinia
 use super::*;
 use crab_runtime::*;
@@ -103,17 +106,25 @@ pub fn development_config() -> ChainSpec {
 			)
 		}
 	});
+	#[cfg(feature = "dev")]
+	let genesis_config_patch = if let Value::Object(mut m) = genesis_config_patch {
+		m.insert(
+			"sudo".into(),
+			serde_json::json!({ "key": Some(array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(ALITH)) }),
+		);
+
+		Value::Object(m)
+	} else {
+		unreachable!();
+	};
 
 	ChainSpec::builder(
 		WASM_BINARY.unwrap(),
-		Extensions {
-			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: PARA_ID,
-		},
+		Extensions { relay_chain: "rococo-local".into(), para_id: PARA_ID },
 	)
 	.with_name("Crab2 D")
 	.with_id("crab2-d")
-	.with_chain_type(ChainType::Live)
+	.with_chain_type(ChainType::Development)
 	.with_protocol_id(PROTOCOL_ID)
 	.with_properties(properties())
 	.with_genesis_config_patch(genesis_config_patch)
@@ -241,7 +252,7 @@ pub fn genesis_config() -> ChainSpec {
 	});
 
 	ChainSpec::builder(WASM_BINARY.unwrap(), Extensions {
-		relay_chain: "kusama".into(), // You MUST set this to the correct network!
+		relay_chain: "kusama".into(),
 		para_id: PARA_ID,
 	})
 	.with_name("Crab2")
