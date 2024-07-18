@@ -71,15 +71,19 @@ std = [
 runtime-benchmarks = [
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
+	# frontier
 	"pallet-evm/runtime-benchmarks",
+	# moonbeam
+	"xcm-primitives?/runtime-benchmarks",
 ]
 
 try-runtime = [
 	# polkadot-sdk
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",
-	"pallet-evm/try-runtime",
 	"sp-runtime/try-runtime",
+	# frontier
+	"pallet-evm/try-runtime",
 ]
 
 evm-tracing = [
