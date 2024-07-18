@@ -121,8 +121,52 @@ pub mod pallet {
 			request: ForwardRequest,
 		) -> DispatchResultWithPostInfo {
 			let source = ensure_forward_transact(origin)?;
-
 			let transaction = Self::validated_transaction(source, request)?;
+
+			#[cfg(feature = "evm-tracing")]
+			{
+				use frame_support::{dispatch::PostDispatchInfo, storage::unhashed};
+				use moonbeam_evm_tracer::tracer::EvmTracer;
+				use xcm_primitives::{EthereumXcmTracingStatus, ETHEREUM_XCM_TRACING_STORAGE_KEY};
+
+				if let Some(status) = unhashed::get(ETHEREUM_XCM_TRACING_STORAGE_KEY) {
+					match status {
+						EthereumXcmTracingStatus::Block => {
+							EvmTracer::emit_new();
+							let mut res = Ok(PostDispatchInfo::default());
+							EvmTracer::new().trace(|| {
+								res = T::ValidatedTransaction::apply(source, transaction)
+									.map(|(post_info, _)| post_info);
+							});
+							res
+						},
+						EthereumXcmTracingStatus::Transaction(traced_transaction_hash) =>
+							if transaction.hash() == traced_transaction_hash {
+								let mut res = Ok(PostDispatchInfo::default());
+								EvmTracer::new().trace(|| {
+									res = T::ValidatedTransaction::apply(source, transaction)
+										.map(|(post_info, _)| post_info);
+								});
+								unhashed::put::<EthereumXcmTracingStatus>(
+									ETHEREUM_XCM_TRACING_STORAGE_KEY,
+									&EthereumXcmTracingStatus::TransactionExited,
+								);
+								res
+							} else {
+								T::ValidatedTransaction::apply(source, transaction)
+									.map(|(post_info, _)| post_info)
+							},
+						EthereumXcmTracingStatus::TransactionExited => Ok(PostDispatchInfo {
+							actual_weight: None,
+							pays_fee: frame_support::pallet_prelude::Pays::No,
+						}),
+					}
+				} else {
+					T::ValidatedTransaction::apply(source, transaction)
+						.map(|(post_info, _)| post_info)
+				}
+			}
+			#[cfg(not(feature = "evm-tracing"))]
 			T::ValidatedTransaction::apply(source, transaction).map(|(post_info, _)| post_info)
 		}
 	}

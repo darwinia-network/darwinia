@@ -17,6 +17,10 @@ fp-ethereum = { workspace = true }
 fp-evm      = { workspace = true }
 pallet-evm  = { workspace = true }
 
+# moonbeam
+moonbeam-evm-tracer = { workspace = true, optional = true }
+xcm-primitives = { workspace = true, optional = true }
+
 # polkadot-sdk
 frame-support = { workspace = true }
 frame-system  = { workspace = true }
@@ -72,4 +76,10 @@ try-runtime = [
 	"frame-system/try-runtime",
 	"pallet-evm/try-runtime",
 	"sp-runtime/try-runtime",
+]
+
+evm-tracing = [
+	# moonbeam
+	"moonbeam-evm-tracer",
+	"xcm-primitives"
 ]
