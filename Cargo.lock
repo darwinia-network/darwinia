@@ -2802,6 +2802,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "libsecp256k1",
+ "moonbeam-evm-tracer",
  "pallet-balances",
  "pallet-ethereum",
  "pallet-evm",
@@ -2813,6 +2814,7 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std 14.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.7.2)",
+ "xcm-primitives",
 ]
 
 [[package]]

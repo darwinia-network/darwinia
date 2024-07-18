@@ -36,6 +36,8 @@ use fp_ethereum::{TransactionData, ValidatedTransaction};
 use fp_evm::{CheckEvmTransaction, CheckEvmTransactionConfig, TransactionValidationError};
 use pallet_evm::{FeeCalculator, GasWeightMapping};
 // polkadot-sdk
+#[cfg(feature = "evm-tracing")]
+use frame_support::dispatch::{DispatchErrorWithPostInfo, PostDispatchInfo};
 use frame_support::{traits::EnsureOrigin, PalletError};
 use sp_core::{Get, H160, H256, U256};
 use sp_runtime::{traits::BadOrigin, DispatchError, RuntimeDebug};
@@ -86,9 +88,6 @@ pub mod pallet {
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 
-	#[pallet::pallet]
-	pub struct Pallet<T>(_);
-
 	#[pallet::origin]
 	pub type Origin = ForwardEthOrigin;
 
@@ -106,6 +105,8 @@ pub mod pallet {
 		ValidationError(TxErrorWrapper),
 	}
 
+	#[pallet::pallet]
+	pub struct Pallet<T>(_);
 	#[pallet::call]
 	impl<T: Config> Pallet<T>
 	where
@@ -121,13 +122,16 @@ pub mod pallet {
 			request: ForwardRequest,
 		) -> DispatchResultWithPostInfo {
 			let source = ensure_forward_transact(origin)?;
-
 			let transaction = Self::validated_transaction(source, request)?;
-			T::ValidatedTransaction::apply(source, transaction).map(|(post_info, _)| post_info)
+
+			#[cfg(feature = "evm-tracing")]
+			return Self::trace_tx(source, transaction);
+			#[cfg(not(feature = "evm-tracing"))]
+			return T::ValidatedTransaction::apply(source, transaction)
+				.map(|(post_info, _)| post_info);
 		}
 	}
 }
-
 impl<T: Config> Pallet<T> {
 	/// Calculates the fee for submitting such an EVM transaction.
 	///
@@ -254,6 +258,57 @@ impl<T: Config> Pallet<T> {
 
 		Ok(transaction)
 	}
+
+	#[cfg(feature = "evm-tracing")]
+	fn trace_tx(
+		source: H160,
+		transaction: Transaction,
+	) -> Result<PostDispatchInfo, DispatchErrorWithPostInfo> {
+		// moonbeam
+		use moonbeam_evm_tracer::tracer::EvmTracer;
+		// polkadot-sdk
+		use frame_support::storage::unhashed;
+		use xcm_primitives::{EthereumXcmTracingStatus, ETHEREUM_XCM_TRACING_STORAGE_KEY};
+
+		match unhashed::get(ETHEREUM_XCM_TRACING_STORAGE_KEY) {
+			Some(EthereumXcmTracingStatus::Block) => {
+				EvmTracer::emit_new();
+
+				let mut res = Ok(PostDispatchInfo::default());
+
+				EvmTracer::new().trace(|| {
+					res = T::ValidatedTransaction::apply(source, transaction)
+						.map(|(post_info, _)| post_info);
+				});
+
+				res
+			},
+			Some(EthereumXcmTracingStatus::Transaction(traced_transaction_hash)) =>
+				if transaction.hash() == traced_transaction_hash {
+					let mut res = Ok(PostDispatchInfo::default());
+
+					EvmTracer::new().trace(|| {
+						res = T::ValidatedTransaction::apply(source, transaction)
+							.map(|(post_info, _)| post_info);
+					});
+					unhashed::put::<EthereumXcmTracingStatus>(
+						ETHEREUM_XCM_TRACING_STORAGE_KEY,
+						&EthereumXcmTracingStatus::TransactionExited,
+					);
+
+					res
+				} else {
+					T::ValidatedTransaction::apply(source, transaction)
+						.map(|(post_info, _)| post_info)
+				},
+			Some(EthereumXcmTracingStatus::TransactionExited) => Ok(PostDispatchInfo {
+				actual_weight: None,
+				pays_fee: frame_support::pallet_prelude::Pays::No,
+			}),
+			None =>
+				T::ValidatedTransaction::apply(source, transaction).map(|(post_info, _)| post_info),
+		}
+	}
 }
 
 // TODO: replace it with upstream error type
@@ -271,7 +326,6 @@ pub enum TxErrorWrapper {
 	InvalidSignature,
 	UnknownError,
 }
-
 impl From<TransactionValidationError> for TxErrorWrapper {
 	fn from(validation_error: TransactionValidationError) -> Self {
 		match validation_error {
