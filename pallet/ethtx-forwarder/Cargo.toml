@@ -17,7 +17,7 @@ fp-ethereum = { workspace = true }
 fp-evm      = { workspace = true }
 pallet-evm  = { workspace = true }
 
-# moonbeam
+# moonbeam optional
 moonbeam-evm-tracer = { workspace = true, optional = true }
 xcm-primitives = { workspace = true, optional = true }
 
@@ -55,6 +55,10 @@ std = [
 	"fp-ethereum/std",
 	"fp-evm/std",
 	"pallet-evm/std",
+
+	# moonbeam optional
+	"moonbeam-evm-tracer?/std",
+	"xcm-primitives?/std",
 
 	# polkadot-sdk
 	"frame-support/std",
