@@ -127,7 +127,8 @@ pub mod pallet {
 			#[cfg(feature = "evm-tracing")]
 			return Self::trace_tx(source, transaction);
 			#[cfg(not(feature = "evm-tracing"))]
-			return T::ValidatedTransaction::apply(source, transaction).map(|(post_info, _)| post_info);
+			return T::ValidatedTransaction::apply(source, transaction)
+				.map(|(post_info, _)| post_info);
 		}
 	}
 }
