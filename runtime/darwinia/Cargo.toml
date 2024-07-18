@@ -364,6 +364,8 @@ on-chain-release-build = [
 ]
 
 evm-tracing = [
+	# darwinia
+	"darwinia-ethtx-forwarder/evm-tracing",
 	# moonbeam optional
 	"moonbeam-evm-tracer",
 ]
