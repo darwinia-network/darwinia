@@ -120,6 +120,8 @@ pub type Barrier = xcm_builder::TrailingSetTopicAsId<(
 			// If the message is one that immediately attemps to pay for execution, then
 			// allow it.
 			xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
+			// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality
+			// get free execution.
 			xcm_builder::AllowExplicitUnpaidExecutionFrom<xcm_config::ParentOrParentsPlurality>,
 			// Subscriptions for version tracking are OK.
 			xcm_builder::AllowSubscriptionsFrom<xcm_config::ParentRelayOrSiblingParachains>,
