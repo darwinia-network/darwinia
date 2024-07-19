@@ -97,7 +97,9 @@ pub type Barrier = xcm_builder::TrailingSetTopicAsId<
 					xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
 					// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality
 					// get free execution.
-					xcm_builder::AllowUnpaidExecutionFrom<xcm_config::ParentOrParentsPlurality>,
+					xcm_builder::AllowExplicitUnpaidExecutionFrom<
+						xcm_config::ParentOrParentsPlurality,
+					>,
 					// Subscriptions for version tracking are OK.
 					xcm_builder::AllowSubscriptionsFrom<xcm_config::ParentRelayOrSiblingParachains>,
 				),
