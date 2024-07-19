@@ -27,6 +27,8 @@
 //! - RING: Darwinia's native token
 //! - Deposit: Locking RINGs' ticket
 
+// TODO: check this after the migration is complete.
+#![allow(clippy::needless_borrows_for_generic_args)]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
 
@@ -51,10 +53,12 @@ use ethabi::{Function, Param, ParamType, StateMutability};
 use ethereum::TransactionAction;
 // darwinia
 use darwinia_ethtx_forwarder::{ForwardEthOrigin, ForwardRequest, TxType};
-use dc_types::{Balance, Moment};
+use dc_primitives::{AccountId, Balance, Moment};
 // polkadot-sdk
 use frame_support::{
-	pallet_prelude::*, traits::Currency, DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound,
+	pallet_prelude::*,
+	traits::{Currency, UnixTime},
+	DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound,
 };
 use frame_system::{pallet_prelude::*, RawOrigin};
 use sp_core::{H160, U256};
@@ -69,9 +73,9 @@ use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 macro_rules! call_on_exposure {
 	($s_e:expr, <$s:ident<$t:ident>>$($f:tt)*) => {{
 		match $s_e {
-			($crate::ExposureCacheState::$s, _, _) => Ok(<$crate::ExposureCache0<$t>>$($f)*),
-			(_, $crate::ExposureCacheState::$s, _) => Ok(<$crate::ExposureCache1<$t>>$($f)*),
-			(_, _, $crate::ExposureCacheState::$s) => Ok(<$crate::ExposureCache2<$t>>$($f)*),
+			($crate::CacheState::$s, _, _) => Ok(<$crate::ExposureCache0<$t>>$($f)*),
+			(_, $crate::CacheState::$s, _) => Ok(<$crate::ExposureCache1<$t>>$($f)*),
+			(_, _, $crate::CacheState::$s) => Ok(<$crate::ExposureCache2<$t>>$($f)*),
 			_ => {
 				log::error!("[pallet::staking] exposure cache states must be correct; qed");
 
@@ -85,14 +89,32 @@ macro_rules! call_on_exposure {
 		$crate::call_on_exposure!(s, <$s<$t>>$($f)*)
 	}};
 }
+/// Make it easier to call a function on a specific collators storage.
+#[macro_export]
+macro_rules! call_on_cache {
+	($s_e:expr, <$s:ident<$t:ident>>$($f:tt)*) => {{
+		match $s_e {
+			($crate::CacheState::$s, _, _) => Ok(<$crate::CollatorsCache0<$t>>$($f)*),
+			(_, $crate::CacheState::$s, _) => Ok(<$crate::CollatorsCache1<$t>>$($f)*),
+			(_, _, $crate::CacheState::$s) => Ok(<$crate::CollatorsCache2<$t>>$($f)*),
+			_ => {
+				log::error!("[pallet::staking] collators cache states must be correct; qed");
+
+				Err("[pallet::staking] collators cache states must be correct; qed")
+			},
+		}
+	}};
+	(<$s:ident<$t:ident>>$($f:tt)*) => {{
+		let s = <$crate::CollatorsCacheState<$t>>::get();
+
+		$crate::call_on_cache!(s, <$s<$t>>$($f)*)
+	}};
+}
 
 #[frame_support::pallet]
 pub mod pallet {
 	// darwinia
 	use crate::*;
-
-	// TODO: limit the number of nominators that a collator can have.
-	// const MAX_NOMINATIONS: u32 = 32;
 
 	// Deposit helper for runtime benchmark.
 	#[cfg(feature = "runtime-benchmarks")]
@@ -105,7 +127,9 @@ pub mod pallet {
 	pub trait DepositConfig {}
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config + DepositConfig {
+	pub trait Config:
+		frame_system::Config<AccountId = AccountId> + pallet_timestamp::Config + DepositConfig
+	{
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
@@ -128,8 +152,14 @@ pub mod pallet {
 		/// Inflation and reward manager.
 		type IssuingManager: IssuingManager<Self>;
 
-		/// KTON staker notifier.
-		type KtonStakerNotifier: KtonStakerNotification;
+		/// RING staker reward distributor.
+		type RewardToRing: RewardToContract;
+
+		/// KTON staker reward distributor.
+		type RewardToKton: RewardToContract;
+
+		/// Election result provider.
+		type ElectionResultProvider: ElectionResultProvider;
 
 		/// Pass [`pallet_session::Config::ShouldEndSession`]'s result to here.
 		type ShouldEndSession: Get<bool>;
@@ -215,15 +245,14 @@ pub mod pallet {
 	#[pallet::getter(fn exposure_cache_states)]
 	pub type ExposureCacheStates<T: Config> = StorageValue<
 		_,
-		(ExposureCacheState, ExposureCacheState, ExposureCacheState),
+		(CacheState, CacheState, CacheState),
 		ValueQuery,
 		ExposureCacheStatesDefault<T>,
 	>;
 	/// Default value for [`ExposureCacheStates`].
 	#[pallet::type_value]
-	pub fn ExposureCacheStatesDefault<T: Config>(
-	) -> (ExposureCacheState, ExposureCacheState, ExposureCacheState) {
-		(ExposureCacheState::Previous, ExposureCacheState::Current, ExposureCacheState::Next)
+	pub fn ExposureCacheStatesDefault<T: Config>() -> (CacheState, CacheState, CacheState) {
+		(CacheState::Previous, CacheState::Current, CacheState::Next)
 	}
 
 	/// Exposure cache 0.
@@ -294,6 +323,66 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn rate_limit_state)]
 	pub type RateLimitState<T: Config> = StorageValue<_, RateLimiter, ValueQuery>;
+
+	/// Migration start point.
+	#[pallet::storage]
+	#[pallet::getter(fn migration_start_point)]
+	pub type MigrationStartPoint<T: Config> = StorageValue<_, u64, ValueQuery>;
+
+	/// Collator cache state.
+	///
+	/// To avoid extra DB RWs during new session, such as:
+	/// ```nocompile
+	/// previous = current;
+	/// current = next;
+	/// next = elect();
+	/// ```
+	///
+	/// Now, with data:
+	/// ```nocompile
+	/// cache1 == previous;
+	/// cache2 == current;
+	/// cache3 == next;
+	/// ```
+	/// Just need to shift the marker and write the storage map once:
+	/// ```nocompile
+	/// mark(cache3, current);
+	/// mark(cache2, previous);
+	/// mark(cache1, next);
+	/// cache1 = elect();
+	/// ```
+	#[pallet::storage]
+	#[pallet::getter(fn collator_cache_state)]
+	pub type CollatorsCacheState<T: Config> = StorageValue<
+		_,
+		(CacheState, CacheState, CacheState),
+		ValueQuery,
+		CollatorCacheStateDefault<T>,
+	>;
+	/// Default value for [`CollatorsCacheState`].
+	#[pallet::type_value]
+	pub fn CollatorCacheStateDefault<T: Config>() -> (CacheState, CacheState, CacheState) {
+		(CacheState::Previous, CacheState::Current, CacheState::Next)
+	}
+
+	// TODO: use `BoundedVec`.
+	/// Exposure cache 0.
+	#[pallet::storage]
+	#[pallet::unbounded]
+	#[pallet::getter(fn collators_cache_0)]
+	pub type CollatorsCache0<T: Config> = StorageValue<_, Vec<AccountId>, ValueQuery>;
+
+	/// Exposure cache 1.
+	#[pallet::storage]
+	#[pallet::unbounded]
+	#[pallet::getter(fn collators_cache_1)]
+	pub type CollatorsCache1<T: Config> = StorageValue<_, Vec<AccountId>, ValueQuery>;
+
+	/// Exposure cache 2.
+	#[pallet::storage]
+	#[pallet::unbounded]
+	#[pallet::getter(fn collators_cache_2)]
+	pub type CollatorsCache2<T: Config> = StorageValue<_, Vec<AccountId>, ValueQuery>;
 
 	#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
@@ -631,15 +720,24 @@ pub mod pallet {
 		/// Distribute the session reward to staking pot and update the stakers' reward record.
 		pub fn distribute_session_reward(amount: Balance) {
 			let reward_to_ring = amount.saturating_div(2);
-			let reward_to_kton = amount.saturating_sub(reward_to_ring);
+			let reward_to_kton_dao = amount.saturating_sub(reward_to_ring);
 			let (total, map) = <AuthoredBlocksCount<T>>::take();
-			let actual_reward_to_ring = map.into_iter().fold(0, |s, (c, b)| {
-				let r = Perbill::from_rational(b, total) * reward_to_ring;
+			let contract_collators = call_on_cache!(<Current<T>>::get()).unwrap_or_default();
+			let mut actual_reward_to_ring = 0;
+			let reward_to_ring_dao = map
+				.into_iter()
+				.filter_map(|(c, b)| {
+					let r = Perbill::from_rational(b, total) * reward_to_ring;
 
-				<PendingRewards<T>>::mutate(c, |u| *u = u.map(|u| u + r).or(Some(r)));
+					actual_reward_to_ring += r;
 
-				s + r
-			});
+					if contract_collators.contains(&c) {
+						Some((c, r))
+					} else {
+						None
+					}
+				})
+				.collect::<Vec<_>>();
 			let reward = |who, amount| {
 				if T::IssuingManager::reward(&who, amount).is_ok() {
 					Self::deposit_event(Event::Payout { who, amount });
@@ -649,9 +747,13 @@ pub mod pallet {
 			};
 
 			reward(account_id(), actual_reward_to_ring);
-			reward(T::KtonRewardDistributionContract::get(), reward_to_kton);
+			reward(T::KtonRewardDistributionContract::get(), reward_to_kton_dao);
 
-			T::KtonStakerNotifier::notify(reward_to_kton);
+			for (c, r) in reward_to_ring_dao {
+				T::RewardToRing::distribute(Some(c), r);
+			}
+
+			T::RewardToKton::distribute(None, reward_to_kton_dao);
 		}
 
 		/// Pay the reward to the collator and its nominators.
@@ -688,12 +790,11 @@ pub mod pallet {
 		/// Prepare the session state.
 		pub fn prepare_new_session(index: u32) -> Option<Vec<T::AccountId>> {
 			<RateLimitState<T>>::kill();
-			<Pallet<T>>::shift_exposure_cache_states();
+			<Pallet<T>>::shift_cache_states();
 
 			#[allow(deprecated)]
-			if call_on_exposure!(<Next<T>>::remove_all(None)).is_err() {
-				return None;
-			}
+			call_on_exposure!(<Next<T>>::remove_all(None)).ok()?;
+			call_on_cache!(<Next<T>>::kill()).ok()?;
 
 			let bn = <frame_system::Pallet<T>>::block_number();
 
@@ -701,25 +802,28 @@ pub mod pallet {
 				"[pallet::staking] assembling new collators for new session {index} at #{bn:?}",
 			);
 
-			if let Ok(cs) = Self::elect() {
-				if !cs.is_empty() {
-					// TODO?: if we really need this event
-					Self::deposit_event(Event::Elected { collators: cs.clone() });
+			let (n1, n2) = Self::elect_ns();
+			let cs_from_contract = Self::try_elect(n1, Self::elect_from_contract);
+			let cs_from_pallet = Self::try_elect(n2, Self::elect);
+			let cs = [cs_from_contract, cs_from_pallet].concat();
 
-					return Some(cs);
-				}
+			if cs.is_empty() {
+				// This error log is acceptable when testing with `genesis_collator = false`.
+				log::error!(
+					"[pallet::staking] fail to elect collators for new session {index} at #{bn:?}"
+				);
+
+				// Impossible case.
+				//
+				// But if there is an issue, retain the old collators; do not alter the session
+				// collators if any error occurs to prevent the chain from stalling.
+				None
+			} else {
+				// TODO?: if we really need this event
+				Self::deposit_event(Event::Elected { collators: cs.clone() });
+
+				Some(cs)
 			}
-
-			// This error log is acceptable when testing with `genesis_collator = false`.
-			log::error!(
-				"[pallet::staking] fail to elect collators for new session {index} at #{bn:?}"
-			);
-
-			// Impossible case.
-			//
-			// But if there is an issue, retain the old collators; do not alter the session
-			// collators if any error occurs to prevent the chain from stalling.
-			None
 		}
 
 		/// Shift the exposure cache states.
@@ -731,16 +835,20 @@ pub mod pallet {
 		/// ```nocompile
 		/// loop { mutate(2, 0, 1) }
 		/// ```
-		pub fn shift_exposure_cache_states() {
+		pub fn shift_cache_states() {
 			let (s0, s1, s2) = <ExposureCacheStates<T>>::get();
 
 			<ExposureCacheStates<T>>::put((s2, s0, s1));
+
+			let (s0, s1, s2) = <CollatorsCacheState<T>>::get();
+
+			<CollatorsCacheState<T>>::put((s2, s0, s1));
 		}
 
 		/// Elect the new collators.
 		///
 		/// This should only be called by the [`pallet_session::SessionManager::new_session`].
-		pub fn elect() -> Result<Vec<T::AccountId>, DispatchError> {
+		pub fn elect(n: u32) -> Option<Vec<T::AccountId>> {
 			let nominators = <Nominators<T>>::iter().collect::<Vec<_>>();
 			let mut collators = <Collators<T>>::iter()
 				.map(|(c, cm)| {
@@ -771,13 +879,64 @@ pub mod pallet {
 
 			collators
 				.into_iter()
-				.take(<CollatorCount<T>>::get() as _)
+				.take(n as _)
 				.map(|((c, e), _)| {
-					call_on_exposure!(cache_states, <Next<T>>::insert(&c, e))
-						.map(|_| c)
-						.map_err(Into::into)
+					call_on_exposure!(cache_states, <Next<T>>::insert(&c, e)).map(|_| c).ok()
 				})
 				.collect()
+		}
+	}
+	// Implementation part.2.
+	//
+	// After the migration is completed,
+	// the following implementation blocks will be merged into one.
+	impl<T> Pallet<T>
+	where
+		T: Config,
+	{
+		fn now() -> u64 {
+			<pallet_timestamp::Pallet<T> as UnixTime>::now().as_secs()
+		}
+
+		fn migration_progress() -> Perbill {
+			const TOTAL: u64 = 30 * 2 * 24 * 60 * 60;
+
+			let start = <MigrationStartPoint<T>>::get();
+			let now = Self::now();
+
+			Perbill::from_rational(now - start, TOTAL)
+		}
+
+		fn elect_ns() -> (u32, u32) {
+			let n = <CollatorCount<T>>::get();
+			let n1 = Self::migration_progress() * n;
+
+			(n1, n - n1)
+		}
+
+		fn try_elect<F, R>(n: u32, elect: F) -> R
+		where
+			F: FnOnce(u32) -> Option<R>,
+			R: Default,
+		{
+			if n > 0 {
+				elect(n).unwrap_or_default()
+			} else {
+				Default::default()
+			}
+		}
+
+		fn elect_from_contract(n: u32) -> Option<Vec<T::AccountId>> {
+			const ZERO: [u8; 20] = [0; 20];
+
+			let winners = T::ElectionResultProvider::get(n)
+				.into_iter()
+				.filter(|w| w.0 != ZERO)
+				.collect::<Vec<_>>();
+
+			call_on_cache!(<Next<T>>::put(winners.clone())).ok()?;
+
+			Some(winners)
 		}
 	}
 }
@@ -873,11 +1032,11 @@ impl Default for RateLimiter {
 	}
 }
 
-/// Exposure cache's state.
+/// Cache state.
 #[allow(missing_docs)]
 #[cfg_attr(any(test, feature = "runtime-benchmarks", feature = "try-runtime"), derive(PartialEq))]
 #[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
-pub enum ExposureCacheState {
+pub enum CacheState {
 	Previous,
 	Current,
 	Next,
@@ -971,6 +1130,19 @@ where
 	PalletId(*b"da/staki").into_account_truncating()
 }
 
+/// Election result provider.
+pub trait ElectionResultProvider {
+	/// Get the election result.
+	fn get(n: u32) -> Vec<AccountId>;
+}
+/// Election contract.
+pub struct ElectionContract;
+impl ElectionContract {
+	fn get(n: u32) -> Vec<AccountId> {
+		todo!()
+	}
+}
+
 /// The address of the `StakingRewardDistribution` contract.
 /// 0x0DBFbb1Ab6e42F89661B4f98d5d0acdBE21d1ffC.
 pub struct KtonRewardDistributionContract;
@@ -987,23 +1159,37 @@ where
 	}
 }
 
-/// `StakingRewardDistribution` contact notification interface.
-pub trait KtonStakerNotification {
-	/// Notify the KTON staker contract.
-	fn notify(_: Balance) {}
+/// Distribute the reward to a contract.
+pub trait RewardToContract {
+	/// Distribute the reward.
+	fn distribute(who: Option<AccountId>, amount: Balance) {}
 }
-impl KtonStakerNotification for () {}
-/// `StakingRewardDistribution` contact notifier.
+impl RewardToContract for () {}
+/// Distribute the reward to KTON contract.
 ///
-/// https://github.com/darwinia-network/KtonDAO/blob/2de20674f2ef90b749ade746d0768c7bda356402/src/staking/KtonDAOVault.sol#L40.
-pub struct KtonStakerNotifier<T>(PhantomData<T>);
-impl<T> KtonStakerNotification for KtonStakerNotifier<T>
+/// https://github.com/darwinia-network/DIP-7/blob/7fa307136586f06c6911ce98d16c88689d91ba8c/src/collator/CollatorStakingHub.sol#L142.
+pub struct RewardToRing<T>(PhantomData<T>);
+impl<T> RewardToContract for RewardToRing<T>
 where
 	T: Config + darwinia_ethtx_forwarder::Config,
 	T::RuntimeOrigin: Into<Result<ForwardEthOrigin, T::RuntimeOrigin>> + From<ForwardEthOrigin>,
 	<T as frame_system::Config>::AccountId: Into<H160>,
 {
-	fn notify(amount: Balance) {
+	fn distribute(who: Option<AccountId>, amount: Balance) {
+		todo!()
+	}
+}
+/// Distribute the reward to KTON contract.
+///
+/// https://github.com/darwinia-network/KtonDAO/blob/2de20674f2ef90b749ade746d0768c7bda356402/src/staking/KtonDAOVault.sol#L40.
+pub struct RewardToKton<T>(PhantomData<T>);
+impl<T> RewardToContract for RewardToKton<T>
+where
+	T: Config + darwinia_ethtx_forwarder::Config,
+	T::RuntimeOrigin: Into<Result<ForwardEthOrigin, T::RuntimeOrigin>> + From<ForwardEthOrigin>,
+	<T as frame_system::Config>::AccountId: Into<H160>,
+{
+	fn distribute(_: Option<AccountId>, amount: Balance) {
 		let krd_contract = T::KtonRewardDistributionContract::get().into();
 		#[allow(deprecated)]
 		let function = Function {

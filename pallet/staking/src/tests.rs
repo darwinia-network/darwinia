@@ -59,10 +59,10 @@ fn exposure_cache_states_should_work() {
 		assert!(call_on_exposure!(<Next<Runtime>>::get(2).is_some()).unwrap());
 		assert_eq!(
 			<ExposureCacheStates<Runtime>>::get(),
-			(ExposureCacheState::Previous, ExposureCacheState::Current, ExposureCacheState::Next)
+			(CacheState::Previous, CacheState::Current, CacheState::Next)
 		);
 
-		Staking::shift_exposure_cache_states();
+		Staking::shift_cache_states();
 
 		assert!(call_on_exposure!(<Previous<Runtime>>::get(0).is_none()).unwrap());
 		assert!(call_on_exposure!(<Previous<Runtime>>::get(1).is_some()).unwrap());
@@ -75,10 +75,10 @@ fn exposure_cache_states_should_work() {
 		assert!(call_on_exposure!(<Next<Runtime>>::get(2).is_none()).unwrap());
 		assert_eq!(
 			<ExposureCacheStates<Runtime>>::get(),
-			(ExposureCacheState::Next, ExposureCacheState::Previous, ExposureCacheState::Current)
+			(CacheState::Next, CacheState::Previous, CacheState::Current)
 		);
 
-		Staking::shift_exposure_cache_states();
+		Staking::shift_cache_states();
 
 		assert!(call_on_exposure!(<Previous<Runtime>>::get(0).is_none()).unwrap());
 		assert!(call_on_exposure!(<Previous<Runtime>>::get(1).is_none()).unwrap());
@@ -91,10 +91,10 @@ fn exposure_cache_states_should_work() {
 		assert!(call_on_exposure!(<Next<Runtime>>::get(2).is_none()).unwrap());
 		assert_eq!(
 			<ExposureCacheStates<Runtime>>::get(),
-			(ExposureCacheState::Current, ExposureCacheState::Next, ExposureCacheState::Previous)
+			(CacheState::Current, CacheState::Next, CacheState::Previous)
 		);
 
-		Staking::shift_exposure_cache_states();
+		Staking::shift_cache_states();
 
 		assert!(call_on_exposure!(<Previous<Runtime>>::get(0).is_some()).unwrap());
 		assert!(call_on_exposure!(<Previous<Runtime>>::get(1).is_none()).unwrap());
@@ -107,7 +107,7 @@ fn exposure_cache_states_should_work() {
 		assert!(call_on_exposure!(<Next<Runtime>>::get(2).is_some()).unwrap());
 		assert_eq!(
 			<ExposureCacheStates<Runtime>>::get(),
-			(ExposureCacheState::Previous, ExposureCacheState::Current, ExposureCacheState::Next)
+			(CacheState::Previous, CacheState::Current, CacheState::Next)
 		);
 	});
 }

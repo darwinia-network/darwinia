@@ -3008,7 +3008,7 @@ dependencies = [
  "darwinia-ethtx-forwarder",
  "darwinia-staking-traits",
  "dc-inflation",
- "dc-types",
+ "dc-primitives",
  "ethabi",
  "ethereum",
  "frame-benchmarking",

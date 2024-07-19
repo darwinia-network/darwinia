@@ -15,9 +15,9 @@ log        = { workspace = true }
 scale-info = { workspace = true }
 
 # darwinia
-darwinia-ethtx-forwarder  = { workspace = true }
-darwinia-staking-traits   = { workspace = true }
-dc-types                  = { workspace = true }
+darwinia-ethtx-forwarder = { workspace = true }
+darwinia-staking-traits  = { workspace = true }
+dc-primitives            = { workspace = true }
 # darwinia optional
 darwinia-deposit = { workspace = true, optional = true }
 
@@ -26,6 +26,7 @@ frame-support     = { workspace = true }
 frame-system      = { workspace = true }
 pallet-authorship = { workspace = true }
 pallet-session    = { workspace = true }
+pallet-timestamp  = { workspace = true }
 sp-core           = { workspace = true }
 sp-runtime        = { workspace = true }
 sp-std            = { workspace = true }
@@ -43,7 +44,6 @@ darwinia-deposit = { workspace = true, features = ["std"] }
 dc-inflation         = { workspace = true, features = ["std"] }
 pallet-balances      = { workspace = true, features = ["std"] }
 pallet-session       = { workspace = true, features = ["std"] }
-pallet-timestamp     = { workspace = true, features = ["std"] }
 pallet-treasury      = { workspace = true, features = ["std"] }
 sp-io                = { workspace = true, features = ["std"] }
 substrate-test-utils = { workspace = true }
@@ -61,6 +61,7 @@ std = [
 	# darwinia
 	"darwinia-ethtx-forwarder/std",
 	"darwinia-staking-traits/std",
+	"dc-primitives/std",
 	# darwinia optional
 	"darwinia-deposit?/std",
 
@@ -70,6 +71,7 @@ std = [
 	"pallet-authorship/std",
 	"pallet-balances/std",
 	"pallet-session/std",
+	"pallet-timestamp/std",
 	"sp-core/std",
 	"sp-runtime/std",
 	"sp-std/std",
@@ -87,6 +89,7 @@ runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
+	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 ]
 
@@ -97,5 +100,6 @@ try-runtime = [
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",
 	"pallet-authorship/try-runtime",
+	"pallet-timestamp/try-runtime",
 	"sp-runtime/try-runtime",
 ]

@@ -101,7 +101,7 @@ where
 		// Check the starting state is correct.
 		assert_eq!(
 			<ExposureCacheStates<T>>::get(),
-			(ExposureCacheState::Previous, ExposureCacheState::Current, ExposureCacheState::Next)
+			(CacheState::Previous, CacheState::Current, CacheState::Next)
 		);
 
 		assert_eq!(
