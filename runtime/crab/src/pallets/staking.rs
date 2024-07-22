@@ -104,8 +104,8 @@ impl darwinia_staking::Config for Runtime {
 	type IssuingManager = OnCrabSessionEnd;
 	type Kton = KtonStaking;
 	type KtonRewardDistributionContract = darwinia_staking::KtonRewardDistributionContract;
-	type RewardToKton = darwinia_staking::RewardToKton<Self>;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
+	type RewardToKton = darwinia_staking::RewardToKton<Self>;
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
 	type ShouldEndSession = ShouldEndSession;

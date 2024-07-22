@@ -34,7 +34,7 @@ use scale_info::TypeInfo;
 // frontier
 use fp_ethereum::{TransactionData, ValidatedTransaction};
 use fp_evm::{CheckEvmTransaction, CheckEvmTransactionConfig, TransactionValidationError};
-use pallet_evm::{FeeCalculator, GasWeightMapping};
+use pallet_evm::{FeeCalculator, GasWeightMapping, Runner};
 // polkadot-sdk
 #[cfg(feature = "evm-tracing")]
 use frame_support::dispatch::{DispatchErrorWithPostInfo, PostDispatchInfo};
@@ -112,7 +112,7 @@ pub mod pallet {
 	where
 		OriginFor<T>: Into<Result<ForwardEthOrigin, OriginFor<T>>>,
 	{
-		//This call can only be used at runtime and is not available to EOA users.
+		// This call can only be used at runtime and is not available to EOA users.
 		#[pallet::call_index(0)]
 		#[pallet::weight({
 			<T as pallet_evm::Config>::GasWeightMapping::gas_to_weight(request.gas_limit.unique_saturated_into(), true)
@@ -125,7 +125,7 @@ pub mod pallet {
 			let transaction = Self::validated_transaction(source, request)?;
 
 			#[cfg(feature = "evm-tracing")]
-			return Self::trace_tx(source, transaction);
+			return Self::trace_apply(source, transaction);
 			#[cfg(not(feature = "evm-tracing"))]
 			return T::ValidatedTransaction::apply(source, transaction)
 				.map(|(post_info, _)| post_info);
@@ -259,8 +259,35 @@ impl<T: Config> Pallet<T> {
 		Ok(transaction)
 	}
 
+	pub fn forward_call(
+		from: H160,
+		to: H160,
+		data: Vec<u8>,
+		value: U256,
+		gas_limit: U256,
+	) -> Result<pallet_evm::CallInfo, sp_runtime::DispatchError> {
+		let (who, _) = pallet_evm::Pallet::<T>::account_basic(&from);
+		<T as pallet_evm::Config>::Runner::call(
+			from,
+			to,
+			data,
+			value,
+			gas_limit.unique_saturated_into(),
+			None,
+			None,
+			Some(who.nonce),
+			vec![],
+			false, // non-transactional
+			true,
+			None,
+			None,
+			<T as pallet_evm::Config>::config(),
+		)
+		.map_err(|err| err.error.into())
+	}
+
 	#[cfg(feature = "evm-tracing")]
-	fn trace_tx(
+	fn trace_apply(
 		source: H160,
 		transaction: Transaction,
 	) -> Result<PostDispatchInfo, DispatchErrorWithPostInfo> {
@@ -283,7 +310,7 @@ impl<T: Config> Pallet<T> {
 
 				res
 			},
-			Some(EthereumXcmTracingStatus::Transaction(traced_transaction_hash)) =>
+			Some(EthereumXcmTracingStatus::Transaction(traced_transaction_hash)) => {
 				if transaction.hash() == traced_transaction_hash {
 					let mut res = Ok(PostDispatchInfo::default());
 
@@ -300,7 +327,8 @@ impl<T: Config> Pallet<T> {
 				} else {
 					T::ValidatedTransaction::apply(source, transaction)
 						.map(|(post_info, _)| post_info)
-				},
+				}
+			},
 			Some(EthereumXcmTracingStatus::TransactionExited) => Ok(PostDispatchInfo {
 				actual_weight: None,
 				pays_fee: frame_support::pallet_prelude::Pays::No,
