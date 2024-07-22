@@ -16,6 +16,7 @@ array-bytes = { workspace = true }
 codec       = { workspace = true, package = "parity-scale-codec" }
 log         = { workspace = true }
 scale-info  = { workspace = true }
+smallvec    = { version = "1.10" }
 strum       = { workspace = true, features = ["derive"] }
 
 # darwinia
@@ -44,13 +45,14 @@ pallet-evm-precompile-modexp   = { workspace = true }
 pallet-evm-precompile-simple   = { workspace = true }
 
 # moonbeam
-moonbeam-evm-tracer                     = { workspace = true, optional = true }
 moonbeam-rpc-primitives-debug           = { workspace = true }
 pallet-asset-manager                    = { workspace = true }
 pallet-ethereum-xcm                     = { workspace = true }
 pallet-evm-precompile-conviction-voting = { workspace = true }
 precompile-utils                        = { workspace = true }
 xcm-primitives                          = { workspace = true }
+# moonbeam optional
+moonbeam-evm-tracer = { workspace = true, optional = true }
 
 # open-web3-stack
 orml-xcm-support = { workspace = true }
@@ -97,7 +99,6 @@ sp-api                                     = { workspace = true }
 sp-block-builder                           = { workspace = true }
 sp-consensus-aura                          = { workspace = true }
 sp-core                                    = { workspace = true }
-sp-debug-derive                            = { workspace = true, optional = true, features = ["force-debug"] }
 sp-genesis-builder                         = { workspace = true }
 sp-inherents                               = { workspace = true }
 sp-offchain                                = { workspace = true }
@@ -115,6 +116,7 @@ cumulus-pallet-session-benchmarking = { workspace = true, optional = true }
 frame-benchmarking                  = { workspace = true, optional = true }
 frame-system-benchmarking           = { workspace = true, optional = true }
 frame-try-runtime                   = { workspace = true, optional = true }
+sp-debug-derive                     = { workspace = true, optional = true, features = ["force-debug"] }
 
 [dev-dependencies]
 # darwinia
@@ -159,13 +161,14 @@ std = [
 	"pallet-evm/std",
 
 	# moonbeam
-	"moonbeam-evm-tracer/std",
 	"moonbeam-rpc-primitives-debug/std",
 	"pallet-asset-manager/std",
 	"pallet-ethereum-xcm/std",
 	"pallet-evm-precompile-conviction-voting/std",
 	"precompile-utils/std",
 	"xcm-primitives/std",
+	# moonbeam optional
+	"moonbeam-evm-tracer?/std",
 
 	# open-web3-stack
 	"orml-xcm-support/std",
@@ -212,7 +215,6 @@ std = [
 	"sp-block-builder/std",
 	"sp-consensus-aura/std",
 	"sp-core/std",
-	"sp-debug-derive?/std",
 	"sp-genesis-builder/std",
 	"sp-inherents/std",
 	"sp-offchain/std",
@@ -230,27 +232,8 @@ std = [
 	"frame-benchmarking?/std",
 	"frame-system-benchmarking?/std",
 	"frame-try-runtime?/std",
+	"sp-debug-derive?/std",
 	"substrate-wasm-builder",
-]
-
-evm-tracing = [
-	# moonbeam
-	"moonbeam-evm-tracer",
-]
-
-force-debug = [
-	# polkadot-sdk
-	"sp-debug-derive",
-]
-
-fast-runtime = []
-
-# A feature that should be enabled when the runtime should be build for on-chain
-# deployment. This will disable stuff that shouldn't be part of the on-chain wasm
-# to make it smaller like logging for example.
-on-chain-release-build = [
-	# polkadot-sdk
-	"sp-api/disable-logging",
 ]
 
 runtime-benchmarks = [
@@ -362,3 +345,25 @@ try-runtime = [
 	# polkadot-sdk optional
 	"frame-try-runtime/try-runtime",
 ]
+
+# A feature that should be enabled when the runtime should be build for on-chain
+# deployment. This will disable stuff that shouldn't be part of the on-chain wasm
+# to make it smaller like logging for example.
+on-chain-release-build = [
+	# polkadot-sdk optional
+	"sp-api/disable-logging",
+]
+
+evm-tracing = [
+	# darwinia
+	"darwinia-ethtx-forwarder/evm-tracing",
+	# moonbeam optional
+	"moonbeam-evm-tracer",
+]
+
+force-debug = [
+	# polkadot-sdk optional
+	"sp-debug-derive",
+]
+
+fast-runtime = []

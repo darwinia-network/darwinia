@@ -27,6 +27,7 @@ frame_support::parameter_types! {
 	pub const MaxInstructions: u32 = 100;
 	/// A temporary weight value for each XCM instruction.
 	/// NOTE: This should be removed after we account for PoV weights.
+	pub const TempFixedXcmWeight: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 0);
 	pub SelfReserve: Location = Location::new(
 		0,
 		[PalletInstance(<Balances as frame_support::traits::PalletInfoAccess>::index() as u8)]
@@ -120,7 +121,7 @@ pub type Barrier = xcm_builder::TrailingSetTopicAsId<(
 			xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
 			// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality
 			// get free execution.
-			xcm_builder::AllowUnpaidExecutionFrom<xcm_config::ParentOrParentsPlurality>,
+			xcm_builder::AllowExplicitUnpaidExecutionFrom<xcm_config::ParentOrParentsPlurality>,
 			// Subscriptions for version tracking are OK.
 			xcm_builder::AllowSubscriptionsFrom<xcm_config::ParentRelayOrSiblingParachains>,
 		),
@@ -203,7 +204,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type UniversalAliases = frame_support::traits::Nothing;
 	// Teleporting is disabled.
 	type UniversalLocation = UniversalLocation;
-	type Weigher = XcmWeigher;
+	type Weigher = xcm_builder::FixedWeightBounds<TempFixedXcmWeight, RuntimeCall, MaxInstructions>;
 	type XcmSender = XcmRouter;
 }
 
@@ -224,7 +225,7 @@ impl pallet_xcm::Config for Runtime {
 	type SovereignAccountOf = LocationToAccountId;
 	type TrustedLockers = ();
 	type UniversalLocation = UniversalLocation;
-	type Weigher = xcm_builder::FixedWeightBounds<BaseXcmWeight, RuntimeCall, MaxInstructions>;
+	type Weigher = XcmWeigher;
 	type WeightInfo = pallet_xcm::TestWeightInfo;
 	type XcmExecuteFilter = frame_support::traits::Everything;
 	type XcmExecutor = xcm_executor::XcmExecutor<XcmExecutorConfig>;

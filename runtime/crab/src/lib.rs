@@ -84,7 +84,7 @@ pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Crab2"),
 	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
 	authoring_version: 0,
-	spec_version: 6_6_3_0,
+	spec_version: 6_6_4_0,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 0,
@@ -98,6 +98,7 @@ pub fn native_version() -> sp_version::NativeVersion {
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
+#[cfg(not(feature = "dev"))]
 frame_support::construct_runtime! {
 	pub enum Runtime {
 		// System stuff.
@@ -158,6 +159,73 @@ frame_support::construct_runtime! {
 		Ethereum: pallet_ethereum = 36,
 		EVM: pallet_evm = 37,
 		EthTxForwarder: darwinia_ethtx_forwarder = 38,
+	}
+}
+// Create the runtime by composing the FRAME pallets that were previously configured.
+#[cfg(feature = "dev")]
+frame_support::construct_runtime! {
+	pub enum Runtime {
+		// System stuff.
+		System: frame_system = 0,
+		ParachainSystem: cumulus_pallet_parachain_system = 1,
+		Timestamp: pallet_timestamp = 2,
+		ParachainInfo: parachain_info = 3,
+
+		// Monetary stuff.
+		// Leave 4 here.
+		// To keep balances consistent with the existing XCM configurations.
+		Balances: pallet_balances = 5,
+		TransactionPayment: pallet_transaction_payment = 6,
+		Assets: pallet_assets = 7,
+		// Vesting: pallet_vesting = 8,
+		Deposit: darwinia_deposit = 9,
+		AccountMigration: darwinia_account_migration = 10,
+
+		// Consensus stuff.
+		Authorship: pallet_authorship = 11,
+		DarwiniaStaking: darwinia_staking = 12,
+		Session: pallet_session = 13,
+		Aura: pallet_aura = 14,
+		AuraExt: cumulus_pallet_aura_ext = 15,
+		// MessageGadget: darwinia_message_gadget = 16,
+		// EcdsaAuthority: darwinia_ecdsa_authority = 17,
+
+		// Governance stuff.
+		// PhragmenElection: pallet_elections_phragmen = 21,
+		// TechnicalMembership: pallet_membership::<Instance1> = 22,
+		// Council: pallet_collective::<Instance1> = 19,
+		TechnicalCommittee: pallet_collective::<Instance2> = 20,
+		Treasury: pallet_treasury = 23,
+		// Tips: pallet_tips = 24,
+		// Democracy: pallet_democracy = 18,
+		ConvictionVoting: pallet_conviction_voting = 44,
+		Referenda: pallet_referenda = 45,
+		Origins: custom_origins = 46,
+		Whitelist: pallet_whitelist = 47,
+
+		// Utility stuff.
+		// Sudo: pallet_sudo = 25,
+		Utility: pallet_utility = 26,
+		// Identity: pallet_identity = 27,
+		Scheduler: pallet_scheduler = 28,
+		Preimage: pallet_preimage = 29,
+		Proxy: pallet_proxy = 30,
+		TxPause: pallet_tx_pause = 48,
+
+		// XCM stuff.
+		XcmpQueue: cumulus_pallet_xcmp_queue = 32,
+		PolkadotXcm: pallet_xcm = 33,
+		CumulusXcm: cumulus_pallet_xcm = 34,
+		DmpQueue: cumulus_pallet_dmp_queue = 35,
+		MessageQueue: pallet_message_queue = 39,
+
+		// EVM stuff.
+		Ethereum: pallet_ethereum = 36,
+		EVM: pallet_evm = 37,
+		EthTxForwarder: darwinia_ethtx_forwarder = 38,
+
+		// Dev stuff.
+		Sudo: pallet_sudo = 255,
 	}
 }
 

@@ -36,7 +36,7 @@ impl pallet_message_queue::Config for Runtime {
 	type QueueChangeHandler = message_queue::NarrowOriginToSibling<XcmpQueue>;
 	type QueuePausedQuery = message_queue::NarrowOriginToSibling<XcmpQueue>;
 	type RuntimeEvent = RuntimeEvent;
-	type ServiceWeight = pallet_config::MessageQueueServiceWeight;
+	type ServiceWeight = crate::pallet_config::MessageQueueServiceWeight;
 	type Size = u32;
 	type WeightInfo = weights::pallet_message_queue::WeightInfo<Self>;
 }

@@ -55,7 +55,7 @@ use sp_core::{Pair, Public};
 
 pub type ChainSpec = sc_service::GenericChainSpec<(), Extensions>;
 
-const TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit";
+const PROTOCOL_ID: &str = "dar";
 
 const ALITH: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
 const BALTATHAR: &str = "0x3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0";
@@ -64,15 +64,15 @@ const DOROTHY: &str = "0x773539d4Ac0e786233D90A233654ccEE26a613D9";
 const ETHAN: &str = "0xFf64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB";
 const FAITH: &str = "0xC0F0f4ab324C46e55D02D0033343B4Be8A55532d";
 
+// The default XCM version to set in genesis config.
+const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
+
 // This is the simplest bytecode to revert without returning any data.
 // We will pre-deploy it under all of our precompiles to ensure they can be called from within
 // contracts. (PUSH1 0x00 PUSH1 0x00 REVERT)
 const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
 
-// The default XCM version to set in genesis config.
-const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
-
-const PROTOCOL_ID: &str = "dar";
+const TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit";
 
 /// The extensions for the [`ChainSpec`].
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ChainSpecGroup, ChainSpecExtension)]
