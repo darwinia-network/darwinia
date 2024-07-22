@@ -125,7 +125,7 @@ pub mod pallet {
 			let transaction = Self::validated_transaction(source, request)?;
 
 			#[cfg(feature = "evm-tracing")]
-			return Self::trace_apply(source, transaction);
+			return Self::trace_tx(source, transaction);
 			#[cfg(not(feature = "evm-tracing"))]
 			return T::ValidatedTransaction::apply(source, transaction)
 				.map(|(post_info, _)| post_info);
@@ -287,7 +287,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	#[cfg(feature = "evm-tracing")]
-	fn trace_apply(
+	fn trace_tx(
 		source: H160,
 		transaction: Transaction,
 	) -> Result<PostDispatchInfo, DispatchErrorWithPostInfo> {
