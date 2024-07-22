@@ -3012,6 +3012,7 @@ dependencies = [
  "dc-primitives",
  "ethabi",
  "ethereum",
+ "fp-evm",
  "frame-benchmarking",
  "frame-support",
  "frame-system",

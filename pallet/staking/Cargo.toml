@@ -14,6 +14,8 @@ ethereum   = { workspace = true }
 log        = { workspace = true }
 scale-info = { workspace = true }
 
+fp-evm      = { workspace = true }
+
 # darwinia
 darwinia-ethtx-forwarder = { workspace = true }
 darwinia-staking-traits  = { workspace = true }
@@ -57,6 +59,8 @@ std = [
 	"ethereum/std",
 	"log/std",
 	"scale-info/std",
+
+	"fp-evm/std",
 
 	# darwinia
 	"darwinia-ethtx-forwarder/std",
