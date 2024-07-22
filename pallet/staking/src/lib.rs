@@ -1135,11 +1135,75 @@ pub trait ElectionResultProvider {
 	/// Get the election result.
 	fn get(n: u32) -> Vec<AccountId>;
 }
+
+use ethabi::Token;
+use fp_evm::ExecutionInfoV2;
 /// Election contract.
-pub struct ElectionContract;
-impl ElectionContract {
+pub struct ElectionContract<T>(PhantomData<T>);
+impl<T> ElectionContract<T>
+where
+	T: Config + darwinia_ethtx_forwarder::Config,
+{
 	fn get(n: u32) -> Vec<AccountId> {
-		todo!()
+		let sender = H160([
+			109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0,
+		]);
+
+		// TODO: Use the correct CollatorSet contract address
+		let to = H160([
+			109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0,
+		]);
+		#[allow(deprecated)]
+		let function = Function {
+			name: "getTopCollators".to_owned(),
+			inputs: vec![Param {
+				name: "k".to_owned(),
+				kind: ParamType::Uint(256),
+				internal_type: None,
+			}],
+			outputs: vec![Param {
+				name: "collators".to_owned(),
+				kind: ParamType::Array(Box::new(ParamType::Address)),
+				internal_type: None,
+			}],
+			constant: None,
+			state_mutability: ethabi::StateMutability::View,
+		};
+		let input = match function.encode_input(&[Token::Int(n.into())]) {
+			Ok(i) => i,
+			Err(e) => {
+				log::error!("failed to encode input due to {e:?}");
+				return vec![];
+			},
+		};
+
+		match <darwinia_ethtx_forwarder::Pallet<T>>::forward_call(
+			sender,
+			to,
+			input,
+			Default::default(),
+			U256::from(10_000_000u64),
+		) {
+			Ok(ExecutionInfoV2 { value, .. }) => {
+				function
+					.decode_output(&value)
+					.map_err(|e| log::error!("failed to decode output due to {e:?}"))
+					.map(|tokens| {
+						tokens
+							.into_iter()
+							.filter_map(|token| match token {
+								Token::Address(addr) => Some(AccountId::from(addr)),
+								_ => None,
+							})
+							.collect()
+					})
+					.unwrap_or(vec![])
+			},
+			Err(e) => {
+				log::error!("failed to forward call due to {e:?}");
+				vec![]
+			},
+		}
 	}
 }
 

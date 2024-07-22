@@ -2795,6 +2795,7 @@ name = "darwinia-ethtx-forwarder"
 version = "6.6.3"
 dependencies = [
  "array-bytes 6.2.3",
+ "ethabi",
  "ethereum",
  "fp-ethereum",
  "fp-evm",
@@ -3011,6 +3012,7 @@ dependencies = [
  "dc-primitives",
  "ethabi",
  "ethereum",
+ "fp-evm",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
@@ -3548,7 +3550,10 @@ checksum = "7413c5f74cc903ea37386a8965a936cbeb334bd270862fdece542c1b2dcbc898"
 dependencies = [
  "ethereum-types",
  "hex",
+ "once_cell",
+ "regex",
  "serde",
+ "serde_json",
  "sha3",
  "thiserror",
  "uint",

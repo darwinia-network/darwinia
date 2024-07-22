@@ -31,6 +31,7 @@ sp-std        = { workspace = true }
 [dev-dependencies]
 # crates.io
 array-bytes  = { workspace = true }
+ethabi       = { version = "18.0" }
 libsecp256k1 = { workspace = true, features = ["std"] }
 sha3         = { workspace = true }
 
