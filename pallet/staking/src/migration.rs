@@ -14,8 +14,9 @@ use crate::*;
 ///
 /// https://github.com/darwinia-network/KtonDAO/blob/722bdf62942868de2eeaf19bc70d7a165fc031af/src/Owned.sol#L5.
 /// https://github.com/darwinia-network/KtonDAO/blob/045b5b59d56b426cb8b06b9da912d0a3ad0a636d/src/staking/KtonDAOVault.sol#L36.
-pub fn migrate_staking_reward_distribution_contract<T>()
-where
+pub fn migrate_staking_reward_distribution_contract<T>(
+	kton_reward_distribution_contract: T::AccountId,
+) where
 	T: Config + darwinia_ethtx_forwarder::Config,
 	T::RuntimeOrigin: Into<Result<ForwardEthOrigin, T::RuntimeOrigin>> + From<ForwardEthOrigin>,
 	<T as frame_system::Config>::AccountId: Into<H160>,
@@ -23,7 +24,7 @@ where
 	// Treasury pallet account.
 	let sender =
 		H160([109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0]);
-	let krd_contract = T::KtonRewardDistributionContract::get().into();
+	let krd_contract = kton_reward_distribution_contract.into();
 	// 0x000000000Ae5DB7BDAf8D071e680452e33d91Dd5.
 	let krd_contract_old = H160([
 		0, 0, 0, 0, 10, 229, 219, 123, 218, 248, 208, 113, 230, 128, 69, 46, 51, 217, 29, 213,

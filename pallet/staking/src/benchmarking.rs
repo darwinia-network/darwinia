@@ -162,16 +162,25 @@ mod benchmarks {
 	fn set_rate_limit() {
 		// Worst-case scenario:
 		//
-		// Set max unstake ring successfully.
+		// Set successfully.
 		#[extrinsic_call]
 		_(RawOrigin::Root, 1);
+	}
+
+	#[benchmark]
+	fn set_kton_reward_distribution_contract() {
+		// Worst-case scenario:
+		//
+		// Set successfully.
+		#[extrinsic_call]
+		_(RawOrigin::Root, frame_benchmarking::whitelisted_caller::<T::AccountId>());
 	}
 
 	#[benchmark]
 	fn set_collator_count() {
 		// Worst-case scenario:
 		//
-		// Set collator count successfully.
+		// Set successfully.
 		#[extrinsic_call]
 		_(RawOrigin::Root, 1);
 	}

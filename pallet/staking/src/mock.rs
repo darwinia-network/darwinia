@@ -276,7 +276,6 @@ impl darwinia_staking::Config for Runtime {
 	type Deposit = Deposit;
 	type IssuingManager = StatedOnSessionEnd;
 	type Kton = KtonStaking;
-	type KtonRewardDistributionContract = ();
 	type KtonStakerNotifier = ();
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type Ring = RingStaking;

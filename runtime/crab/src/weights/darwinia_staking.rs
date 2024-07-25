@@ -171,6 +171,17 @@ impl<T: frame_system::Config> darwinia_staking::WeightInfo for WeightInfo<T> {
 			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
+	/// Storage: `DarwiniaStaking::KtonRewardDistributionContract` (r:0 w:1)
+	/// Proof: `DarwiniaStaking::KtonRewardDistributionContract` (`max_values`: Some(1), `max_size`: Some(16), added: 511, mode: `MaxEncodedLen`)
+	fn set_kton_reward_distribution_contract() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `0`
+		//  Estimated: `0`
+		// Minimum execution time: 2_000_000 picoseconds.
+		Weight::from_parts(2_000_000, 0)
+			.saturating_add(Weight::from_parts(0, 0))
+			.saturating_add(T::DbWeight::get().writes(1))
+	}
 	/// Storage: `DarwiniaStaking::CollatorCount` (r:0 w:1)
 	/// Proof: `DarwiniaStaking::CollatorCount` (`max_values`: Some(1), `max_size`: Some(4), added: 499, mode: `MaxEncodedLen`)
 	fn set_collator_count() -> Weight {

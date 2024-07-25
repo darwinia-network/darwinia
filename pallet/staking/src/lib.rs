@@ -137,10 +137,6 @@ pub mod pallet {
 		/// Maximum deposit count.
 		#[pallet::constant]
 		type MaxDeposits: Get<u32>;
-
-		/// Address of the KTON reward distribution contract.
-		#[pallet::constant]
-		type KtonRewardDistributionContract: Get<Self::AccountId>;
 	}
 
 	#[allow(missing_docs)]
@@ -294,6 +290,17 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn rate_limit_state)]
 	pub type RateLimitState<T: Config> = StorageValue<_, RateLimiter, ValueQuery>;
+
+	/// KTON reward distribution contract address.
+	#[pallet::storage]
+	#[pallet::getter(fn kton_reward_distribution_contract)]
+	pub type KtonRewardDistributionContract<T: Config> =
+		StorageValue<_, T::AccountId, ValueQuery, KtonRewardDistributionContractDefault<T>>;
+	/// Default value for [`KtonRewardDistributionContract`].
+	#[pallet::type_value]
+	pub fn KtonRewardDistributionContractDefault<T: Config>() -> T::AccountId {
+		account_id()
+	}
 
 	#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
@@ -531,7 +538,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Set max unstake RING limit.
+		/// Set the max unstake RING limit.
 		#[pallet::call_index(9)]
 		#[pallet::weight(<T as Config>::WeightInfo::set_rate_limit())]
 		pub fn set_rate_limit(origin: OriginFor<T>, amount: Balance) -> DispatchResult {
@@ -542,7 +549,21 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Set collator count.
+		/// Set the KTON reward distribution contract address.
+		#[pallet::call_index(10)]
+		#[pallet::weight(<T as Config>::WeightInfo::set_kton_reward_distribution_contract())]
+		pub fn set_kton_reward_distribution_contract(
+			origin: OriginFor<T>,
+			address: T::AccountId,
+		) -> DispatchResult {
+			ensure_root(origin)?;
+
+			<KtonRewardDistributionContract<T>>::put(address);
+
+			Ok(())
+		}
+
+		/// Set the collator count.
 		///
 		/// This will apply to the incoming session.
 		///
@@ -649,7 +670,7 @@ pub mod pallet {
 			};
 
 			reward(account_id(), actual_reward_to_ring);
-			reward(T::KtonRewardDistributionContract::get(), reward_to_kton);
+			reward(<KtonRewardDistributionContract<T>>::get(), reward_to_kton);
 
 			T::KtonStakerNotifier::notify(reward_to_kton);
 		}
@@ -971,22 +992,6 @@ where
 	PalletId(*b"da/staki").into_account_truncating()
 }
 
-/// The address of the `StakingRewardDistribution` contract.
-/// 0x0DBFbb1Ab6e42F89661B4f98d5d0acdBE21d1ffC.
-pub struct KtonRewardDistributionContract;
-impl<T> Get<T> for KtonRewardDistributionContract
-where
-	T: From<[u8; 20]>,
-{
-	fn get() -> T {
-		[
-			13, 191, 187, 26, 182, 228, 47, 137, 102, 27, 79, 152, 213, 208, 172, 219, 226, 29, 31,
-			252,
-		]
-		.into()
-	}
-}
-
 /// `StakingRewardDistribution` contact notification interface.
 pub trait KtonStakerNotification {
 	/// Notify the KTON staker contract.
@@ -1004,7 +1009,7 @@ where
 	<T as frame_system::Config>::AccountId: Into<H160>,
 {
 	fn notify(amount: Balance) {
-		let krd_contract = T::KtonRewardDistributionContract::get().into();
+		let krd_contract = <KtonRewardDistributionContract<T>>::get().into();
 		#[allow(deprecated)]
 		let function = Function {
 			name: "distributeRewards".into(),
