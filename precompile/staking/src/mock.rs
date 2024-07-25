@@ -23,14 +23,11 @@ use scale_info::TypeInfo;
 use precompile_utils::Precompile;
 // darwinia
 use crate::*;
+use dc_primitives::{AccountId, Balance, Moment};
 // polkadot-sdk
 use frame_support::derive_impl;
 use sp_core::{H160, U256};
 use sp_runtime::BuildStorage;
-
-pub type Balance = u128;
-pub type AccountId = H160;
-pub type Moment = u128;
 
 #[derive(Clone, Encode, Decode, Debug, MaxEncodedLen, TypeInfo)]
 pub enum Account {
@@ -38,14 +35,14 @@ pub enum Account {
 	Bob,
 	Precompile,
 }
-#[allow(clippy::from_over_into)]
-impl Into<H160> for Account {
-	fn into(self) -> H160 {
+impl Account {
+	pub fn addr(&self) -> AccountId {
 		match self {
 			Account::Alice => H160::repeat_byte(0xAA),
 			Account::Bob => H160::repeat_byte(0xBB),
 			Account::Precompile => H160::from_low_u64_be(1),
 		}
+		.into()
 	}
 }
 
@@ -203,11 +200,12 @@ impl darwinia_staking::Stake for KtonStaking {
 impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
+	type ElectionResultProvider = ();
 	type IssuingManager = ();
 	type Kton = KtonStaking;
-	type KtonRewardDistributionContract = ();
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type RewardToKton = ();
+	type RewardToRing = ();
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
 	type ShouldEndSession = ();

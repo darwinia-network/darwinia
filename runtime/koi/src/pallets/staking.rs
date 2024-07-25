@@ -97,11 +97,12 @@ impl frame_support::traits::Get<bool> for ShouldEndSession {
 impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
+	type ElectionResultProvider = ();
 	type IssuingManager = OnKoiSessionEnd;
 	type Kton = KtonStaking;
-	type KtonRewardDistributionContract = darwinia_staking::KtonRewardDistributionContract;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type RewardToKton = darwinia_staking::RewardToKton<Self>;
+	type RewardToRing = ();
 	type Ring = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
 	type ShouldEndSession = ShouldEndSession;

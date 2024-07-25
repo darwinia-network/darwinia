@@ -59,6 +59,7 @@ pub trait WeightInfo {
 	fn chill() -> Weight;
 	fn payout() -> Weight;
 	fn set_rate_limit() -> Weight;
+	fn set_kton_reward_distribution_contract() -> Weight;
 	fn set_collator_count() -> Weight;
 }
 
@@ -173,6 +174,17 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	/// Storage: `DarwiniaStaking::RateLimit` (r:0 w:1)
 	/// Proof: `DarwiniaStaking::RateLimit` (`max_values`: Some(1), `max_size`: Some(16), added: 511, mode: `MaxEncodedLen`)
 	fn set_rate_limit() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `0`
+		//  Estimated: `0`
+		// Minimum execution time: 2_000 nanoseconds.
+		Weight::from_parts(3_000_000, 0)
+			.saturating_add(Weight::from_parts(0, 0))
+			.saturating_add(T::DbWeight::get().writes(1_u64))
+	}
+	// Storage: `DarwiniaStaking::KtonRewardDistributionContract` (r:0 w:1)
+	/// Proof: `DarwiniaStaking::KtonRewardDistributionContract` (`max_values`: Some(1), `max_size`: Some(16), added: 511, mode: `MaxEncodedLen`)
+	fn set_kton_reward_distribution_contract() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `0`
 		//  Estimated: `0`
@@ -304,6 +316,17 @@ impl WeightInfo for () {
 	/// Storage: `DarwiniaStaking::RateLimit` (r:0 w:1)
 	/// Proof: `DarwiniaStaking::RateLimit` (`max_values`: Some(1), `max_size`: Some(16), added: 511, mode: `MaxEncodedLen`)
 	fn set_rate_limit() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `0`
+		//  Estimated: `0`
+		// Minimum execution time: 2_000 nanoseconds.
+		Weight::from_parts(3_000_000, 0)
+			.saturating_add(Weight::from_parts(0, 0))
+			.saturating_add(RocksDbWeight::get().writes(1_u64))
+	}
+	/// Storage: `DarwiniaStaking::KtonRewardDistributionContract` (r:0 w:1)
+	/// Proof: `DarwiniaStaking::KtonRewardDistributionContract` (`max_values`: Some(1), `max_size`: Some(16), added: 511, mode: `MaxEncodedLen`)
+	fn set_kton_reward_distribution_contract() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `0`
 		//  Estimated: `0`

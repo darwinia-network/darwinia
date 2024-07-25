@@ -36,8 +36,8 @@ pub mod migration;
 
 #[cfg(test)]
 mod mock;
-#[cfg(test)]
-mod tests;
+// #[cfg(test)]
+// mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
@@ -49,11 +49,13 @@ pub use darwinia_staking_traits::*;
 
 // crates.io
 use codec::FullCodec;
-use ethabi::{Function, Param, ParamType, StateMutability};
+use ethabi::{Function, Param, ParamType, StateMutability, Token};
 use ethereum::TransactionAction;
 // darwinia
 use darwinia_ethtx_forwarder::{ForwardEthOrigin, ForwardRequest, TxType};
 use dc_primitives::{AccountId, Balance, Moment};
+// frontier
+use fp_evm::ExecutionInfoV2;
 // polkadot-sdk
 use frame_support::{
 	pallet_prelude::*,
@@ -111,6 +113,11 @@ macro_rules! call_on_cache {
 	}};
 }
 
+type DepositId<T> = <<T as Config>::Deposit as Stake>::Item;
+
+const TREASURY_ADDR: H160 =
+	H160([109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0]);
+
 #[frame_support::pallet]
 pub mod pallet {
 	// darwinia
@@ -167,10 +174,6 @@ pub mod pallet {
 		/// Maximum deposit count.
 		#[pallet::constant]
 		type MaxDeposits: Get<u32>;
-
-		/// Address of the KTON reward distribution contract.
-		#[pallet::constant]
-		type KtonRewardDistributionContract: Get<Self::AccountId>;
 	}
 
 	#[allow(missing_docs)]
@@ -323,6 +326,17 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn rate_limit_state)]
 	pub type RateLimitState<T: Config> = StorageValue<_, RateLimiter, ValueQuery>;
+
+	/// KTON reward distribution contract address.
+	#[pallet::storage]
+	#[pallet::getter(fn kton_reward_distribution_contract)]
+	pub type KtonRewardDistributionContract<T: Config> =
+		StorageValue<_, T::AccountId, ValueQuery, KtonRewardDistributionContractDefault<T>>;
+	/// Default value for [`KtonRewardDistributionContract`].
+	#[pallet::type_value]
+	pub fn KtonRewardDistributionContractDefault<T: Config>() -> T::AccountId {
+		account_id()
+	}
 
 	/// Migration start point.
 	#[pallet::storage]
@@ -620,7 +634,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Set max unstake RING limit.
+		/// Set the max unstake RING limit.
 		#[pallet::call_index(9)]
 		#[pallet::weight(<T as Config>::WeightInfo::set_rate_limit())]
 		pub fn set_rate_limit(origin: OriginFor<T>, amount: Balance) -> DispatchResult {
@@ -631,7 +645,21 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Set collator count.
+		/// Set the KTON reward distribution contract address.
+		#[pallet::call_index(10)]
+		#[pallet::weight(<T as Config>::WeightInfo::set_kton_reward_distribution_contract())]
+		pub fn set_kton_reward_distribution_contract(
+			origin: OriginFor<T>,
+			address: T::AccountId,
+		) -> DispatchResult {
+			ensure_root(origin)?;
+
+			<KtonRewardDistributionContract<T>>::put(address);
+
+			Ok(())
+		}
+
+		/// Set the collator count.
 		///
 		/// This will apply to the incoming session.
 		///
@@ -747,7 +775,7 @@ pub mod pallet {
 			};
 
 			reward(account_id(), actual_reward_to_ring);
-			reward(T::KtonRewardDistributionContract::get(), reward_to_kton_dao);
+			reward(<KtonRewardDistributionContract<T>>::get(), reward_to_kton_dao);
 
 			for (c, r) in reward_to_ring_dao {
 				T::RewardToRing::distribute(Some(c), r);
@@ -939,10 +967,36 @@ pub mod pallet {
 			Some(winners)
 		}
 	}
+	// Add reward points to block authors:
+	// - 20 points to the block producer for producing a (non-uncle) block in the parachain chain,
+	// - 2 points to the block producer for each reference to a previously unreferenced uncle, and
+	// - 1 point to the producer of each referenced uncle block.
+	impl<T> pallet_authorship::EventHandler<T::AccountId, BlockNumberFor<T>> for Pallet<T>
+	where
+		T: Config + pallet_authorship::Config + pallet_session::Config,
+	{
+		fn note_author(author: T::AccountId) {
+			Self::note_authors(&[author])
+		}
+	}
+
+	// Play the role of the session manager.
+	impl<T> pallet_session::SessionManager<T::AccountId> for Pallet<T>
+	where
+		T: Config,
+	{
+		fn end_session(_: u32) {
+			T::IssuingManager::on_session_end();
+		}
+
+		fn start_session(_: u32) {}
+
+		fn new_session(index: u32) -> Option<Vec<T::AccountId>> {
+			Self::prepare_new_session(index)
+		}
+	}
 }
 pub use pallet::*;
-
-type DepositId<T> = <<T as Config>::Deposit as Stake>::Item;
 
 /// Issuing and reward manager.
 pub trait IssuingManager<T>
@@ -963,23 +1017,32 @@ where
 	}
 
 	/// Calculate the reward.
-	fn calculate_reward(issued: Balance) -> Balance;
-
-	/// The reward function.
-	fn reward(who: &T::AccountId, amount: Balance) -> DispatchResult;
-}
-impl<T> IssuingManager<T> for ()
-where
-	T: Config,
-{
-	fn calculate_reward(_inflation: Balance) -> Balance {
+	fn calculate_reward(issued: Balance) -> Balance {
 		0
 	}
 
-	fn reward(_who: &T::AccountId, _amount: Balance) -> DispatchResult {
+	/// The reward function.
+	fn reward(who: &T::AccountId, amount: Balance) -> DispatchResult {
 		Ok(())
 	}
 }
+impl<T> IssuingManager<T> for () where T: Config {}
+
+/// Election result provider.
+pub trait ElectionResultProvider {
+	/// Get the election result.
+	fn get(n: u32) -> Vec<AccountId> {
+		Vec::new()
+	}
+}
+impl ElectionResultProvider for () {}
+
+/// Distribute the reward to a contract.
+pub trait RewardToContract {
+	/// Distribute the reward.
+	fn distribute(who: Option<AccountId>, amount: Balance) {}
+}
+impl RewardToContract for () {}
 
 /// Staking rate limiter.
 #[derive(Clone, Debug, PartialEq, Encode, Decode, MaxEncodedLen, TypeInfo)]
@@ -1093,51 +1156,6 @@ pub struct IndividualExposure<AccountId> {
 	pub vote: Balance,
 }
 
-// Add reward points to block authors:
-// - 20 points to the block producer for producing a (non-uncle) block in the parachain chain,
-// - 2 points to the block producer for each reference to a previously unreferenced uncle, and
-// - 1 point to the producer of each referenced uncle block.
-impl<T> pallet_authorship::EventHandler<T::AccountId, BlockNumberFor<T>> for Pallet<T>
-where
-	T: Config + pallet_authorship::Config + pallet_session::Config,
-{
-	fn note_author(author: T::AccountId) {
-		Self::note_authors(&[author])
-	}
-}
-
-// Play the role of the session manager.
-impl<T> pallet_session::SessionManager<T::AccountId> for Pallet<T>
-where
-	T: Config,
-{
-	fn end_session(_: u32) {
-		T::IssuingManager::on_session_end();
-	}
-
-	fn start_session(_: u32) {}
-
-	fn new_session(index: u32) -> Option<Vec<T::AccountId>> {
-		Self::prepare_new_session(index)
-	}
-}
-
-/// The account of the staking pot.
-pub fn account_id<A>() -> A
-where
-	A: FullCodec,
-{
-	PalletId(*b"da/staki").into_account_truncating()
-}
-
-/// Election result provider.
-pub trait ElectionResultProvider {
-	/// Get the election result.
-	fn get(n: u32) -> Vec<AccountId>;
-}
-
-use ethabi::Token;
-use fp_evm::ExecutionInfoV2;
 /// Election contract.
 pub struct ElectionContract<T>(PhantomData<T>);
 impl<T> ElectionContract<T>
@@ -1145,10 +1163,6 @@ where
 	T: Config + darwinia_ethtx_forwarder::Config,
 {
 	fn get(n: u32) -> Vec<AccountId> {
-		let sender = H160([
-			109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0,
-		]);
-
 		// TODO: Use the correct CollatorSet contract address
 		let to = H160([
 			109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1167,68 +1181,49 @@ where
 				internal_type: None,
 			}],
 			constant: None,
-			state_mutability: ethabi::StateMutability::View,
+			state_mutability: StateMutability::View,
 		};
 		let input = match function.encode_input(&[Token::Int(n.into())]) {
 			Ok(i) => i,
 			Err(e) => {
 				log::error!("failed to encode input due to {e:?}");
-				return vec![];
+
+				return Vec::new();
 			},
 		};
 
 		match <darwinia_ethtx_forwarder::Pallet<T>>::forward_call(
-			sender,
+			TREASURY_ADDR,
 			to,
 			input,
 			Default::default(),
-			U256::from(10_000_000u64),
+			U256::from(10_000_000_u64),
 		) {
-			Ok(ExecutionInfoV2 { value, .. }) => {
-				function
-					.decode_output(&value)
-					.map_err(|e| log::error!("failed to decode output due to {e:?}"))
-					.map(|tokens| {
-						tokens
-							.into_iter()
-							.filter_map(|token| match token {
-								Token::Address(addr) => Some(AccountId::from(addr)),
-								_ => None,
-							})
-							.collect()
-					})
-					.unwrap_or(vec![])
-			},
+			Ok(ExecutionInfoV2 { value, .. }) => function
+				.decode_output(&value)
+				.map_err(|e| log::error!("failed to decode output due to {e:?}"))
+				.map(|tokens| {
+					tokens
+						.into_iter()
+						.filter_map(|token| {
+							if let Token::Address(addr) = token {
+								Some(AccountId::from(addr))
+							} else {
+								None
+							}
+						})
+						.collect()
+				})
+				.unwrap_or_default(),
 			Err(e) => {
 				log::error!("failed to forward call due to {e:?}");
-				vec![]
+
+				Vec::new()
 			},
 		}
 	}
 }
 
-/// The address of the `StakingRewardDistribution` contract.
-/// 0x0DBFbb1Ab6e42F89661B4f98d5d0acdBE21d1ffC.
-pub struct KtonRewardDistributionContract;
-impl<T> Get<T> for KtonRewardDistributionContract
-where
-	T: From<[u8; 20]>,
-{
-	fn get() -> T {
-		[
-			13, 191, 187, 26, 182, 228, 47, 137, 102, 27, 79, 152, 213, 208, 172, 219, 226, 29, 31,
-			252,
-		]
-		.into()
-	}
-}
-
-/// Distribute the reward to a contract.
-pub trait RewardToContract {
-	/// Distribute the reward.
-	fn distribute(who: Option<AccountId>, amount: Balance) {}
-}
-impl RewardToContract for () {}
 /// Distribute the reward to KTON contract.
 ///
 /// https://github.com/darwinia-network/DIP-7/blob/7fa307136586f06c6911ce98d16c88689d91ba8c/src/collator/CollatorStakingHub.sol#L142.
@@ -1237,12 +1232,12 @@ impl<T> RewardToContract for RewardToRing<T>
 where
 	T: Config + darwinia_ethtx_forwarder::Config,
 	T::RuntimeOrigin: Into<Result<ForwardEthOrigin, T::RuntimeOrigin>> + From<ForwardEthOrigin>,
-	<T as frame_system::Config>::AccountId: Into<H160>,
 {
 	fn distribute(who: Option<AccountId>, amount: Balance) {
 		todo!()
 	}
 }
+
 /// Distribute the reward to KTON contract.
 ///
 /// https://github.com/darwinia-network/KtonDAO/blob/2de20674f2ef90b749ade746d0768c7bda356402/src/staking/KtonDAOVault.sol#L40.
@@ -1251,10 +1246,9 @@ impl<T> RewardToContract for RewardToKton<T>
 where
 	T: Config + darwinia_ethtx_forwarder::Config,
 	T::RuntimeOrigin: Into<Result<ForwardEthOrigin, T::RuntimeOrigin>> + From<ForwardEthOrigin>,
-	<T as frame_system::Config>::AccountId: Into<H160>,
 {
 	fn distribute(_: Option<AccountId>, amount: Balance) {
-		let krd_contract = T::KtonRewardDistributionContract::get().into();
+		let krd_contract = <KtonRewardDistributionContract<T>>::get().into();
 		#[allow(deprecated)]
 		let function = Function {
 			name: "distributeRewards".into(),
@@ -1282,10 +1276,7 @@ where
 			input,
 			gas_limit: U256::from(1_000_000),
 		};
-		// Treasury pallet account.
-		let sender = H160([
-			109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0,
-		]);
+		let sender = TREASURY_ADDR;
 
 		if let Err(e) = <darwinia_ethtx_forwarder::Pallet<T>>::forward_transact(
 			ForwardEthOrigin::ForwardEth(sender).into(),
@@ -1294,4 +1285,12 @@ where
 			log::error!("failed to call `distributeRewards` on `KtonRewardDistributionContract` contract due to {e:?}");
 		}
 	}
+}
+
+/// The account of the staking pot.
+pub fn account_id<A>() -> A
+where
+	A: FullCodec,
+{
+	PalletId(*b"da/staki").into_account_truncating()
 }

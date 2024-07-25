@@ -31,6 +31,7 @@ scale-info = { workspace = true, features = ["std"] }
 
 # darwinia
 darwinia-deposit = { workspace = true, features = ["std"] }
+dc-primitives    = { workspace = true, features = ["std"] }
 
 # moonbeam
 precompile-utils = { workspace = true, features = ["std", "testing"] }

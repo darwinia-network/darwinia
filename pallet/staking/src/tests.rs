@@ -21,7 +21,7 @@ use core::time::Duration;
 // darwinia
 use crate::{mock::*, *};
 use darwinia_deposit::Error as DepositError;
-use dc_types::UNIT;
+use dc_primitives::UNIT;
 // polkadot-sdk
 use frame_support::{assert_noop, assert_ok, BoundedVec};
 use sp_runtime::{assert_eq_error_rate, DispatchError, Perbill};
@@ -43,20 +43,20 @@ fn exposure_cache_states_should_work() {
 				nominators: Default::default(),
 			};
 
-			<ExposureCache0<Runtime>>::insert(0, e.clone());
-			<ExposureCache1<Runtime>>::insert(1, e.clone());
-			<ExposureCache2<Runtime>>::insert(2, e);
+			<ExposureCache0<Runtime>>::insert(account_id_of(0), e.clone());
+			<ExposureCache1<Runtime>>::insert(account_id_of(1), e.clone());
+			<ExposureCache2<Runtime>>::insert(account_id_of(2), e);
 		}
 
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(0).is_some()).unwrap());
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(1).is_none()).unwrap());
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(2).is_none()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(0).is_none()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(1).is_some()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(2).is_none()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(0).is_none()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(1).is_none()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(2).is_some()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(account_id_of(0)).is_some()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(account_id_of(1)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(account_id_of(2)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(account_id_of(0)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(account_id_of(1)).is_some()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(account_id_of(2)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(account_id_of(0)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(account_id_of(1)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(account_id_of(2)).is_some()).unwrap());
 		assert_eq!(
 			<ExposureCacheStates<Runtime>>::get(),
 			(CacheState::Previous, CacheState::Current, CacheState::Next)
@@ -64,15 +64,15 @@ fn exposure_cache_states_should_work() {
 
 		Staking::shift_cache_states();
 
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(0).is_none()).unwrap());
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(1).is_some()).unwrap());
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(2).is_none()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(0).is_none()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(1).is_none()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(2).is_some()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(0).is_some()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(1).is_none()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(2).is_none()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(account_id_of(0)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(account_id_of(1)).is_some()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(account_id_of(2)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(account_id_of(0)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(account_id_of(1)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(account_id_of(2)).is_some()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(account_id_of(0)).is_some()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(account_id_of(1)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(account_id_of(2)).is_none()).unwrap());
 		assert_eq!(
 			<ExposureCacheStates<Runtime>>::get(),
 			(CacheState::Next, CacheState::Previous, CacheState::Current)
@@ -80,15 +80,15 @@ fn exposure_cache_states_should_work() {
 
 		Staking::shift_cache_states();
 
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(0).is_none()).unwrap());
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(1).is_none()).unwrap());
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(2).is_some()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(0).is_some()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(1).is_none()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(2).is_none()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(0).is_none()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(1).is_some()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(2).is_none()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(account_id_of(0)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(account_id_of(1)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(account_id_of(2)).is_some()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(account_id_of(0)).is_some()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(account_id_of(1)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(account_id_of(2)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(account_id_of(0)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(account_id_of(1)).is_some()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(account_id_of(2)).is_none()).unwrap());
 		assert_eq!(
 			<ExposureCacheStates<Runtime>>::get(),
 			(CacheState::Current, CacheState::Next, CacheState::Previous)
@@ -96,15 +96,15 @@ fn exposure_cache_states_should_work() {
 
 		Staking::shift_cache_states();
 
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(0).is_some()).unwrap());
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(1).is_none()).unwrap());
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(2).is_none()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(0).is_none()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(1).is_some()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(2).is_none()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(0).is_none()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(1).is_none()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(2).is_some()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(account_id_of(0)).is_some()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(account_id_of(1)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Previous<Runtime>>::get(account_id_of(2)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(account_id_of(0)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(account_id_of(1)).is_some()).unwrap());
+		assert!(call_on_exposure!(<Current<Runtime>>::get(account_id_of(2)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(account_id_of(0)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(account_id_of(1)).is_none()).unwrap());
+		assert!(call_on_exposure!(<Next<Runtime>>::get(account_id_of(2)).is_some()).unwrap());
 		assert_eq!(
 			<ExposureCacheStates<Runtime>>::get(),
 			(CacheState::Previous, CacheState::Current, CacheState::Next)
@@ -115,45 +115,45 @@ fn exposure_cache_states_should_work() {
 #[test]
 fn stake_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_eq!(System::account(1).consumers, 0);
-		assert!(Staking::ledger_of(1).is_none());
-		assert_eq!(Balances::free_balance(1), 1_000 * UNIT);
+		assert_eq!(System::account(account_id_of(1)).consumers, 0);
+		assert!(Staking::ledger_of(account_id_of(1)).is_none());
+		assert_eq!(Balances::free_balance(account_id_of(1)), 1_000 * UNIT);
 		assert_eq!(Staking::rate_limit_state(), RateLimiter::Pos(0));
 
 		// Stake 1 RING.
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), UNIT, Vec::new()));
-		assert_eq!(System::account(1).consumers, 1);
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(account_id_of(1)), UNIT, Vec::new()));
+		assert_eq!(System::account(account_id_of(1)).consumers, 1);
 		assert_eq!(
-			Staking::ledger_of(1).unwrap(),
+			Staking::ledger_of(account_id_of(1)).unwrap(),
 			Ledger { ring: UNIT, deposits: Default::default() }
 		);
-		assert_eq!(Balances::free_balance(1), 999 * UNIT);
+		assert_eq!(Balances::free_balance(account_id_of(1)), 999 * UNIT);
 		assert_eq!(Staking::rate_limit_state(), RateLimiter::Pos(UNIT));
 
 		// Stake invalid deposit.
 		assert_noop!(
-			Staking::stake(RuntimeOrigin::signed(1), 0, vec![0]),
+			Staking::stake(RuntimeOrigin::signed(account_id_of(1)), 0, vec![0]),
 			<DepositError<Runtime>>::DepositNotFound
 		);
 
 		// Stake 1 deposit.
-		assert_eq!(System::account(1).consumers, 1);
-		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), 0, vec![0]));
+		assert_eq!(System::account(account_id_of(1)).consumers, 1);
+		assert_ok!(Deposit::lock(RuntimeOrigin::signed(account_id_of(1)), UNIT, 1));
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(account_id_of(1)), 0, vec![0]));
 		assert_eq!(
-			Staking::ledger_of(1).unwrap(),
+			Staking::ledger_of(account_id_of(1)).unwrap(),
 			Ledger { ring: UNIT, deposits: BoundedVec::truncate_from(vec![0]) }
 		);
 		assert_eq!(Staking::rate_limit_state(), RateLimiter::Pos(2 * UNIT));
 
 		// Stake 2 RING and 2 deposits.
-		assert_eq!(System::account(1).consumers, 2);
-		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
-		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), 2 * UNIT, vec![1, 2]));
-		assert_eq!(Balances::free_balance(1), 994 * UNIT);
+		assert_eq!(System::account(account_id_of(1)).consumers, 2);
+		assert_ok!(Deposit::lock(RuntimeOrigin::signed(account_id_of(1)), UNIT, 1));
+		assert_ok!(Deposit::lock(RuntimeOrigin::signed(account_id_of(1)), UNIT, 1));
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(account_id_of(1)), 2 * UNIT, vec![1, 2]));
+		assert_eq!(Balances::free_balance(account_id_of(1)), 994 * UNIT);
 		assert_eq!(
-			Staking::ledger_of(1).unwrap(),
+			Staking::ledger_of(account_id_of(1)).unwrap(),
 			Ledger { ring: 3 * UNIT, deposits: BoundedVec::truncate_from(vec![0, 1, 2]) }
 		);
 		assert_eq!(Staking::rate_limit_state(), RateLimiter::Pos(6 * UNIT));
@@ -163,81 +163,101 @@ fn stake_should_work() {
 #[test]
 fn unstake_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
-		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
-		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), 3 * UNIT, vec![0, 1, 2]));
-		assert_eq!(Balances::free_balance(1), 994 * UNIT);
+		assert_ok!(Deposit::lock(RuntimeOrigin::signed(account_id_of(1)), UNIT, 1));
+		assert_ok!(Deposit::lock(RuntimeOrigin::signed(account_id_of(1)), UNIT, 1));
+		assert_ok!(Deposit::lock(RuntimeOrigin::signed(account_id_of(1)), UNIT, 1));
+		assert_ok!(Staking::stake(
+			RuntimeOrigin::signed(account_id_of(1)),
+			3 * UNIT,
+			vec![0, 1, 2]
+		));
+		assert_eq!(Balances::free_balance(account_id_of(1)), 994 * UNIT);
 		assert_eq!(Staking::rate_limit_state(), RateLimiter::Pos(6 * UNIT));
 		assert_eq!(
-			Staking::ledger_of(1).unwrap(),
+			Staking::ledger_of(account_id_of(1)).unwrap(),
 			Ledger { ring: 3 * UNIT, deposits: BoundedVec::truncate_from(vec![0, 1, 2]) }
 		);
 		assert_eq!(
-			Deposit::deposit_of(1).unwrap().into_iter().map(|d| d.in_use).collect::<Vec<_>>(),
+			Deposit::deposit_of(account_id_of(1))
+				.unwrap()
+				.into_iter()
+				.map(|d| d.in_use)
+				.collect::<Vec<_>>(),
 			[true, true, true]
 		);
 
 		// Unstake 1 RING.
-		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), UNIT, Vec::new()));
+		assert_ok!(Staking::unstake(RuntimeOrigin::signed(account_id_of(1)), UNIT, Vec::new()));
 		assert_eq!(Staking::rate_limit_state(), RateLimiter::Pos(5 * UNIT));
-		assert_eq!(Balances::free_balance(1), 995 * UNIT);
+		assert_eq!(Balances::free_balance(account_id_of(1)), 995 * UNIT);
 		assert_eq!(
-			Staking::ledger_of(1).unwrap(),
+			Staking::ledger_of(account_id_of(1)).unwrap(),
 			Ledger { ring: 2 * UNIT, deposits: BoundedVec::truncate_from(vec![0, 1, 2]) }
 		);
 
 		// Unstake invalid deposit.
 		assert_noop!(
-			Staking::unstake(RuntimeOrigin::signed(1), 0, vec![3]),
+			Staking::unstake(RuntimeOrigin::signed(account_id_of(1)), 0, vec![3]),
 			<Error<Runtime>>::DepositNotFound
 		);
 
 		// Unstake 1 deposit.
 		Efflux::block(1);
-		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), 0, vec![1]));
+		assert_ok!(Staking::unstake(RuntimeOrigin::signed(account_id_of(1)), 0, vec![1]));
 		assert_eq!(Staking::rate_limit_state(), RateLimiter::Pos(4 * UNIT));
 		assert_eq!(
-			Staking::ledger_of(1).unwrap(),
+			Staking::ledger_of(account_id_of(1)).unwrap(),
 			Ledger { ring: 2 * UNIT, deposits: BoundedVec::truncate_from(vec![0, 2]) }
 		);
 		assert_eq!(
-			Deposit::deposit_of(1).unwrap().into_iter().map(|d| d.in_use).collect::<Vec<_>>(),
+			Deposit::deposit_of(account_id_of(1))
+				.unwrap()
+				.into_iter()
+				.map(|d| d.in_use)
+				.collect::<Vec<_>>(),
 			[true, false, true]
 		);
 
 		// Unstake 2 RING and 2 deposits.
 		Efflux::block(1);
-		assert_ok!(Staking::unstake(RuntimeOrigin::signed(1), 2 * UNIT, vec![0, 2]));
+		assert_ok!(Staking::unstake(RuntimeOrigin::signed(account_id_of(1)), 2 * UNIT, vec![0, 2]));
 		assert_eq!(Staking::rate_limit_state(), RateLimiter::Pos(0));
-		assert!(Staking::ledger_of(1).is_none());
+		assert!(Staking::ledger_of(account_id_of(1)).is_none());
 		assert_eq!(
-			Deposit::deposit_of(1).unwrap().into_iter().map(|d| d.in_use).collect::<Vec<_>>(),
+			Deposit::deposit_of(account_id_of(1))
+				.unwrap()
+				.into_iter()
+				.map(|d| d.in_use)
+				.collect::<Vec<_>>(),
 			[false, false, false]
 		);
 
 		// Prepare rate limit test data.
-		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 100 * UNIT + 1, 1));
+		assert_ok!(Deposit::lock(RuntimeOrigin::signed(account_id_of(1)), 100 * UNIT + 1, 1));
 		<RateLimit<Runtime>>::put(200 * UNIT + 2);
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), 100 * UNIT + 1, vec![3]));
+		assert_ok!(Staking::stake(
+			RuntimeOrigin::signed(account_id_of(1)),
+			100 * UNIT + 1,
+			vec![3]
+		));
 		<RateLimit<Runtime>>::put(100 * UNIT);
 		<RateLimitState<Runtime>>::kill();
 
 		// Unstake 100 UNIT + 1.
 		assert_noop!(
-			Staking::unstake(RuntimeOrigin::signed(1), 100 * UNIT + 1, Vec::new()),
+			Staking::unstake(RuntimeOrigin::signed(account_id_of(1)), 100 * UNIT + 1, Vec::new()),
 			<Error<Runtime>>::ExceedRateLimit
 		);
 
 		// Unstake 100 UNIT + 1.
 		assert_noop!(
-			Staking::unstake(RuntimeOrigin::signed(1), 0, vec![3]),
+			Staking::unstake(RuntimeOrigin::signed(account_id_of(1)), 0, vec![3]),
 			<Error<Runtime>>::ExceedRateLimit
 		);
 
 		// Unstake RING(100 UNIT + 1) and deposit(100 UNIT + 1).
 		assert_noop!(
-			Staking::unstake(RuntimeOrigin::signed(1), 100 * UNIT + 1, vec![3]),
+			Staking::unstake(RuntimeOrigin::signed(account_id_of(1)), 100 * UNIT + 1, vec![3]),
 			<Error<Runtime>>::ExceedRateLimit
 		);
 	});
@@ -246,14 +266,14 @@ fn unstake_should_work() {
 #[test]
 fn collect_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert!(Staking::collator_of(1).is_none());
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), UNIT, Vec::new()));
+		assert!(Staking::collator_of(account_id_of(1)).is_none());
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(account_id_of(1)), UNIT, Vec::new()));
 
 		(0..=99).for_each(|c| {
 			let c = Perbill::from_percent(c);
 
-			assert_ok!(Staking::collect(RuntimeOrigin::signed(1), c));
-			assert_eq!(Staking::collator_of(1).unwrap(), c);
+			assert_ok!(Staking::collect(RuntimeOrigin::signed(account_id_of(1)), c));
+			assert_eq!(Staking::collator_of(account_id_of(1)).unwrap(), c);
 		});
 	});
 }
@@ -261,14 +281,17 @@ fn collect_should_work() {
 #[test]
 fn nominate_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), UNIT, Vec::new()));
-		assert_ok!(Staking::collect(RuntimeOrigin::signed(1), Perbill::zero()));
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(account_id_of(1)), UNIT, Vec::new()));
+		assert_ok!(Staking::collect(RuntimeOrigin::signed(account_id_of(1)), Perbill::zero()));
 
-		(2..=10).for_each(|n| {
-			assert!(Staking::nominator_of(n).is_none());
-			assert_ok!(Staking::stake(RuntimeOrigin::signed(n), UNIT, Vec::new()));
-			assert_ok!(Staking::nominate(RuntimeOrigin::signed(n), 1));
-			assert_eq!(Staking::nominator_of(n).unwrap(), 1);
+		(2..=10).for_each(|i| {
+			assert!(Staking::nominator_of(account_id_of(i)).is_none());
+			assert_ok!(Staking::stake(RuntimeOrigin::signed(account_id_of(i)), UNIT, Vec::new()));
+			assert_ok!(Staking::nominate(
+				RuntimeOrigin::signed(account_id_of(i)),
+				account_id_of(1)
+			));
+			assert_eq!(Staking::nominator_of(account_id_of(i)).unwrap(), account_id_of(1));
 		});
 	});
 }
@@ -276,20 +299,23 @@ fn nominate_should_work() {
 #[test]
 fn chill_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(1), UNIT, Vec::new()));
-		assert_ok!(Staking::collect(RuntimeOrigin::signed(1), Perbill::zero()));
-		(2..=10).for_each(|n| {
-			assert_ok!(Staking::stake(RuntimeOrigin::signed(n), UNIT, Vec::new()));
-			assert_ok!(Staking::nominate(RuntimeOrigin::signed(n), 1));
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(account_id_of(1)), UNIT, Vec::new()));
+		assert_ok!(Staking::collect(RuntimeOrigin::signed(account_id_of(1)), Perbill::zero()));
+		(2..=10).for_each(|i| {
+			assert_ok!(Staking::stake(RuntimeOrigin::signed(account_id_of(i)), UNIT, Vec::new()));
+			assert_ok!(Staking::nominate(
+				RuntimeOrigin::signed(account_id_of(i)),
+				account_id_of(1)
+			));
 		});
-		assert!(Staking::collator_of(1).is_some());
-		(2..=10).for_each(|n| assert!(Staking::nominator_of(n).is_some()));
+		assert!(Staking::collator_of(account_id_of(1)).is_some());
+		(2..=10).for_each(|i| assert!(Staking::nominator_of(account_id_of(i)).is_some()));
 
 		(1..=10).for_each(|i| {
-			assert_ok!(Staking::chill(RuntimeOrigin::signed(i)));
+			assert_ok!(Staking::chill(RuntimeOrigin::signed(account_id_of(i))));
 		});
-		assert!(Staking::collator_of(1).is_none());
-		(2..=10).for_each(|n| assert!(Staking::nominator_of(n).is_none()));
+		assert!(Staking::collator_of(account_id_of(1)).is_none());
+		(2..=10).for_each(|i| assert!(Staking::nominator_of(account_id_of(i)).is_none()));
 	});
 }
 
@@ -297,7 +323,7 @@ fn chill_should_work() {
 fn set_collator_count_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_noop!(
-			Staking::set_collator_count(RuntimeOrigin::signed(1), 1),
+			Staking::set_collator_count(RuntimeOrigin::signed(account_id_of(1)), 1),
 			DispatchError::BadOrigin
 		);
 		assert_noop!(
@@ -312,16 +338,33 @@ fn set_collator_count_should_work() {
 fn elect_should_work() {
 	ExtBuilder::default().collator_count(3).build().execute_with(|| {
 		(1..=5).for_each(|i| {
-			assert_ok!(Staking::stake(RuntimeOrigin::signed(i), i as Balance * UNIT, Vec::new()));
-			assert_ok!(Staking::collect(RuntimeOrigin::signed(i), Perbill::zero()));
-			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i));
+			assert_ok!(Staking::stake(
+				RuntimeOrigin::signed(account_id_of(i)),
+				i as Balance * UNIT,
+				Vec::new()
+			));
+			assert_ok!(Staking::collect(RuntimeOrigin::signed(account_id_of(i)), Perbill::zero()));
+			assert_ok!(Staking::nominate(
+				RuntimeOrigin::signed(account_id_of(i)),
+				account_id_of(i)
+			));
 		});
 		(6..=10).for_each(|i| {
-			assert_ok!(Staking::stake(RuntimeOrigin::signed(i), i as Balance * UNIT, Vec::new()));
-			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i - 5));
+			assert_ok!(Staking::stake(
+				RuntimeOrigin::signed(account_id_of(i)),
+				i as Balance * UNIT,
+				Vec::new()
+			));
+			assert_ok!(Staking::nominate(
+				RuntimeOrigin::signed(account_id_of(i)),
+				account_id_of(i - 5)
+			));
 		});
 
-		assert_eq!(Staking::elect().unwrap(), vec![5, 4, 3]);
+		assert_eq!(
+			Staking::elect().unwrap(),
+			vec![account_id_of(5), account_id_of(4), account_id_of(3)]
+		);
 	});
 }
 
@@ -329,29 +372,48 @@ fn elect_should_work() {
 fn payout_should_work() {
 	ExtBuilder::default().collator_count(5).build().execute_with(|| {
 		(1..=5).for_each(|i| {
-			assert_ok!(Staking::stake(RuntimeOrigin::signed(i), i as Balance * UNIT, Vec::new()));
-			assert_ok!(Staking::collect(RuntimeOrigin::signed(i), Perbill::from_percent(i * 10)));
-			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i));
+			assert_ok!(Staking::stake(
+				RuntimeOrigin::signed(account_id_of(i)),
+				i as Balance * UNIT,
+				Vec::new()
+			));
+			assert_ok!(Staking::collect(
+				RuntimeOrigin::signed(account_id_of(i)),
+				Perbill::from_percent(i as u32 * 10)
+			));
+			assert_ok!(Staking::nominate(
+				RuntimeOrigin::signed(account_id_of(i)),
+				account_id_of(i)
+			));
 		});
 		(6..=10).for_each(|i| {
 			assert_ok!(Staking::stake(
-				RuntimeOrigin::signed(i),
+				RuntimeOrigin::signed(account_id_of(i)),
 				(11 - i as Balance) * UNIT,
 				Vec::new()
 			));
-			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i - 5));
+			assert_ok!(Staking::nominate(
+				RuntimeOrigin::signed(account_id_of(i)),
+				account_id_of(i - 5)
+			));
 		});
 		new_session();
 		(1..=10).for_each(|i| {
 			assert_eq!(
-				Balances::free_balance(i),
+				Balances::free_balance(account_id_of(i)),
 				(1_000 - if i < 6 { i } else { 11 - i }) as Balance * UNIT
 			)
 		});
 
 		let session_duration = Duration::new(12 * 600, 0).as_millis();
 		Efflux::time(session_duration - <Period as Get<u64>>::get() as Moment);
-		Staking::note_authors(&[1, 2, 3, 4, 5]);
+		Staking::note_authors(&[
+			account_id_of(1),
+			account_id_of(2),
+			account_id_of(3),
+			account_id_of(4),
+			account_id_of(5),
+		]);
 		new_session();
 		new_session();
 		payout();
@@ -371,7 +433,7 @@ fn payout_should_work() {
 		assert_eq!(
 			rewards.as_slice(),
 			(1..=10)
-				.map(|i| Balances::free_balance(i)
+				.map(|i| Balances::free_balance(account_id_of(i))
 					- (1_000 - if i < 6 { i } else { 11 - i }) as Balance * UNIT)
 				.collect::<Vec<_>>()
 		);
@@ -387,23 +449,36 @@ fn payout_should_work() {
 
 	ExtBuilder::default().inflation_type(1).collator_count(5).build().execute_with(|| {
 		(1..=5).for_each(|i| {
-			assert_ok!(Staking::stake(RuntimeOrigin::signed(i), i as Balance * UNIT, Vec::new()));
-			assert_ok!(Staking::collect(RuntimeOrigin::signed(i), Perbill::from_percent(i * 10)));
-			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i));
+			assert_ok!(Staking::stake(
+				RuntimeOrigin::signed(account_id_of(i)),
+				i as Balance * UNIT,
+				Vec::new()
+			));
+			assert_ok!(Staking::collect(
+				RuntimeOrigin::signed(account_id_of(i)),
+				Perbill::from_percent(i as u32 * 10)
+			));
+			assert_ok!(Staking::nominate(
+				RuntimeOrigin::signed(account_id_of(i)),
+				account_id_of(i)
+			));
 		});
 		(6..=10).for_each(|i| {
 			assert_ok!(Staking::stake(
-				RuntimeOrigin::signed(i),
+				RuntimeOrigin::signed(account_id_of(i)),
 				(11 - i as Balance) * UNIT,
 				Vec::new()
 			));
-			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i - 5));
+			assert_ok!(Staking::nominate(
+				RuntimeOrigin::signed(account_id_of(i)),
+				account_id_of(i - 5)
+			));
 		});
 		new_session();
 		new_session();
 		(1..=10).for_each(|i| {
 			assert_eq!(
-				Balances::free_balance(i),
+				Balances::free_balance(account_id_of(i)),
 				(1_000 - if i < 6 { i } else { 11 - i }) as Balance * UNIT
 			)
 		});
@@ -411,7 +486,13 @@ fn payout_should_work() {
 		let total_issuance = Balances::total_issuance();
 		let session_duration = Duration::new(12 * 600, 0).as_millis();
 		Efflux::time(session_duration - <Period as Get<u64>>::get() as Moment);
-		Staking::note_authors(&[1, 2, 3, 4, 5]);
+		Staking::note_authors(&[
+			account_id_of(1),
+			account_id_of(2),
+			account_id_of(3),
+			account_id_of(4),
+			account_id_of(5),
+		]);
 		new_session();
 		payout();
 
@@ -430,7 +511,7 @@ fn payout_should_work() {
 		assert_eq!(
 			rewards.as_slice(),
 			(1..=10)
-				.map(|i| Balances::free_balance(i)
+				.map(|i| Balances::free_balance(account_id_of(i))
 					- (1_000 - if i < 6 { i } else { 11 - i }) as Balance * UNIT)
 				.collect::<Vec<_>>()
 		);
@@ -442,7 +523,7 @@ fn payout_should_work() {
 			Default::default(),
 			false
 		));
-		Staking::note_authors(&[1]);
+		Staking::note_authors(&[account_id_of(1)]);
 		System::reset_events();
 		new_session();
 		payout();
@@ -456,9 +537,15 @@ fn payout_should_work() {
 				})
 				.collect::<Vec<_>>(),
 			vec![
-				Event::Unpaid { who: 0, amount: 5000000000000000000000 },
-				Event::Unpaid { who: 6, amount: 3749999998500000000000 },
-				Event::Unpaid { who: 1, amount: 1249999997000000000000 }
+				// Pay to staking failed.
+				Event::Unpaid { who: account_id(), amount: 5000000000000000000000 },
+				// Pay to distribution contract failed.
+				// The contract address is the same as staking pallet account in unit test.
+				Event::Unpaid { who: account_id(), amount: 5000000000000000000000 },
+				// Pay to collator failed.
+				Event::Unpaid { who: account_id_of(6), amount: 3749999998500000000000 },
+				// Pay to nominator failed.
+				Event::Unpaid { who: account_id_of(1), amount: 1249999997000000000000 }
 			]
 		);
 	});
@@ -468,27 +555,40 @@ fn payout_should_work() {
 fn auto_payout_should_work() {
 	ExtBuilder::default().collator_count(2).build().execute_with(|| {
 		(1..=2).for_each(|i| {
-			assert_ok!(Staking::stake(RuntimeOrigin::signed(i), i as Balance * UNIT, Vec::new()));
-			assert_ok!(Staking::collect(RuntimeOrigin::signed(i), Perbill::from_percent(i * 10)));
-			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i));
+			assert_ok!(Staking::stake(
+				RuntimeOrigin::signed(account_id_of(i)),
+				i as Balance * UNIT,
+				Vec::new()
+			));
+			assert_ok!(Staking::collect(
+				RuntimeOrigin::signed(account_id_of(i)),
+				Perbill::from_percent(i as u32 * 10)
+			));
+			assert_ok!(Staking::nominate(
+				RuntimeOrigin::signed(account_id_of(i)),
+				account_id_of(i)
+			));
 		});
 		(3..=4).for_each(|i| {
 			assert_ok!(Staking::stake(
-				RuntimeOrigin::signed(i),
+				RuntimeOrigin::signed(account_id_of(i)),
 				(5 - i as Balance) * UNIT,
 				Vec::new()
 			));
-			assert_ok!(Staking::nominate(RuntimeOrigin::signed(i), i - 2));
+			assert_ok!(Staking::nominate(
+				RuntimeOrigin::signed(account_id_of(i)),
+				account_id_of(i - 2)
+			));
 		});
 		new_session();
 		new_session();
 
 		Efflux::time(<Period as Get<u64>>::get() as Moment);
-		Staking::note_authors(&[1, 2]);
+		Staking::note_authors(&[account_id_of(1), account_id_of(2)]);
 		new_session();
 		(1..=4).for_each(|i| {
 			assert_eq!(
-				Balances::free_balance(i),
+				Balances::free_balance(account_id_of(i)),
 				(1_000 - if i < 3 { i } else { 5 - i }) as Balance * UNIT
 			)
 		});
@@ -496,10 +596,10 @@ fn auto_payout_should_work() {
 		Efflux::block(1);
 		assert_eq!(
 			[
-				Balances::free_balance(1),
-				Balances::free_balance(2),
-				Balances::free_balance(3),
-				Balances::free_balance(4),
+				Balances::free_balance(account_id_of(1)),
+				Balances::free_balance(account_id_of(2)),
+				Balances::free_balance(account_id_of(3)),
+				Balances::free_balance(account_id_of(4)),
 			],
 			[
 				999000607164541135398,
@@ -512,10 +612,10 @@ fn auto_payout_should_work() {
 		Efflux::block(1);
 		assert_eq!(
 			[
-				Balances::free_balance(1),
-				Balances::free_balance(2),
-				Balances::free_balance(3),
-				Balances::free_balance(4),
+				Balances::free_balance(account_id_of(1)),
+				Balances::free_balance(account_id_of(2)),
+				Balances::free_balance(account_id_of(3)),
+				Balances::free_balance(account_id_of(4)),
 			],
 			[
 				999000607164541135398,
@@ -528,10 +628,10 @@ fn auto_payout_should_work() {
 		Efflux::block(1);
 		assert_eq!(
 			[
-				Balances::free_balance(1),
-				Balances::free_balance(2),
-				Balances::free_balance(3),
-				Balances::free_balance(4),
+				Balances::free_balance(account_id_of(1)),
+				Balances::free_balance(account_id_of(2)),
+				Balances::free_balance(account_id_of(3)),
+				Balances::free_balance(account_id_of(4)),
 			],
 			[
 				999000607164541135398,
@@ -551,21 +651,21 @@ fn on_new_session_should_work() {
 				<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()
 			)
 			.unwrap(),
-			[1, 2]
+			[account_id_of(1), account_id_of(2)]
 		);
 		assert_eq_uvec!(
 			darwinia_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
-			[1, 2]
+			[account_id_of(1), account_id_of(2)]
 		);
 		assert_eq_uvec!(
 			darwinia_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
 				.unwrap(),
-			[1, 2]
+			[account_id_of(1), account_id_of(2)]
 		);
 
-		assert_ok!(Staking::collect(RuntimeOrigin::signed(3), Perbill::zero()));
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(3), 2 * UNIT, Vec::new()));
-		assert_ok!(Staking::nominate(RuntimeOrigin::signed(3), 3));
+		assert_ok!(Staking::collect(RuntimeOrigin::signed(account_id_of(3)), Perbill::zero()));
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(account_id_of(3)), 2 * UNIT, Vec::new()));
+		assert_ok!(Staking::nominate(RuntimeOrigin::signed(account_id_of(3)), account_id_of(3)));
 		Staking::note_authors(&Session::validators());
 
 		new_session();
@@ -574,22 +674,22 @@ fn on_new_session_should_work() {
 				<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()
 			)
 			.unwrap(),
-			[1, 2]
+			[account_id_of(1), account_id_of(2)]
 		);
 		assert_eq_uvec!(
 			darwinia_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
-			[1, 2]
+			[account_id_of(1), account_id_of(2)]
 		);
 		assert_eq_uvec!(
 			darwinia_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
 				.unwrap(),
-			[1, 3]
+			[account_id_of(1), account_id_of(3)]
 		);
 
-		assert_ok!(Staking::chill(RuntimeOrigin::signed(3)));
-		assert_ok!(Staking::collect(RuntimeOrigin::signed(4), Perbill::zero()));
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(4), 2 * UNIT, Vec::new()));
-		assert_ok!(Staking::nominate(RuntimeOrigin::signed(4), 4));
+		assert_ok!(Staking::chill(RuntimeOrigin::signed(account_id_of(3))));
+		assert_ok!(Staking::collect(RuntimeOrigin::signed(account_id_of(4)), Perbill::zero()));
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(account_id_of(4)), 2 * UNIT, Vec::new()));
+		assert_ok!(Staking::nominate(RuntimeOrigin::signed(account_id_of(4)), account_id_of(4)));
 		Staking::note_authors(&Session::validators());
 
 		new_session();
@@ -598,22 +698,22 @@ fn on_new_session_should_work() {
 				<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()
 			)
 			.unwrap(),
-			[1, 2]
+			[account_id_of(1), account_id_of(2)]
 		);
 		assert_eq_uvec!(
 			darwinia_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
-			[1, 3]
+			[account_id_of(1), account_id_of(3)]
 		);
 		assert_eq_uvec!(
 			darwinia_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
 				.unwrap(),
-			[1, 4]
+			[account_id_of(1), account_id_of(4)]
 		);
 
-		assert_ok!(Staking::chill(RuntimeOrigin::signed(4)));
-		assert_ok!(Staking::collect(RuntimeOrigin::signed(5), Perbill::zero()));
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(5), 2 * UNIT, Vec::new()));
-		assert_ok!(Staking::nominate(RuntimeOrigin::signed(5), 5));
+		assert_ok!(Staking::chill(RuntimeOrigin::signed(account_id_of(4))));
+		assert_ok!(Staking::collect(RuntimeOrigin::signed(account_id_of(5)), Perbill::zero()));
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(account_id_of(5)), 2 * UNIT, Vec::new()));
+		assert_ok!(Staking::nominate(RuntimeOrigin::signed(account_id_of(5)), account_id_of(5)));
 		Staking::note_authors(&Session::validators());
 
 		new_session();
@@ -622,16 +722,16 @@ fn on_new_session_should_work() {
 				<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()
 			)
 			.unwrap(),
-			[1, 3]
+			[account_id_of(1), account_id_of(3)]
 		);
 		assert_eq_uvec!(
 			darwinia_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
-			[1, 4]
+			[account_id_of(1), account_id_of(4)]
 		);
 		assert_eq_uvec!(
 			darwinia_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
 				.unwrap(),
-			[1, 5]
+			[account_id_of(1), account_id_of(5)]
 		);
 	});
 }

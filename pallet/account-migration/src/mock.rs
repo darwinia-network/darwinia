@@ -136,11 +136,12 @@ impl darwinia_deposit::Config for Runtime {
 impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
+	type ElectionResultProvider = ();
 	type IssuingManager = ();
 	type Kton = Dummy;
-	type KtonRewardDistributionContract = ();
 	type MaxDeposits = ();
 	type RewardToKton = ();
+	type RewardToRing = ();
 	type Ring = Dummy;
 	type RuntimeEvent = RuntimeEvent;
 	type ShouldEndSession = ();
