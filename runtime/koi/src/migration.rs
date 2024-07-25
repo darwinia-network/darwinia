@@ -45,6 +45,12 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	frame_support::weights::Weight::zero()
-	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(10, 10)
+	if let Ok(addr) =
+		array_bytes::hex_n_into::<_, AccountId, 20>("0xf1b4f3D438eE2B363C5ba1641A498709ff5780bA")
+	{
+		<darwinia_staking::KtonRewardDistributionContract<Runtime>>::put(addr);
+	}
+
+	// frame_support::weights::Weight::zero()
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 1)
 }
