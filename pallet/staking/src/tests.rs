@@ -518,7 +518,6 @@ fn payout_should_work() {
 
 		assert_eq!(Balances::total_issuance(), total_issuance);
 
-		dbg!("================");
 		assert_ok!(Balances::transfer_all(
 			RuntimeOrigin::signed(Treasury::account_id()),
 			Default::default(),
