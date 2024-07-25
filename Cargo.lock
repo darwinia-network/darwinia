@@ -2864,6 +2864,7 @@ version = "6.6.3"
 dependencies = [
  "darwinia-deposit",
  "darwinia-staking",
+ "dc-primitives",
  "fp-evm",
  "frame-support",
  "frame-system",
@@ -3008,7 +3009,7 @@ dependencies = [
  "darwinia-ethtx-forwarder",
  "darwinia-staking-traits",
  "dc-inflation",
- "dc-types",
+ "dc-primitives",
  "ethabi",
  "ethereum",
  "frame-benchmarking",
