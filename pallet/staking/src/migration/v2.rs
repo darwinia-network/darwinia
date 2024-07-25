@@ -2,7 +2,7 @@
 use core::marker::PhantomData;
 // darwinia
 use crate::*;
-use dc_types::UNIT;
+use dc_primitives::UNIT;
 // polkadot-sdk
 use frame_support::traits::OnRuntimeUpgrade;
 #[cfg(feature = "try-runtime")]

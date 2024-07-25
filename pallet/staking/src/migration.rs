@@ -19,7 +19,6 @@ pub fn migrate_staking_reward_distribution_contract<T>(
 ) where
 	T: Config + darwinia_ethtx_forwarder::Config,
 	T::RuntimeOrigin: Into<Result<ForwardEthOrigin, T::RuntimeOrigin>> + From<ForwardEthOrigin>,
-	<T as frame_system::Config>::AccountId: Into<H160>,
 {
 	// Treasury pallet account.
 	let sender =

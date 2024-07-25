@@ -15,9 +15,9 @@ log        = { workspace = true }
 scale-info = { workspace = true }
 
 # darwinia
-darwinia-ethtx-forwarder  = { workspace = true }
-darwinia-staking-traits   = { workspace = true }
-dc-types                  = { workspace = true }
+darwinia-ethtx-forwarder = { workspace = true }
+darwinia-staking-traits  = { workspace = true }
+dc-primitives            = { workspace = true }
 # darwinia optional
 darwinia-deposit = { workspace = true, optional = true }
 
@@ -61,6 +61,7 @@ std = [
 	# darwinia
 	"darwinia-ethtx-forwarder/std",
 	"darwinia-staking-traits/std",
+	"dc-primitives/std",
 	# darwinia optional
 	"darwinia-deposit?/std",
 

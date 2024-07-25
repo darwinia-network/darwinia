@@ -19,16 +19,16 @@
 pub use crate as darwinia_staking;
 
 // darwinia
-use dc_types::{Balance, Moment, UNIT};
+use dc_primitives::{AccountId, Balance, Moment, UNIT};
 // polkadot-sdk
 use frame_support::{
 	derive_impl,
 	traits::{Currency, OnInitialize},
 };
+use sp_core::H160;
 use sp_io::TestExternalities;
 use sp_runtime::{BuildStorage, RuntimeAppPublic};
 
-pub type AccountId = u32;
 pub type BlockNumber = frame_system::pallet_prelude::BlockNumberFor<Runtime>;
 
 #[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
@@ -105,7 +105,7 @@ impl pallet_session::SessionHandler<AccountId> for SessionHandler {
 
 	fn on_before_session_ending() {}
 
-	fn on_disabled(_: AccountId) {}
+	fn on_disabled(_: u32) {}
 }
 impl sp_runtime::BoundToRuntimeAppPublic for SessionHandler {
 	type Public = sp_runtime::testing::UintAuthorityId;
@@ -344,7 +344,7 @@ impl ExtBuilder {
 
 		pallet_balances::GenesisConfig::<Runtime> {
 			balances: (1..=10)
-				.map(|i| (i, 1_000 * UNIT))
+				.map(|i| (account_id_of(i), 1_000 * UNIT))
 				.chain([(Treasury::account_id(), 1_000_000 * UNIT)])
 				.collect(),
 		}
@@ -354,7 +354,7 @@ impl ExtBuilder {
 			rate_limit: 100 * UNIT,
 			collator_count: self.collator_count,
 			collators: if self.genesis_collator {
-				(1..=self.collator_count).map(|i| (i, UNIT)).collect()
+				(1..=self.collator_count as u64).map(|i| (account_id_of(i), UNIT)).collect()
 			} else {
 				Default::default()
 			},
@@ -364,8 +364,8 @@ impl ExtBuilder {
 		.unwrap();
 		if self.genesis_collator {
 			pallet_session::GenesisConfig::<Runtime> {
-				keys: (1..=self.collator_count)
-					.map(|i| (i, i, SessionKeys { uint: (i as u64).into() }))
+				keys: (1..=self.collator_count as u64)
+					.map(|i| (account_id_of(i), account_id_of(i), SessionKeys { uint: i.into() }))
 					.collect(),
 			}
 			.assimilate_storage(&mut storage)
@@ -383,6 +383,10 @@ impl Default for ExtBuilder {
 	fn default() -> Self {
 		Self { collator_count: 1, genesis_collator: false }
 	}
+}
+
+pub fn account_id_of(i: u64) -> AccountId {
+	H160::from_low_u64_le(i).into()
 }
 
 pub fn initialize_block(number: BlockNumber) {

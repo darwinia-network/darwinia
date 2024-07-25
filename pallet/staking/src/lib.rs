@@ -51,7 +51,7 @@ use ethabi::{Function, Param, ParamType, StateMutability};
 use ethereum::TransactionAction;
 // darwinia
 use darwinia_ethtx_forwarder::{ForwardEthOrigin, ForwardRequest, TxType};
-use dc_types::{Balance, Moment};
+use dc_primitives::{AccountId, Balance, Moment};
 // polkadot-sdk
 use frame_support::{
 	pallet_prelude::*, traits::Currency, DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound,
@@ -105,7 +105,7 @@ pub mod pallet {
 	pub trait DepositConfig {}
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config + DepositConfig {
+	pub trait Config: frame_system::Config<AccountId = AccountId> + DepositConfig {
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
@@ -1006,7 +1006,6 @@ impl<T> KtonStakerNotification for KtonStakerNotifier<T>
 where
 	T: Config + darwinia_ethtx_forwarder::Config,
 	T::RuntimeOrigin: Into<Result<ForwardEthOrigin, T::RuntimeOrigin>> + From<ForwardEthOrigin>,
-	<T as frame_system::Config>::AccountId: Into<H160>,
 {
 	fn notify(amount: Balance) {
 		let krd_contract = <KtonRewardDistributionContract<T>>::get().into();
