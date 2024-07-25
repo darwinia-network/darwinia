@@ -43,13 +43,15 @@ fn selectors() {
 
 #[test]
 fn stake_unstake_restake() {
-	let alice: H160 = Alice.into();
+	let alice = Alice.addr();
+	let precompile = Precompile.addr();
+
 	ExtBuilder::default().with_balances(vec![(alice, 300)]).build().execute_with(|| {
 		// stake
 		precompiles()
 			.prepare_test(
 				alice,
-				Precompile,
+				precompile,
 				PCall::stake { ring_amount: 200.into(), deposits: vec![] },
 			)
 			.execute_returns(true);
@@ -59,7 +61,7 @@ fn stake_unstake_restake() {
 		precompiles()
 			.prepare_test(
 				alice,
-				Precompile,
+				precompile,
 				PCall::unstake { ring_amount: 200.into(), deposits: vec![] },
 			)
 			.execute_returns(true);
@@ -69,22 +71,24 @@ fn stake_unstake_restake() {
 
 #[test]
 fn nominate() {
-	let alice: H160 = Alice.into();
-	let bob: H160 = Bob.into();
+	let alice = Alice.addr();
+	let bob = Bob.addr();
+	let precompile = Precompile.addr();
+
 	ExtBuilder::default().with_balances(vec![(alice, 300), (bob, 300)]).build().execute_with(
 		|| {
 			// alice stake first as collator
 			precompiles()
 				.prepare_test(
 					alice,
-					Precompile,
+					precompile,
 					PCall::stake { ring_amount: 200.into(), deposits: vec![] },
 				)
 				.execute_returns(true);
 
 			// check the collator commission
 			precompiles()
-				.prepare_test(alice, Precompile, PCall::collect { commission: 30 })
+				.prepare_test(alice, precompile, PCall::collect { commission: 30 })
 				.execute_returns(true);
 			assert_eq!(Staking::collator_of(alice).unwrap(), Perbill::from_percent(30));
 
@@ -92,23 +96,23 @@ fn nominate() {
 			precompiles()
 				.prepare_test(
 					bob,
-					Precompile,
+					precompile,
 					PCall::stake { ring_amount: 200.into(), deposits: vec![] },
 				)
 				.execute_returns(true);
 
 			// check nominate result
 			precompiles()
-				.prepare_test(bob, Precompile, PCall::nominate { target: alice.into() })
+				.prepare_test(bob, precompile, PCall::nominate { target: H160::from(alice).into() })
 				.execute_returns(true);
 			assert_eq!(Staking::nominator_of(bob).unwrap(), alice);
 
 			// check alice(collator) chill
-			precompiles().prepare_test(alice, Precompile, PCall::chill {}).execute_returns(true);
+			precompiles().prepare_test(alice, precompile, PCall::chill {}).execute_returns(true);
 			assert!(Staking::collator_of(alice).is_none());
 
 			// check bob(nominator) chill
-			precompiles().prepare_test(bob, Precompile, PCall::chill {}).execute_returns(true);
+			precompiles().prepare_test(bob, precompile, PCall::chill {}).execute_returns(true);
 			assert!(Staking::nominator_of(bob).is_none());
 		},
 	);
@@ -116,10 +120,12 @@ fn nominate() {
 
 #[test]
 fn payout() {
-	let alice: H160 = Alice.into();
+	let alice = Alice.addr();
+	let precompile = Precompile.addr();
+
 	ExtBuilder::default().build().execute_with(|| {
 		precompiles()
-			.prepare_test(alice, Precompile, PCall::payout { who: alice.into() })
+			.prepare_test(alice, precompile, PCall::payout { who: H160::from(alice).into() })
 			.execute_reverts(|out| {
 				out == b"Dispatched call failed with error: Module(ModuleError { index: 5, error: [6, 0, 0, 0], message: Some(\"NoReward\") })"
 			});

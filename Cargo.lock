@@ -2864,6 +2864,7 @@ version = "6.6.3"
 dependencies = [
  "darwinia-deposit",
  "darwinia-staking",
+ "dc-primitives",
  "fp-evm",
  "frame-support",
  "frame-system",
