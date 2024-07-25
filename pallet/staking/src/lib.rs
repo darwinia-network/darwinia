@@ -47,7 +47,7 @@ pub use darwinia_staking_traits::*;
 
 // crates.io
 use codec::FullCodec;
-use ethabi::{Function, Param, ParamType, StateMutability};
+use ethabi::{Function, Param, ParamType, StateMutability, Token};
 use ethereum::TransactionAction;
 // darwinia
 use darwinia_ethtx_forwarder::{ForwardEthOrigin, ForwardRequest, TxType};
@@ -138,7 +138,7 @@ pub mod pallet {
 		#[pallet::constant]
 		type MaxDeposits: Get<u32>;
 
-		/// Address of the KTON reward distribution contract.
+		/// The address of KTON reward distribution contract.
 		#[pallet::constant]
 		type KtonRewardDistributionContract: Get<Self::AccountId>;
 	}
@@ -971,31 +971,26 @@ where
 	PalletId(*b"da/staki").into_account_truncating()
 }
 
-/// The address of the `StakingRewardDistribution` contract.
-/// 0x0DBFbb1Ab6e42F89661B4f98d5d0acdBE21d1ffC.
+/// The address of the RewardsDistribution.
+/// 0x000000000Ae5DB7BDAf8D071e680452e33d91Dd5.
 pub struct KtonRewardDistributionContract;
 impl<T> Get<T> for KtonRewardDistributionContract
 where
 	T: From<[u8; 20]>,
 {
 	fn get() -> T {
-		[
-			13, 191, 187, 26, 182, 228, 47, 137, 102, 27, 79, 152, 213, 208, 172, 219, 226, 29, 31,
-			252,
-		]
-		.into()
+		[0, 0, 0, 0, 10, 229, 219, 123, 218, 248, 208, 113, 230, 128, 69, 46, 51, 217, 29, 213]
+			.into()
 	}
 }
 
-/// `StakingRewardDistribution` contact notification interface.
+/// KTON staker contact notification interface.
 pub trait KtonStakerNotification {
 	/// Notify the KTON staker contract.
 	fn notify(_: Balance) {}
 }
 impl KtonStakerNotification for () {}
-/// `StakingRewardDistribution` contact notifier.
-///
-/// https://github.com/darwinia-network/KtonDAO/blob/2de20674f2ef90b749ade746d0768c7bda356402/src/staking/KtonDAOVault.sol#L40.
+/// KTON staker contact notifier.
 pub struct KtonStakerNotifier<T>(PhantomData<T>);
 impl<T> KtonStakerNotification for KtonStakerNotifier<T>
 where
@@ -1004,11 +999,24 @@ where
 	<T as frame_system::Config>::AccountId: Into<H160>,
 {
 	fn notify(amount: Balance) {
-		let krd_contract = T::KtonRewardDistributionContract::get().into();
+		// KTONStakingRewards
+		// 0x000000000419683a1a03AbC21FC9da25fd2B4dD7
+		let staking_reward =
+			H160([0, 0, 0, 0, 4, 25, 104, 58, 26, 3, 171, 194, 31, 201, 218, 37, 253, 43, 77, 215]);
+
+		let reward_distr = T::KtonRewardDistributionContract::get().into();
+		// https://github.com/darwinia-network/kton-staker/blob/175f0ec131d4aef3bf64cfb2fce1d262e7ce9140/src/RewardsDistribution.sol#L11
 		#[allow(deprecated)]
 		let function = Function {
 			name: "distributeRewards".into(),
-			inputs: Vec::new(),
+			inputs: vec![
+				Param {
+					name: "ktonStakingRewards".into(),
+					kind: ParamType::Address,
+					internal_type: None,
+				},
+				Param { name: "reward".into(), kind: ParamType::Uint(256), internal_type: None },
+			],
 			outputs: vec![Param {
 				name: "success or not".into(),
 				kind: ParamType::Bool,
@@ -1017,31 +1025,26 @@ where
 			constant: None,
 			state_mutability: StateMutability::Payable,
 		};
-		let input = match function.encode_input(&[]) {
-			Ok(i) => i,
-			Err(e) => {
-				log::error!("failed to encode input due to {e:?}");
 
-				return;
-			},
-		};
-		let req = ForwardRequest {
+		let request = ForwardRequest {
 			tx_type: TxType::LegacyTransaction,
-			action: TransactionAction::Call(krd_contract),
-			value: U256::from(amount),
-			input,
+			action: TransactionAction::Call(reward_distr),
+			value: U256::zero(),
+			input: function
+				.encode_input(&[Token::Address(staking_reward), Token::Uint(amount.into())])
+				.unwrap_or_default(),
 			gas_limit: U256::from(1_000_000),
 		};
-		// Treasury pallet account.
+		// Treasury account.
 		let sender = H160([
 			109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0,
 		]);
 
 		if let Err(e) = <darwinia_ethtx_forwarder::Pallet<T>>::forward_transact(
 			ForwardEthOrigin::ForwardEth(sender).into(),
-			req,
+			request,
 		) {
-			log::error!("failed to call `distributeRewards` on `KtonRewardDistributionContract` contract due to {e:?}");
+			log::error!("[pallet::staking] failed to notify KTON staker contract due to {e:?}");
 		}
 	}
 }
