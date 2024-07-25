@@ -19,7 +19,7 @@
 // darwinia
 use crate::*;
 use darwinia_deposit::SimpleAsset;
-use dc_types::UNIT;
+use dc_primitives::UNIT;
 // polkadot-sdk
 use frame_benchmarking::v2;
 use frame_system::RawOrigin;

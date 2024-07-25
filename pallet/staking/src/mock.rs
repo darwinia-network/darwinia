@@ -126,12 +126,27 @@ frame_support::parameter_types! {
 	pub const TreasuryPalletId: frame_support::PalletId = frame_support::PalletId(*b"da/trsry");
 	pub TreasuryAccount: AccountId = Treasury::account_id();
 }
+#[cfg(feature = "runtime-benchmarks")]
+pub struct DummyBenchmarkHelper;
+#[cfg(feature = "runtime-benchmarks")]
+impl<AssetKind> pallet_treasury::ArgumentsFactory<AssetKind, AccountId> for DummyBenchmarkHelper
+where
+	AssetKind: Default,
+{
+	fn create_asset_kind(_: u32) -> AssetKind {
+		Default::default()
+	}
+
+	fn create_beneficiary(_: [u8; 32]) -> AccountId {
+		Default::default()
+	}
+}
 impl pallet_treasury::Config for Runtime {
 	type ApproveOrigin = frame_system::EnsureRoot<AccountId>;
 	type AssetKind = ();
 	type BalanceConverter = frame_support::traits::tokens::UnityAssetBalanceConversion;
 	#[cfg(feature = "runtime-benchmarks")]
-	type BenchmarkHelper = ();
+	type BenchmarkHelper = DummyBenchmarkHelper;
 	type Beneficiary = AccountId;
 	type BeneficiaryLookup = Self::Lookup;
 	type Burn = ();
