@@ -47,7 +47,6 @@ pallet-evm-precompile-simple   = { workspace = true }
 # moonbeam
 moonbeam-rpc-primitives-debug           = { workspace = true }
 pallet-asset-manager                    = { workspace = true }
-pallet-ethereum-xcm                     = { workspace = true }
 pallet-evm-precompile-conviction-voting = { workspace = true }
 precompile-utils                        = { workspace = true }
 xcm-primitives                          = { workspace = true }
@@ -163,7 +162,6 @@ std = [
 	# moonbeam
 	"moonbeam-rpc-primitives-debug/std",
 	"pallet-asset-manager/std",
-	"pallet-ethereum-xcm/std",
 	"pallet-evm-precompile-conviction-voting/std",
 	"precompile-utils/std",
 	"xcm-primitives/std",
@@ -251,7 +249,6 @@ runtime-benchmarks = [
 
 	# moonbeam
 	"pallet-asset-manager/runtime-benchmarks",
-	"pallet-ethereum-xcm/runtime-benchmarks",
 	"xcm-primitives/runtime-benchmarks",
 
 	# open-web3-stack
@@ -300,7 +297,6 @@ try-runtime = [
 
 	# moonbeam
 	"pallet-asset-manager/try-runtime",
-	"pallet-ethereum-xcm/try-runtime",
 
 	# open-web3-stack
 	"orml-xtokens/try-runtime",

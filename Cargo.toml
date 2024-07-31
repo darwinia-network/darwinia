@@ -80,7 +80,6 @@ moonbeam-rpc-debug                      = { git = "https://github.com/darwinia-n
 moonbeam-rpc-primitives-debug           = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v1.7.2", default-features = false }
 moonbeam-rpc-trace                      = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v1.7.2" }
 pallet-asset-manager                    = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v1.7.2", default-features = false }
-pallet-ethereum-xcm                     = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v1.7.2", default-features = false }
 pallet-evm-precompile-conviction-voting = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v1.7.2", default-features = false }
 xcm-primitives                          = { git = "https://github.com/darwinia-network/moonbeam", branch = "polkadot-v1.7.2", default-features = false }
 
