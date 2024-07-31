@@ -45,17 +45,6 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	// core
-	use core::str::FromStr;
-
-	const REVERT_BYTECODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xFD];
-	// DOT equals to the 0x405 in the pallet-evm runtime.
-	const ADDRESS: &str = "0x0000000000000000000000000000000000000405";
-
-	if let Ok(addr) = H160::from_str(ADDRESS) {
-		EVM::create_account(addr, REVERT_BYTECODE.to_vec());
-	}
-
 	let _ = migration::clear_storage_prefix(
 		b"BridgeKusamaGrandpa",
 		b"ImportedHeaders",
@@ -63,42 +52,15 @@ fn migrate() -> frame_support::weights::Weight {
 		Some(100),
 		None,
 	);
-	let mut w = 103;
+	let mut n = 100;
 
-	w += migration_helper::PalletCleaner {
-		name: b"Council",
-		values: &[b"Proposals", b"ProposalCount", b"Members", b"Prime"],
-		maps: &[b"ProposalOf", b"Voting"],
+	n += migration_helper::PalletCleaner {
+		name: b"EthereumXcm",
+		values: &[b"Nonce", b"EthereumXcmSuspended"],
+		maps: &[],
 	}
-	.remove_all();
-	w += migration_helper::PalletCleaner {
-		name: b"Democracy",
-		values: &[
-			b"PublicPropCount",
-			b"PublicProps",
-			b"ReferendumCount",
-			b"LowestUnbaked",
-			b"LastTabledWasExternal",
-			b"NextExternal",
-		],
-		maps: &[
-			b"DepositOf",
-			b"ReferendumInfoOf",
-			b"VotingOf",
-			b"Blacklist",
-			b"Cancellations",
-			b"MetadataOf",
-		],
-	}
-	.remove_all();
-	w += migration_helper::PalletCleaner {
-		name: b"Identity",
-		values: &[b"Registrars"],
-		maps: &[b"SuperOf", b"SubsOf", b"Registrars"],
-	}
-	.remove_all();
-	w += migration_helper::migrate_identity::<pallet_balances::Pallet<Runtime>>();
+	.remove_storage_values();
 
 	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(2, w)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, n)
 }

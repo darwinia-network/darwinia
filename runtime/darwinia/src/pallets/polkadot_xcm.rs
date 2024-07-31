@@ -161,34 +161,6 @@ pub type XcmRouter = xcm_builder::WithUniqueTopic<(
 	XcmpQueue,
 )>;
 
-pub struct XcmCallDispatcher;
-impl xcm_executor::traits::CallDispatcher<RuntimeCall> for XcmCallDispatcher {
-	fn dispatch(
-		call: RuntimeCall,
-		origin: RuntimeOrigin,
-	) -> Result<
-		sp_runtime::traits::PostDispatchInfoOf<RuntimeCall>,
-		sp_runtime::DispatchErrorWithPostInfo<sp_runtime::traits::PostDispatchInfoOf<RuntimeCall>>,
-	> {
-		if let Ok(raw_origin) =
-			TryInto::<frame_system::RawOrigin<AccountId>>::try_into(origin.clone().caller)
-		{
-			if let (
-				RuntimeCall::EthereumXcm(pallet_ethereum_xcm::Call::transact { .. }),
-				frame_system::RawOrigin::Signed(account_id),
-			) = (call.clone(), raw_origin)
-			{
-				return RuntimeCall::dispatch(
-					call,
-					pallet_ethereum_xcm::Origin::XcmEthereumTransaction(account_id.into()).into(),
-				);
-			}
-		}
-
-		RuntimeCall::dispatch(call, origin)
-	}
-}
-
 pub struct XcmExecutorConfig;
 impl xcm_executor::Config for XcmExecutorConfig {
 	type Aliasers = frame_support::traits::Nothing;
@@ -199,7 +171,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type AssetTransactor = AssetTransactors;
 	type AssetTrap = PolkadotXcm;
 	type Barrier = Barrier;
-	type CallDispatcher = XcmCallDispatcher;
+	type CallDispatcher = RuntimeCall;
 	type FeeManager = ();
 	type IsReserve = orml_xcm_support::MultiNativeAsset<
 		xcm_primitives::AbsoluteAndRelativeReserve<SelfLocationAbsolute>,

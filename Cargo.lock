@@ -2949,7 +2949,6 @@ dependencies = [
  "pallet-collective",
  "pallet-conviction-voting",
  "pallet-ethereum",
- "pallet-ethereum-xcm",
  "pallet-evm",
  "pallet-evm-precompile-blake2",
  "pallet-evm-precompile-bn128",
@@ -5796,7 +5795,6 @@ dependencies = [
  "pallet-collective",
  "pallet-conviction-voting",
  "pallet-ethereum",
- "pallet-ethereum-xcm",
  "pallet-evm",
  "pallet-evm-precompile-blake2",
  "pallet-evm-precompile-bls12381",
@@ -8207,32 +8205,6 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std 14.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.7.2)",
-]
-
-[[package]]
-name = "pallet-ethereum-xcm"
-version = "1.0.0-dev"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=polkadot-v1.7.2#0000e6dc61d7a16cb7a3b3e9a4947c3437e1ef85"
-dependencies = [
- "ethereum",
- "ethereum-types",
- "fp-ethereum",
- "fp-evm",
- "fp-rpc",
- "fp-self-contained",
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "pallet-evm",
- "pallet-timestamp",
- "parity-scale-codec",
- "rlp",
- "scale-info",
- "serde",
- "sp-io",
- "sp-runtime",
- "sp-std 14.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.7.2)",
- "xcm-primitives",
 ]
 
 [[package]]
