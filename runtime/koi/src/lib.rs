@@ -180,7 +180,7 @@ frame_support::construct_runtime! {
 		XcmpQueue: cumulus_pallet_xcmp_queue = 26,
 		PolkadotXcm: pallet_xcm = 27,
 		CumulusXcm: cumulus_pallet_xcm = 28,
-		EthereumXcm: pallet_ethereum_xcm = 29,
+		// EthereumXcm: pallet_ethereum_xcm = 29,
 		DmpQueue: cumulus_pallet_dmp_queue = 30,
 		MessageQueue: pallet_message_queue = 37,
 		AssetManager: pallet_asset_manager = 31,
