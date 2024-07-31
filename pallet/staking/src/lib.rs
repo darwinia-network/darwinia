@@ -847,7 +847,7 @@ pub mod pallet {
 				// collators if any error occurs to prevent the chain from stalling.
 				None
 			} else {
-				// TODO?: if we really need this event
+				// ? if we really need this event.
 				Self::deposit_event(Event::Elected { collators: cs.clone() });
 
 				Some(cs)
@@ -967,10 +967,6 @@ pub mod pallet {
 			Some(winners)
 		}
 	}
-	// Add reward points to block authors:
-	// - 20 points to the block producer for producing a (non-uncle) block in the parachain chain,
-	// - 2 points to the block producer for each reference to a previously unreferenced uncle, and
-	// - 1 point to the producer of each referenced uncle block.
 	impl<T> pallet_authorship::EventHandler<T::AccountId, BlockNumberFor<T>> for Pallet<T>
 	where
 		T: Config + pallet_authorship::Config + pallet_session::Config,
@@ -979,8 +975,6 @@ pub mod pallet {
 			Self::note_authors(&[author])
 		}
 	}
-
-	// Play the role of the session manager.
 	impl<T> pallet_session::SessionManager<T::AccountId> for Pallet<T>
 	where
 		T: Config,
@@ -1017,12 +1011,12 @@ where
 	}
 
 	/// Calculate the reward.
-	fn calculate_reward(issued: Balance) -> Balance {
+	fn calculate_reward(_: Balance) -> Balance {
 		0
 	}
 
 	/// The reward function.
-	fn reward(who: &T::AccountId, amount: Balance) -> DispatchResult {
+	fn reward(_: &T::AccountId, _: Balance) -> DispatchResult {
 		Ok(())
 	}
 }
@@ -1031,7 +1025,7 @@ impl<T> IssuingManager<T> for () where T: Config {}
 /// Election result provider.
 pub trait ElectionResultProvider {
 	/// Get the election result.
-	fn get(n: u32) -> Vec<AccountId> {
+	fn get(_: u32) -> Vec<AccountId> {
 		Vec::new()
 	}
 }
@@ -1040,7 +1034,7 @@ impl ElectionResultProvider for () {}
 /// Distribute the reward to a contract.
 pub trait RewardToContract {
 	/// Distribute the reward.
-	fn distribute(who: Option<AccountId>, amount: Balance) {}
+	fn distribute(_: Option<AccountId>, _: Balance) {}
 }
 impl RewardToContract for () {}
 
@@ -1163,7 +1157,6 @@ where
 	T: Config + darwinia_ethtx_forwarder::Config,
 {
 	fn get(n: u32) -> Vec<AccountId> {
-		// TODO: Use the correct CollatorSet contract address
 		let to = H160([
 			109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0,
 		]);
