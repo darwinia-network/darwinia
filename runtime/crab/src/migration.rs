@@ -46,5 +46,5 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 
 fn migrate() -> frame_support::weights::Weight {
 	frame_support::weights::Weight::zero()
-	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, w)
+	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 0)
 }
