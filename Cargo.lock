@@ -3029,7 +3029,6 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std 14.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.7.2)",
- "substrate-test-utils",
 ]
 
 [[package]]
@@ -14850,15 +14849,6 @@ dependencies = [
  "sp-state-machine",
  "sp-trie",
  "trie-db",
-]
-
-[[package]]
-name = "substrate-test-utils"
-version = "4.0.0-dev"
-source = "git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.7.2#581178546b4b0fb8ebf4a6cee5a51d5629419197"
-dependencies = [
- "futures 0.3.30",
- "tokio",
 ]
 
 [[package]]

@@ -155,17 +155,6 @@ pub mod pallet {
 	#[pallet::getter(fn kton_account_of)]
 	pub type KtonAccounts<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, AssetAccount>;
 
-	/// [`darwinia_deposit::Deposits`] data.
-	#[pallet::storage]
-	#[pallet::unbounded]
-	#[pallet::getter(fn deposit_of)]
-	pub type Deposits<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, Vec<Deposit>>;
-
-	/// [`darwinia_staking::migration::v2::OldLedger`] data.
-	#[pallet::storage]
-	#[pallet::getter(fn ledger_of)]
-	pub type Ledgers<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, OldLedger>;
-
 	/// Multisig migration caches.
 	#[pallet::storage]
 	#[pallet::unbounded]
@@ -420,34 +409,6 @@ pub mod pallet {
 						asset_details,
 					);
 				}
-			}
-			if let Some(l) = <Ledgers<T>>::take(from) {
-				if l.staked_ring > 0 {
-					<pallet_balances::Pallet<T> as Currency<_>>::transfer(
-						to,
-						&darwinia_staking::account_id(),
-						l.staked_ring,
-						AllowDeath,
-					)?;
-				}
-
-				if let Some(ds) = <Deposits<T>>::take(from) {
-					<pallet_balances::Pallet<T> as Currency<_>>::transfer(
-						to,
-						&darwinia_deposit::account_id(),
-						ds.iter().map(|d| d.value).sum(),
-						AllowDeath,
-					)?;
-					<darwinia_deposit::Deposits<T>>::insert(
-						to,
-						BoundedVec::try_from(ds).map_err(|_| <Error<T>>::ExceedMaxDeposits)?,
-					);
-				}
-
-				<darwinia_staking::Ledgers<T>>::insert(
-					to,
-					Ledger { ring: l.staked_ring, deposits: l.staked_deposits },
-				);
 			}
 
 			Ok(())

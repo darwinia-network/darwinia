@@ -291,6 +291,17 @@ pub mod pallet {
 
 			Ok(())
 		}
+
+		/// Migration data to deposit contract.
+		#[pallet::call_index(3)]
+		#[pallet::weight(<T as Config>::WeightInfo::migrate())]
+		pub fn migrate(origin: OriginFor<T>) -> DispatchResult {
+			let who = ensure_signed(origin)?;
+
+			// TODO.
+
+			Ok(())
+		}
 	}
 }
 pub use pallet::*;

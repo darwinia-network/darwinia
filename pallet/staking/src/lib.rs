@@ -115,6 +115,7 @@ type DepositId<T> = <<T as Config>::Deposit as Stake>::Item;
 const PAYOUT_FRAC: Perbill = Perbill::from_percent(40);
 const TREASURY_ADDR: [u8; 20] =
 	[109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0];
+const DAY_IN_MILLIS: Moment = 24 * 60 * 60 * 1_000;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -332,7 +333,7 @@ pub mod pallet {
 	/// Default value for staking contracts.
 	#[pallet::type_value]
 	pub fn StakingContractDefault<T: Config>() -> T::AccountId {
-		account_id()
+		TREASURY_ADDR.into()
 	}
 
 	/// Migration start point.
@@ -758,24 +759,21 @@ pub mod pallet {
 
 		/// Distribute the session reward to staking pot and update the stakers' reward record.
 		pub fn distribute_session_reward(amount: Balance) {
-			let reward = |who, amount| {
-				if T::IssuingManager::reward(&who, amount).is_ok() {
-					Self::deposit_event(Event::Payout { who, amount });
-				} else {
-					Self::deposit_event(Event::Unpaid { who, amount });
-				}
-			};
+			let who = TREASURY_ADDR.into();
+
+			if T::IssuingManager::reward(&who, amount).is_ok() {
+				Self::deposit_event(Event::Payout { who, amount });
+			} else {
+				Self::deposit_event(Event::Unpaid { who, amount });
+			}
+
 			let reward_r = amount.saturating_div(2);
 			let reward_k = amount.saturating_sub(reward_r);
-
-			reward(account_id(), reward_r);
-			reward(<KtonStakingContract<T>>::get(), reward_k);
-
-			let (total, map) = <AuthoredBlocksCount<T>>::take();
+			let (b_total, map) = <AuthoredBlocksCount<T>>::take();
 			let collators_v2 = call_on_cache!(<Current<T>>::get()).unwrap_or_default();
 
 			map.into_iter().for_each(|(c, b)| {
-				let r = Perbill::from_rational(b, total).mul_floor(reward_r);
+				let r = Perbill::from_rational(b, b_total).mul_floor(reward_r);
 
 				if collators_v2.contains(&c) {
 					T::RingStaking::distribute(Some(c), r);
@@ -925,19 +923,20 @@ pub mod pallet {
 	where
 		T: Config,
 	{
-		fn migration_progress() -> Perbill {
-			const TOTAL: Moment = 30 * 2 * 24 * 60 * 60;
-
-			let start = <MigrationStartPoint<T>>::get();
-
-			Perbill::from_rational(now::<T>() - start, TOTAL)
-		}
-
-		fn elect_ns() -> (u32, u32) {
+		/// Elect the new collators.
+		pub fn elect_ns() -> (u32, u32) {
 			let n = <CollatorCount<T>>::get();
 			let n1 = Self::migration_progress() * n;
 
 			(n1, n - n1)
+		}
+
+		fn migration_progress() -> Perbill {
+			const TOTAL: Moment = 30 * 2 * DAY_IN_MILLIS;
+
+			let start = <MigrationStartPoint<T>>::get();
+
+			Perbill::from_rational(now::<T>() - start, TOTAL)
 		}
 
 		fn try_elect<F, R>(n: u32, elect: F) -> R
@@ -1282,6 +1281,12 @@ where
 	T: Config + darwinia_ethtx_forwarder::Config,
 {
 	fn distribute(who: Option<AccountId>, amount: Balance) {
+		let Some(who) = who else {
+			log::error!("who must be some; qed");
+
+			return;
+		};
+
 		#[allow(deprecated)]
 		darwinia_ethtx_forwarder::quick_forward_transact::<T>(
 			TREASURY_ADDR.into(),
@@ -1296,7 +1301,7 @@ where
 				constant: None,
 				state_mutability: StateMutability::Payable,
 			},
-			&[Token::Address(who.unwrap_or(account_id()).into())],
+			&[Token::Address(who.into())],
 			<RingStakingContract<T>>::get().into(),
 			amount.into(),
 			1_000_000.into(),

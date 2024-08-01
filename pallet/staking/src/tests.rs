@@ -24,7 +24,6 @@ use darwinia_deposit::Error as DepositError;
 // polkadot-sdk
 use frame_support::{assert_noop, assert_ok, BoundedVec};
 use sp_runtime::{assert_eq_error_rate, DispatchError, Perbill};
-use substrate_test_utils::assert_eq_uvec;
 
 #[test]
 fn exposure_cache_states_should_work() {
@@ -405,6 +404,8 @@ fn payout_should_work() {
 		});
 
 		let session_duration = Duration::new(12 * 600, 0).as_millis();
+		let kton_staking_contract_balance =
+			Balances::free_balance(<KtonStakingContract<Runtime>>::get());
 		Efflux::time(session_duration - <Period as Get<u64>>::get() as Moment);
 		Staking::note_authors(&[
 			account_id_of(1),
@@ -429,12 +430,15 @@ fn payout_should_work() {
 			145719489836065573771,
 			60716453916211293261,
 		];
+		let half_reward = PAYOUT_FRAC
+			* dc_inflation::issuing_in_period(session_duration, Timestamp::now()).unwrap()
+			/ 2;
+		assert_eq_error_rate!(half_reward, rewards.iter().sum::<Balance>(), UNIT);
 		assert_eq_error_rate!(
-			PAYOUT_FRAC
-				* dc_inflation::issuing_in_period(session_duration, Timestamp::now()).unwrap()
-				/ 2,
-			rewards.iter().sum::<Balance>(),
-			// Error rate 1 RING.
+			// Multiplied by 2 because there are 2 sessions.
+			half_reward * 2,
+			Balances::free_balance(<KtonStakingContract<Runtime>>::get())
+				- kton_staking_contract_balance,
 			UNIT
 		);
 		assert_eq!(
@@ -536,11 +540,6 @@ fn payout_should_work() {
 				})
 				.collect::<Vec<_>>(),
 			vec![
-				// Pay to staking failed.
-				Event::Unpaid { who: account_id(), amount: 10000 * UNIT },
-				// Pay to distribution contract failed.
-				// The contract address is the same as staking pallet account in unit test.
-				Event::Unpaid { who: account_id(), amount: 10000 * UNIT },
 				// Pay to collator failed.
 				Event::Unpaid { who: account_id_of(6), amount: 7499999997000000000000 },
 				// Pay to nominator failed.
@@ -645,92 +644,76 @@ fn auto_payout_should_work() {
 #[test]
 fn on_new_session_should_work() {
 	ExtBuilder::default().collator_count(2).genesis_collator().build().execute_with(|| {
-		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(
-				<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()
-			)
-			.unwrap(),
+		assert_eq!(
+			crate::call_on_exposure!(<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
 			[account_id_of(1), account_id_of(2)]
 		);
-		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+		assert_eq!(
+			crate::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
 			[account_id_of(1), account_id_of(2)]
 		);
-		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
-				.unwrap(),
+		assert_eq!(
+			crate::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
 			[account_id_of(1), account_id_of(2)]
 		);
 
 		assert_ok!(Staking::collect(RuntimeOrigin::signed(account_id_of(3)), Perbill::zero()));
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(account_id_of(3)), 2 * UNIT, Vec::new()));
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(account_id_of(3)), 2, Vec::new()));
 		assert_ok!(Staking::nominate(RuntimeOrigin::signed(account_id_of(3)), account_id_of(3)));
 		Staking::note_authors(&Session::validators());
 
 		new_session();
-		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(
-				<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()
-			)
-			.unwrap(),
+		assert_eq!(
+			crate::call_on_exposure!(<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
 			[account_id_of(1), account_id_of(2)]
 		);
-		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+		assert_eq!(
+			crate::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
 			[account_id_of(1), account_id_of(2)]
 		);
-		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
-				.unwrap(),
-			[account_id_of(1), account_id_of(3)]
+		assert_eq!(
+			crate::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			[account_id_of(2), account_id_of(3)]
 		);
 
 		assert_ok!(Staking::chill(RuntimeOrigin::signed(account_id_of(3))));
 		assert_ok!(Staking::collect(RuntimeOrigin::signed(account_id_of(4)), Perbill::zero()));
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(account_id_of(4)), 2 * UNIT, Vec::new()));
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(account_id_of(4)), 2, Vec::new()));
 		assert_ok!(Staking::nominate(RuntimeOrigin::signed(account_id_of(4)), account_id_of(4)));
 		Staking::note_authors(&Session::validators());
 
 		new_session();
-		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(
-				<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()
-			)
-			.unwrap(),
+		assert_eq!(
+			crate::call_on_exposure!(<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
 			[account_id_of(1), account_id_of(2)]
 		);
-		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
-			[account_id_of(1), account_id_of(3)]
+		assert_eq!(
+			crate::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			[account_id_of(2), account_id_of(3)]
 		);
-		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
-				.unwrap(),
-			[account_id_of(1), account_id_of(4)]
+		assert_eq!(
+			crate::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			[account_id_of(4), account_id_of(2)]
 		);
 
 		assert_ok!(Staking::chill(RuntimeOrigin::signed(account_id_of(4))));
 		assert_ok!(Staking::collect(RuntimeOrigin::signed(account_id_of(5)), Perbill::zero()));
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(account_id_of(5)), 2 * UNIT, Vec::new()));
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(account_id_of(5)), 2, Vec::new()));
 		assert_ok!(Staking::nominate(RuntimeOrigin::signed(account_id_of(5)), account_id_of(5)));
 		Staking::note_authors(&Session::validators());
 
 		new_session();
-		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(
-				<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()
-			)
-			.unwrap(),
-			[account_id_of(1), account_id_of(3)]
+		assert_eq!(
+			crate::call_on_exposure!(<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			[account_id_of(2), account_id_of(3)]
 		);
-		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
-			[account_id_of(1), account_id_of(4)]
+		assert_eq!(
+			crate::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			[account_id_of(4), account_id_of(2)]
 		);
-		assert_eq_uvec!(
-			darwinia_staking::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>())
-				.unwrap(),
-			[account_id_of(1), account_id_of(5)]
+		assert_eq!(
+			crate::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			[account_id_of(5), account_id_of(2)]
 		);
 	});
 }
@@ -772,4 +755,155 @@ fn rate_limiter_should_work() {
 
 	let r = RateLimiter::Neg(3);
 	assert_eq!(r.flow_in(6, 3).unwrap(), RateLimiter::Pos(3));
+}
+
+#[test]
+fn elect_ns_should_work() {
+	ExtBuilder::default().collator_count(100).build().execute_with(|| {
+		[
+			(0, 100),
+			(2, 98),
+			(3, 97),
+			(5, 95),
+			(7, 93),
+			(8, 92),
+			(10, 90),
+			(12, 88),
+			(13, 87),
+			(15, 85),
+			(17, 83),
+			(18, 82),
+			(20, 80),
+			(22, 78),
+			(23, 77),
+			(25, 75),
+			(27, 73),
+			(28, 72),
+			(30, 70),
+			(32, 68),
+			(33, 67),
+			(35, 65),
+			(37, 63),
+			(38, 62),
+			(40, 60),
+			(42, 58),
+			(43, 57),
+			(45, 55),
+			(47, 53),
+			(48, 52),
+			(50, 50),
+			(52, 48),
+			(53, 47),
+			(55, 45),
+			(57, 43),
+			(58, 42),
+			(60, 40),
+			(62, 38),
+			(63, 37),
+			(65, 35),
+			(67, 33),
+			(68, 32),
+			(70, 30),
+			(72, 28),
+			(73, 27),
+			(75, 25),
+			(77, 23),
+			(78, 22),
+			(80, 20),
+			(82, 18),
+			(83, 17),
+			(85, 15),
+			(87, 13),
+			(88, 12),
+			(90, 10),
+			(92, 8),
+			(93, 7),
+			(95, 5),
+			(97, 3),
+			(98, 2),
+			(100, 0),
+			(100, 0),
+		]
+		.iter()
+		.for_each(|exp| {
+			assert_eq!(exp, &<Pallet<Runtime>>::elect_ns());
+
+			Efflux::time(DAY_IN_MILLIS);
+		});
+	});
+}
+
+#[test]
+fn hybrid_election_should_work() {
+	ExtBuilder::default().collator_count(10).build().execute_with(|| {
+		mock::preset_collators(10);
+		new_session();
+		new_session();
+
+		assert_eq!(
+			(10..20).rev().collect::<Vec<_>>(),
+			<pallet_session::Validators<Runtime>>::get()
+				.into_iter()
+				.map(u64_of)
+				.collect::<Vec<_>>()
+		);
+
+		Timestamp::set_timestamp(15 * DAY_IN_MILLIS);
+		new_session();
+		new_session();
+
+		assert_eq!(
+			(100..103).chain((12..20).rev()).collect::<Vec<_>>(),
+			<pallet_session::Validators<Runtime>>::get()
+				.into_iter()
+				.map(u64_of)
+				.collect::<Vec<_>>()
+		);
+
+		Timestamp::set_timestamp(30 * DAY_IN_MILLIS);
+		new_session();
+		new_session();
+
+		assert_eq!(
+			(100..106).chain((15..20).rev()).collect::<Vec<_>>(),
+			<pallet_session::Validators<Runtime>>::get()
+				.into_iter()
+				.map(u64_of)
+				.collect::<Vec<_>>()
+		);
+
+		Timestamp::set_timestamp(45 * DAY_IN_MILLIS);
+		new_session();
+		new_session();
+
+		assert_eq!(
+			(100..108).chain((17..20).rev()).collect::<Vec<_>>(),
+			<pallet_session::Validators<Runtime>>::get()
+				.into_iter()
+				.map(u64_of)
+				.collect::<Vec<_>>()
+		);
+
+		Timestamp::set_timestamp(60 * DAY_IN_MILLIS);
+		new_session();
+		new_session();
+
+		assert_eq!(
+			(100..=110).collect::<Vec<_>>(),
+			<pallet_session::Validators<Runtime>>::get()
+				.into_iter()
+				.map(u64_of)
+				.collect::<Vec<_>>()
+		);
+	});
+}
+
+#[test]
+fn hybrid_payout_should_work() {
+	ExtBuilder::default().collator_count(10).build().execute_with(|| {
+		mock::preset_collators(10);
+		Timestamp::set_timestamp(30 * DAY_IN_MILLIS);
+		new_session();
+		new_session();
+	});
 }
