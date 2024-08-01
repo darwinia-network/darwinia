@@ -25,22 +25,23 @@ mod test;
 
 // crates.io
 use codec::{Decode, Encode, MaxEncodedLen};
+use ethabi::{Function, Token};
 use ethereum::{
 	EIP1559Transaction, EIP2930Transaction, LegacyTransaction, TransactionAction,
 	TransactionSignature, TransactionV2 as Transaction,
 };
-use frame_support::sp_runtime::traits::UniqueSaturatedInto;
 use scale_info::TypeInfo;
 // frontier
 use fp_ethereum::{TransactionData, ValidatedTransaction};
 use fp_evm::{CheckEvmTransaction, CheckEvmTransactionConfig, TransactionValidationError};
 use pallet_evm::{FeeCalculator, GasWeightMapping, Runner};
 // polkadot-sdk
-#[cfg(feature = "evm-tracing")]
-use frame_support::dispatch::{DispatchErrorWithPostInfo, PostDispatchInfo};
-use frame_support::{traits::EnsureOrigin, PalletError};
+use frame_support::{dispatch::DispatchResultWithPostInfo, traits::EnsureOrigin, PalletError};
 use sp_core::{Get, H160, H256, U256};
-use sp_runtime::{traits::BadOrigin, DispatchError, RuntimeDebug};
+use sp_runtime::{
+	traits::{BadOrigin, UniqueSaturatedInto},
+	DispatchError, RuntimeDebug,
+};
 use sp_std::vec::Vec;
 
 pub use pallet::*;
@@ -85,7 +86,6 @@ impl<O: Into<Result<ForwardEthOrigin, O>> + From<ForwardEthOrigin>> EnsureOrigin
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 
 	#[pallet::origin]
@@ -121,45 +121,65 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			request: ForwardRequest,
 		) -> DispatchResultWithPostInfo {
-			let source = ensure_forward_transact(origin)?;
-			let transaction = Self::validated_transaction(source, request)?;
-
-			#[cfg(feature = "evm-tracing")]
-			return Self::trace_tx(source, transaction);
-			#[cfg(not(feature = "evm-tracing"))]
-			return T::ValidatedTransaction::apply(source, transaction)
-				.map(|(post_info, _)| post_info);
+			Self::forward_transact_inner(ensure_forward_transact(origin)?, request)
 		}
 	}
 }
 impl<T: Config> Pallet<T> {
-	/// Calculates the fee for submitting such an EVM transaction.
-	///
-	/// The gas_price of an EVM transaction is always the min_gas_price(), which is a fixed value.
-	/// Therefore, only the gas_limit and value of the transaction should be considered in the
-	/// calculation of the fee, and the gas_price of the transaction itself can be ignored.
-	pub fn total_payment(request: &ForwardRequest) -> U256 {
-		let base_fee = <T as pallet_evm::Config>::FeeCalculator::min_gas_price().0;
-		let fee = base_fee.saturating_mul(request.gas_limit);
+	pub fn forward_call(
+		from: H160,
+		to: H160,
+		data: Vec<u8>,
+		value: U256,
+		gas_limit: U256,
+	) -> Result<pallet_evm::CallInfo, sp_runtime::DispatchError> {
+		let (who, _) = pallet_evm::Pallet::<T>::account_basic(&from);
+		<T as pallet_evm::Config>::Runner::call(
+			from,
+			to,
+			data,
+			value,
+			gas_limit.unique_saturated_into(),
+			None,
+			None,
+			Some(who.nonce),
+			vec![],
+			false, // non-transactional
+			true,
+			None,
+			None,
+			<T as pallet_evm::Config>::config(),
+		)
+		.map_err(|err| err.error.into())
+	}
 
-		request.value.saturating_add(fee)
+	pub fn forward_transact_inner(
+		source: H160,
+		request: ForwardRequest,
+	) -> DispatchResultWithPostInfo {
+		let transaction = Self::validated_transaction(source, request)?;
+
+		#[cfg(feature = "evm-tracing")]
+		return Self::trace_tx(source, transaction);
+		#[cfg(not(feature = "evm-tracing"))]
+		return T::ValidatedTransaction::apply(source, transaction).map(|(post_info, _)| post_info);
 	}
 
 	fn validated_transaction(
 		source: H160,
-		req: ForwardRequest,
+		request: ForwardRequest,
 	) -> Result<Transaction, DispatchError> {
 		let (who, _) = pallet_evm::Pallet::<T>::account_basic(&source);
 		let base_fee = T::FeeCalculator::min_gas_price().0;
 
-		let transaction = match req.tx_type {
+		let transaction = match request.tx_type {
 			TxType::LegacyTransaction => Transaction::Legacy(LegacyTransaction {
 				nonce: who.nonce,
 				gas_price: base_fee,
-				gas_limit: req.gas_limit,
-				action: req.action,
-				value: req.value,
-				input: req.input,
+				gas_limit: request.gas_limit,
+				action: request.action,
+				value: request.value,
+				input: request.input,
 				// copied from:
 				// https://github.com/rust-ethereum/ethereum/blob/24739cc8ba6e9d8ee30ada8ec92161e4c48d578e/src/transaction.rs#L798
 				signature: TransactionSignature::new(
@@ -180,10 +200,10 @@ impl<T: Config> Pallet<T> {
 					chain_id: 0,
 					nonce: who.nonce,
 					gas_price: base_fee,
-					gas_limit: req.gas_limit,
-					action: req.action,
-					value: req.value,
-					input: req.input,
+					gas_limit: request.gas_limit,
+					action: request.action,
+					value: request.value,
+					input: request.input,
 					access_list: Default::default(),
 					// copied from:
 					// https://github.com/rust-ethereum/ethereum/blob/24739cc8ba6e9d8ee30ada8ec92161e4c48d578e/src/transaction.rs#L873-L875
@@ -206,10 +226,10 @@ impl<T: Config> Pallet<T> {
 					nonce: who.nonce,
 					max_fee_per_gas: base_fee,
 					max_priority_fee_per_gas: U256::zero(),
-					gas_limit: req.gas_limit,
-					action: req.action,
-					value: req.value,
-					input: req.input,
+					gas_limit: request.gas_limit,
+					action: request.action,
+					value: request.value,
+					input: request.input,
 					access_list: Default::default(),
 					// copied from:
 					// https://github.com/rust-ethereum/ethereum/blob/24739cc8ba6e9d8ee30ada8ec92161e4c48d578e/src/transaction.rs#L873-L875
@@ -259,42 +279,12 @@ impl<T: Config> Pallet<T> {
 		Ok(transaction)
 	}
 
-	pub fn forward_call(
-		from: H160,
-		to: H160,
-		data: Vec<u8>,
-		value: U256,
-		gas_limit: U256,
-	) -> Result<pallet_evm::CallInfo, sp_runtime::DispatchError> {
-		let (who, _) = pallet_evm::Pallet::<T>::account_basic(&from);
-		<T as pallet_evm::Config>::Runner::call(
-			from,
-			to,
-			data,
-			value,
-			gas_limit.unique_saturated_into(),
-			None,
-			None,
-			Some(who.nonce),
-			vec![],
-			false, // non-transactional
-			true,
-			None,
-			None,
-			<T as pallet_evm::Config>::config(),
-		)
-		.map_err(|err| err.error.into())
-	}
-
 	#[cfg(feature = "evm-tracing")]
-	fn trace_tx(
-		source: H160,
-		transaction: Transaction,
-	) -> Result<PostDispatchInfo, DispatchErrorWithPostInfo> {
+	fn trace_tx(source: H160, transaction: Transaction) -> DispatchResultWithPostInfo {
 		// moonbeam
 		use moonbeam_evm_tracer::tracer::EvmTracer;
 		// polkadot-sdk
-		use frame_support::storage::unhashed;
+		use frame_support::{dispatch::PostDispatchInfo, storage::unhashed};
 		use xcm_primitives::{EthereumXcmTracingStatus, ETHEREUM_XCM_TRACING_STORAGE_KEY};
 
 		match unhashed::get(ETHEREUM_XCM_TRACING_STORAGE_KEY) {
@@ -339,6 +329,14 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Encode, Decode, TypeInfo, Default)]
+pub enum TxType {
+	#[default]
+	LegacyTransaction,
+	EIP2930Transaction,
+	EIP1559Transaction,
+}
+
 // TODO: replace it with upstream error type
 #[derive(Encode, Decode, TypeInfo, PalletError)]
 pub enum TxErrorWrapper {
@@ -381,10 +379,35 @@ pub struct ForwardRequest {
 	pub input: Vec<u8>,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Encode, Decode, TypeInfo, Default)]
-pub enum TxType {
-	#[default]
-	LegacyTransaction,
-	EIP2930Transaction,
-	EIP1559Transaction,
+pub fn quick_forward_transact<T>(
+	source: H160,
+	function: Function,
+	input: &[Token],
+	call: H160,
+	value: U256,
+	gas_limit: U256,
+) where
+	T: Config,
+{
+	log::info!("forwarding {function:?} to {call:?} with {{ input: {input:?}, value: {value:?} }}");
+
+	let input = match function.encode_input(input) {
+		Ok(i) => i,
+		Err(e) => {
+			log::error!("failed to encode input due to {e:?}");
+
+			return;
+		},
+	};
+	let req = ForwardRequest {
+		tx_type: TxType::LegacyTransaction,
+		action: TransactionAction::Call(call),
+		value,
+		input,
+		gas_limit,
+	};
+
+	if let Err(e) = <Pallet<T>>::forward_transact_inner(source, req) {
+		log::error!("failed to forward ethtx due to {e:?}");
+	}
 }

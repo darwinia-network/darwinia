@@ -24,6 +24,7 @@ version    = "6.6.3"
 # crates.io
 array-bytes  = { version = "6.2" }
 codec        = { package = "parity-scale-codec", version = "3.6", default-features = false }
+ethabi       = { version = "18.0", default-features = false }
 ethereum     = { version = "0.15", default-features = false, features = ["with-codec"] }
 libsecp256k1 = { version = "0.7", default-features = false }
 log          = { version = "0.4" }

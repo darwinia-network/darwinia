@@ -9,12 +9,9 @@ version.workspace = true
 [dependencies]
 # crates.io
 codec      = { workspace = true, package = "parity-scale-codec" }
-ethabi     = { version = "18.0", default-features = false }
-ethereum   = { workspace = true }
+ethabi     = { workspace = true }
 log        = { workspace = true }
 scale-info = { workspace = true }
-
-fp-evm      = { workspace = true }
 
 # darwinia
 darwinia-ethtx-forwarder = { workspace = true }
@@ -22,6 +19,9 @@ darwinia-staking-traits  = { workspace = true }
 dc-primitives            = { workspace = true }
 # darwinia optional
 darwinia-deposit = { workspace = true, optional = true }
+
+# frontier
+fp-evm = { workspace = true }
 
 # subtrate
 frame-support     = { workspace = true }
@@ -56,11 +56,8 @@ std = [
 	# crates.io
 	"codec/std",
 	"ethabi/std",
-	"ethereum/std",
 	"log/std",
 	"scale-info/std",
-
-	"fp-evm/std",
 
 	# darwinia
 	"darwinia-ethtx-forwarder/std",
@@ -68,6 +65,9 @@ std = [
 	"dc-primitives/std",
 	# darwinia optional
 	"darwinia-deposit?/std",
+
+	# frontier
+	"fp-evm/std",
 
 	# subtrate
 	"frame-support/std",

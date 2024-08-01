@@ -17,7 +17,10 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // darwinia
-use crate::{mock::*, ForwardEthOrigin, ForwardRequest, TxType};
+use crate::{
+	mock::{self, *},
+	ForwardEthOrigin, ForwardRequest, TxType,
+};
 // crates.io
 use ethereum::TransactionSignature;
 use fp_evm::ExecutionInfoV2;
@@ -93,7 +96,7 @@ fn forward_request_sufficient_balance() {
 					})
 				);
 
-				let fee = EthTxForwarder::total_payment(&request);
+				let fee = mock::total_payment(&request);
 				let _ = Balances::deposit_creating(&alice.address, fee.as_u64());
 				assert_ok!(EthTxForwarder::forward_transact(
 					ForwardEthOrigin::ForwardEth(alice.address).into(),
