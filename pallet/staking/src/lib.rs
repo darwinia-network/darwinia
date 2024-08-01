@@ -338,7 +338,7 @@ pub mod pallet {
 	/// Migration start point.
 	#[pallet::storage]
 	#[pallet::getter(fn migration_start_point)]
-	pub type MigrationStartPoint<T: Config> = StorageValue<_, u64, ValueQuery>;
+	pub type MigrationStartPoint<T: Config> = StorageValue<_, Moment, ValueQuery>;
 
 	/// Collator cache state.
 	///
@@ -926,7 +926,7 @@ pub mod pallet {
 		T: Config,
 	{
 		fn migration_progress() -> Perbill {
-			const TOTAL: u64 = 30 * 2 * 24 * 60 * 60;
+			const TOTAL: Moment = 30 * 2 * 24 * 60 * 60;
 
 			let start = <MigrationStartPoint<T>>::get();
 
@@ -1146,7 +1146,7 @@ where
 	T: Config,
 {
 	fn calculate_reward(_: Balance) -> Balance {
-		10_000 * UNIT
+		20_000 * UNIT
 	}
 
 	fn reward(who: &AccountId, amount: Balance) -> DispatchResult {
@@ -1344,9 +1344,9 @@ where
 	PalletId(*b"da/staki").into_account_truncating()
 }
 
-fn now<T>() -> u64
+fn now<T>() -> Moment
 where
 	T: Config,
 {
-	T::UnixTime::now().as_secs()
+	T::UnixTime::now().as_millis()
 }

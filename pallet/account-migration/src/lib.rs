@@ -524,12 +524,12 @@ pub struct MultisigMigrationDetail {
 #[allow(missing_docs)]
 #[derive(Default, PartialEq, Eq, Encode, Decode, MaxEncodedLen, RuntimeDebug, TypeInfo)]
 pub struct OldLedger {
-	staked_ring: Balance,
-	staked_kton: Balance,
-	staked_deposits: BoundedVec<DepositId, ConstU32<512>>,
-	unstaking_ring: BoundedVec<(Balance, BlockNumber), ConstU32<512>>,
-	unstaking_kton: BoundedVec<(Balance, BlockNumber), ConstU32<512>>,
-	unstaking_deposits: BoundedVec<(DepositId, BlockNumber), ConstU32<512>>,
+	pub staked_ring: Balance,
+	pub staked_kton: Balance,
+	pub staked_deposits: BoundedVec<DepositId, ConstU32<512>>,
+	pub unstaking_ring: BoundedVec<(Balance, BlockNumber), ConstU32<512>>,
+	pub unstaking_kton: BoundedVec<(Balance, BlockNumber), ConstU32<512>>,
+	pub unstaking_deposits: BoundedVec<(DepositId, BlockNumber), ConstU32<512>>,
 }
 
 /// Build a Darwinia account migration message.

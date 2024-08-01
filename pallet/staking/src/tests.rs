@@ -429,13 +429,6 @@ fn payout_should_work() {
 			145719489836065573771,
 			60716453916211293261,
 		];
-		assert_eq!(
-			rewards.as_slice(),
-			(1..=10)
-				.map(|i| Balances::free_balance(account_id_of(i))
-					- (1_000 - if i < 6 { i } else { 11 - i }) as Balance * UNIT)
-				.collect::<Vec<_>>()
-		);
 		assert_eq_error_rate!(
 			PAYOUT_FRAC
 				* dc_inflation::issuing_in_period(session_duration, Timestamp::now()).unwrap()
@@ -443,6 +436,13 @@ fn payout_should_work() {
 			rewards.iter().sum::<Balance>(),
 			// Error rate 1 RING.
 			UNIT
+		);
+		assert_eq!(
+			rewards.as_slice(),
+			(1..=10)
+				.map(|i| Balances::free_balance(account_id_of(i))
+					- (1_000 - if i < 6 { i } else { 11 - i }) as Balance * UNIT)
+				.collect::<Vec<_>>()
 		);
 	});
 
@@ -496,16 +496,16 @@ fn payout_should_work() {
 		payout();
 
 		let rewards = [
-			249999999400000000000,
-			466666666400000000000,
-			650000000000000000000,
-			799999999600000000000,
-			916666666500000000000,
-			749999999700000000000,
-			533333332800000000000,
-			350000000000000000000,
-			199999999800000000000,
-			83333333000000000000,
+			499999998800000000000,
+			933333332800000000000,
+			1300000000000000000000,
+			1599999999200000000000,
+			1833333333000000000000,
+			1499999999400000000000,
+			1066666665600000000000,
+			700000000000000000000,
+			399999999600000000000,
+			166666666000000000000,
 		];
 		assert_eq!(
 			rewards.as_slice(),
@@ -537,110 +537,110 @@ fn payout_should_work() {
 				.collect::<Vec<_>>(),
 			vec![
 				// Pay to staking failed.
-				Event::Unpaid { who: account_id(), amount: 5000000000000000000000 },
+				Event::Unpaid { who: account_id(), amount: 10000 * UNIT },
 				// Pay to distribution contract failed.
 				// The contract address is the same as staking pallet account in unit test.
-				Event::Unpaid { who: account_id(), amount: 5000000000000000000000 },
+				Event::Unpaid { who: account_id(), amount: 10000 * UNIT },
 				// Pay to collator failed.
-				Event::Unpaid { who: account_id_of(6), amount: 3749999998500000000000 },
+				Event::Unpaid { who: account_id_of(6), amount: 7499999997000000000000 },
 				// Pay to nominator failed.
-				Event::Unpaid { who: account_id_of(1), amount: 1249999997000000000000 }
+				Event::Unpaid { who: account_id_of(1), amount: 2499999994000000000000 }
 			]
 		);
 	});
 }
 
-// #[test]
-// fn auto_payout_should_work() {
-// 	ExtBuilder::default().collator_count(2).build().execute_with(|| {
-// 		(1..=2).for_each(|i| {
-// 			assert_ok!(Staking::stake(
-// 				RuntimeOrigin::signed(account_id_of(i)),
-// 				i as Balance * UNIT,
-// 				Vec::new()
-// 			));
-// 			assert_ok!(Staking::collect(
-// 				RuntimeOrigin::signed(account_id_of(i)),
-// 				Perbill::from_percent(i as u32 * 10)
-// 			));
-// 			assert_ok!(Staking::nominate(
-// 				RuntimeOrigin::signed(account_id_of(i)),
-// 				account_id_of(i)
-// 			));
-// 		});
-// 		(3..=4).for_each(|i| {
-// 			assert_ok!(Staking::stake(
-// 				RuntimeOrigin::signed(account_id_of(i)),
-// 				(5 - i as Balance) * UNIT,
-// 				Vec::new()
-// 			));
-// 			assert_ok!(Staking::nominate(
-// 				RuntimeOrigin::signed(account_id_of(i)),
-// 				account_id_of(i - 2)
-// 			));
-// 		});
-// 		new_session();
-// 		new_session();
+#[test]
+fn auto_payout_should_work() {
+	ExtBuilder::default().collator_count(2).build().execute_with(|| {
+		(1..=2).for_each(|i| {
+			assert_ok!(Staking::stake(
+				RuntimeOrigin::signed(account_id_of(i)),
+				i as Balance * UNIT,
+				Vec::new()
+			));
+			assert_ok!(Staking::collect(
+				RuntimeOrigin::signed(account_id_of(i)),
+				Perbill::from_percent(i as u32 * 10)
+			));
+			assert_ok!(Staking::nominate(
+				RuntimeOrigin::signed(account_id_of(i)),
+				account_id_of(i)
+			));
+		});
+		(3..=4).for_each(|i| {
+			assert_ok!(Staking::stake(
+				RuntimeOrigin::signed(account_id_of(i)),
+				(5 - i as Balance) * UNIT,
+				Vec::new()
+			));
+			assert_ok!(Staking::nominate(
+				RuntimeOrigin::signed(account_id_of(i)),
+				account_id_of(i - 2)
+			));
+		});
+		new_session();
+		new_session();
 
-// 		Efflux::time(<Period as Get<u64>>::get() as Moment);
-// 		Staking::note_authors(&[account_id_of(1), account_id_of(2)]);
-// 		new_session();
-// 		(1..=4).for_each(|i| {
-// 			assert_eq!(
-// 				Balances::free_balance(account_id_of(i)),
-// 				(1_000 - if i < 3 { i } else { 5 - i }) as Balance * UNIT
-// 			)
-// 		});
+		Efflux::time(<Period as Get<u64>>::get() as Moment);
+		Staking::note_authors(&[account_id_of(1), account_id_of(2)]);
+		new_session();
+		(1..=4).for_each(|i| {
+			assert_eq!(
+				Balances::free_balance(account_id_of(i)),
+				(1_000 - if i < 3 { i } else { 5 - i }) as Balance * UNIT
+			)
+		});
 
-// 		Efflux::block(1);
-// 		assert_eq!(
-// 			[
-// 				Balances::free_balance(account_id_of(1)),
-// 				Balances::free_balance(account_id_of(2)),
-// 				Balances::free_balance(account_id_of(3)),
-// 				Balances::free_balance(account_id_of(4)),
-// 			],
-// 			[
-// 				999000607164541135398,
-// 				998000000000000000000,
-// 				998000910746811475409,
-// 				999000000000000000000
-// 			]
-// 		);
+		Efflux::block(1);
+		assert_eq!(
+			[
+				Balances::free_balance(account_id_of(1)),
+				Balances::free_balance(account_id_of(2)),
+				Balances::free_balance(account_id_of(3)),
+				Balances::free_balance(account_id_of(4)),
+			],
+			[
+				999000607164541135398,
+				998000000000000000000,
+				998000910746811475409,
+				999000000000000000000
+			]
+		);
 
-// 		Efflux::block(1);
-// 		assert_eq!(
-// 			[
-// 				Balances::free_balance(account_id_of(1)),
-// 				Balances::free_balance(account_id_of(2)),
-// 				Balances::free_balance(account_id_of(3)),
-// 				Balances::free_balance(account_id_of(4)),
-// 			],
-// 			[
-// 				999000607164541135398,
-// 				998001113134992106860,
-// 				998000910746811475409,
-// 				999000404776360655738
-// 			]
-// 		);
+		Efflux::block(1);
+		assert_eq!(
+			[
+				Balances::free_balance(account_id_of(1)),
+				Balances::free_balance(account_id_of(2)),
+				Balances::free_balance(account_id_of(3)),
+				Balances::free_balance(account_id_of(4)),
+			],
+			[
+				999000607164541135398,
+				998001113134992106860,
+				998000910746811475409,
+				999000404776360655738
+			]
+		);
 
-// 		Efflux::block(1);
-// 		assert_eq!(
-// 			[
-// 				Balances::free_balance(account_id_of(1)),
-// 				Balances::free_balance(account_id_of(2)),
-// 				Balances::free_balance(account_id_of(3)),
-// 				Balances::free_balance(account_id_of(4)),
-// 			],
-// 			[
-// 				999000607164541135398,
-// 				998001113134992106860,
-// 				998000910746811475409,
-// 				999000404776360655738
-// 			]
-// 		);
-// 	});
-// }
+		Efflux::block(1);
+		assert_eq!(
+			[
+				Balances::free_balance(account_id_of(1)),
+				Balances::free_balance(account_id_of(2)),
+				Balances::free_balance(account_id_of(3)),
+				Balances::free_balance(account_id_of(4)),
+			],
+			[
+				999000607164541135398,
+				998001113134992106860,
+				998000910746811475409,
+				999000404776360655738
+			]
+		);
+	});
+}
 
 #[test]
 fn on_new_session_should_work() {

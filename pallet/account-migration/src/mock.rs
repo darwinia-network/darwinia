@@ -138,11 +138,12 @@ impl darwinia_staking::Config for Runtime {
 	type Deposit = Deposit;
 	type IssuingManager = ();
 	type KtonStaking = ();
-	type MaxDeposits = ();
+	type MaxDeposits = frame_support::traits::ConstU32<512>;
 	type Ring = Dummy;
 	type RingStaking = ();
 	type RuntimeEvent = RuntimeEvent;
 	type ShouldEndSession = ();
+	type UnixTime = Timestamp;
 	type WeightInfo = ();
 }
 #[cfg(not(feature = "runtime-benchmarks"))]
