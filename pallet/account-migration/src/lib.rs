@@ -55,9 +55,9 @@ mod weights;
 pub use weights::WeightInfo;
 
 // darwinia
-use darwinia_deposit::Deposit;
-use darwinia_staking::{migration::v2::OldLedger, Ledger};
-use dc_primitives::{AccountId as AccountId20, AssetId, Balance, Nonce};
+use darwinia_deposit::{Deposit, DepositId};
+use darwinia_staking::Ledger;
+use dc_primitives::{AccountId as AccountId20, AssetId, Balance, BlockNumber, Nonce};
 // polkadot-sdk
 use frame_support::{
 	migration,
@@ -108,7 +108,10 @@ pub mod pallet {
 		> + pallet_assets::Config<Balance = Balance, AssetId = AssetId>
 		+ pallet_balances::Config<Balance = Balance>
 		+ darwinia_deposit::Config
-		+ darwinia_staking::Config
+		+ darwinia_staking::Config<
+			Deposit = darwinia_deposit::Pallet<Self>,
+			MaxDeposits = ConstU32<512>,
+		>
 	{
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
@@ -161,7 +164,7 @@ pub mod pallet {
 	/// [`darwinia_staking::migration::v2::OldLedger`] data.
 	#[pallet::storage]
 	#[pallet::getter(fn ledger_of)]
-	pub type Ledgers<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, OldLedger<T>>;
+	pub type Ledgers<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, OldLedger>;
 
 	/// Multisig migration caches.
 	#[pallet::storage]
@@ -459,7 +462,7 @@ pub(crate) type Signature = [u8; 64];
 // Copy from <https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L115>.
 // Due to its visibility.
 #[allow(missing_docs)]
-#[derive(PartialEq, Eq, Encode, Decode, RuntimeDebug, MaxEncodedLen, TypeInfo)]
+#[derive(PartialEq, Eq, Encode, Decode, MaxEncodedLen, RuntimeDebug, TypeInfo)]
 pub struct AssetAccount {
 	balance: Balance,
 	is_frozen: bool,
@@ -467,7 +470,7 @@ pub struct AssetAccount {
 	extra: (),
 }
 #[allow(missing_docs)]
-#[derive(PartialEq, Eq, Encode, Decode, RuntimeDebug, MaxEncodedLen, TypeInfo)]
+#[derive(PartialEq, Eq, Encode, Decode, MaxEncodedLen, RuntimeDebug, TypeInfo)]
 pub(crate) enum ExistenceReason {
 	#[codec(index = 0)]
 	Consumer,
@@ -479,7 +482,7 @@ pub(crate) enum ExistenceReason {
 	DepositRefunded,
 }
 #[allow(missing_docs)]
-#[derive(PartialEq, Eq, Encode, Decode, RuntimeDebug, MaxEncodedLen, TypeInfo)]
+#[derive(PartialEq, Eq, Encode, Decode, MaxEncodedLen, RuntimeDebug, TypeInfo)]
 pub(crate) struct AssetDetails {
 	owner: AccountId20,
 	issuer: AccountId20,
@@ -495,7 +498,7 @@ pub(crate) struct AssetDetails {
 	status: AssetStatus,
 }
 #[allow(missing_docs)]
-#[derive(PartialEq, Eq, Encode, Decode, RuntimeDebug, MaxEncodedLen, TypeInfo)]
+#[derive(PartialEq, Eq, Encode, Decode, MaxEncodedLen, RuntimeDebug, TypeInfo)]
 pub(crate) enum AssetStatus {
 	Live,
 	Frozen,
@@ -516,6 +519,17 @@ pub struct MultisigMigrationDetail {
 	to: AccountId20,
 	members: Vec<(AccountId32, bool)>,
 	threshold: u16,
+}
+
+#[allow(missing_docs)]
+#[derive(Default, PartialEq, Eq, Encode, Decode, MaxEncodedLen, RuntimeDebug, TypeInfo)]
+pub struct OldLedger {
+	staked_ring: Balance,
+	staked_kton: Balance,
+	staked_deposits: BoundedVec<DepositId, ConstU32<512>>,
+	unstaking_ring: BoundedVec<(Balance, BlockNumber), ConstU32<512>>,
+	unstaking_kton: BoundedVec<(Balance, BlockNumber), ConstU32<512>>,
+	unstaking_deposits: BoundedVec<(DepositId, BlockNumber), ConstU32<512>>,
 }
 
 /// Build a Darwinia account migration message.

@@ -168,7 +168,7 @@ mod benchmarks {
 	}
 
 	#[benchmark]
-	fn set_kton_reward_distribution_contract() {
+	fn set_kton_staking_contract() {
 		// Worst-case scenario:
 		//
 		// Set successfully.

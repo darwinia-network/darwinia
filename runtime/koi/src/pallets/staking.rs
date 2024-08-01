@@ -42,29 +42,6 @@ impl darwinia_staking::Stake for RingStaking {
 		)
 	}
 }
-pub enum KtonStaking {}
-impl darwinia_staking::Stake for KtonStaking {
-	type AccountId = AccountId;
-	type Item = Balance;
-
-	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		Assets::transfer(
-			RuntimeOrigin::signed(*who),
-			(AssetIds::KKton as AssetId).into(),
-			darwinia_staking::account_id(),
-			item,
-		)
-	}
-
-	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		Assets::transfer(
-			RuntimeOrigin::signed(darwinia_staking::account_id()),
-			(AssetIds::KKton as AssetId).into(),
-			*who,
-			item,
-		)
-	}
-}
 
 pub enum OnKoiSessionEnd {}
 impl darwinia_staking::IssuingManager<Runtime> for OnKoiSessionEnd {
@@ -97,13 +74,11 @@ impl frame_support::traits::Get<bool> for ShouldEndSession {
 impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
-	type ElectionResultProvider = ();
 	type IssuingManager = OnKoiSessionEnd;
-	type Kton = KtonStaking;
+	type KtonStaking = darwinia_staking::KtonStaking<Self>;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
-	type RewardToKton = darwinia_staking::RewardToKton<Self>;
-	type RewardToRing = ();
 	type Ring = RingStaking;
+	type RingStaking = darwinia_staking::RingStaking<Self>;
 	type RuntimeEvent = RuntimeEvent;
 	type ShouldEndSession = ShouldEndSession;
 	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;

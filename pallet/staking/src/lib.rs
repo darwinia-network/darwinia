@@ -639,10 +639,24 @@ pub mod pallet {
 			Ok(())
 		}
 
+		/// Set the RING reward distribution contract address.
+		#[pallet::call_index(11)]
+		#[pallet::weight(<T as Config>::WeightInfo::set_ring_staking_contract())]
+		pub fn set_ring_staking_contract(
+			origin: OriginFor<T>,
+			address: T::AccountId,
+		) -> DispatchResult {
+			ensure_root(origin)?;
+
+			<RingStakingContract<T>>::put(address);
+
+			Ok(())
+		}
+
 		/// Set the KTON reward distribution contract address.
 		#[pallet::call_index(10)]
-		#[pallet::weight(<T as Config>::WeightInfo::set_kton_reward_distribution_contract())]
-		pub fn set_kton_reward_distribution_contract(
+		#[pallet::weight(<T as Config>::WeightInfo::set_kton_staking_contract())]
+		pub fn set_kton_staking_contract(
 			origin: OriginFor<T>,
 			address: T::AccountId,
 		) -> DispatchResult {
