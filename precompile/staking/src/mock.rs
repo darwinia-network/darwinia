@@ -184,27 +184,14 @@ impl darwinia_staking::Stake for RingStaking {
 		)
 	}
 }
-pub enum KtonStaking {}
-impl darwinia_staking::Stake for KtonStaking {
-	type AccountId = AccountId;
-	type Item = Balance;
-
-	fn stake(_: &Self::AccountId, _: Self::Item) -> sp_runtime::DispatchResult {
-		Ok(())
-	}
-
-	fn unstake(_: &Self::AccountId, _: Self::Item) -> sp_runtime::DispatchResult {
-		Ok(())
-	}
-}
 impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
 	type IssuingManager = ();
-	type KtonStaking = darwinia_staking::KtonStaking<Self>;
+	type KtonStaking = ();
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type Ring = RingStaking;
-	type RingStaking = darwinia_staking::RingStaking<Self>;
+	type RingStaking = ();
 	type RuntimeEvent = RuntimeEvent;
 	type ShouldEndSession = ();
 	type WeightInfo = ();

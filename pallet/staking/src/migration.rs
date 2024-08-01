@@ -1,9 +1,9 @@
 //! Pallet migrations.
 
-// crates.io
-use ethabi::Token;
-// self
+// darwinia
 use crate::*;
+// polkadot-sdk
+use sp_core::H160;
 
 /// Migrate `StakingRewardDistribution` contract.
 ///
@@ -21,7 +21,7 @@ where
 
 	#[allow(deprecated)]
 	darwinia_ethtx_forwarder::quick_forward_transact::<T>(
-		TREASURY_ADDR,
+		TREASURY_ADDR.into(),
 		Function {
 			name: "nominateNewOwner".into(),
 			inputs: vec![Param {
@@ -40,7 +40,7 @@ where
 	);
 	#[allow(deprecated)]
 	darwinia_ethtx_forwarder::quick_forward_transact::<T>(
-		TREASURY_ADDR,
+		TREASURY_ADDR.into(),
 		Function {
 			name: "acceptOwnershipFromOldDistribution".into(),
 			inputs: Vec::new(),

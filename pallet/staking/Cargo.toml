@@ -16,6 +16,7 @@ scale-info = { workspace = true }
 # darwinia
 darwinia-ethtx-forwarder = { workspace = true }
 darwinia-staking-traits  = { workspace = true }
+dc-inflation             = { workspace = true }
 dc-primitives            = { workspace = true }
 # darwinia optional
 darwinia-deposit = { workspace = true, optional = true }
@@ -28,7 +29,6 @@ frame-support     = { workspace = true }
 frame-system      = { workspace = true }
 pallet-authorship = { workspace = true }
 pallet-session    = { workspace = true }
-pallet-timestamp  = { workspace = true }
 sp-core           = { workspace = true }
 sp-runtime        = { workspace = true }
 sp-std            = { workspace = true }
@@ -43,9 +43,9 @@ pretty_env_logger = { version = "0.5" }
 darwinia-deposit = { workspace = true, features = ["std"] }
 
 # polkadot-sdk
-dc-inflation         = { workspace = true, features = ["std"] }
 pallet-balances      = { workspace = true, features = ["std"] }
 pallet-session       = { workspace = true, features = ["std"] }
+pallet-timestamp     = { workspace = true, features = ["std"] }
 pallet-treasury      = { workspace = true, features = ["std"] }
 sp-io                = { workspace = true, features = ["std"] }
 substrate-test-utils = { workspace = true }
@@ -62,6 +62,7 @@ std = [
 	# darwinia
 	"darwinia-ethtx-forwarder/std",
 	"darwinia-staking-traits/std",
+	"dc-inflation/std",
 	"dc-primitives/std",
 	# darwinia optional
 	"darwinia-deposit?/std",
@@ -75,7 +76,6 @@ std = [
 	"pallet-authorship/std",
 	"pallet-balances/std",
 	"pallet-session/std",
-	"pallet-timestamp/std",
 	"sp-core/std",
 	"sp-runtime/std",
 	"sp-std/std",
@@ -86,24 +86,19 @@ std = [
 runtime-benchmarks = [
 	# darwinia
 	"darwinia-deposit",
-	"darwinia-ethtx-forwarder/runtime-benchmarks",
 	"darwinia-staking-traits/runtime-benchmarks",
 
 	# polkadot-sdk
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
-	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 ]
 
 try-runtime = [
-	# darwinia
-	"darwinia-ethtx-forwarder/try-runtime",
 	# polkadot-sdk
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",
 	"pallet-authorship/try-runtime",
-	"pallet-timestamp/try-runtime",
 	"sp-runtime/try-runtime",
 ]

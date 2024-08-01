@@ -36,8 +36,8 @@ pub mod migration;
 
 #[cfg(test)]
 mod mock;
-// #[cfg(test)]
-// mod tests;
+#[cfg(test)]
+mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
@@ -51,7 +51,7 @@ pub use darwinia_staking_traits::*;
 use codec::FullCodec;
 use ethabi::{Function, Param, ParamType, StateMutability, Token};
 // darwinia
-use dc_primitives::{AccountId, Balance, Moment};
+use dc_primitives::{AccountId, Balance, Moment, UNIT};
 // polkadot-sdk
 use frame_support::{
 	pallet_prelude::*,
@@ -59,7 +59,8 @@ use frame_support::{
 	DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound,
 };
 use frame_system::{pallet_prelude::*, RawOrigin};
-use sp_core::{H160, U256};
+use pallet_session::ShouldEndSession as _;
+use sp_core::U256;
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, One, Zero},
 	Perbill,
@@ -111,8 +112,9 @@ macro_rules! call_on_cache {
 
 type DepositId<T> = <<T as Config>::Deposit as Stake>::Item;
 
-const TREASURY_ADDR: H160 =
-	H160([109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0]);
+const PAYOUT_FRAC: Perbill = Perbill::from_percent(40);
+const TREASURY_ADDR: [u8; 20] =
+	[109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0];
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -130,14 +132,24 @@ pub mod pallet {
 	pub trait DepositConfig {}
 
 	#[pallet::config]
-	pub trait Config:
-		frame_system::Config<AccountId = AccountId> + pallet_timestamp::Config + DepositConfig
-	{
+	pub trait Config: frame_system::Config<AccountId = AccountId> + DepositConfig {
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// Weight information for extrinsics in this pallet.
 		type WeightInfo: WeightInfo;
+
+		/// Unix time interface.
+		type UnixTime: UnixTime;
+
+		/// Pass [`pallet_session::Config::ShouldEndSession`]'s result to here.
+		type ShouldEndSession: Get<bool>;
+
+		/// Currency interface to pay the reward.
+		type Currency: Currency<Self::AccountId, Balance = Balance>;
+
+		/// Inflation and reward manager.
+		type IssuingManager: IssuingManager<Self>;
 
 		/// RING [`Stake`] interface.
 		type Ring: Stake<AccountId = Self::AccountId, Item = Balance>;
@@ -145,20 +157,11 @@ pub mod pallet {
 		/// Deposit [`StakeExt`] interface.
 		type Deposit: StakeExt<AccountId = Self::AccountId, Amount = Balance>;
 
-		/// Currency interface to pay the reward.
-		type Currency: Currency<Self::AccountId>;
-
-		/// Inflation and reward manager.
-		type IssuingManager: IssuingManager<Self>;
-
 		/// RING staking interface.
 		type RingStaking: Election + Reward;
 
 		/// KTON staking interface.
 		type KtonStaking: Reward;
-
-		/// Pass [`pallet_session::Config::ShouldEndSession`]'s result to here.
-		type ShouldEndSession: Get<bool>;
 
 		/// Maximum deposit count.
 		#[pallet::constant]
@@ -755,25 +758,6 @@ pub mod pallet {
 
 		/// Distribute the session reward to staking pot and update the stakers' reward record.
 		pub fn distribute_session_reward(amount: Balance) {
-			let reward_r = amount.saturating_div(2);
-			let reward_k = amount.saturating_sub(reward_r);
-			let (total, map) = <AuthoredBlocksCount<T>>::take();
-			let collators_v2 = call_on_cache!(<Current<T>>::get()).unwrap_or_default();
-			let mut actual_reward_r = 0;
-			let reward_r_v2 = map
-				.into_iter()
-				.filter_map(|(c, b)| {
-					let r = Perbill::from_rational(b, total) * reward_r;
-
-					actual_reward_r += r;
-
-					if collators_v2.contains(&c) {
-						Some((c, r))
-					} else {
-						None
-					}
-				})
-				.collect::<Vec<_>>();
 			let reward = |who, amount| {
 				if T::IssuingManager::reward(&who, amount).is_ok() {
 					Self::deposit_event(Event::Payout { who, amount });
@@ -781,13 +765,24 @@ pub mod pallet {
 					Self::deposit_event(Event::Unpaid { who, amount });
 				}
 			};
+			let reward_r = amount.saturating_div(2);
+			let reward_k = amount.saturating_sub(reward_r);
 
-			reward(account_id(), actual_reward_r);
+			reward(account_id(), reward_r);
 			reward(<KtonStakingContract<T>>::get(), reward_k);
 
-			for (c, r) in reward_r_v2 {
-				T::RingStaking::distribute(Some(c), r);
-			}
+			let (total, map) = <AuthoredBlocksCount<T>>::take();
+			let collators_v2 = call_on_cache!(<Current<T>>::get()).unwrap_or_default();
+
+			map.into_iter().for_each(|(c, b)| {
+				let r = Perbill::from_rational(b, total).mul_floor(reward_r);
+
+				if collators_v2.contains(&c) {
+					T::RingStaking::distribute(Some(c), r);
+				} else {
+					<PendingRewards<T>>::mutate(c, |u| *u = u.map(|u| u + r).or(Some(r)));
+				}
+			});
 
 			T::KtonStaking::distribute(None, reward_k);
 		}
@@ -930,17 +925,12 @@ pub mod pallet {
 	where
 		T: Config,
 	{
-		fn now() -> u64 {
-			<pallet_timestamp::Pallet<T> as UnixTime>::now().as_secs()
-		}
-
 		fn migration_progress() -> Perbill {
 			const TOTAL: u64 = 30 * 2 * 24 * 60 * 60;
 
 			let start = <MigrationStartPoint<T>>::get();
-			let now = Self::now();
 
-			Perbill::from_rational(now - start, TOTAL)
+			Perbill::from_rational(now::<T>() - start, TOTAL)
 		}
 
 		fn elect_ns() -> (u32, u32) {
@@ -1105,6 +1095,76 @@ pub enum CacheState {
 	Next,
 }
 
+/// Session ending checker.
+pub struct ShouldEndSession<T>(PhantomData<T>);
+impl<T> Get<bool> for ShouldEndSession<T>
+where
+	T: frame_system::Config + pallet_session::Config,
+{
+	fn get() -> bool {
+		<T as pallet_session::Config>::ShouldEndSession::should_end_session(
+			<frame_system::Pallet<T>>::block_number(),
+		)
+	}
+}
+
+/// Issue new token from pallet-balances.
+pub struct BalanceIssuing<T>(PhantomData<T>);
+impl<T> IssuingManager<T> for BalanceIssuing<T>
+where
+	T: Config,
+{
+	fn inflate() -> Balance {
+		let now = now::<T>() as Moment;
+		let session_duration = now - <SessionStartTime<T>>::get();
+		let elapsed_time = <ElapsedTime<T>>::mutate(|t| {
+			*t = t.saturating_add(session_duration);
+
+			*t
+		});
+
+		<SessionStartTime<T>>::put(now);
+
+		dc_inflation::issuing_in_period(session_duration, elapsed_time).unwrap_or_default()
+	}
+
+	fn calculate_reward(issued: Balance) -> Balance {
+		PAYOUT_FRAC * issued
+	}
+
+	fn reward(who: &AccountId, amount: Balance) -> DispatchResult {
+		let _ = T::Currency::deposit_creating(who, amount);
+
+		Ok(())
+	}
+}
+
+/// Transfer issued token from pallet-treasury.
+pub struct TreasuryIssuing<T>(PhantomData<T>);
+impl<T> IssuingManager<T> for TreasuryIssuing<T>
+where
+	T: Config,
+{
+	fn calculate_reward(_: Balance) -> Balance {
+		10_000 * UNIT
+	}
+
+	fn reward(who: &AccountId, amount: Balance) -> DispatchResult {
+		let treasury = TREASURY_ADDR.into();
+
+		if who == &treasury {
+			Ok(())
+		} else {
+			T::Currency::transfer(
+				&treasury,
+				who,
+				amount,
+				frame_support::traits::ExistenceRequirement::KeepAlive,
+			)
+		}
+	}
+}
+
 /// A convertor from collators id. Since this pallet does not have stash/controller, this is
 /// just identity.
 pub struct IdentityCollator;
@@ -1186,7 +1246,7 @@ where
 			.ok()?;
 
 		<darwinia_ethtx_forwarder::Pallet<T>>::forward_call(
-			TREASURY_ADDR,
+			TREASURY_ADDR.into(),
 			rsc,
 			input,
 			Default::default(),
@@ -1224,7 +1284,7 @@ where
 	fn distribute(who: Option<AccountId>, amount: Balance) {
 		#[allow(deprecated)]
 		darwinia_ethtx_forwarder::quick_forward_transact::<T>(
-			TREASURY_ADDR,
+			TREASURY_ADDR.into(),
 			Function {
 				name: "distributeReward".into(),
 				inputs: vec![Param {
@@ -1256,7 +1316,7 @@ where
 	fn distribute(_: Option<AccountId>, amount: Balance) {
 		#[allow(deprecated)]
 		darwinia_ethtx_forwarder::quick_forward_transact::<T>(
-			TREASURY_ADDR,
+			TREASURY_ADDR.into(),
 			Function {
 				name: "distributeRewards".into(),
 				inputs: Vec::new(),
@@ -1282,4 +1342,11 @@ where
 	A: FullCodec,
 {
 	PalletId(*b"da/staki").into_account_truncating()
+}
+
+fn now<T>() -> u64
+where
+	T: Config,
+{
+	T::UnixTime::now().as_secs()
 }
