@@ -338,7 +338,7 @@ pub mod pallet {
 
 				T::Ring::transfer(&account_id(), &who, to_claim.0, AllowDeath)?;
 				T::Ring::transfer(&account_id(), &T::Treasury::get(), to_migrate.0, AllowDeath)?;
-				T::DepositMigrator::migrate(who.clone(), to_migrate.2);
+				T::DepositMigrator::migrate(who.clone(), to_migrate.0, to_migrate.2);
 
 				Self::deposit_event(Event::DepositsClaimed {
 					owner: who.clone(),
@@ -461,7 +461,7 @@ where
 	T: Config,
 {
 	/// Migrate to contract.
-	fn migrate(_: T::AccountId, _: Vec<(Balance, Moment, Moment)>) {}
+	fn migrate(_: T::AccountId, _: Balance, _: Vec<(Balance, Moment, Moment)>) {}
 }
 impl<T> MigrateToContract<T> for () where T: Config {}
 
@@ -487,7 +487,7 @@ where
 	T: Config + darwinia_ethtx_forwarder::Config,
 	T::AccountId: Into<H160>,
 {
-	fn migrate(who: T::AccountId, deposits: Vec<(Balance, Moment, Moment)>) {
+	fn migrate(who: T::AccountId, total: Balance, deposits: Vec<(Balance, Moment, Moment)>) {
 		let Some(dc) = <DepositContract<T>>::get() else {
 			log::error!("deposit contract must be some; qed");
 
@@ -536,7 +536,7 @@ where
 				),
 			],
 			dc,
-			0.into(),
+			total.into(),
 			1_000_000.into(),
 		)
 	}
