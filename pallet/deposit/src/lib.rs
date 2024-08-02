@@ -40,10 +40,12 @@ pub use weights::WeightInfo;
 // core
 use core::{
 	cmp::Ordering::{Equal, Greater, Less},
+	marker::PhantomData,
 	ops::ControlFlow::{Break, Continue},
 };
 // crates.io
 use codec::FullCodec;
+use ethabi::{Function, Param, ParamType, StateMutability, Token};
 // darwinia
 use dc_inflation::MILLISECS_PER_YEAR;
 use dc_types::{Balance, Moment};
@@ -54,6 +56,7 @@ use frame_support::{
 	PalletId,
 };
 use frame_system::pallet_prelude::*;
+use sp_core::H160;
 use sp_runtime::traits::AccountIdConversion;
 
 #[frame_support::pallet]
@@ -74,6 +77,10 @@ pub mod pallet {
 
 		/// KTON asset.
 		type Kton: SimpleAsset<AccountId = Self::AccountId>;
+
+		/// Treasury account.
+		#[pallet::constant]
+		type Treasury: Get<Self::AccountId>;
 
 		/// Minimum amount to lock at least.
 		#[pallet::constant]
@@ -99,14 +106,16 @@ pub mod pallet {
 			expired_time: Moment,
 			kton_reward: Balance,
 		},
-		/// An expired deposit has been claimed.
-		DepositClaimed { owner: T::AccountId, deposit_id: DepositId },
+		/// Expired deposits have been claimed.
+		DepositsClaimed { owner: T::AccountId, deposits: Vec<DepositId> },
 		/// An unexpired deposit has been claimed by paying the KTON penalty.
 		DepositClaimedWithPenalty {
 			owner: T::AccountId,
 			deposit_id: DepositId,
 			kton_penalty: Balance,
 		},
+		/// Deposits have been migrated.
+		DepositsMigrated { owner: T::AccountId, deposits: Vec<DepositId> },
 	}
 
 	#[pallet::error]
@@ -136,6 +145,11 @@ pub mod pallet {
 	#[pallet::getter(fn deposit_of)]
 	pub type Deposits<T: Config> =
 		StorageMap<_, Blake2_128Concat, T::AccountId, BoundedVec<Deposit, T::MaxDeposits>>;
+
+	// Deposit contract address.
+	#[pallet::storage]
+	#[pallet::getter(fn deposit_contract)]
+	pub type DepositContract<T: Config> = StorageValue<_, T::AccountId>;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
@@ -218,18 +232,14 @@ pub mod pallet {
 		pub fn claim(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			let now = Self::now();
-			let mut claimed = 0;
+			let mut to_claim = (0, Vec::new());
 			let _ = <Deposits<T>>::try_mutate(&who, |maybe_ds| {
 				let ds = maybe_ds.as_mut().ok_or(())?;
 
 				ds.retain(|d| {
 					if d.expired_time <= now && !d.in_use {
-						claimed += d.value;
-
-						Self::deposit_event(Event::DepositClaimed {
-							owner: who.clone(),
-							deposit_id: d.id,
-						});
+						to_claim.0 += d.value;
+						to_claim.1.push(d.id);
 
 						false
 					} else {
@@ -246,7 +256,8 @@ pub mod pallet {
 				<Result<(), ()>>::Ok(())
 			});
 
-			T::Ring::transfer(&account_id(), &who, claimed, AllowDeath)?;
+			T::Ring::transfer(&account_id(), &who, to_claim.0, AllowDeath)?;
+			Self::deposit_event(Event::DepositsClaimed { owner: who, deposits: to_claim.1 });
 
 			Ok(())
 		}
@@ -297,14 +308,112 @@ pub mod pallet {
 		#[pallet::weight(<T as Config>::WeightInfo::migrate())]
 		pub fn migrate(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
+			let Some(ds) = <Deposits<T>>::take(&who) else { return Ok(()) };
+			let now = Self::now();
 
-			// TODO.
+			for c in ds.chunks(50) {
+				let mut to_claim = (0, Vec::new());
+				let mut to_migrate = (0, Vec::new());
+
+				for d in c {
+					if d.in_use {
+						Err(<Error<T>>::DepositInUse)?;
+					}
+
+					if d.expired_time <= now {
+						to_claim.0 += d.value;
+						to_claim.1.push(d.id);
+					} else {
+						to_migrate.0 += d.value;
+						to_migrate.1.push(d.id);
+					}
+				}
+
+				T::Ring::transfer(&account_id(), &who, to_claim.0, AllowDeath)?;
+				T::Ring::transfer(&account_id(), &T::Treasury::get(), to_migrate.0, AllowDeath)?;
+
+				Self::deposit_event(Event::DepositsClaimed {
+					owner: who.clone(),
+					deposits: to_claim.1,
+				});
+				Self::deposit_event(Event::DepositsMigrated {
+					owner: who.clone(),
+					deposits: to_migrate.1,
+				});
+			}
 
 			Ok(())
 		}
 	}
+	impl<T> Pallet<T>
+	where
+		T: Config,
+	{
+		fn now() -> Moment {
+			<pallet_timestamp::Pallet<T> as UnixTime>::now().as_millis()
+		}
+	}
+	impl<T> darwinia_staking_traits::Stake for Pallet<T>
+	where
+		T: Config,
+	{
+		type AccountId = T::AccountId;
+		type Item = DepositId;
+
+		fn stake(who: &Self::AccountId, item: Self::Item) -> DispatchResult {
+			<Deposits<T>>::try_mutate(who, |ds| {
+				let ds = ds.as_mut().ok_or(<Error<T>>::DepositNotFound)?;
+				let d = ds.iter_mut().find(|d| d.id == item).ok_or(<Error<T>>::DepositNotFound)?;
+
+				if d.in_use {
+					Err(<Error<T>>::DepositInUse)?
+				} else {
+					d.in_use = true;
+
+					Ok(())
+				}
+			})
+		}
+
+		fn unstake(who: &Self::AccountId, item: Self::Item) -> DispatchResult {
+			<Deposits<T>>::try_mutate(who, |ds| {
+				let ds = ds.as_mut().ok_or(<Error<T>>::DepositNotFound)?;
+				let d = ds.iter_mut().find(|d| d.id == item).ok_or(<Error<T>>::DepositNotFound)?;
+
+				if d.in_use {
+					d.in_use = false;
+
+					Ok(())
+				} else {
+					Err(<Error<T>>::DepositNotInUse)?
+				}
+			})
+		}
+	}
+	impl<T> darwinia_staking_traits::StakeExt for Pallet<T>
+	where
+		T: Config,
+	{
+		type Amount = Balance;
+
+		fn amount(who: &Self::AccountId, item: Self::Item) -> Result<Self::Amount, DispatchError> {
+			Ok(<Deposits<T>>::get(who)
+				.and_then(|ds| {
+					ds.into_iter().find_map(|d| if d.id == item { Some(d.value) } else { None })
+				})
+				.ok_or(<Error<T>>::DepositNotFound)?)
+		}
+	}
 }
 pub use pallet::*;
+
+/// Deposit identifier.
+pub type DepositId = u16;
+// https://github.com/polkadot-js/apps/issues/8591
+// Max deposits in Darwinia is 322.
+// Max deposits in Crab is 220.
+// Maybe we will use `WeakBoundedVec` later.
+// pub type DepositId = u8;
 
 /// Milliseconds per month.
 pub const MILLISECS_PER_MONTH: Moment = MILLISECS_PER_YEAR / 12;
@@ -324,13 +433,12 @@ pub trait SimpleAsset {
 	fn burn(who: &Self::AccountId, amount: Balance) -> DispatchResult;
 }
 
-/// Deposit identifier.
-pub type DepositId = u16;
-// https://github.com/polkadot-js/apps/issues/8591
-// Max deposits in Darwinia is 322.
-// Max deposits in Crab is 220.
-// Maybe we will use `WeakBoundedVec` later.
-// pub type DepositId = u8;
+/// Migrate to contract trait.
+pub trait MigrateToContract {
+	/// Migrate to contract.
+	fn migrate() {}
+}
+impl MigrateToContract for () {}
 
 /// Deposit.
 #[derive(Clone, PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
@@ -347,63 +455,52 @@ pub struct Deposit {
 	pub in_use: bool,
 }
 
-impl<T> Pallet<T>
+/// Deposit migrator.
+pub struct DepositMigrator<T>(PhantomData<T>);
+impl<T> MigrateToContract for DepositMigrator<T>
 where
-	T: Config,
+	T: Config + darwinia_ethtx_forwarder::Config,
+	T::AccountId: Into<H160>,
 {
-	fn now() -> Moment {
-		<pallet_timestamp::Pallet<T> as UnixTime>::now().as_millis()
-	}
-}
-impl<T> darwinia_staking_traits::Stake for Pallet<T>
-where
-	T: Config,
-{
-	type AccountId = T::AccountId;
-	type Item = DepositId;
+	fn migrate() {
+		let Some(dc) = <DepositContract<T>>::get() else {
+			log::error!("deposit contract must be some; qed");
 
-	fn stake(who: &Self::AccountId, item: Self::Item) -> DispatchResult {
-		<Deposits<T>>::try_mutate(who, |ds| {
-			let ds = ds.as_mut().ok_or(<Error<T>>::DepositNotFound)?;
-			let d = ds.iter_mut().find(|d| d.id == item).ok_or(<Error<T>>::DepositNotFound)?;
+			return;
+		};
+		let dc = dc.into();
+		let treasury = T::Treasury::get().into();
 
-			if d.in_use {
-				Err(<Error<T>>::DepositInUse)?
-			} else {
-				d.in_use = true;
-
-				Ok(())
-			}
-		})
-	}
-
-	fn unstake(who: &Self::AccountId, item: Self::Item) -> DispatchResult {
-		<Deposits<T>>::try_mutate(who, |ds| {
-			let ds = ds.as_mut().ok_or(<Error<T>>::DepositNotFound)?;
-			let d = ds.iter_mut().find(|d| d.id == item).ok_or(<Error<T>>::DepositNotFound)?;
-
-			if d.in_use {
-				d.in_use = false;
-
-				Ok(())
-			} else {
-				Err(<Error<T>>::DepositNotInUse)?
-			}
-		})
-	}
-}
-impl<T> darwinia_staking_traits::StakeExt for Pallet<T>
-where
-	T: Config,
-{
-	type Amount = Balance;
-
-	fn amount(who: &Self::AccountId, item: Self::Item) -> Result<Self::Amount, DispatchError> {
-		Ok(<Deposits<T>>::get(who)
-			.and_then(|ds| {
-				ds.into_iter().find_map(|d| if d.id == item { Some(d.value) } else { None })
-			})
-			.ok_or(<Error<T>>::DepositNotFound)?)
+		#[allow(deprecated)]
+		darwinia_ethtx_forwarder::quick_forward_transact::<T>(
+			treasury,
+			Function {
+				name: "migrate".into(),
+				inputs: vec![
+					Param {
+						name: "address".to_owned(),
+						kind: ParamType::Address,
+						internal_type: None,
+					},
+					Param {
+						name: "deposits".to_owned(),
+						kind: ParamType::Array(Box::new(ParamType::Tuple(vec![
+							ParamType::Uint(256),
+							ParamType::Uint(64),
+							ParamType::Uint(64),
+						]))),
+						internal_type: None,
+					},
+				],
+				outputs: Vec::new(),
+				constant: None,
+				state_mutability: StateMutability::Payable,
+			},
+			&[Token::Address(treasury), Token::Array(vec![])],
+			dc,
+			0.into(),
+			1_000_000.into(),
+		)
 	}
 }
 

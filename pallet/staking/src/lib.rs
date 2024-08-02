@@ -113,8 +113,6 @@ macro_rules! call_on_cache {
 type DepositId<T> = <<T as Config>::Deposit as Stake>::Item;
 
 const PAYOUT_FRAC: Perbill = Perbill::from_percent(40);
-const TREASURY_ADDR: [u8; 20] =
-	[109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0];
 const DAY_IN_MILLIS: Moment = 24 * 60 * 60 * 1_000;
 
 #[frame_support::pallet]
@@ -163,6 +161,9 @@ pub mod pallet {
 
 		/// KTON staking interface.
 		type KtonStaking: Reward;
+
+		/// Treasury address.
+		type Treasury: Get<Self::AccountId>;
 
 		/// Maximum deposit count.
 		#[pallet::constant]
@@ -323,18 +324,11 @@ pub mod pallet {
 	/// RING staking contract address.
 	#[pallet::storage]
 	#[pallet::getter(fn ring_staking_contract)]
-	pub type RingStakingContract<T: Config> =
-		StorageValue<_, T::AccountId, ValueQuery, StakingContractDefault<T>>;
+	pub type RingStakingContract<T: Config> = StorageValue<_, T::AccountId>;
 	/// KTON staking contract address.
 	#[pallet::storage]
 	#[pallet::getter(fn kton_staking_contract)]
-	pub type KtonStakingContract<T: Config> =
-		StorageValue<_, T::AccountId, ValueQuery, StakingContractDefault<T>>;
-	/// Default value for staking contracts.
-	#[pallet::type_value]
-	pub fn StakingContractDefault<T: Config>() -> T::AccountId {
-		TREASURY_ADDR.into()
-	}
+	pub type KtonStakingContract<T: Config> = StorageValue<_, T::AccountId>;
 
 	/// Migration start point.
 	#[pallet::storage]
@@ -759,7 +753,7 @@ pub mod pallet {
 
 		/// Distribute the session reward to staking pot and update the stakers' reward record.
 		pub fn distribute_session_reward(amount: Balance) {
-			let who = TREASURY_ADDR.into();
+			let who = T::Treasury::get();
 
 			if T::IssuingManager::reward(&who, amount).is_ok() {
 				Self::deposit_event(Event::Payout { who, amount });
@@ -1149,7 +1143,7 @@ where
 	}
 
 	fn reward(who: &AccountId, amount: Balance) -> DispatchResult {
-		let treasury = TREASURY_ADDR.into();
+		let treasury = T::Treasury::get();
 
 		if who == &treasury {
 			Ok(())
@@ -1222,7 +1216,12 @@ where
 	T: Config + darwinia_ethtx_forwarder::Config,
 {
 	fn elect(n: u32) -> Option<Vec<AccountId>> {
-		let rsc = <RingStakingContract<T>>::get().into();
+		let Some(rsc) = <RingStakingContract<T>>::get() else {
+			log::error!("RING staking contract must be some; qed");
+
+			return None;
+		};
+		let rsc = rsc.into();
 		#[allow(deprecated)]
 		let function = Function {
 			name: "getTopCollators".to_owned(),
@@ -1245,7 +1244,7 @@ where
 			.ok()?;
 
 		<darwinia_ethtx_forwarder::Pallet<T>>::forward_call(
-			TREASURY_ADDR.into(),
+			T::Treasury::get().into(),
 			rsc,
 			input,
 			Default::default(),
@@ -1286,10 +1285,16 @@ where
 
 			return;
 		};
+		let Some(rsc) = <RingStakingContract<T>>::get() else {
+			log::error!("RING staking contract must be some; qed");
+
+			return;
+		};
+		let rsc = rsc.into();
 
 		#[allow(deprecated)]
 		darwinia_ethtx_forwarder::quick_forward_transact::<T>(
-			TREASURY_ADDR.into(),
+			T::Treasury::get().into(),
 			Function {
 				name: "distributeReward".into(),
 				inputs: vec![Param {
@@ -1302,10 +1307,10 @@ where
 				state_mutability: StateMutability::Payable,
 			},
 			&[Token::Address(who.into())],
-			<RingStakingContract<T>>::get().into(),
+			rsc,
 			amount.into(),
 			1_000_000.into(),
-		)
+		);
 	}
 }
 
@@ -1319,9 +1324,16 @@ where
 	T: Config + darwinia_ethtx_forwarder::Config,
 {
 	fn distribute(_: Option<AccountId>, amount: Balance) {
+		let Some(ksc) = <KtonStakingContract<T>>::get() else {
+			log::error!("KTON staking contract must be some; qed");
+
+			return;
+		};
+		let ksc = ksc.into();
+
 		#[allow(deprecated)]
 		darwinia_ethtx_forwarder::quick_forward_transact::<T>(
-			TREASURY_ADDR.into(),
+			T::Treasury::get().into(),
 			Function {
 				name: "distributeRewards".into(),
 				inputs: Vec::new(),
@@ -1334,10 +1346,10 @@ where
 				state_mutability: StateMutability::Payable,
 			},
 			&[],
-			<KtonStakingContract<T>>::get().into(),
+			ksc,
 			amount.into(),
 			1_000_000.into(),
-		)
+		);
 	}
 }
 

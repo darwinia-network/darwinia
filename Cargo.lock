@@ -2774,17 +2774,21 @@ dependencies = [
 name = "darwinia-deposit"
 version = "6.6.3"
 dependencies = [
+ "darwinia-ethtx-forwarder",
  "darwinia-staking-traits",
  "dc-inflation",
  "dc-types",
+ "ethabi",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "log",
  "pallet-assets",
  "pallet-balances",
  "pallet-timestamp",
  "parity-scale-codec",
  "scale-info",
+ "sp-core",
  "sp-io",
  "sp-runtime",
  "sp-std 14.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.7.2)",

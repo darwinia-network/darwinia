@@ -13,6 +13,7 @@ pub fn migrate_staking_reward_distribution_contract<T>(kton_staking_contract: T:
 where
 	T: Config + darwinia_ethtx_forwarder::Config,
 {
+	let treasury = T::Treasury::get().into();
 	let ksc = kton_staking_contract.into();
 	// 0x000000000Ae5DB7BDAf8D071e680452e33d91Dd5.
 	let ksc_old = H160([
@@ -21,7 +22,7 @@ where
 
 	#[allow(deprecated)]
 	darwinia_ethtx_forwarder::quick_forward_transact::<T>(
-		TREASURY_ADDR.into(),
+		treasury,
 		Function {
 			name: "nominateNewOwner".into(),
 			inputs: vec![Param {
@@ -40,7 +41,7 @@ where
 	);
 	#[allow(deprecated)]
 	darwinia_ethtx_forwarder::quick_forward_transact::<T>(
-		TREASURY_ADDR.into(),
+		treasury,
 		Function {
 			name: "acceptOwnershipFromOldDistribution".into(),
 			inputs: Vec::new(),
