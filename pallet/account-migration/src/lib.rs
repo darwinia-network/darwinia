@@ -55,16 +55,9 @@ mod weights;
 pub use weights::WeightInfo;
 
 // darwinia
-use darwinia_deposit::{Deposit, DepositId};
-use darwinia_staking::Ledger;
-use dc_primitives::{AccountId as AccountId20, AssetId, Balance, BlockNumber, Nonce};
+use dc_primitives::{AccountId as AccountId20, AssetId, Balance, Nonce};
 // polkadot-sdk
-use frame_support::{
-	migration,
-	pallet_prelude::*,
-	traits::{Currency, ExistenceRequirement::AllowDeath},
-	StorageHasher,
-};
+use frame_support::{migration, pallet_prelude::*, StorageHasher};
 use frame_system::{pallet_prelude::*, AccountInfo};
 use pallet_balances::AccountData;
 use sp_core::{
@@ -107,11 +100,6 @@ pub mod pallet {
 			Lookup = IdentityLookup<AccountId20>,
 		> + pallet_assets::Config<Balance = Balance, AssetId = AssetId>
 		+ pallet_balances::Config<Balance = Balance>
-		+ darwinia_deposit::Config
-		+ darwinia_staking::Config<
-			Deposit = darwinia_deposit::Pallet<Self>,
-			MaxDeposits = ConstU32<512>,
-		>
 	{
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
@@ -480,17 +468,6 @@ pub struct MultisigMigrationDetail {
 	to: AccountId20,
 	members: Vec<(AccountId32, bool)>,
 	threshold: u16,
-}
-
-#[allow(missing_docs)]
-#[derive(Default, PartialEq, Eq, Encode, Decode, MaxEncodedLen, RuntimeDebug, TypeInfo)]
-pub struct OldLedger {
-	pub staked_ring: Balance,
-	pub staked_kton: Balance,
-	pub staked_deposits: BoundedVec<DepositId, ConstU32<512>>,
-	pub unstaking_ring: BoundedVec<(Balance, BlockNumber), ConstU32<512>>,
-	pub unstaking_kton: BoundedVec<(Balance, BlockNumber), ConstU32<512>>,
-	pub unstaking_deposits: BoundedVec<(DepositId, BlockNumber), ConstU32<512>>,
 }
 
 /// Build a Darwinia account migration message.

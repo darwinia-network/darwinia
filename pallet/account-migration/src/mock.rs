@@ -24,31 +24,6 @@ use frame_support::derive_impl;
 use sp_io::TestExternalities;
 use sp_runtime::BuildStorage;
 
-pub struct Dummy;
-impl darwinia_deposit::SimpleAsset for Dummy {
-	type AccountId = AccountId;
-
-	fn mint(_: &Self::AccountId, _: Balance) -> sp_runtime::DispatchResult {
-		Ok(())
-	}
-
-	fn burn(_: &Self::AccountId, _: Balance) -> sp_runtime::DispatchResult {
-		Ok(())
-	}
-}
-impl darwinia_staking::Stake for Dummy {
-	type AccountId = AccountId;
-	type Item = Balance;
-
-	fn stake(_: &Self::AccountId, _: Self::Item) -> sp_runtime::DispatchResult {
-		Ok(())
-	}
-
-	fn unstake(_: &Self::AccountId, _: Self::Item) -> sp_runtime::DispatchResult {
-		Ok(())
-	}
-}
-
 #[sp_version::runtime_version]
 pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia2"),
@@ -117,38 +92,6 @@ impl pallet_assets::Config for Runtime {
 	type WeightInfo = ();
 }
 
-frame_support::parameter_types! {
-	pub UnvestedFundsAllowedWithdrawReasons: frame_support::traits::WithdrawReasons =
-		frame_support::traits::WithdrawReasons::except(
-			frame_support::traits::WithdrawReasons::TRANSFER | frame_support::traits::WithdrawReasons::RESERVE
-		);
-}
-
-impl darwinia_deposit::Config for Runtime {
-	type Kton = Dummy;
-	type MaxDeposits = ();
-	type MinLockingAmount = ();
-	type Ring = Balances;
-	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
-}
-
-impl darwinia_staking::Config for Runtime {
-	type Currency = Balances;
-	type Deposit = Deposit;
-	type IssuingManager = ();
-	type KtonStaking = ();
-	type MaxDeposits = frame_support::traits::ConstU32<512>;
-	type Ring = Dummy;
-	type RingStaking = ();
-	type RuntimeEvent = RuntimeEvent;
-	type ShouldEndSession = ();
-	type UnixTime = Timestamp;
-	type WeightInfo = ();
-}
-#[cfg(not(feature = "runtime-benchmarks"))]
-impl darwinia_staking::DepositConfig for Runtime {}
-
 impl darwinia_account_migration::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
@@ -160,8 +103,6 @@ frame_support::construct_runtime! {
 		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
 		Assets: pallet_assets,
-		Deposit: darwinia_deposit,
-		Staking: darwinia_staking,
 		AccountMigration: darwinia_account_migration,
 	}
 }

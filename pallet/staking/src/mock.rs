@@ -16,6 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+// core
+use core::fmt::{Display, Formatter, Result as FmtResult};
+// crates.io
+use codec::MaxEncodedLen;
+use scale_info::TypeInfo;
+use serde::{Deserialize, Serialize};
 // darwinia
 use crate::*;
 // polkadot-sdk
@@ -26,6 +32,37 @@ use sp_runtime::{BuildStorage, RuntimeAppPublic};
 
 pub type BlockNumber = frame_system::pallet_prelude::BlockNumberFor<Runtime>;
 
+#[derive(
+	Clone,
+	Copy,
+	Debug,
+	PartialEq,
+	Eq,
+	PartialOrd,
+	Ord,
+	Serialize,
+	Deserialize,
+	Encode,
+	Decode,
+	MaxEncodedLen,
+	TypeInfo,
+)]
+pub struct AccountId(pub u64);
+impl From<H160> for AccountId {
+	fn from(value: H160) -> Self {
+		Self(H160::to_low_u64_le(&value))
+	}
+}
+impl Into<H160> for AccountId {
+	fn into(self) -> H160 {
+		H160::from_low_u64_le(self.0)
+	}
+}
+impl Display for AccountId {
+	fn fmt(&self, f: &mut Formatter) -> FmtResult {
+		write!(f, "{}", self.0)
+	}
+}
 #[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
@@ -60,11 +97,13 @@ impl darwinia_deposit::SimpleAsset for KtonMinting {
 	}
 }
 impl darwinia_deposit::Config for Runtime {
+	type DepositMigrator = ();
 	type Kton = KtonMinting;
 	type MaxDeposits = frame_support::traits::ConstU32<16>;
 	type MinLockingAmount = frame_support::traits::ConstU128<UNIT>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
+	type Treasury = TreasuryAcct;
 	type WeightInfo = ();
 }
 
@@ -119,7 +158,7 @@ impl pallet_session::Config for Runtime {
 
 frame_support::parameter_types! {
 	pub const TreasuryPalletId: frame_support::PalletId = frame_support::PalletId(*b"da/trsry");
-	pub TreasuryAccount: AccountId = Treasury::account_id();
+	pub TreasuryAcct: AccountId = Treasury::account_id();
 }
 #[cfg(feature = "runtime-benchmarks")]
 pub struct DummyBenchmarkHelper;
@@ -133,7 +172,7 @@ where
 	}
 
 	fn create_beneficiary(_: [u8; 32]) -> AccountId {
-		Default::default()
+		AccountId(0)
 	}
 }
 impl pallet_treasury::Config for Runtime {
@@ -150,7 +189,7 @@ impl pallet_treasury::Config for Runtime {
 	type MaxApprovals = ();
 	type OnSlash = ();
 	type PalletId = TreasuryPalletId;
-	type Paymaster = frame_support::traits::tokens::PayFromAccount<Balances, TreasuryAccount>;
+	type Paymaster = frame_support::traits::tokens::PayFromAccount<Balances, TreasuryAcct>;
 	type PayoutPeriod = ();
 	type ProposalBond = ();
 	type ProposalBondMaximum = ();
@@ -215,17 +254,17 @@ impl crate::Stake for RingStaking {
 		)
 	}
 }
-impl crate::Election for RingStaking {
+impl crate::Election<AccountId> for RingStaking {
 	fn elect(n: u32) -> Option<Vec<AccountId>> {
 		Some(
 			(100..=(100 + n) as u64)
-				.map(|x| {
-					let who = account_id_of(x);
-					let _ = <pallet_balances::Pallet<Runtime>>::deposit_creating(&who, x as _);
+				.map(|i| {
+					let who = AccountId(i);
+					let _ = <pallet_balances::Pallet<Runtime>>::deposit_creating(&who, i as _);
 
 					assert_ok!(Session::set_keys(
 						RuntimeOrigin::signed(who),
-						SessionKeys { uint: x.into() },
+						SessionKeys { uint: i.into() },
 						Vec::new()
 					));
 
@@ -235,22 +274,19 @@ impl crate::Election for RingStaking {
 		)
 	}
 }
-impl crate::Reward for RingStaking {
+impl crate::Reward<AccountId> for RingStaking {
 	fn distribute(who: Option<AccountId>, amount: Balance) {
 		let Some(who) = who else { return };
-		let _ = Balances::transfer_keep_alive(
-			RuntimeOrigin::signed(Treasury::account_id()),
-			who,
-			amount,
-		);
+		let _ =
+			Balances::transfer_keep_alive(RuntimeOrigin::signed(TreasuryAcct::get()), who, amount);
 	}
 }
 pub enum KtonStaking {}
-impl crate::Reward for KtonStaking {
+impl crate::Reward<AccountId> for KtonStaking {
 	fn distribute(_: Option<AccountId>, amount: Balance) {
 		let _ = Balances::transfer_keep_alive(
-			RuntimeOrigin::signed(Treasury::account_id()),
-			<KtonStakingContract<Runtime>>::get(),
+			RuntimeOrigin::signed(TreasuryAcct::get()),
+			<KtonStakingContract<Runtime>>::get().unwrap(),
 			amount,
 		);
 	}
@@ -265,6 +301,7 @@ impl crate::Config for Runtime {
 	type RingStaking = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
 	type ShouldEndSession = crate::ShouldEndSession<Self>;
+	type Treasury = TreasuryAcct;
 	type UnixTime = Timestamp;
 	type WeightInfo = ();
 }
@@ -323,14 +360,14 @@ impl ExtBuilder {
 	}
 
 	pub fn build(self) -> TestExternalities {
-		let _ = pretty_env_logger::try_init();
+		// let _ = pretty_env_logger::try_init();
 		let mut storage =
 			<frame_system::GenesisConfig<Runtime>>::default().build_storage().unwrap();
 
 		pallet_balances::GenesisConfig::<Runtime> {
 			balances: (1..=10)
-				.map(|x| (account_id_of(x), 1_000 * UNIT))
-				.chain([(Treasury::account_id(), 1_000_000_000 * UNIT)])
+				.map(|i| (AccountId(i), 1_000 * UNIT))
+				.chain([(TreasuryAcct::get(), 1_000_000 * UNIT)])
 				.collect(),
 		}
 		.assimilate_storage(&mut storage)
@@ -339,7 +376,7 @@ impl ExtBuilder {
 			rate_limit: 100 * UNIT,
 			collator_count: self.collator_count,
 			collators: if self.genesis_collator {
-				(1..=self.collator_count as u64).map(|x| (account_id_of(x), x as _)).collect()
+				(1..=self.collator_count as u64).map(|i| (AccountId(i), i as _)).collect()
 			} else {
 				Default::default()
 			},
@@ -350,7 +387,7 @@ impl ExtBuilder {
 		if self.genesis_collator {
 			pallet_session::GenesisConfig::<Runtime> {
 				keys: (1..=self.collator_count as u64)
-					.map(|x| (account_id_of(x), account_id_of(x), SessionKeys { uint: x.into() }))
+					.map(|i| (AccountId(i), AccountId(i), SessionKeys { uint: i.into() }))
 					.collect(),
 			}
 			.assimilate_storage(&mut storage)
@@ -359,7 +396,12 @@ impl ExtBuilder {
 
 		let mut ext = TestExternalities::from(storage);
 
-		ext.execute_with(|| new_session());
+		ext.execute_with(|| {
+			<RingStakingContract<Runtime>>::put(AccountId(718));
+			<KtonStakingContract<Runtime>>::put(AccountId(719));
+
+			new_session();
+		});
 
 		ext
 	}
@@ -370,25 +412,17 @@ impl Default for ExtBuilder {
 	}
 }
 
-pub fn account_id_of(x: u64) -> AccountId {
-	H160::from_low_u64_le(x).into()
-}
-
-pub fn u64_of(account_id: AccountId) -> u64 {
-	H160::to_low_u64_le(&account_id.into())
-}
-
 pub fn preset_collators(n: u64) {
-	(10..(10 + n)).for_each(|x| {
-		let who = account_id_of(x);
-		let _ = <pallet_balances::Pallet<Runtime>>::deposit_creating(&who, x as _);
+	(10..(10 + n)).for_each(|i| {
+		let who = AccountId(i);
+		let _ = <pallet_balances::Pallet<Runtime>>::deposit_creating(&who, i as _);
 
 		assert_ok!(Session::set_keys(
 			RuntimeOrigin::signed(who),
-			SessionKeys { uint: x.into() },
+			SessionKeys { uint: i.into() },
 			Vec::new()
 		));
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(who), x as _, Vec::new()));
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(who), i as _, Vec::new()));
 		assert_ok!(Staking::collect(RuntimeOrigin::signed(who), Perbill::zero()));
 		assert_ok!(Staking::nominate(RuntimeOrigin::signed(who), who));
 	});

@@ -51,7 +51,7 @@ pub use darwinia_staking_traits::*;
 use codec::FullCodec;
 use ethabi::{Function, Param, ParamType, StateMutability, Token};
 // darwinia
-use dc_primitives::{AccountId, Balance, Moment, UNIT};
+use dc_types::{Balance, Moment, UNIT};
 // polkadot-sdk
 use frame_support::{
 	pallet_prelude::*,
@@ -60,7 +60,7 @@ use frame_support::{
 };
 use frame_system::{pallet_prelude::*, RawOrigin};
 use pallet_session::ShouldEndSession as _;
-use sp_core::U256;
+use sp_core::{H160, U256};
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, One, Zero},
 	Perbill,
@@ -131,7 +131,7 @@ pub mod pallet {
 	pub trait DepositConfig {}
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config<AccountId = AccountId> + DepositConfig {
+	pub trait Config: frame_system::Config + DepositConfig {
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
@@ -157,10 +157,10 @@ pub mod pallet {
 		type Deposit: StakeExt<AccountId = Self::AccountId, Amount = Balance>;
 
 		/// RING staking interface.
-		type RingStaking: Election + Reward;
+		type RingStaking: Election<Self::AccountId> + Reward<Self::AccountId>;
 
 		/// KTON staking interface.
-		type KtonStaking: Reward;
+		type KtonStaking: Reward<Self::AccountId>;
 
 		/// Treasury address.
 		type Treasury: Get<Self::AccountId>;
@@ -376,19 +376,19 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::unbounded]
 	#[pallet::getter(fn collators_cache_0)]
-	pub type CollatorsCache0<T: Config> = StorageValue<_, Vec<AccountId>, ValueQuery>;
+	pub type CollatorsCache0<T: Config> = StorageValue<_, Vec<T::AccountId>, ValueQuery>;
 
 	/// Exposure cache 1.
 	#[pallet::storage]
 	#[pallet::unbounded]
 	#[pallet::getter(fn collators_cache_1)]
-	pub type CollatorsCache1<T: Config> = StorageValue<_, Vec<AccountId>, ValueQuery>;
+	pub type CollatorsCache1<T: Config> = StorageValue<_, Vec<T::AccountId>, ValueQuery>;
 
 	/// Exposure cache 2.
 	#[pallet::storage]
 	#[pallet::unbounded]
 	#[pallet::getter(fn collators_cache_2)]
-	pub type CollatorsCache2<T: Config> = StorageValue<_, Vec<AccountId>, ValueQuery>;
+	pub type CollatorsCache2<T: Config> = StorageValue<_, Vec<T::AccountId>, ValueQuery>;
 
 	#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
@@ -626,6 +626,25 @@ pub mod pallet {
 			Ok(())
 		}
 
+		/// Set the collator count.
+		///
+		/// This will apply to the incoming session.
+		///
+		/// Require root origin.
+		#[pallet::call_index(7)]
+		#[pallet::weight(<T as Config>::WeightInfo::set_collator_count())]
+		pub fn set_collator_count(origin: OriginFor<T>, count: u32) -> DispatchResult {
+			ensure_root(origin)?;
+
+			if count == 0 {
+				return Err(<Error<T>>::ZeroCollatorCount)?;
+			}
+
+			<CollatorCount<T>>::put(count);
+
+			Ok(())
+		}
+
 		/// Set the max unstake RING limit.
 		#[pallet::call_index(9)]
 		#[pallet::weight(<T as Config>::WeightInfo::set_rate_limit())]
@@ -661,25 +680,6 @@ pub mod pallet {
 			ensure_root(origin)?;
 
 			<KtonStakingContract<T>>::put(address);
-
-			Ok(())
-		}
-
-		/// Set the collator count.
-		///
-		/// This will apply to the incoming session.
-		///
-		/// Require root origin.
-		#[pallet::call_index(7)]
-		#[pallet::weight(<T as Config>::WeightInfo::set_collator_count())]
-		pub fn set_collator_count(origin: OriginFor<T>, count: u32) -> DispatchResult {
-			ensure_root(origin)?;
-
-			if count == 0 {
-				return Err(<Error<T>>::ZeroCollatorCount)?;
-			}
-
-			<CollatorCount<T>>::put(count);
 
 			Ok(())
 		}
@@ -753,7 +753,7 @@ pub mod pallet {
 
 		/// Distribute the session reward to staking pot and update the stakers' reward record.
 		pub fn distribute_session_reward(amount: Balance) {
-			let who = T::Treasury::get();
+			let who = <T as Config>::Treasury::get();
 
 			if T::IssuingManager::reward(&who, amount).is_ok() {
 				Self::deposit_event(Event::Payout { who, amount });
@@ -946,10 +946,7 @@ pub mod pallet {
 		}
 
 		fn elect_from_contract(n: u32) -> Option<Vec<T::AccountId>> {
-			const ZERO: [u8; 20] = [0; 20];
-
-			let winners =
-				T::RingStaking::elect(n)?.into_iter().filter(|w| w.0 != ZERO).collect::<Vec<_>>();
+			let winners = T::RingStaking::elect(n)?;
 
 			call_on_cache!(<Next<T>>::put(winners.clone())).ok()?;
 
@@ -1012,20 +1009,20 @@ where
 impl<T> IssuingManager<T> for () where T: Config {}
 
 /// Election interface.
-pub trait Election {
+pub trait Election<AccountId> {
 	/// Elect the new collators.
 	fn elect(_: u32) -> Option<Vec<AccountId>> {
 		None
 	}
 }
-impl Election for () {}
+impl<AccountId> Election<AccountId> for () {}
 
 /// Distribute the reward to a contract.
-pub trait Reward {
+pub trait Reward<AccountId> {
 	/// Distribute the reward.
 	fn distribute(_: Option<AccountId>, _: Balance) {}
 }
-impl Reward for () {}
+impl<AccountId> Reward<AccountId> for () {}
 
 /// Staking rate limiter.
 #[derive(Clone, Debug, PartialEq, Encode, Decode, MaxEncodedLen, TypeInfo)]
@@ -1125,7 +1122,7 @@ where
 		PAYOUT_FRAC * issued
 	}
 
-	fn reward(who: &AccountId, amount: Balance) -> DispatchResult {
+	fn reward(who: &T::AccountId, amount: Balance) -> DispatchResult {
 		let _ = T::Currency::deposit_creating(who, amount);
 
 		Ok(())
@@ -1142,8 +1139,8 @@ where
 		20_000 * UNIT
 	}
 
-	fn reward(who: &AccountId, amount: Balance) -> DispatchResult {
-		let treasury = T::Treasury::get();
+	fn reward(who: &T::AccountId, amount: Balance) -> DispatchResult {
+		let treasury = <T as Config>::Treasury::get();
 
 		if who == &treasury {
 			Ok(())
@@ -1211,11 +1208,14 @@ pub struct IndividualExposure<AccountId> {
 
 /// RING staking interface.
 pub struct RingStaking<T>(PhantomData<T>);
-impl<T> Election for RingStaking<T>
+impl<T> Election<T::AccountId> for RingStaking<T>
 where
 	T: Config + darwinia_ethtx_forwarder::Config,
+	T::AccountId: From<H160> + Into<H160>,
 {
-	fn elect(n: u32) -> Option<Vec<AccountId>> {
+	fn elect(n: u32) -> Option<Vec<T::AccountId>> {
+		const ZERO: [u8; 20] = [0; 20];
+
 		let Some(rsc) = <RingStakingContract<T>>::get() else {
 			log::error!("RING staking contract must be some; qed");
 
@@ -1244,7 +1244,7 @@ where
 			.ok()?;
 
 		<darwinia_ethtx_forwarder::Pallet<T>>::forward_call(
-			T::Treasury::get().into(),
+			<T as Config>::Treasury::get().into(),
 			rsc,
 			input,
 			Default::default(),
@@ -1260,12 +1260,10 @@ where
 				.map(|tokens| {
 					tokens
 						.into_iter()
-						.filter_map(|token| {
-							if let Token::Address(addr) = token {
-								Some(AccountId::from(addr))
-							} else {
-								None
-							}
+						.filter_map(|token| match token {
+							Token::Address(addr) if addr.0 != ZERO =>
+								Some(T::AccountId::from(addr)),
+							_ => None,
 						})
 						.collect()
 				})
@@ -1275,11 +1273,12 @@ where
 // Distribute the reward to RING staking contract.
 //
 // https://github.com/darwinia-network/DIP-7/blob/7fa307136586f06c6911ce98d16c88689d91ba8c/src/collator/CollatorStakingHub.sol#L142.
-impl<T> Reward for RingStaking<T>
+impl<T> Reward<T::AccountId> for RingStaking<T>
 where
 	T: Config + darwinia_ethtx_forwarder::Config,
+	T::AccountId: Into<H160>,
 {
-	fn distribute(who: Option<AccountId>, amount: Balance) {
+	fn distribute(who: Option<T::AccountId>, amount: Balance) {
 		let Some(who) = who else {
 			log::error!("who must be some; qed");
 
@@ -1294,7 +1293,7 @@ where
 
 		#[allow(deprecated)]
 		darwinia_ethtx_forwarder::quick_forward_transact::<T>(
-			T::Treasury::get().into(),
+			<T as Config>::Treasury::get().into(),
 			Function {
 				name: "distributeReward".into(),
 				inputs: vec![Param {
@@ -1319,11 +1318,12 @@ pub struct KtonStaking<T>(PhantomData<T>);
 // Distribute the reward to KTON staking contract.
 //
 // https://github.com/darwinia-network/KtonDAO/blob/2de20674f2ef90b749ade746d0768c7bda356402/src/staking/KtonDAOVault.sol#L40.
-impl<T> Reward for KtonStaking<T>
+impl<T> Reward<T::AccountId> for KtonStaking<T>
 where
 	T: Config + darwinia_ethtx_forwarder::Config,
+	T::AccountId: Into<H160>,
 {
-	fn distribute(_: Option<AccountId>, amount: Balance) {
+	fn distribute(_: Option<T::AccountId>, amount: Balance) {
 		let Some(ksc) = <KtonStakingContract<T>>::get() else {
 			log::error!("KTON staking contract must be some; qed");
 
@@ -1333,7 +1333,7 @@ where
 
 		#[allow(deprecated)]
 		darwinia_ethtx_forwarder::quick_forward_transact::<T>(
-			T::Treasury::get().into(),
+			<T as Config>::Treasury::get().into(),
 			Function {
 				name: "distributeRewards".into(),
 				inputs: Vec::new(),

@@ -111,4 +111,10 @@ impl<T: frame_system::Config> darwinia_deposit::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(5))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
+	fn migrate() -> Weight {
+		0.into()
+	}
+	fn set_deposit_contract() -> Weight {
+		0.into()
+	}
 }

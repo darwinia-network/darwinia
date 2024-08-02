@@ -78,6 +78,9 @@ pub mod pallet {
 		/// KTON asset.
 		type Kton: SimpleAsset<AccountId = Self::AccountId>;
 
+		/// Deposit contract migrator.
+		type DepositMigrator: MigrateToContract<Self>;
+
 		/// Treasury account.
 		#[pallet::constant]
 		type Treasury: Get<Self::AccountId>;
@@ -313,7 +316,7 @@ pub mod pallet {
 
 			for c in ds.chunks(50) {
 				let mut to_claim = (0, Vec::new());
-				let mut to_migrate = (0, Vec::new());
+				let mut to_migrate = (0, Vec::new(), Vec::new());
 
 				for d in c {
 					if d.in_use {
@@ -326,11 +329,13 @@ pub mod pallet {
 					} else {
 						to_migrate.0 += d.value;
 						to_migrate.1.push(d.id);
+						to_migrate.2.push((d.value, d.start_time, d.expired_time));
 					}
 				}
 
 				T::Ring::transfer(&account_id(), &who, to_claim.0, AllowDeath)?;
 				T::Ring::transfer(&account_id(), &T::Treasury::get(), to_migrate.0, AllowDeath)?;
+				T::DepositMigrator::migrate(who.clone(), to_migrate.2);
 
 				Self::deposit_event(Event::DepositsClaimed {
 					owner: who.clone(),
@@ -341,6 +346,20 @@ pub mod pallet {
 					deposits: to_migrate.1,
 				});
 			}
+
+			Ok(())
+		}
+
+		/// Set deposit contract address.
+		#[pallet::call_index(4)]
+		#[pallet::weight(<T as Config>::WeightInfo::set_deposit_contract())]
+		pub fn set_deposit_contract(
+			origin: OriginFor<T>,
+			deposit_contract: T::AccountId,
+		) -> DispatchResult {
+			ensure_root(origin)?;
+
+			<DepositContract<T>>::put(deposit_contract);
 
 			Ok(())
 		}
@@ -434,11 +453,14 @@ pub trait SimpleAsset {
 }
 
 /// Migrate to contract trait.
-pub trait MigrateToContract {
+pub trait MigrateToContract<T>
+where
+	T: Config,
+{
 	/// Migrate to contract.
-	fn migrate() {}
+	fn migrate(_: T::AccountId, _: Vec<(Balance, Moment, Moment)>) {}
 }
-impl MigrateToContract for () {}
+impl<T> MigrateToContract<T> for () where T: Config {}
 
 /// Deposit.
 #[derive(Clone, PartialEq, Eq, Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
@@ -457,23 +479,22 @@ pub struct Deposit {
 
 /// Deposit migrator.
 pub struct DepositMigrator<T>(PhantomData<T>);
-impl<T> MigrateToContract for DepositMigrator<T>
+impl<T> MigrateToContract<T> for DepositMigrator<T>
 where
 	T: Config + darwinia_ethtx_forwarder::Config,
 	T::AccountId: Into<H160>,
 {
-	fn migrate() {
+	fn migrate(who: T::AccountId, deposits: Vec<(Balance, Moment, Moment)>) {
 		let Some(dc) = <DepositContract<T>>::get() else {
 			log::error!("deposit contract must be some; qed");
 
 			return;
 		};
 		let dc = dc.into();
-		let treasury = T::Treasury::get().into();
 
 		#[allow(deprecated)]
 		darwinia_ethtx_forwarder::quick_forward_transact::<T>(
-			treasury,
+			T::Treasury::get().into(),
 			Function {
 				name: "migrate".into(),
 				inputs: vec![
@@ -485,7 +506,7 @@ where
 					Param {
 						name: "deposits".to_owned(),
 						kind: ParamType::Array(Box::new(ParamType::Tuple(vec![
-							ParamType::Uint(256),
+							ParamType::Uint(128),
 							ParamType::Uint(64),
 							ParamType::Uint(64),
 						]))),
@@ -496,7 +517,21 @@ where
 				constant: None,
 				state_mutability: StateMutability::Payable,
 			},
-			&[Token::Address(treasury), Token::Array(vec![])],
+			&[
+				Token::Address(who.into()),
+				Token::Array(
+					deposits
+						.into_iter()
+						.map(|(v, s, e)| {
+							Token::Tuple(vec![
+								Token::Uint(v.into()),
+								Token::Uint(s.into()),
+								Token::Uint(e.into()),
+							])
+						})
+						.collect(),
+				),
+			],
 			dc,
 			0.into(),
 			1_000_000.into(),

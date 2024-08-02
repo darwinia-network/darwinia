@@ -12,8 +12,9 @@ use sp_core::H160;
 pub fn migrate_staking_reward_distribution_contract<T>(kton_staking_contract: T::AccountId)
 where
 	T: Config + darwinia_ethtx_forwarder::Config,
+	T::AccountId: Into<H160>,
 {
-	let treasury = T::Treasury::get().into();
+	let treasury = <T as Config>::Treasury::get().into();
 	let ksc = kton_staking_contract.into();
 	// 0x000000000Ae5DB7BDAf8D071e680452e33d91Dd5.
 	let ksc_old = H160([

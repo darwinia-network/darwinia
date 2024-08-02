@@ -89,6 +89,8 @@ impl darwinia_deposit::Config for Runtime {
 	type MinLockingAmount = frame_support::traits::ConstU128<100>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
+	type Treasury = ();
+	type DepositMigrator = ();
 	type WeightInfo = ();
 }
 

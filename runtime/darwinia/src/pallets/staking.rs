@@ -76,6 +76,7 @@ impl darwinia_staking::Config for Runtime {
 	type IssuingManager = darwinia_staking::BalanceIssuing<Self>;
 	type KtonStaking = darwinia_staking::KtonStaking<Self>;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
+	type Treasury = pallet_config::TreasuryAccount;
 	type Ring = RingStaking;
 	type RingStaking = darwinia_staking::RingStaking<Self>;
 	type RuntimeEvent = RuntimeEvent;

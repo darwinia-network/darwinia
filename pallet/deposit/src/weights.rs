@@ -56,6 +56,7 @@ pub trait WeightInfo {
 	fn claim() -> Weight;
 	fn claim_with_penalty() -> Weight;
 	fn migrate() -> Weight;
+	fn set_deposit_contract() -> Weight;
 }
 
 /// Weights for darwinia_deposit using the Substrate node and recommended hardware.
@@ -118,6 +119,9 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	fn migrate() -> Weight {
 		0.into()
 	}
+	fn set_deposit_contract() -> Weight {
+		0.into()
+	}
 }
 
 // For backwards compatibility and tests
@@ -177,6 +181,9 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().writes(3_u64))
 	}
 	fn migrate() -> Weight {
+		0.into()
+	}
+	fn set_deposit_contract() -> Weight {
 		0.into()
 	}
 }

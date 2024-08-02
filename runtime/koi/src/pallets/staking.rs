@@ -53,6 +53,7 @@ impl darwinia_staking::Config for Runtime {
 	type RingStaking = darwinia_staking::RingStaking<Self>;
 	type RuntimeEvent = RuntimeEvent;
 	type ShouldEndSession = darwinia_staking::ShouldEndSession<Self>;
+	type Treasury = pallet_config::TreasuryAccount;
 	type UnixTime = Timestamp;
 	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;
 }

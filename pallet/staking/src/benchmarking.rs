@@ -19,7 +19,7 @@
 // darwinia
 use crate::*;
 use darwinia_deposit::SimpleAsset;
-use dc_primitives::UNIT;
+use dc_types::UNIT;
 // polkadot-sdk
 use frame_benchmarking::v2;
 use frame_system::RawOrigin;
@@ -77,7 +77,7 @@ mod benchmarks {
 
 		let deposits = deposit_for::<T>(&a, x);
 
-		<Pallet<T>>::stake(RawOrigin::Signed(a).into(), UNIT, deposits.clone()).unwrap();
+		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, deposits.clone()).unwrap();
 
 		// Worst-case scenario:
 		//
@@ -100,13 +100,13 @@ mod benchmarks {
 	#[benchmark]
 	fn nominate() {
 		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
-		let a_cloned = a;
+		let a_cloned = a.clone();
 
 		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
 		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, UNIT + 1);
 
-		<Pallet<T>>::stake(RawOrigin::Signed(a).into(), UNIT, Default::default()).unwrap();
-		<Pallet<T>>::collect(RawOrigin::Signed(a).into(), Default::default()).unwrap();
+		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, Default::default()).unwrap();
+		<Pallet<T>>::collect(RawOrigin::Signed(a.clone()).into(), Default::default()).unwrap();
 
 		// Worst-case scenario:
 		//
@@ -122,9 +122,9 @@ mod benchmarks {
 		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
 		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, UNIT + 1);
 
-		<Pallet<T>>::stake(RawOrigin::Signed(a).into(), UNIT, Default::default()).unwrap();
-		<Pallet<T>>::collect(RawOrigin::Signed(a).into(), Default::default()).unwrap();
-		<Pallet<T>>::nominate(RawOrigin::Signed(a).into(), a).unwrap();
+		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, Default::default()).unwrap();
+		<Pallet<T>>::collect(RawOrigin::Signed(a.clone()).into(), Default::default()).unwrap();
+		<Pallet<T>>::nominate(RawOrigin::Signed(a.clone()).into(), a.clone()).unwrap();
 
 		// Worst-case scenario:
 		//
@@ -136,7 +136,7 @@ mod benchmarks {
 	#[benchmark]
 	fn payout() {
 		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
-		let sender = a;
+		let a_cloned = a.clone();
 
 		call_on_exposure!(<Previous<T>>::insert(
 			&a,
@@ -155,7 +155,7 @@ mod benchmarks {
 		<PendingRewards<T>>::insert(&a, 500);
 
 		#[extrinsic_call]
-		_(RawOrigin::Signed(sender), a);
+		_(RawOrigin::Signed(a), a_cloned);
 	}
 
 	#[benchmark]
