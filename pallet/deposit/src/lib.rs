@@ -275,13 +275,16 @@ pub mod pallet {
 				let d = ds
 					.remove(ds.iter().position(|d| d.id == id).ok_or(<Error<T>>::DepositNotFound)?);
 
+				if d.in_use {
+					Err(<Error<T>>::DepositInUse)?;
+				}
 				if ds.is_empty() {
 					<frame_system::Pallet<T>>::dec_consumers(&who);
 
 					*maybe_ds = None;
 				}
 
-				<Result<_, DispatchError>>::Ok(d)
+				Ok::<_, DispatchError>(d)
 			})?;
 			let now = Self::now();
 
