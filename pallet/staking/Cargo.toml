@@ -85,6 +85,7 @@ std = [
 runtime-benchmarks = [
 	# darwinia
 	"darwinia-deposit",
+	"darwinia-ethtx-forwarder/runtime-benchmarks",
 	"darwinia-staking-traits/runtime-benchmarks",
 
 	# polkadot-sdk
