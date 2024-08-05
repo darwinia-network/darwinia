@@ -312,13 +312,13 @@ macro_rules! impl_evm_tests {
 							RuntimeOrigin::signed(H160::default().into()),
 							H160::default(),
 							H160::default(),
-							vec![],
+							Vec::new(),
 							U256::default(),
 							1000000,
 							U256::from(1_000_000),
 							None,
 							None,
-							vec![],
+							Vec::new(),
 						),
 						DispatchError::BadOrigin
 					);
@@ -327,13 +327,13 @@ macro_rules! impl_evm_tests {
 						RuntimeOrigin::root(),
 						H160::default(),
 						H160::default(),
-						vec![],
+						Vec::new(),
 						U256::default(),
 						1000000,
 						U256::from(1_000_000),
 						None,
 						None,
-						vec![],
+						Vec::new(),
 					) {
 						// Ignore the pallet index.
 						let DispatchError::Module(e) = dispatch_info_with_err.error else {
@@ -350,7 +350,7 @@ macro_rules! impl_evm_tests {
 				ExtBuilder::default().build().execute_with(|| {
 					assert!(DarwiniaDispatchValidator::validate_before_dispatch(
 						&H160::default().into(),
-						&RuntimeCall::System(frame_system::Call::remark { remark: vec![] })
+						&RuntimeCall::System(frame_system::Call::remark { remark: Vec::new() })
 					)
 					.is_none());
 
@@ -360,13 +360,13 @@ macro_rules! impl_evm_tests {
 						&RuntimeCall::EVM(pallet_evm::Call::call {
 							source: H160::default(),
 							target: H160::default(),
-							input: vec![],
+							input: Vec::new(),
 							value: U256::default(),
 							gas_limit: 1000000,
 							max_fee_per_gas: U256::from(1_000_000),
 							max_priority_fee_per_gas: None,
 							nonce: None,
-							access_list: vec![],
+							access_list: Vec::new(),
 						})
 					)
 					.is_some());
@@ -379,7 +379,7 @@ macro_rules! impl_evm_tests {
 					// Default class
 					assert!(DarwiniaDispatchValidator::validate_before_dispatch(
 						&H160::default().into(),
-						&RuntimeCall::System(frame_system::Call::remark { remark: vec![] })
+						&RuntimeCall::System(frame_system::Call::remark { remark: Vec::new() })
 					)
 					.is_none());
 

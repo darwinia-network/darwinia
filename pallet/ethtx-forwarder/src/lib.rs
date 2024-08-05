@@ -143,7 +143,7 @@ impl<T: Config> Pallet<T> {
 			None,
 			None,
 			Some(who.nonce),
-			vec![],
+			Vec::new(),
 			false, // non-transactional
 			true,
 			None,

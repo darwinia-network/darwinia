@@ -747,7 +747,7 @@ where
 				network_provider: network.clone(),
 				is_validator: config.role.is_authority(),
 				enable_http_requests: false,
-				custom_extensions: move |_| vec![],
+				custom_extensions: move |_| Vec::new(),
 			})
 			.run(client.clone(), task_manager.spawn_handle())
 			.boxed(),
