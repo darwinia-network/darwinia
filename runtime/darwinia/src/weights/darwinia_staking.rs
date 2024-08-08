@@ -171,7 +171,17 @@ impl<T: frame_system::Config> darwinia_staking::WeightInfo for WeightInfo<T> {
 			.saturating_add(Weight::from_parts(0, 0))
 			.saturating_add(T::DbWeight::get().writes(1))
 	}
-	/// Storage: `DarwiniaStaking::KtonStakingContract` (r:0 w:1)
+	/// Storage: `DarwiniaStaking::RingStakingContract` (r:0 w:1)
+	/// Proof: `DarwiniaStaking::RingStakingContract` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
+	fn set_ring_staking_contract() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `0`
+		//  Estimated: `0`
+		// Minimum execution time: 2_000_000 picoseconds.
+		Weight::from_parts(3_000_000, 0)
+			.saturating_add(Weight::from_parts(0, 0))
+			.saturating_add(T::DbWeight::get().writes(1))
+	}	/// Storage: `DarwiniaStaking::KtonStakingContract` (r:0 w:1)
 	/// Proof: `DarwiniaStaking::KtonStakingContract` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
 	fn set_kton_staking_contract() -> Weight {
 		// Proof Size summary in bytes:
