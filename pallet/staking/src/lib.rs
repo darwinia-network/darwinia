@@ -29,6 +29,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
+#![allow(clippy::needless_borrows_for_generic_args)]
 
 pub mod migration;
 

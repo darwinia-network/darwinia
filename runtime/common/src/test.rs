@@ -327,7 +327,7 @@ macro_rules! impl_account_migration_tests {
 
 #[macro_export]
 macro_rules! impl_evm_tests {
-	($non_async:expr) => {
+	() => {
 		mod evm {
 			// darwinia
 			use super::mock::*;
@@ -351,10 +351,7 @@ macro_rules! impl_evm_tests {
 			#[test]
 			fn evm_constants_are_correctly() {
 				assert_eq!(pallet_config::BlockGasLimit::get(), U256::from(20_000_000));
-				assert_eq!(
-					pallet_config::WeightPerGas::get().ref_time(),
-					if $non_async { 18750 } else { 75000 }
-				);
+				assert_eq!(pallet_config::WeightPerGas::get().ref_time(), 75000);
 			}
 
 			#[test]
@@ -620,7 +617,7 @@ macro_rules! impl_fee_tests {
 					assert_eq!(TransactionPayment::next_fee_multiplier(), Multiplier::from(1u128));
 					assert_eq!(
 						TransactionPaymentGasPrice::min_gas_price().0,
-						U256::from(753_532_560_644u128)
+						U256::from(3_014_130_242_577_u128)
 					);
 				})
 			}
@@ -640,70 +637,76 @@ macro_rules! impl_fee_tests {
 						TransactionPaymentGasPrice::min_gas_price().0
 					};
 
-					assert_eq!(sim(Perbill::from_percent(0), 1), U256::from(753_518_432_040u128));
-					assert_eq!(sim(Perbill::from_percent(25), 1), U256::from(753_518_432_040u128));
-					assert_eq!(sim(Perbill::from_percent(50), 1), U256::from(753_532_560_644u128));
-					assert_eq!(sim(Perbill::from_percent(100), 1), U256::from(753_574_948_042u128));
+					assert_eq!(
+						sim(Perbill::from_percent(0), 1),
+						U256::from(3_014_073_728_164_u128)
+					);
+					assert_eq!(
+						sim(Perbill::from_percent(25), 1),
+						U256::from(3_014_073_728_164_u128)
+					);
+					assert_eq!(sim(Perbill::from_percent(50), 1), U256::from(3_014_130_242_577_u128));
+					assert_eq!(sim(Perbill::from_percent(100), 1), U256::from(3_014_299_792_171_u128));
 
 					// 1 "real" hour (at 12-second blocks)
-					assert_eq!(sim(Perbill::from_percent(0), 300), U256::from(749_347_988_429u128));
+					assert_eq!(sim(Perbill::from_percent(0), 300), U256::from(2_997_391_953_718_u128));
 					assert_eq!(
 						sim(Perbill::from_percent(25), 300),
-						U256::from(749_347_988_429u128)
+						U256::from(2_997_391_953_718_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(50), 300),
-						U256::from(753_574_948_042u128)
+						U256::from(3_014_299_792_171_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(100), 300),
-						U256::from(766_399_427_500u128)
+						U256::from(3_065_597_710_001_u128)
 					);
 
 					// 1 "real" day (at 12-second blocks)
 					assert_eq!(
 						sim(Perbill::from_percent(0), 7200),
-						U256::from(669_615_374_520u128)
+						U256::from(2_678_461_498_083_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(25), 7200),
-						U256::from(669_615_374_520u128)
+						U256::from(2_678_461_498_083_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(50), 7200),
-						U256::from(766_399_427_500u128)
+						U256::from(3_065_597_710_001_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(100), 7200),
-						U256::from(1149_064_577_447u128)
+						U256::from(4_596_258_309_791_u128)
 					);
 
 					// 7 "real" day (at 12-second blocks)
 					assert_eq!(
 						sim(Perbill::from_percent(0), 50400),
-						U256::from(446_617_926_925u128)
+						U256::from(1_786_471_707_702_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(25), 50400),
-						U256::from(446_617_926_925u128)
+						U256::from(1_786_471_707_702_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(50), 50400),
-						U256::from(1_149_064_577_447u128)
+						U256::from(4_596_258_309_791_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(100), 50400),
-						U256::from(19_569_029_695_681u128)
+						U256::from(78_276_118_782_753_u128)
 					);
 
 					// 30 "real" day (at 12-second blocks)
 					assert_eq!(
 						sim(Perbill::from_percent(0), 259200),
-						U256::from(151_669_449_464u128)
+						U256::from(606_677_797_859_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(25), 259200),
-						U256::from(151_669_449_464u128)
+						U256::from(606_677_797_859_u128)
 					);
 				});
 			}

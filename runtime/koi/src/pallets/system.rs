@@ -31,8 +31,8 @@ impl frame_system::Config for Runtime {
 	type AccountId = AccountId;
 	type BaseCallFilter = TxPause;
 	type Block = Block;
-	type BlockLength = crate::pallet_config::RuntimeBlockLength;
-	type BlockWeights = crate::pallet_config::RuntimeBlockWeights;
+	type BlockLength = pallet_config::RuntimeBlockLength;
+	type BlockWeights = pallet_config::RuntimeBlockWeights;
 	type DbWeight = frame_support::weights::constants::RocksDbWeight;
 	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
 	type MaxConsumers = ConstU32<16>;

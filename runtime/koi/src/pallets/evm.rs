@@ -157,7 +157,7 @@ impl pallet_evm::FeeCalculator for TransactionPaymentGasPrice {
 			TransactionPayment::next_fee_multiplier()
 				.saturating_mul_int::<Balance>(
 					<Runtime as pallet_transaction_payment::Config>::WeightToFee::weight_to_fee(
-						&crate::pallet_config::WeightPerGas::get(),
+						&pallet_config::WeightPerGas::get(),
 					),
 				)
 				.into(),
@@ -203,14 +203,14 @@ fn addr(a: u64) -> H160 {
 
 impl pallet_evm::Config for Runtime {
 	type AddressMapping = pallet_evm::IdentityAddressMapping;
-	type BlockGasLimit = crate::pallet_config::BlockGasLimit;
+	type BlockGasLimit = pallet_config::BlockGasLimit;
 	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
 	type CallOrigin = pallet_evm::EnsureAddressRoot<Self::AccountId>;
 	type ChainId = ConstU64<701>;
 	type Currency = Balances;
 	type FeeCalculator = TransactionPaymentGasPrice;
 	type FindAuthor = FindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
-	type GasLimitPovSizeRatio = crate::pallet_config::GasLimitPovSizeRatio;
+	type GasLimitPovSizeRatio = pallet_config::GasLimitPovSizeRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = pallet_evm::EVMFungibleAdapter<Balances, ()>;
 	type OnCreate = ();
@@ -221,6 +221,6 @@ impl pallet_evm::Config for Runtime {
 	type SuicideQuickClearLimit = ();
 	type Timestamp = Timestamp;
 	type WeightInfo = ();
-	type WeightPerGas = crate::pallet_config::WeightPerGas;
+	type WeightPerGas = pallet_config::WeightPerGas;
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<Self::AccountId>;
 }
