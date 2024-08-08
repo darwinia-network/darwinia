@@ -16,13 +16,37 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-pub use crate as darwinia_account_migration;
 pub use dc_primitives::*;
 
 // polkadot-sdk
 use frame_support::derive_impl;
 use sp_io::TestExternalities;
 use sp_runtime::BuildStorage;
+
+pub struct Dummy;
+impl darwinia_deposit::SimpleAsset for Dummy {
+	type AccountId = AccountId;
+
+	fn mint(_: &Self::AccountId, _: Balance) -> sp_runtime::DispatchResult {
+		Ok(())
+	}
+
+	fn burn(_: &Self::AccountId, _: Balance) -> sp_runtime::DispatchResult {
+		Ok(())
+	}
+}
+impl darwinia_staking::Stake for Dummy {
+	type AccountId = AccountId;
+	type Item = Balance;
+
+	fn stake(_: &Self::AccountId, _: Self::Item) -> sp_runtime::DispatchResult {
+		Ok(())
+	}
+
+	fn unstake(_: &Self::AccountId, _: Self::Item) -> sp_runtime::DispatchResult {
+		Ok(())
+	}
+}
 
 #[sp_version::runtime_version]
 pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
@@ -92,7 +116,42 @@ impl pallet_assets::Config for Runtime {
 	type WeightInfo = ();
 }
 
-impl darwinia_account_migration::Config for Runtime {
+frame_support::parameter_types! {
+	pub UnvestedFundsAllowedWithdrawReasons: frame_support::traits::WithdrawReasons =
+		frame_support::traits::WithdrawReasons::except(
+			frame_support::traits::WithdrawReasons::TRANSFER | frame_support::traits::WithdrawReasons::RESERVE
+		);
+}
+
+impl darwinia_deposit::Config for Runtime {
+	type DepositMigrator = ();
+	type Kton = Dummy;
+	type MaxDeposits = frame_support::traits::ConstU32<512>;
+	type MinLockingAmount = ();
+	type Ring = Balances;
+	type RuntimeEvent = RuntimeEvent;
+	type Treasury = ();
+	type WeightInfo = ();
+}
+
+impl darwinia_staking::Config for Runtime {
+	type Currency = Balances;
+	type Deposit = Deposit;
+	type IssuingManager = ();
+	type KtonStaking = ();
+	type MaxDeposits = frame_support::traits::ConstU32<512>;
+	type Ring = Dummy;
+	type RingStaking = ();
+	type RuntimeEvent = RuntimeEvent;
+	type ShouldEndSession = ();
+	type Treasury = ();
+	type UnixTime = Timestamp;
+	type WeightInfo = ();
+}
+#[cfg(not(feature = "runtime-benchmarks"))]
+impl darwinia_staking::DepositConfig for Runtime {}
+
+impl crate::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 }
@@ -103,7 +162,9 @@ frame_support::construct_runtime! {
 		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
 		Assets: pallet_assets,
-		AccountMigration: darwinia_account_migration,
+		AccountMigration: crate,
+		Deposit: darwinia_deposit,
+		Staking: darwinia_staking,
 	}
 }
 
@@ -111,13 +172,8 @@ pub(crate) fn new_test_ext() -> TestExternalities {
 	let mut storage = <frame_system::GenesisConfig<Runtime>>::default().build_storage().unwrap();
 
 	pallet_assets::GenesisConfig::<Runtime> {
-		assets: vec![(darwinia_account_migration::KTON_ID, [0; 20].into(), true, 1)],
-		metadata: vec![(
-			darwinia_account_migration::KTON_ID,
-			b"KTON".to_vec(),
-			b"KTON".to_vec(),
-			18,
-		)],
+		assets: vec![(crate::KTON_ID, [0; 20].into(), true, 1)],
+		metadata: vec![(crate::KTON_ID, b"KTON".to_vec(), b"KTON".to_vec(), 18)],
 		..Default::default()
 	}
 	.assimilate_storage(&mut storage)

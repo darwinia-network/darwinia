@@ -13,6 +13,8 @@ codec       = { workspace = true, package = "parity-scale-codec" }
 scale-info  = { workspace = true }
 
 # darwinia
+darwinia-deposit = { workspace = true }
+darwinia-staking = { workspace = true }
 dc-primitives    = { workspace = true }
 
 # polkadot-sdk
@@ -40,6 +42,8 @@ std = [
 	"scale-info/std",
 
 	# darwinia
+	"darwinia-deposit/std",
+	"darwinia-staking/std",
 	"dc-primitives/std",
 
 	# polkadot-sdk
@@ -56,6 +60,10 @@ std = [
 ]
 
 runtime-benchmarks = [
+	# darwinia
+	"darwinia-deposit/runtime-benchmarks",
+	"darwinia-staking/runtime-benchmarks",
+
 	# polkadot-sdk
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-support/runtime-benchmarks",
@@ -66,6 +74,10 @@ runtime-benchmarks = [
 ]
 
 try-runtime = [
+	# darwinia
+	"darwinia-deposit/try-runtime",
+	"darwinia-staking/try-runtime",
+
 	# polkadot-sdk
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",

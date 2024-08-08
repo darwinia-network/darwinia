@@ -25,9 +25,9 @@ frame-system     = { workspace = true }
 pallet-timestamp = { workspace = true }
 sp-core          = { workspace = true }
 sp-runtime       = { workspace = true }
+sp-std           = { workspace = true }
 # polkadot-sdk optional
 frame-benchmarking = { workspace = true, optional = true }
-sp-std             = { workspace = true, optional = true }
 
 [dev-dependencies]
 # polkadot-sdk
@@ -55,9 +55,9 @@ std = [
 	"pallet-timestamp/std",
 	"sp-core/std",
 	"sp-runtime/std",
+	"sp-std/std",
 	# polkadot-sdk optional
 	"frame-benchmarking?/std",
-	"sp-std?/std",
 ]
 
 runtime-benchmarks = [
@@ -72,7 +72,6 @@ runtime-benchmarks = [
 	"sp-runtime/runtime-benchmarks",
 	# polkadot-sdk optional
 	"frame-benchmarking/runtime-benchmarks",
-	"sp-std",
 ]
 
 try-runtime = [

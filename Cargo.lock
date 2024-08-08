@@ -2709,6 +2709,8 @@ name = "darwinia-account-migration"
 version = "6.6.3"
 dependencies = [
  "array-bytes 6.2.3",
+ "darwinia-deposit",
+ "darwinia-staking",
  "dc-primitives",
  "frame-benchmarking",
  "frame-support",
