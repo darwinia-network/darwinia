@@ -19,7 +19,7 @@ darwinia-staking-traits  = { workspace = true }
 dc-inflation             = { workspace = true }
 dc-types                 = { workspace = true }
 
-# subtrate
+# polkadot-sdk
 frame-support    = { workspace = true }
 frame-system     = { workspace = true }
 pallet-timestamp = { workspace = true }

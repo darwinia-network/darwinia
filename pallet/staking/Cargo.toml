@@ -24,7 +24,7 @@ darwinia-deposit = { workspace = true, optional = true }
 # frontier
 fp-evm = { workspace = true }
 
-# subtrate
+# polkadot-sdk
 frame-support     = { workspace = true }
 frame-system      = { workspace = true }
 pallet-authorship = { workspace = true }
@@ -69,7 +69,7 @@ std = [
 	# frontier
 	"fp-evm/std",
 
-	# subtrate
+	# polkadot-sdk
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-authorship/std",
