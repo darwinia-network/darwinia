@@ -61,7 +61,11 @@ fn migrate() -> frame_support::weights::Weight {
 	}
 	.remove_storage_values();
 
-	darwinia_staking::migration::migrate_staking_reward_distribution_contract::<Runtime>();
+	if let Some(w) =
+		array_bytes::hex_n_into::<_, _, 20>("0xf1b4f3D438eE2B363C5ba1641A498709ff5780bA")
+	{
+		darwinia_staking::migration::migrate_staking_reward_distribution_contract::<Runtime>(w);
+	}
 
 	// frame_support::weights::Weight::zero()
 	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(10, n + 10)
