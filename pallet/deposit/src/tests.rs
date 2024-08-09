@@ -22,6 +22,7 @@ use crate::{
 	Deposit as DepositS, *,
 };
 use darwinia_staking_traits::Stake;
+use dc_types::UNIT;
 // polkadot-sdk
 use frame_support::{assert_noop, assert_ok};
 use sp_runtime::TokenError;
@@ -31,18 +32,18 @@ fn lock_should_work() {
 	new_test_ext().execute_with(|| {
 		assert_eq!(System::account(1).consumers, 0);
 		assert_eq!(
-			Balances::free_balance(darwinia_deposit::account_id::<
-				<Runtime as frame_system::Config>::AccountId,
-			>()),
+			Balances::free_balance(
+				crate::account_id::<<Runtime as frame_system::Config>::AccountId>()
+			),
 			0
 		);
 		assert_eq!(Balances::free_balance(1), 1_000 * UNIT);
 		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), 10 * UNIT, 1));
 		assert_eq!(System::account(1).consumers, 1);
 		assert_eq!(
-			Balances::free_balance(darwinia_deposit::account_id::<
-				<Runtime as frame_system::Config>::AccountId,
-			>()),
+			Balances::free_balance(
+				crate::account_id::<<Runtime as frame_system::Config>::AccountId>()
+			),
 			10 * UNIT
 		);
 		assert_eq!(Balances::free_balance(1), 990 * UNIT);
@@ -331,6 +332,15 @@ fn claim_with_penalty_should_work() {
 		);
 
 		assert_ok!(KtonMinting::mint(&1, UNIT));
+		mock::set_in_use(1, true);
+
+		assert_noop!(
+			Deposit::claim_with_penalty(RuntimeOrigin::signed(1), 0),
+			<Error<Runtime>>::DepositInUse
+		);
+
+		mock::set_in_use(1, false);
+
 		assert_ok!(Deposit::claim_with_penalty(RuntimeOrigin::signed(1), 0));
 		assert_eq!(Balances::free_balance(1), 1_000 * UNIT);
 		assert_eq!(Assets::balance(0, 1), 999_984_771_573_604_062);
@@ -344,5 +354,22 @@ fn claim_with_penalty_should_work() {
 			Deposit::claim_with_penalty(RuntimeOrigin::signed(1), 0),
 			<Error<Runtime>>::DepositAlreadyExpired
 		);
+	});
+}
+
+#[test]
+fn migrate_should_work() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(Deposit::lock(RuntimeOrigin::signed(1), UNIT, 1));
+		assert!(Deposit::deposit_of(1).is_some());
+
+		mock::set_in_use(1, true);
+
+		assert_noop!(Deposit::migrate(RuntimeOrigin::signed(1)), <Error<Runtime>>::DepositInUse);
+
+		mock::set_in_use(1, false);
+
+		assert_ok!(Deposit::migrate(RuntimeOrigin::signed(1)));
+		assert!(Deposit::deposit_of(1).is_none());
 	});
 }

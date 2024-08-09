@@ -16,9 +16,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-pub use crate as darwinia_deposit;
-pub use dc_types::{Balance, Moment, UNIT};
-
+// darwinia
+use crate::*;
+use dc_types::{Balance, Moment, UNIT};
 // polkadot-sdk
 use frame_support::derive_impl;
 use sp_io::TestExternalities;
@@ -71,7 +71,7 @@ impl pallet_assets::Config for Runtime {
 }
 
 pub enum KtonMinting {}
-impl darwinia_deposit::SimpleAsset for KtonMinting {
+impl crate::SimpleAsset for KtonMinting {
 	type AccountId = <Runtime as frame_system::Config>::AccountId;
 
 	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
@@ -86,12 +86,14 @@ impl darwinia_deposit::SimpleAsset for KtonMinting {
 		Assets::burn(RuntimeOrigin::signed(0), 0.into(), *who, amount)
 	}
 }
-impl darwinia_deposit::Config for Runtime {
+impl crate::Config for Runtime {
+	type DepositMigrator = ();
 	type Kton = KtonMinting;
 	type MaxDeposits = frame_support::traits::ConstU32<16>;
 	type MinLockingAmount = frame_support::traits::ConstU128<UNIT>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
+	type Treasury = ();
 	type WeightInfo = ();
 }
 
@@ -101,15 +103,11 @@ frame_support::construct_runtime! {
 		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
 		Assets: pallet_assets,
-		Deposit: darwinia_deposit,
+		Deposit: crate,
 	}
 }
 
-pub(crate) fn efflux(milli_secs: Moment) {
-	Timestamp::set_timestamp(Timestamp::now() + milli_secs);
-}
-
-pub(crate) fn new_test_ext() -> TestExternalities {
+pub fn new_test_ext() -> TestExternalities {
 	let mut storage = <frame_system::GenesisConfig<Runtime>>::default().build_storage().unwrap();
 
 	pallet_balances::GenesisConfig::<Runtime> {
@@ -126,4 +124,18 @@ pub(crate) fn new_test_ext() -> TestExternalities {
 	.unwrap();
 
 	storage.into()
+}
+
+pub fn efflux(milli_secs: Moment) {
+	Timestamp::set_timestamp(Timestamp::now() + milli_secs);
+}
+
+pub fn set_in_use(who: u64, in_use: bool) {
+	let _ = <Deposits<Runtime>>::try_mutate(who, |maybe_ds| {
+		let ds = maybe_ds.as_mut().ok_or(())?;
+
+		ds.iter_mut().for_each(|d| d.in_use = in_use);
+
+		Ok::<_, ()>(())
+	});
 }

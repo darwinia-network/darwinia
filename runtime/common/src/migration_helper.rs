@@ -164,7 +164,7 @@ fn identity_codec_should_work() {
 		judgements: vec![(1, Judgement::KnownGood)],
 		deposit: 100_025_800_000_000_000_000,
 		info: IdentityInfo {
-			additional: vec![],
+			additional: Vec::new(),
 			display: Data::Raw(b"AurevoirXavier".to_vec()),
 			legal: Data::Raw(b"Xavier Lau".to_vec()),
 			web: Data::Raw(b"https://linktr.ee/aurevoirxavier".to_vec()),

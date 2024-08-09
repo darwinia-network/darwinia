@@ -114,6 +114,39 @@ mod benchmarks {
 		}
 	}
 
+	#[benchmark]
+	fn migrate() {
+		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
+		let max_deposits = T::MaxDeposits::get();
+
+		<Pallet<T>>::set_deposit_contract(RawOrigin::Root.into(), a.clone()).unwrap();
+
+		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
+		T::Ring::make_free_balance_be(&a, max_deposits as Balance * UNIT + 1);
+
+		// Worst-case scenario:
+		//
+		// Max deposit items to be migrated.
+		(0..max_deposits).for_each(|_| {
+			<Pallet<T>>::lock(RawOrigin::Signed(a.clone()).into(), UNIT, MAX_LOCKING_MONTHS)
+				.unwrap()
+		});
+
+		#[extrinsic_call]
+		_(RawOrigin::Signed(a));
+	}
+
+	#[benchmark]
+	fn set_deposit_contract() {
+		let a = frame_benchmarking::whitelisted_caller();
+
+		// Worst-case scenario:
+		//
+		// Set successfully.
+		#[extrinsic_call]
+		_(RawOrigin::Root, a);
+	}
+
 	frame_benchmarking::impl_benchmark_test_suite!(
 		Pallet,
 		crate::mock::new_test_ext(),

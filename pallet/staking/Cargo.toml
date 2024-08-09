@@ -9,19 +9,22 @@ version.workspace = true
 [dependencies]
 # crates.io
 codec      = { workspace = true, package = "parity-scale-codec" }
-ethabi     = { version = "18.0", default-features = false }
-ethereum   = { workspace = true }
+ethabi     = { workspace = true }
 log        = { workspace = true }
 scale-info = { workspace = true }
 
 # darwinia
 darwinia-ethtx-forwarder = { workspace = true }
 darwinia-staking-traits  = { workspace = true }
-dc-primitives            = { workspace = true }
+dc-inflation             = { workspace = true }
+dc-types                 = { workspace = true }
 # darwinia optional
 darwinia-deposit = { workspace = true, optional = true }
 
-# subtrate
+# frontier
+fp-evm = { workspace = true }
+
+# polkadot-sdk
 frame-support     = { workspace = true }
 frame-system      = { workspace = true }
 pallet-authorship = { workspace = true }
@@ -35,18 +38,17 @@ frame-benchmarking = { workspace = true, optional = true }
 [dev-dependencies]
 # crates.io
 pretty_env_logger = { version = "0.5" }
+serde             = { version = "1.0", features = ["derive"] }
 
 # darwinia
 darwinia-deposit = { workspace = true, features = ["std"] }
 
 # polkadot-sdk
-dc-inflation         = { workspace = true, features = ["std"] }
-pallet-balances      = { workspace = true, features = ["std"] }
-pallet-session       = { workspace = true, features = ["std"] }
-pallet-timestamp     = { workspace = true, features = ["std"] }
-pallet-treasury      = { workspace = true, features = ["std"] }
-sp-io                = { workspace = true, features = ["std"] }
-substrate-test-utils = { workspace = true }
+pallet-balances  = { workspace = true, features = ["std"] }
+pallet-session   = { workspace = true, features = ["std"] }
+pallet-timestamp = { workspace = true, features = ["std"] }
+pallet-treasury  = { workspace = true, features = ["std"] }
+sp-io            = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]
@@ -54,18 +56,20 @@ std = [
 	# crates.io
 	"codec/std",
 	"ethabi/std",
-	"ethereum/std",
 	"log/std",
 	"scale-info/std",
 
 	# darwinia
 	"darwinia-ethtx-forwarder/std",
 	"darwinia-staking-traits/std",
-	"dc-primitives/std",
+	"dc-inflation/std",
 	# darwinia optional
 	"darwinia-deposit?/std",
 
-	# subtrate
+	# frontier
+	"fp-evm/std",
+
+	# polkadot-sdk
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-authorship/std",
@@ -92,8 +96,6 @@ runtime-benchmarks = [
 ]
 
 try-runtime = [
-	# darwinia
-	"darwinia-ethtx-forwarder/try-runtime",
 	# polkadot-sdk
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",

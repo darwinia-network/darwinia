@@ -42,68 +42,19 @@ impl darwinia_staking::Stake for RingStaking {
 		)
 	}
 }
-pub enum KtonStaking {}
-impl darwinia_staking::Stake for KtonStaking {
-	type AccountId = AccountId;
-	type Item = Balance;
-
-	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		Assets::transfer(
-			RuntimeOrigin::signed(*who),
-			(AssetIds::KKton as AssetId).into(),
-			darwinia_staking::account_id(),
-			item,
-		)
-	}
-
-	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		Assets::transfer(
-			RuntimeOrigin::signed(darwinia_staking::account_id()),
-			(AssetIds::KKton as AssetId).into(),
-			*who,
-			item,
-		)
-	}
-}
-
-pub enum OnKoiSessionEnd {}
-impl darwinia_staking::IssuingManager<Runtime> for OnKoiSessionEnd {
-	fn calculate_reward(_inflation: Balance) -> Balance {
-		20_000 * UNIT
-	}
-
-	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		<Balances as frame_support::traits::Currency<AccountId>>::transfer(
-			&Treasury::account_id(),
-			who,
-			amount,
-			frame_support::traits::ExistenceRequirement::KeepAlive,
-		)
-	}
-}
-
-pub enum ShouldEndSession {}
-impl frame_support::traits::Get<bool> for ShouldEndSession {
-	fn get() -> bool {
-		// polkadot-sdk
-		use pallet_session::ShouldEndSession;
-
-		<Runtime as pallet_session::Config>::ShouldEndSession::should_end_session(
-			System::block_number(),
-		)
-	}
-}
 
 impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
-	type IssuingManager = OnKoiSessionEnd;
-	type Kton = KtonStaking;
-	type KtonStakerNotifier = darwinia_staking::KtonStakerNotifier<Self>;
+	type IssuingManager = darwinia_staking::BalanceIssuing<Self>;
+	type KtonStaking = darwinia_staking::KtonStaking<Self>;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type Ring = RingStaking;
+	type RingStaking = darwinia_staking::RingStaking<Self>;
 	type RuntimeEvent = RuntimeEvent;
-	type ShouldEndSession = ShouldEndSession;
+	type ShouldEndSession = darwinia_staking::ShouldEndSession<Self>;
+	type Treasury = pallet_config::TreasuryAccount;
+	type UnixTime = Timestamp;
 	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;
 }
 #[cfg(not(feature = "runtime-benchmarks"))]
