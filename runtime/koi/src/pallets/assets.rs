@@ -39,7 +39,7 @@ impl pallet_assets::Config for Runtime {
 	type CallbackHandle = ();
 	type CreateOrigin = frame_support::traits::AsEnsureOriginWithArg<
 		frame_system::EnsureSignedBy<
-			frame_support::traits::IsInVec<crate::pallet_config::AssetCreators>,
+			frame_support::traits::IsInVec<pallet_config::AssetCreators>,
 			Self::AccountId,
 		>,
 	>;

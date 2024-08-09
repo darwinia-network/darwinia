@@ -61,7 +61,7 @@ pub type Block = sp_runtime::generic::Block<Header, sp_runtime::OpaqueExtrinsic>
 
 /// Maximum number of blocks simultaneously accepted by the Runtime, not yet included
 /// into the relay chain.
-pub const UNINCLUDED_SEGMENT_CAPACITY: u32 = 1;
+pub const UNINCLUDED_SEGMENT_CAPACITY: u32 = 3;
 /// How many parachain blocks are processed by the relay chain per parent. Limits the
 /// number of blocks authored per slot.
 pub const BLOCK_PROCESSING_VELOCITY: u32 = 1;
@@ -69,7 +69,7 @@ pub const BLOCK_PROCESSING_VELOCITY: u32 = 1;
 pub const RELAY_CHAIN_SLOT_DURATION_MILLIS: u32 = 6_000;
 
 /// Slot duration.
-pub const SLOT_DURATION: u64 = 12_000;
+pub const SLOT_DURATION: u64 = 6_000;
 
 // Time is measured by number of blocks.
 /// 10 blocks.
