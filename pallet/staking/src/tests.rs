@@ -539,9 +539,6 @@ fn payout_should_work() {
 			vec![
 				// Pay to staking failed.
 				Event::Unpaid { who: account_id(), amount: 5000000000000000000000 },
-				// Pay to distribution contract failed.
-				// The contract address is the same as staking pallet account in unit test.
-				Event::Unpaid { who: account_id(), amount: 5000000000000000000000 },
 				// Pay to collator failed.
 				Event::Unpaid { who: account_id_of(6), amount: 3749999998500000000000 },
 				// Pay to nominator failed.

@@ -671,7 +671,11 @@ pub mod pallet {
 			};
 
 			reward(account_id(), actual_reward_to_ring);
-			reward(<KtonRewardDistributionContract<T>>::get(), reward_to_kton);
+			reward(
+				[109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0]
+					.into(),
+				reward_to_kton,
+			);
 
 			T::KtonStakerNotifier::notify(reward_to_kton);
 		}
