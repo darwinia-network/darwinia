@@ -45,9 +45,13 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	if let Some(w) =
-		array_bytes::hex_n_into::<_, _, 20>("0xf1b4f3D438eE2B363C5ba1641A498709ff5780bA")
-	{
+	const KTON_DAO_VAULT_ADDR: &str = "0xf1b4f3D438eE2B363C5ba1641A498709ff5780bA";
+
+	#[cfg(feature = "try-runtime")]
+	assert!(array_bytes::hex_n_into::<_, _, 20>(KTON_DAO_VAULT_ADDR).is_ok());
+
+	if let Some(w) = array_bytes::hex_n_into::<_, _, 20>(KTON_DAO_VAULT_ADDR) {
+		<darwinia_staking::KtonRewardDistributionContract<Runtime>>::put(w);
 		darwinia_staking::migration::migrate_staking_reward_distribution_contract::<Runtime>(w);
 	}
 
