@@ -61,6 +61,8 @@ fn migrate() -> frame_support::weights::Weight {
 	}
 	.remove_storage_values();
 
+	darwinia_staking::migration::migrate_staking_reward_distribution_contract::<Runtime>();
+
 	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, n)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(10, n + 10)
 }
