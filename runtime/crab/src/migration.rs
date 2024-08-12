@@ -45,7 +45,7 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	const KTON_DAO_VAULT_ADDR: &str = "0x9e5cED4C978F92591fD0609c5c781e6aDdB75ac0";
+	const KTON_DAO_VAULT_ADDR: &str = "0x652182C6aBc0bBE41b5702b05a26d109A405EAcA";
 
 	#[cfg(feature = "try-runtime")]
 	assert!(array_bytes::hex_n_into::<_, _, 20>(KTON_DAO_VAULT_ADDR).is_ok());
