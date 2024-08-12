@@ -36,6 +36,7 @@ fn selectors() {
 	assert!(PCall::lock_selectors().contains(&0x998e4242));
 	assert!(PCall::claim_selectors().contains(&0x4e71d92d));
 	assert!(PCall::claim_with_penalty_selectors().contains(&0xfa04a9bf));
+	assert!(PCall::migrate_selectors().contains(&0x8fd3ab80));
 }
 
 #[test]

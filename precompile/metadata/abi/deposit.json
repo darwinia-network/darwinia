@@ -65,6 +65,20 @@
           ],
           "stateMutability": "nonpayable",
           "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "migrate",
+          "outputs":
+          [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function"
         }
       ],
       "devdoc":
@@ -104,6 +118,10 @@
             {
               "_0": "returns true on success, false otherwise."
             }
+          },
+          "migrate()":
+          {
+            "details": "Migrate data to deposit contract"
           }
         },
         "title": "Deposit",
@@ -113,7 +131,8 @@
       {
         "claim()": "4e71d92d",
         "claim_with_penalty(uint8)": "fa04a9bf",
-        "lock(uint256,uint8)": "998e4242"
+        "lock(uint256,uint8)": "998e4242",
+        "migrate()": "8fd3ab80"
       }
     }
   },

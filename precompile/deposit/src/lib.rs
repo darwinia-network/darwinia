@@ -88,4 +88,15 @@ where
 
 		Ok(true)
 	}
+
+	#[precompile::public("migrate()")]
+	fn migrate(handle: &mut impl PrecompileHandle) -> EvmResult<bool> {
+		let origin: AccountIdOf<Runtime> = handle.context().caller.into();
+		RuntimeHelper::<Runtime>::try_dispatch(
+			handle,
+			Some(origin).into(),
+			darwinia_deposit::Call::<Runtime>::migrate {},
+		)?;
+		Ok(true)
+	}
 }
