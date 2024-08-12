@@ -41,4 +41,7 @@ interface Deposit {
 	/// @param depositId The deposit ticket wish to claim
 	/// @return returns true on success, false otherwise.
 	function claim_with_penalty(uint8 depositId) external returns (bool);
+
+	/// @dev Migrate data to deposit contract
+	function migrate() external returns (bool);
 }
