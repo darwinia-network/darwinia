@@ -16,7 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-pub use crate as darwinia_account_migration;
 pub use dc_primitives::*;
 
 // polkadot-sdk
@@ -125,11 +124,13 @@ frame_support::parameter_types! {
 }
 
 impl darwinia_deposit::Config for Runtime {
+	type DepositMigrator = ();
 	type Kton = Dummy;
-	type MaxDeposits = ();
+	type MaxDeposits = frame_support::traits::ConstU32<512>;
 	type MinLockingAmount = ();
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
+	type Treasury = ();
 	type WeightInfo = ();
 }
 
@@ -137,18 +138,20 @@ impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
 	type IssuingManager = ();
-	type Kton = Dummy;
-	type KtonStakerNotifier = ();
-	type MaxDeposits = ();
+	type KtonStaking = ();
+	type MaxDeposits = frame_support::traits::ConstU32<512>;
 	type Ring = Dummy;
+	type RingStaking = ();
 	type RuntimeEvent = RuntimeEvent;
 	type ShouldEndSession = ();
+	type Treasury = ();
+	type UnixTime = Timestamp;
 	type WeightInfo = ();
 }
 #[cfg(not(feature = "runtime-benchmarks"))]
 impl darwinia_staking::DepositConfig for Runtime {}
 
-impl darwinia_account_migration::Config for Runtime {
+impl crate::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 }
@@ -161,7 +164,7 @@ frame_support::construct_runtime! {
 		Assets: pallet_assets,
 		Deposit: darwinia_deposit,
 		Staking: darwinia_staking,
-		AccountMigration: darwinia_account_migration,
+		AccountMigration: crate,
 	}
 }
 
@@ -169,13 +172,8 @@ pub(crate) fn new_test_ext() -> TestExternalities {
 	let mut storage = <frame_system::GenesisConfig<Runtime>>::default().build_storage().unwrap();
 
 	pallet_assets::GenesisConfig::<Runtime> {
-		assets: vec![(darwinia_account_migration::KTON_ID, [0; 20].into(), true, 1)],
-		metadata: vec![(
-			darwinia_account_migration::KTON_ID,
-			b"KTON".to_vec(),
-			b"KTON".to_vec(),
-			18,
-		)],
+		assets: vec![(crate::KTON_ID, [0; 20].into(), true, 1)],
+		metadata: vec![(crate::KTON_ID, b"KTON".to_vec(), b"KTON".to_vec(), 18)],
 		..Default::default()
 	}
 	.assimilate_storage(&mut storage)

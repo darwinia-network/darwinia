@@ -22,6 +22,8 @@ pub use crate as darwinia_ethtx_forwarder;
 
 // crates.io
 use sha3::Digest;
+// darwinia
+use crate::*;
 // polkadot-sdk
 use frame_support::derive_impl;
 use sp_runtime::BuildStorage;
@@ -207,4 +209,16 @@ impl ExtBuilder {
 		ext.execute_with(|| System::set_block_number(1));
 		ext
 	}
+}
+
+// Calculates the fee for submitting such an EVM transaction.
+//
+// The gas_price of an EVM transaction is always the min_gas_price(), which is a fixed value.
+// Therefore, only the gas_limit and value of the transaction should be considered in the
+// calculation of the fee, and the gas_price of the transaction itself can be ignored.
+pub fn total_payment(request: &ForwardRequest) -> U256 {
+	let base_fee = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0;
+	let fee = base_fee.saturating_mul(request.gas_limit);
+
+	request.value.saturating_add(fee)
 }

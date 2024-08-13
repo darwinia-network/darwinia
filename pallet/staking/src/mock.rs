@@ -16,21 +16,53 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-pub use crate as darwinia_staking;
-
+// core
+use core::fmt::{Display, Formatter, Result as FmtResult};
+// crates.io
+use codec::MaxEncodedLen;
+use scale_info::TypeInfo;
+use serde::{Deserialize, Serialize};
 // darwinia
-use dc_primitives::{AccountId, Balance, Moment, UNIT};
+use crate::*;
 // polkadot-sdk
-use frame_support::{
-	derive_impl,
-	traits::{Currency, OnInitialize},
-};
+use frame_support::{assert_ok, derive_impl, traits::OnInitialize};
 use sp_core::H160;
 use sp_io::TestExternalities;
 use sp_runtime::{BuildStorage, RuntimeAppPublic};
 
 pub type BlockNumber = frame_system::pallet_prelude::BlockNumberFor<Runtime>;
 
+#[derive(
+	Clone,
+	Copy,
+	Debug,
+	PartialEq,
+	Eq,
+	PartialOrd,
+	Ord,
+	Serialize,
+	Deserialize,
+	Encode,
+	Decode,
+	MaxEncodedLen,
+	TypeInfo,
+)]
+pub struct AccountId(pub u64);
+impl From<H160> for AccountId {
+	fn from(value: H160) -> Self {
+		Self(H160::to_low_u64_le(&value))
+	}
+}
+impl Into<H160> for AccountId {
+	fn into(self) -> H160 {
+		H160::from_low_u64_le(self.0)
+	}
+}
+impl Display for AccountId {
+	fn fmt(&self, f: &mut Formatter) -> FmtResult {
+		write!(f, "{}", self.0)
+	}
+}
 #[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
@@ -65,11 +97,13 @@ impl darwinia_deposit::SimpleAsset for KtonMinting {
 	}
 }
 impl darwinia_deposit::Config for Runtime {
+	type DepositMigrator = ();
 	type Kton = KtonMinting;
 	type MaxDeposits = frame_support::traits::ConstU32<16>;
 	type MinLockingAmount = frame_support::traits::ConstU128<UNIT>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
+	type Treasury = TreasuryAcct;
 	type WeightInfo = ();
 }
 
@@ -118,13 +152,13 @@ impl pallet_session::Config for Runtime {
 	type SessionManager = Staking;
 	type ShouldEndSession = pallet_session::PeriodicSessions<Period, ()>;
 	type ValidatorId = Self::AccountId;
-	type ValidatorIdOf = darwinia_staking::IdentityCollator;
+	type ValidatorIdOf = crate::IdentityCollator;
 	type WeightInfo = ();
 }
 
 frame_support::parameter_types! {
 	pub const TreasuryPalletId: frame_support::PalletId = frame_support::PalletId(*b"da/trsry");
-	pub TreasuryAccount: AccountId = Treasury::account_id();
+	pub TreasuryAcct: AccountId = Treasury::account_id();
 }
 #[cfg(feature = "runtime-benchmarks")]
 pub struct DummyBenchmarkHelper;
@@ -138,7 +172,7 @@ where
 	}
 
 	fn create_beneficiary(_: [u8; 32]) -> AccountId {
-		Default::default()
+		AccountId(0)
 	}
 }
 impl pallet_treasury::Config for Runtime {
@@ -155,7 +189,7 @@ impl pallet_treasury::Config for Runtime {
 	type MaxApprovals = ();
 	type OnSlash = ();
 	type PalletId = TreasuryPalletId;
-	type Paymaster = frame_support::traits::tokens::PayFromAccount<Balances, TreasuryAccount>;
+	type Paymaster = frame_support::traits::tokens::PayFromAccount<Balances, TreasuryAcct>;
 	type PayoutPeriod = ();
 	type ProposalBond = ();
 	type ProposalBondMaximum = ();
@@ -169,96 +203,43 @@ impl pallet_treasury::Config for Runtime {
 }
 
 frame_support::parameter_types! {
-	pub PayoutFraction: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(40);
 	pub static InflationType: u8 = 0;
 }
 pub enum StatedOnSessionEnd {}
-impl darwinia_staking::IssuingManager<Runtime> for StatedOnSessionEnd {
+impl crate::IssuingManager<Runtime> for StatedOnSessionEnd {
 	fn inflate() -> Balance {
 		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
-			OnDarwiniaSessionEnd::inflate()
+			<crate::BalanceIssuing<Runtime>>::inflate()
 		} else {
-			OnCrabSessionEnd::inflate()
+			<crate::TreasuryIssuing<Runtime>>::inflate()
 		}
 	}
 
 	fn calculate_reward(issued: Balance) -> Balance {
 		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
-			OnDarwiniaSessionEnd::calculate_reward(issued)
+			<crate::BalanceIssuing<Runtime>>::calculate_reward(issued)
 		} else {
-			OnCrabSessionEnd::calculate_reward(issued)
+			<crate::TreasuryIssuing<Runtime>>::calculate_reward(issued)
 		}
 	}
 
 	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
 		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
-			OnDarwiniaSessionEnd::reward(who, amount)
+			<crate::BalanceIssuing<Runtime>>::reward(who, amount)
 		} else {
-			OnCrabSessionEnd::reward(who, amount)
+			<crate::TreasuryIssuing<Runtime>>::reward(who, amount)
 		}
-	}
-}
-pub enum OnDarwiniaSessionEnd {}
-impl darwinia_staking::IssuingManager<Runtime> for OnDarwiniaSessionEnd {
-	fn inflate() -> Balance {
-		let now = Timestamp::now();
-		let session_duration = now - <darwinia_staking::SessionStartTime<Runtime>>::get();
-		let elapsed_time = <darwinia_staking::ElapsedTime<Runtime>>::mutate(|t| {
-			*t = t.saturating_add(session_duration);
-
-			*t
-		});
-
-		<darwinia_staking::SessionStartTime<Runtime>>::put(now);
-
-		dc_inflation::issuing_in_period(session_duration, elapsed_time).unwrap_or_default()
-	}
-
-	fn calculate_reward(issued: Balance) -> Balance {
-		PayoutFraction::get() * issued
-	}
-
-	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		let _ = Balances::deposit_creating(who, amount);
-
-		Ok(())
-	}
-}
-pub enum OnCrabSessionEnd {}
-impl darwinia_staking::IssuingManager<Runtime> for OnCrabSessionEnd {
-	fn calculate_reward(_inflation: Balance) -> Balance {
-		10_000 * UNIT
-	}
-
-	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		<Balances as Currency<AccountId>>::transfer(
-			&Treasury::account_id(),
-			who,
-			amount,
-			frame_support::traits::ExistenceRequirement::KeepAlive,
-		)
-	}
-}
-pub enum ShouldEndSession {}
-impl frame_support::traits::Get<bool> for ShouldEndSession {
-	fn get() -> bool {
-		// polkadot-sdk
-		use pallet_session::ShouldEndSession;
-
-		<Runtime as pallet_session::Config>::ShouldEndSession::should_end_session(
-			System::block_number(),
-		)
 	}
 }
 pub enum RingStaking {}
-impl darwinia_staking::Stake for RingStaking {
+impl crate::Stake for RingStaking {
 	type AccountId = AccountId;
 	type Item = Balance;
 
 	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
 		<Balances as frame_support::traits::Currency<_>>::transfer(
 			who,
-			&darwinia_staking::account_id(),
+			&crate::account_id(),
 			item,
 			frame_support::traits::ExistenceRequirement::AllowDeath,
 		)
@@ -266,40 +247,66 @@ impl darwinia_staking::Stake for RingStaking {
 
 	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
 		<Balances as frame_support::traits::Currency<_>>::transfer(
-			&darwinia_staking::account_id(),
+			&crate::account_id(),
 			who,
 			item,
 			frame_support::traits::ExistenceRequirement::AllowDeath,
 		)
 	}
 }
-pub enum KtonStaking {}
-impl darwinia_staking::Stake for KtonStaking {
-	type AccountId = AccountId;
-	type Item = Balance;
+impl crate::Election<AccountId> for RingStaking {
+	fn elect(n: u32) -> Option<Vec<AccountId>> {
+		Some(
+			(100..=(100 + n) as u64)
+				.map(|i| {
+					let who = AccountId(i);
+					let _ = <pallet_balances::Pallet<Runtime>>::deposit_creating(&who, i as _);
 
-	fn stake(_: &Self::AccountId, _: Self::Item) -> sp_runtime::DispatchResult {
-		Ok(())
-	}
+					assert_ok!(Session::set_keys(
+						RuntimeOrigin::signed(who),
+						SessionKeys { uint: i.into() },
+						Vec::new()
+					));
 
-	fn unstake(_: &Self::AccountId, _: Self::Item) -> sp_runtime::DispatchResult {
-		Ok(())
+					who
+				})
+				.collect(),
+		)
 	}
 }
-impl darwinia_staking::Config for Runtime {
+impl crate::Reward<AccountId> for RingStaking {
+	fn distribute(who: Option<AccountId>, amount: Balance) {
+		let Some(who) = who else { return };
+		let _ =
+			Balances::transfer_keep_alive(RuntimeOrigin::signed(TreasuryAcct::get()), who, amount);
+	}
+}
+pub enum KtonStaking {}
+impl crate::Reward<AccountId> for KtonStaking {
+	fn distribute(_: Option<AccountId>, amount: Balance) {
+		let _ = Balances::transfer_keep_alive(
+			RuntimeOrigin::signed(TreasuryAcct::get()),
+			<KtonStakingContract<Runtime>>::get().unwrap(),
+			amount,
+		);
+	}
+}
+impl crate::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
 	type IssuingManager = StatedOnSessionEnd;
-	type Kton = KtonStaking;
-	type KtonStakerNotifier = ();
+	type KtonStaking = KtonStaking;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type Ring = RingStaking;
+	type RingStaking = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
-	type ShouldEndSession = ShouldEndSession;
+	type ShouldEndSession = crate::ShouldEndSession<Self>;
+	type Treasury = TreasuryAcct;
+	type UnixTime = Timestamp;
 	type WeightInfo = ();
 }
 #[cfg(not(feature = "runtime-benchmarks"))]
-impl darwinia_staking::DepositConfig for Runtime {}
+impl crate::DepositConfig for Runtime {}
 
 frame_support::construct_runtime! {
 	pub enum Runtime {
@@ -309,14 +316,14 @@ frame_support::construct_runtime! {
 		Deposit: darwinia_deposit,
 		Session: pallet_session,
 		Treasury: pallet_treasury,
-		Staking: darwinia_staking,
+		Staking: crate,
 	}
 }
 
 pub enum Efflux {}
 impl Efflux {
-	pub fn time(milli_secs: Moment) {
-		Timestamp::set_timestamp(Timestamp::now() + milli_secs);
+	pub fn time(millis: Moment) {
+		Timestamp::set_timestamp(Timestamp::now() + millis);
 	}
 
 	pub fn block(number: BlockNumber) {
@@ -353,23 +360,23 @@ impl ExtBuilder {
 	}
 
 	pub fn build(self) -> TestExternalities {
-		let _ = pretty_env_logger::try_init();
+		// let _ = pretty_env_logger::try_init();
 		let mut storage =
 			<frame_system::GenesisConfig<Runtime>>::default().build_storage().unwrap();
 
 		pallet_balances::GenesisConfig::<Runtime> {
 			balances: (1..=10)
-				.map(|i| (account_id_of(i), 1_000 * UNIT))
-				.chain([(Treasury::account_id(), 1_000_000 * UNIT)])
+				.map(|i| (AccountId(i), 1_000 * UNIT))
+				.chain([(TreasuryAcct::get(), 1_000_000 * UNIT)])
 				.collect(),
 		}
 		.assimilate_storage(&mut storage)
 		.unwrap();
-		darwinia_staking::GenesisConfig::<Runtime> {
+		crate::GenesisConfig::<Runtime> {
 			rate_limit: 100 * UNIT,
 			collator_count: self.collator_count,
 			collators: if self.genesis_collator {
-				(1..=self.collator_count as u64).map(|i| (account_id_of(i), UNIT)).collect()
+				(1..=self.collator_count as u64).map(|i| (AccountId(i), i as _)).collect()
 			} else {
 				Default::default()
 			},
@@ -380,7 +387,7 @@ impl ExtBuilder {
 		if self.genesis_collator {
 			pallet_session::GenesisConfig::<Runtime> {
 				keys: (1..=self.collator_count as u64)
-					.map(|i| (account_id_of(i), account_id_of(i), SessionKeys { uint: i.into() }))
+					.map(|i| (AccountId(i), AccountId(i), SessionKeys { uint: i.into() }))
 					.collect(),
 			}
 			.assimilate_storage(&mut storage)
@@ -389,7 +396,12 @@ impl ExtBuilder {
 
 		let mut ext = TestExternalities::from(storage);
 
-		ext.execute_with(|| new_session());
+		ext.execute_with(|| {
+			<RingStakingContract<Runtime>>::put(AccountId(718));
+			<KtonStakingContract<Runtime>>::put(AccountId(719));
+
+			new_session();
+		});
 
 		ext
 	}
@@ -400,8 +412,20 @@ impl Default for ExtBuilder {
 	}
 }
 
-pub fn account_id_of(i: u64) -> AccountId {
-	H160::from_low_u64_le(i).into()
+pub fn preset_collators(n: u64) {
+	(10..(10 + n)).for_each(|i| {
+		let who = AccountId(i);
+		let _ = <pallet_balances::Pallet<Runtime>>::deposit_creating(&who, i as _);
+
+		assert_ok!(Session::set_keys(
+			RuntimeOrigin::signed(who),
+			SessionKeys { uint: i.into() },
+			Vec::new()
+		));
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(who), i as _, Vec::new()));
+		assert_ok!(Staking::collect(RuntimeOrigin::signed(who), Perbill::zero()));
+		assert_ok!(Staking::nominate(RuntimeOrigin::signed(who), who));
+	});
 }
 
 pub fn initialize_block(number: BlockNumber) {
@@ -422,7 +446,7 @@ pub fn new_session() {
 }
 
 pub fn payout() {
-	darwinia_staking::call_on_exposure!(<Previous<Runtime>>::iter_keys().for_each(|c| {
+	crate::call_on_exposure!(<Previous<Runtime>>::iter_keys().for_each(|c| {
 		let _ = Staking::payout_inner(c);
 	}))
 	.unwrap();

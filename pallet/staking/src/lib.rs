@@ -27,11 +27,11 @@
 //! - RING: Darwinia's native token
 //! - Deposit: Locking RINGs' ticket
 
+// TODO: check this after the migration is complete.
+#![allow(clippy::needless_borrows_for_generic_args)]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
 #![allow(clippy::needless_borrows_for_generic_args)]
-
-pub mod migration;
 
 #[cfg(test)]
 mod mock;
@@ -48,16 +48,17 @@ pub use darwinia_staking_traits::*;
 
 // crates.io
 use codec::FullCodec;
-use ethabi::{Function, Param, ParamType, StateMutability};
-use ethereum::TransactionAction;
+use ethabi::{Function, Param, ParamType, StateMutability, Token};
 // darwinia
-use darwinia_ethtx_forwarder::{ForwardEthOrigin, ForwardRequest, TxType};
-use dc_primitives::{AccountId, Balance, Moment};
+use dc_types::{Balance, Moment, UNIT};
 // polkadot-sdk
 use frame_support::{
-	pallet_prelude::*, traits::Currency, DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound,
+	pallet_prelude::*,
+	traits::{Currency, UnixTime},
+	DefaultNoBound, EqNoBound, PalletId, PartialEqNoBound,
 };
 use frame_system::{pallet_prelude::*, RawOrigin};
+use pallet_session::ShouldEndSession as _;
 use sp_core::{H160, U256};
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, One, Zero},
@@ -70,9 +71,9 @@ use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 macro_rules! call_on_exposure {
 	($s_e:expr, <$s:ident<$t:ident>>$($f:tt)*) => {{
 		match $s_e {
-			($crate::ExposureCacheState::$s, _, _) => Ok(<$crate::ExposureCache0<$t>>$($f)*),
-			(_, $crate::ExposureCacheState::$s, _) => Ok(<$crate::ExposureCache1<$t>>$($f)*),
-			(_, _, $crate::ExposureCacheState::$s) => Ok(<$crate::ExposureCache2<$t>>$($f)*),
+			($crate::CacheState::$s, _, _) => Ok(<$crate::ExposureCache0<$t>>$($f)*),
+			(_, $crate::CacheState::$s, _) => Ok(<$crate::ExposureCache1<$t>>$($f)*),
+			(_, _, $crate::CacheState::$s) => Ok(<$crate::ExposureCache2<$t>>$($f)*),
 			_ => {
 				log::error!("[pallet::staking] exposure cache states must be correct; qed");
 
@@ -86,14 +87,37 @@ macro_rules! call_on_exposure {
 		$crate::call_on_exposure!(s, <$s<$t>>$($f)*)
 	}};
 }
+/// Make it easier to call a function on a specific collators storage.
+#[macro_export]
+macro_rules! call_on_cache {
+	($s_e:expr, <$s:ident<$t:ident>>$($f:tt)*) => {{
+		match $s_e {
+			($crate::CacheState::$s, _, _) => Ok(<$crate::CollatorsCache0<$t>>$($f)*),
+			(_, $crate::CacheState::$s, _) => Ok(<$crate::CollatorsCache1<$t>>$($f)*),
+			(_, _, $crate::CacheState::$s) => Ok(<$crate::CollatorsCache2<$t>>$($f)*),
+			_ => {
+				log::error!("[pallet::staking] collators cache states must be correct; qed");
+
+				Err("[pallet::staking] collators cache states must be correct; qed")
+			},
+		}
+	}};
+	(<$s:ident<$t:ident>>$($f:tt)*) => {{
+		let s = <$crate::CollatorsCacheState<$t>>::get();
+
+		$crate::call_on_cache!(s, <$s<$t>>$($f)*)
+	}};
+}
+
+type DepositId<T> = <<T as Config>::Deposit as Stake>::Item;
+
+const PAYOUT_FRAC: Perbill = Perbill::from_percent(40);
+const DAY_IN_MILLIS: Moment = 24 * 60 * 60 * 1_000;
 
 #[frame_support::pallet]
 pub mod pallet {
 	// darwinia
 	use crate::*;
-
-	// TODO: limit the number of nominators that a collator can have.
-	// const MAX_NOMINATIONS: u32 = 32;
 
 	// Deposit helper for runtime benchmark.
 	#[cfg(feature = "runtime-benchmarks")]
@@ -106,34 +130,39 @@ pub mod pallet {
 	pub trait DepositConfig {}
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config<AccountId = AccountId> + DepositConfig {
+	pub trait Config: frame_system::Config + DepositConfig {
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// Weight information for extrinsics in this pallet.
 		type WeightInfo: WeightInfo;
 
-		/// RING [`Stake`] interface.
-		type Ring: Stake<AccountId = Self::AccountId, Item = Balance>;
+		/// Unix time interface.
+		type UnixTime: UnixTime;
 
-		// TODO: Remove after the migration.
-		/// KTON [`Stake`] interface.
-		type Kton: Stake<AccountId = Self::AccountId, Item = Balance>;
-
-		/// Deposit [`StakeExt`] interface.
-		type Deposit: StakeExt<AccountId = Self::AccountId, Amount = Balance>;
+		/// Pass [`pallet_session::Config::ShouldEndSession`]'s result to here.
+		type ShouldEndSession: Get<bool>;
 
 		/// Currency interface to pay the reward.
-		type Currency: Currency<Self::AccountId>;
+		type Currency: Currency<Self::AccountId, Balance = Balance>;
 
 		/// Inflation and reward manager.
 		type IssuingManager: IssuingManager<Self>;
 
-		/// KTON staker notifier.
-		type KtonStakerNotifier: KtonStakerNotification;
+		/// RING [`Stake`] interface.
+		type Ring: Stake<AccountId = Self::AccountId, Item = Balance>;
 
-		/// Pass [`pallet_session::Config::ShouldEndSession`]'s result to here.
-		type ShouldEndSession: Get<bool>;
+		/// Deposit [`StakeExt`] interface.
+		type Deposit: StakeExt<AccountId = Self::AccountId, Amount = Balance>;
+
+		/// RING staking interface.
+		type RingStaking: Election<Self::AccountId> + Reward<Self::AccountId>;
+
+		/// KTON staking interface.
+		type KtonStaking: Reward<Self::AccountId>;
+
+		/// Treasury address.
+		type Treasury: Get<Self::AccountId>;
 
 		/// Maximum deposit count.
 		#[pallet::constant]
@@ -212,15 +241,14 @@ pub mod pallet {
 	#[pallet::getter(fn exposure_cache_states)]
 	pub type ExposureCacheStates<T: Config> = StorageValue<
 		_,
-		(ExposureCacheState, ExposureCacheState, ExposureCacheState),
+		(CacheState, CacheState, CacheState),
 		ValueQuery,
 		ExposureCacheStatesDefault<T>,
 	>;
 	/// Default value for [`ExposureCacheStates`].
 	#[pallet::type_value]
-	pub fn ExposureCacheStatesDefault<T: Config>(
-	) -> (ExposureCacheState, ExposureCacheState, ExposureCacheState) {
-		(ExposureCacheState::Previous, ExposureCacheState::Current, ExposureCacheState::Next)
+	pub fn ExposureCacheStatesDefault<T: Config>() -> (CacheState, CacheState, CacheState) {
+		(CacheState::Previous, CacheState::Current, CacheState::Next)
 	}
 
 	/// Exposure cache 0.
@@ -292,16 +320,74 @@ pub mod pallet {
 	#[pallet::getter(fn rate_limit_state)]
 	pub type RateLimitState<T: Config> = StorageValue<_, RateLimiter, ValueQuery>;
 
-	/// KTON reward distribution contract address.
+	/// RING staking contract address.
 	#[pallet::storage]
-	#[pallet::getter(fn kton_reward_distribution_contract)]
-	pub type KtonRewardDistributionContract<T: Config> =
-		StorageValue<_, T::AccountId, ValueQuery, KtonRewardDistributionContractDefault<T>>;
-	/// Default value for [`KtonRewardDistributionContract`].
+	#[pallet::getter(fn ring_staking_contract)]
+	pub type RingStakingContract<T: Config> = StorageValue<_, T::AccountId>;
+	/// KTON staking contract address.
+	#[pallet::storage]
+	#[pallet::getter(fn kton_staking_contract)]
+	pub type KtonStakingContract<T: Config> = StorageValue<_, T::AccountId>;
+
+	/// Migration start point.
+	#[pallet::storage]
+	#[pallet::getter(fn migration_start_point)]
+	pub type MigrationStartPoint<T: Config> = StorageValue<_, Moment, ValueQuery>;
+
+	/// Collator cache state.
+	///
+	/// To avoid extra DB RWs during new session, such as:
+	/// ```nocompile
+	/// previous = current;
+	/// current = next;
+	/// next = elect();
+	/// ```
+	///
+	/// Now, with data:
+	/// ```nocompile
+	/// cache1 == previous;
+	/// cache2 == current;
+	/// cache3 == next;
+	/// ```
+	/// Just need to shift the marker and write the storage map once:
+	/// ```nocompile
+	/// mark(cache3, current);
+	/// mark(cache2, previous);
+	/// mark(cache1, next);
+	/// cache1 = elect();
+	/// ```
+	#[pallet::storage]
+	#[pallet::getter(fn collator_cache_state)]
+	pub type CollatorsCacheState<T: Config> = StorageValue<
+		_,
+		(CacheState, CacheState, CacheState),
+		ValueQuery,
+		CollatorCacheStateDefault<T>,
+	>;
+	/// Default value for [`CollatorsCacheState`].
 	#[pallet::type_value]
-	pub fn KtonRewardDistributionContractDefault<T: Config>() -> T::AccountId {
-		account_id()
+	pub fn CollatorCacheStateDefault<T: Config>() -> (CacheState, CacheState, CacheState) {
+		(CacheState::Previous, CacheState::Current, CacheState::Next)
 	}
+
+	// TODO: use `BoundedVec`.
+	/// Exposure cache 0.
+	#[pallet::storage]
+	#[pallet::unbounded]
+	#[pallet::getter(fn collators_cache_0)]
+	pub type CollatorsCache0<T: Config> = StorageValue<_, Vec<T::AccountId>, ValueQuery>;
+
+	/// Exposure cache 1.
+	#[pallet::storage]
+	#[pallet::unbounded]
+	#[pallet::getter(fn collators_cache_1)]
+	pub type CollatorsCache1<T: Config> = StorageValue<_, Vec<T::AccountId>, ValueQuery>;
+
+	/// Exposure cache 2.
+	#[pallet::storage]
+	#[pallet::unbounded]
+	#[pallet::getter(fn collators_cache_2)]
+	pub type CollatorsCache2<T: Config> = StorageValue<_, Vec<T::AccountId>, ValueQuery>;
 
 	#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
@@ -539,31 +625,6 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Set the max unstake RING limit.
-		#[pallet::call_index(9)]
-		#[pallet::weight(<T as Config>::WeightInfo::set_rate_limit())]
-		pub fn set_rate_limit(origin: OriginFor<T>, amount: Balance) -> DispatchResult {
-			ensure_root(origin)?;
-
-			<RateLimit<T>>::put(amount);
-
-			Ok(())
-		}
-
-		/// Set the KTON reward distribution contract address.
-		#[pallet::call_index(10)]
-		#[pallet::weight(<T as Config>::WeightInfo::set_kton_reward_distribution_contract())]
-		pub fn set_kton_reward_distribution_contract(
-			origin: OriginFor<T>,
-			address: T::AccountId,
-		) -> DispatchResult {
-			ensure_root(origin)?;
-
-			<KtonRewardDistributionContract<T>>::put(address);
-
-			Ok(())
-		}
-
 		/// Set the collator count.
 		///
 		/// This will apply to the incoming session.
@@ -579,6 +640,45 @@ pub mod pallet {
 			}
 
 			<CollatorCount<T>>::put(count);
+
+			Ok(())
+		}
+
+		/// Set the max unstake RING limit.
+		#[pallet::call_index(9)]
+		#[pallet::weight(<T as Config>::WeightInfo::set_rate_limit())]
+		pub fn set_rate_limit(origin: OriginFor<T>, amount: Balance) -> DispatchResult {
+			ensure_root(origin)?;
+
+			<RateLimit<T>>::put(amount);
+
+			Ok(())
+		}
+
+		/// Set the RING reward distribution contract address.
+		#[pallet::call_index(11)]
+		#[pallet::weight(<T as Config>::WeightInfo::set_ring_staking_contract())]
+		pub fn set_ring_staking_contract(
+			origin: OriginFor<T>,
+			address: T::AccountId,
+		) -> DispatchResult {
+			ensure_root(origin)?;
+
+			<RingStakingContract<T>>::put(address);
+
+			Ok(())
+		}
+
+		/// Set the KTON reward distribution contract address.
+		#[pallet::call_index(10)]
+		#[pallet::weight(<T as Config>::WeightInfo::set_kton_staking_contract())]
+		pub fn set_kton_staking_contract(
+			origin: OriginFor<T>,
+			address: T::AccountId,
+		) -> DispatchResult {
+			ensure_root(origin)?;
+
+			<KtonStakingContract<T>>::put(address);
 
 			Ok(())
 		}
@@ -652,32 +752,30 @@ pub mod pallet {
 
 		/// Distribute the session reward to staking pot and update the stakers' reward record.
 		pub fn distribute_session_reward(amount: Balance) {
-			let reward_to_ring = amount.saturating_div(2);
-			let reward_to_kton = amount.saturating_sub(reward_to_ring);
-			let (total, map) = <AuthoredBlocksCount<T>>::take();
-			let actual_reward_to_ring = map.into_iter().fold(0, |s, (c, b)| {
-				let r = Perbill::from_rational(b, total) * reward_to_ring;
+			let who = <T as Config>::Treasury::get();
 
-				<PendingRewards<T>>::mutate(c, |u| *u = u.map(|u| u + r).or(Some(r)));
+			if T::IssuingManager::reward(&who, amount).is_ok() {
+				Self::deposit_event(Event::Payout { who, amount });
+			} else {
+				Self::deposit_event(Event::Unpaid { who, amount });
+			}
 
-				s + r
-			});
-			let reward = |who, amount| {
-				if T::IssuingManager::reward(&who, amount).is_ok() {
-					Self::deposit_event(Event::Payout { who, amount });
+			let reward_r = amount.saturating_div(2);
+			let reward_k = amount.saturating_sub(reward_r);
+			let (b_total, map) = <AuthoredBlocksCount<T>>::take();
+			let collators_v2 = call_on_cache!(<Current<T>>::get()).unwrap_or_default();
+
+			map.into_iter().for_each(|(c, b)| {
+				let r = Perbill::from_rational(b, b_total).mul_floor(reward_r);
+
+				if collators_v2.contains(&c) {
+					T::RingStaking::distribute(Some(c), r);
 				} else {
-					Self::deposit_event(Event::Unpaid { who, amount });
+					<PendingRewards<T>>::mutate(c, |u| *u = u.map(|u| u + r).or(Some(r)));
 				}
-			};
+			});
 
-			reward(account_id(), actual_reward_to_ring);
-			reward(
-				[109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0]
-					.into(),
-				reward_to_kton,
-			);
-
-			T::KtonStakerNotifier::notify(reward_to_kton);
+			T::KtonStaking::distribute(None, reward_k);
 		}
 
 		/// Pay the reward to the collator and its nominators.
@@ -714,12 +812,11 @@ pub mod pallet {
 		/// Prepare the session state.
 		pub fn prepare_new_session(index: u32) -> Option<Vec<T::AccountId>> {
 			<RateLimitState<T>>::kill();
-			<Pallet<T>>::shift_exposure_cache_states();
+			<Pallet<T>>::shift_cache_states();
 
 			#[allow(deprecated)]
-			if call_on_exposure!(<Next<T>>::remove_all(None)).is_err() {
-				return None;
-			}
+			call_on_exposure!(<Next<T>>::remove_all(None)).ok()?;
+			call_on_cache!(<Next<T>>::kill()).ok()?;
 
 			let bn = <frame_system::Pallet<T>>::block_number();
 
@@ -727,25 +824,28 @@ pub mod pallet {
 				"[pallet::staking] assembling new collators for new session {index} at #{bn:?}",
 			);
 
-			if let Ok(cs) = Self::elect() {
-				if !cs.is_empty() {
-					// TODO?: if we really need this event
-					Self::deposit_event(Event::Elected { collators: cs.clone() });
+			let (n1, n2) = Self::elect_ns();
+			let cs_from_contract = Self::try_elect(n1, Self::elect_from_contract);
+			let cs_from_pallet = Self::try_elect(n2, Self::elect);
+			let cs = [cs_from_contract, cs_from_pallet].concat();
 
-					return Some(cs);
-				}
+			if cs.is_empty() {
+				// This error log is acceptable when testing with `genesis_collator = false`.
+				log::error!(
+					"[pallet::staking] fail to elect collators for new session {index} at #{bn:?}"
+				);
+
+				// Impossible case.
+				//
+				// But if there is an issue, retain the old collators; do not alter the session
+				// collators if any error occurs to prevent the chain from stalling.
+				None
+			} else {
+				// ? if we really need this event.
+				Self::deposit_event(Event::Elected { collators: cs.clone() });
+
+				Some(cs)
 			}
-
-			// This error log is acceptable when testing with `genesis_collator = false`.
-			log::error!(
-				"[pallet::staking] fail to elect collators for new session {index} at #{bn:?}"
-			);
-
-			// Impossible case.
-			//
-			// But if there is an issue, retain the old collators; do not alter the session
-			// collators if any error occurs to prevent the chain from stalling.
-			None
 		}
 
 		/// Shift the exposure cache states.
@@ -757,16 +857,20 @@ pub mod pallet {
 		/// ```nocompile
 		/// loop { mutate(2, 0, 1) }
 		/// ```
-		pub fn shift_exposure_cache_states() {
+		pub fn shift_cache_states() {
 			let (s0, s1, s2) = <ExposureCacheStates<T>>::get();
 
 			<ExposureCacheStates<T>>::put((s2, s0, s1));
+
+			let (s0, s1, s2) = <CollatorsCacheState<T>>::get();
+
+			<CollatorsCacheState<T>>::put((s2, s0, s1));
 		}
 
 		/// Elect the new collators.
 		///
 		/// This should only be called by the [`pallet_session::SessionManager::new_session`].
-		pub fn elect() -> Result<Vec<T::AccountId>, DispatchError> {
+		pub fn elect(n: u32) -> Option<Vec<T::AccountId>> {
 			let nominators = <Nominators<T>>::iter().collect::<Vec<_>>();
 			let mut collators = <Collators<T>>::iter()
 				.map(|(c, cm)| {
@@ -797,19 +901,81 @@ pub mod pallet {
 
 			collators
 				.into_iter()
-				.take(<CollatorCount<T>>::get() as _)
+				.take(n as _)
 				.map(|((c, e), _)| {
-					call_on_exposure!(cache_states, <Next<T>>::insert(&c, e))
-						.map(|_| c)
-						.map_err(Into::into)
+					call_on_exposure!(cache_states, <Next<T>>::insert(&c, e)).map(|_| c).ok()
 				})
 				.collect()
 		}
 	}
+	// Implementation part.2.
+	//
+	// After the migration is completed,
+	// the following implementation blocks will be merged into one.
+	impl<T> Pallet<T>
+	where
+		T: Config,
+	{
+		/// Elect the new collators.
+		pub fn elect_ns() -> (u32, u32) {
+			let n = <CollatorCount<T>>::get();
+			let n1 = Self::migration_progress() * n;
+
+			(n1, n - n1)
+		}
+
+		fn migration_progress() -> Perbill {
+			const TOTAL: Moment = 30 * 2 * DAY_IN_MILLIS;
+
+			let start = <MigrationStartPoint<T>>::get();
+
+			Perbill::from_rational(now::<T>() - start, TOTAL)
+		}
+
+		fn try_elect<F, R>(n: u32, elect: F) -> R
+		where
+			F: FnOnce(u32) -> Option<R>,
+			R: Default,
+		{
+			if n > 0 {
+				elect(n).unwrap_or_default()
+			} else {
+				Default::default()
+			}
+		}
+
+		fn elect_from_contract(n: u32) -> Option<Vec<T::AccountId>> {
+			let winners = T::RingStaking::elect(n)?;
+
+			call_on_cache!(<Next<T>>::put(winners.clone())).ok()?;
+
+			Some(winners)
+		}
+	}
+	impl<T> pallet_authorship::EventHandler<T::AccountId, BlockNumberFor<T>> for Pallet<T>
+	where
+		T: Config + pallet_authorship::Config + pallet_session::Config,
+	{
+		fn note_author(author: T::AccountId) {
+			Self::note_authors(&[author])
+		}
+	}
+	impl<T> pallet_session::SessionManager<T::AccountId> for Pallet<T>
+	where
+		T: Config,
+	{
+		fn end_session(_: u32) {
+			T::IssuingManager::on_session_end();
+		}
+
+		fn start_session(_: u32) {}
+
+		fn new_session(index: u32) -> Option<Vec<T::AccountId>> {
+			Self::prepare_new_session(index)
+		}
+	}
 }
 pub use pallet::*;
-
-type DepositId<T> = <<T as Config>::Deposit as Stake>::Item;
 
 /// Issuing and reward manager.
 pub trait IssuingManager<T>
@@ -830,23 +996,32 @@ where
 	}
 
 	/// Calculate the reward.
-	fn calculate_reward(issued: Balance) -> Balance;
-
-	/// The reward function.
-	fn reward(who: &T::AccountId, amount: Balance) -> DispatchResult;
-}
-impl<T> IssuingManager<T> for ()
-where
-	T: Config,
-{
-	fn calculate_reward(_inflation: Balance) -> Balance {
+	fn calculate_reward(_: Balance) -> Balance {
 		0
 	}
 
-	fn reward(_who: &T::AccountId, _amount: Balance) -> DispatchResult {
+	/// The reward function.
+	fn reward(_: &T::AccountId, _: Balance) -> DispatchResult {
 		Ok(())
 	}
 }
+impl<T> IssuingManager<T> for () where T: Config {}
+
+/// Election interface.
+pub trait Election<AccountId> {
+	/// Elect the new collators.
+	fn elect(_: u32) -> Option<Vec<AccountId>> {
+		None
+	}
+}
+impl<AccountId> Election<AccountId> for () {}
+
+/// Distribute the reward to a contract.
+pub trait Reward<AccountId> {
+	/// Distribute the reward.
+	fn distribute(_: Option<AccountId>, _: Balance) {}
+}
+impl<AccountId> Reward<AccountId> for () {}
 
 /// Staking rate limiter.
 #[derive(Clone, Debug, PartialEq, Encode, Decode, MaxEncodedLen, TypeInfo)]
@@ -899,14 +1074,84 @@ impl Default for RateLimiter {
 	}
 }
 
-/// Exposure cache's state.
+/// Cache state.
 #[allow(missing_docs)]
 #[cfg_attr(any(test, feature = "runtime-benchmarks", feature = "try-runtime"), derive(PartialEq))]
 #[derive(Encode, Decode, MaxEncodedLen, TypeInfo, RuntimeDebug)]
-pub enum ExposureCacheState {
+pub enum CacheState {
 	Previous,
 	Current,
 	Next,
+}
+
+/// Session ending checker.
+pub struct ShouldEndSession<T>(PhantomData<T>);
+impl<T> Get<bool> for ShouldEndSession<T>
+where
+	T: frame_system::Config + pallet_session::Config,
+{
+	fn get() -> bool {
+		<T as pallet_session::Config>::ShouldEndSession::should_end_session(
+			<frame_system::Pallet<T>>::block_number(),
+		)
+	}
+}
+
+/// Issue new token from pallet-balances.
+pub struct BalanceIssuing<T>(PhantomData<T>);
+impl<T> IssuingManager<T> for BalanceIssuing<T>
+where
+	T: Config,
+{
+	fn inflate() -> Balance {
+		let now = now::<T>() as Moment;
+		let session_duration = now - <SessionStartTime<T>>::get();
+		let elapsed_time = <ElapsedTime<T>>::mutate(|t| {
+			*t = t.saturating_add(session_duration);
+
+			*t
+		});
+
+		<SessionStartTime<T>>::put(now);
+
+		dc_inflation::issuing_in_period(session_duration, elapsed_time).unwrap_or_default()
+	}
+
+	fn calculate_reward(issued: Balance) -> Balance {
+		PAYOUT_FRAC * issued
+	}
+
+	fn reward(who: &T::AccountId, amount: Balance) -> DispatchResult {
+		let _ = T::Currency::deposit_creating(who, amount);
+
+		Ok(())
+	}
+}
+
+/// Transfer issued token from pallet-treasury.
+pub struct TreasuryIssuing<T>(PhantomData<T>);
+impl<T> IssuingManager<T> for TreasuryIssuing<T>
+where
+	T: Config,
+{
+	fn calculate_reward(_: Balance) -> Balance {
+		20_000 * UNIT
+	}
+
+	fn reward(who: &T::AccountId, amount: Balance) -> DispatchResult {
+		let treasury = <T as Config>::Treasury::get();
+
+		if who == &treasury {
+			Ok(())
+		} else {
+			T::Currency::transfer(
+				&treasury,
+				who,
+				amount,
+				frame_support::traits::ExistenceRequirement::KeepAlive,
+			)
+		}
+	}
 }
 
 /// A convertor from collators id. Since this pallet does not have stash/controller, this is
@@ -960,32 +1205,150 @@ pub struct IndividualExposure<AccountId> {
 	pub vote: Balance,
 }
 
-// Add reward points to block authors:
-// - 20 points to the block producer for producing a (non-uncle) block in the parachain chain,
-// - 2 points to the block producer for each reference to a previously unreferenced uncle, and
-// - 1 point to the producer of each referenced uncle block.
-impl<T> pallet_authorship::EventHandler<T::AccountId, BlockNumberFor<T>> for Pallet<T>
+/// RING staking interface.
+pub struct RingStaking<T>(PhantomData<T>);
+impl<T> Election<T::AccountId> for RingStaking<T>
 where
-	T: Config + pallet_authorship::Config + pallet_session::Config,
+	T: Config + darwinia_ethtx_forwarder::Config,
+	T::AccountId: From<H160> + Into<H160>,
 {
-	fn note_author(author: T::AccountId) {
-		Self::note_authors(&[author])
+	fn elect(n: u32) -> Option<Vec<T::AccountId>> {
+		const ZERO: [u8; 20] = [0; 20];
+
+		let Some(rsc) = <RingStakingContract<T>>::get() else {
+			log::error!("RING staking contract must be some; qed");
+
+			return None;
+		};
+		let rsc = rsc.into();
+		#[allow(deprecated)]
+		let function = Function {
+			name: "getTopCollators".to_owned(),
+			inputs: vec![Param {
+				name: "k".to_owned(),
+				kind: ParamType::Uint(256),
+				internal_type: None,
+			}],
+			outputs: vec![Param {
+				name: "collators".to_owned(),
+				kind: ParamType::Array(Box::new(ParamType::Address)),
+				internal_type: None,
+			}],
+			constant: None,
+			state_mutability: StateMutability::View,
+		};
+		let input = function
+			.encode_input(&[Token::Int(n.into())])
+			.map_err(|e| log::error!("failed to encode input due to {e:?}"))
+			.ok()?;
+
+		<darwinia_ethtx_forwarder::Pallet<T>>::forward_call(
+			<T as Config>::Treasury::get().into(),
+			rsc,
+			input,
+			Default::default(),
+			U256::from(10_000_000_u64),
+		)
+		.map_err(|e| log::error!("failed to forward call due to {e:?}"))
+		.ok()
+		.and_then(|i| {
+			function
+				.decode_output(&i.value)
+				.map_err(|e| log::error!("failed to decode output due to {e:?}"))
+				.ok()
+				.map(|tokens| {
+					tokens
+						.into_iter()
+						.filter_map(|token| match token {
+							Token::Address(addr) if addr.0 != ZERO =>
+								Some(T::AccountId::from(addr)),
+							_ => None,
+						})
+						.collect()
+				})
+		})
+	}
+}
+// Distribute the reward to RING staking contract.
+//
+// https://github.com/darwinia-network/DIP-7/blob/7fa307136586f06c6911ce98d16c88689d91ba8c/src/collator/CollatorStakingHub.sol#L142.
+impl<T> Reward<T::AccountId> for RingStaking<T>
+where
+	T: Config + darwinia_ethtx_forwarder::Config,
+	T::AccountId: Into<H160>,
+{
+	fn distribute(who: Option<T::AccountId>, amount: Balance) {
+		let Some(who) = who else {
+			log::error!("who must be some; qed");
+
+			return;
+		};
+		let Some(rsc) = <RingStakingContract<T>>::get() else {
+			log::error!("RING staking contract must be some; qed");
+
+			return;
+		};
+		let rsc = rsc.into();
+
+		#[allow(deprecated)]
+		darwinia_ethtx_forwarder::quick_forward_transact::<T>(
+			<T as Config>::Treasury::get().into(),
+			Function {
+				name: "distributeReward".into(),
+				inputs: vec![Param {
+					name: "address".to_owned(),
+					kind: ParamType::Address,
+					internal_type: None,
+				}],
+				outputs: Vec::new(),
+				constant: None,
+				state_mutability: StateMutability::Payable,
+			},
+			&[Token::Address(who.into())],
+			rsc,
+			amount.into(),
+			1_000_000.into(),
+		);
 	}
 }
 
-// Play the role of the session manager.
-impl<T> pallet_session::SessionManager<T::AccountId> for Pallet<T>
+/// KTON staking interface.
+pub struct KtonStaking<T>(PhantomData<T>);
+// Distribute the reward to KTON staking contract.
+//
+// https://github.com/darwinia-network/KtonDAO/blob/2de20674f2ef90b749ade746d0768c7bda356402/src/staking/KtonDAOVault.sol#L40.
+impl<T> Reward<T::AccountId> for KtonStaking<T>
 where
-	T: Config,
+	T: Config + darwinia_ethtx_forwarder::Config,
+	T::AccountId: Into<H160>,
 {
-	fn end_session(_: u32) {
-		T::IssuingManager::on_session_end();
-	}
+	fn distribute(_: Option<T::AccountId>, amount: Balance) {
+		let Some(ksc) = <KtonStakingContract<T>>::get() else {
+			log::error!("KTON staking contract must be some; qed");
 
-	fn start_session(_: u32) {}
+			return;
+		};
+		let ksc = ksc.into();
 
-	fn new_session(index: u32) -> Option<Vec<T::AccountId>> {
-		Self::prepare_new_session(index)
+		#[allow(deprecated)]
+		darwinia_ethtx_forwarder::quick_forward_transact::<T>(
+			<T as Config>::Treasury::get().into(),
+			Function {
+				name: "distributeRewards".into(),
+				inputs: Vec::new(),
+				outputs: vec![Param {
+					name: "success or not".into(),
+					kind: ParamType::Bool,
+					internal_type: None,
+				}],
+				constant: None,
+				state_mutability: StateMutability::Payable,
+			},
+			&[],
+			ksc,
+			amount.into(),
+			1_000_000.into(),
+		);
 	}
 }
 
@@ -997,60 +1360,9 @@ where
 	PalletId(*b"da/staki").into_account_truncating()
 }
 
-/// `StakingRewardDistribution` contact notification interface.
-pub trait KtonStakerNotification {
-	/// Notify the KTON staker contract.
-	fn notify(_: Balance) {}
-}
-impl KtonStakerNotification for () {}
-/// `StakingRewardDistribution` contact notifier.
-///
-/// https://github.com/darwinia-network/KtonDAO/blob/2de20674f2ef90b749ade746d0768c7bda356402/src/staking/KtonDAOVault.sol#L40.
-pub struct KtonStakerNotifier<T>(PhantomData<T>);
-impl<T> KtonStakerNotification for KtonStakerNotifier<T>
+fn now<T>() -> Moment
 where
-	T: Config + darwinia_ethtx_forwarder::Config,
-	T::RuntimeOrigin: Into<Result<ForwardEthOrigin, T::RuntimeOrigin>> + From<ForwardEthOrigin>,
+	T: Config,
 {
-	fn notify(amount: Balance) {
-		let krd_contract = <KtonRewardDistributionContract<T>>::get().into();
-		#[allow(deprecated)]
-		let function = Function {
-			name: "distributeRewards".into(),
-			inputs: Vec::new(),
-			outputs: vec![Param {
-				name: "success or not".into(),
-				kind: ParamType::Bool,
-				internal_type: None,
-			}],
-			constant: None,
-			state_mutability: StateMutability::Payable,
-		};
-		let input = match function.encode_input(&[]) {
-			Ok(i) => i,
-			Err(e) => {
-				log::error!("failed to encode input due to {e:?}");
-
-				return;
-			},
-		};
-		let req = ForwardRequest {
-			tx_type: TxType::LegacyTransaction,
-			action: TransactionAction::Call(krd_contract),
-			value: U256::from(amount),
-			input,
-			gas_limit: U256::from(1_000_000),
-		};
-		// Treasury pallet account.
-		let sender = H160([
-			109, 111, 100, 108, 100, 97, 47, 116, 114, 115, 114, 121, 0, 0, 0, 0, 0, 0, 0, 0,
-		]);
-
-		if let Err(e) = <darwinia_ethtx_forwarder::Pallet<T>>::forward_transact(
-			ForwardEthOrigin::ForwardEth(sender).into(),
-			req,
-		) {
-			log::error!("failed to call `distributeRewards` on `KtonRewardDistributionContract` contract due to {e:?}");
-		}
-	}
+	T::UnixTime::now().as_millis()
 }

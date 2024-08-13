@@ -11,7 +11,7 @@ version.workspace = true
 codec      = { workspace = true, package = "parity-scale-codec" }
 scale-info = { workspace = true }
 
-# subtrate
+# polkadot-sdk
 sp-runtime = { workspace = true }
 
 [features]
@@ -21,7 +21,7 @@ std = [
 	"codec/std",
 	"scale-info/std",
 
-	# subtrate
+	# polkadot-sdk
 	"sp-runtime/std",
 ]
 

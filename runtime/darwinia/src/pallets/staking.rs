@@ -70,55 +70,18 @@ impl darwinia_staking::Stake for KtonStaking {
 	}
 }
 
-pub enum OnDarwiniaSessionEnd {}
-impl darwinia_staking::IssuingManager<Runtime> for OnDarwiniaSessionEnd {
-	fn inflate() -> Balance {
-		let now = Timestamp::now() as Moment;
-		let session_duration = now - <darwinia_staking::SessionStartTime<Runtime>>::get();
-		let elapsed_time = <darwinia_staking::ElapsedTime<Runtime>>::mutate(|t| {
-			*t = t.saturating_add(session_duration);
-
-			*t
-		});
-
-		<darwinia_staking::SessionStartTime<Runtime>>::put(now);
-
-		dc_inflation::issuing_in_period(session_duration, elapsed_time).unwrap_or_default()
-	}
-
-	fn calculate_reward(issued: Balance) -> Balance {
-		sp_runtime::Perbill::from_percent(40) * issued
-	}
-
-	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		let _ = Balances::deposit_creating(who, amount);
-
-		Ok(())
-	}
-}
-
-pub enum ShouldEndSession {}
-impl frame_support::traits::Get<bool> for ShouldEndSession {
-	fn get() -> bool {
-		// polkadot-sdk
-		use pallet_session::ShouldEndSession;
-
-		<Runtime as pallet_session::Config>::ShouldEndSession::should_end_session(
-			System::block_number(),
-		)
-	}
-}
-
 impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
-	type IssuingManager = OnDarwiniaSessionEnd;
-	type Kton = KtonStaking;
-	type KtonStakerNotifier = darwinia_staking::KtonStakerNotifier<Self>;
+	type IssuingManager = darwinia_staking::BalanceIssuing<Self>;
+	type KtonStaking = darwinia_staking::KtonStaking<Self>;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type Ring = RingStaking;
+	type RingStaking = darwinia_staking::RingStaking<Self>;
 	type RuntimeEvent = RuntimeEvent;
-	type ShouldEndSession = ShouldEndSession;
+	type ShouldEndSession = darwinia_staking::ShouldEndSession<Self>;
+	type Treasury = pallet_config::TreasuryAccount;
+	type UnixTime = Timestamp;
 	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;
 }
 #[cfg(not(feature = "runtime-benchmarks"))]

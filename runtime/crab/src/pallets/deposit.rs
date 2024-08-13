@@ -44,10 +44,12 @@ impl darwinia_deposit::SimpleAsset for KtonMinting {
 }
 
 impl darwinia_deposit::Config for Runtime {
+	type DepositMigrator = darwinia_deposit::DepositMigrator<Self>;
 	type Kton = KtonMinting;
 	type MaxDeposits = ConstU32<512>;
 	type MinLockingAmount = ConstU128<UNIT>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
+	type Treasury = pallet_config::TreasuryAccount;
 	type WeightInfo = weights::darwinia_deposit::WeightInfo<Self>;
 }

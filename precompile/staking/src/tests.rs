@@ -52,7 +52,7 @@ fn stake_unstake_restake() {
 			.prepare_test(
 				alice,
 				precompile,
-				PCall::stake { ring_amount: 200.into(), deposits: vec![] },
+				PCall::stake { ring_amount: 200.into(), deposits: Vec::new() },
 			)
 			.execute_returns(true);
 		assert_eq!(Staking::ledger_of(alice).unwrap().ring, 200);
@@ -62,7 +62,7 @@ fn stake_unstake_restake() {
 			.prepare_test(
 				alice,
 				precompile,
-				PCall::unstake { ring_amount: 200.into(), deposits: vec![] },
+				PCall::unstake { ring_amount: 200.into(), deposits: Vec::new() },
 			)
 			.execute_returns(true);
 		assert!(Staking::ledger_of(alice).is_none());
@@ -82,7 +82,7 @@ fn nominate() {
 				.prepare_test(
 					alice,
 					precompile,
-					PCall::stake { ring_amount: 200.into(), deposits: vec![] },
+					PCall::stake { ring_amount: 200.into(), deposits: Vec::new() },
 				)
 				.execute_returns(true);
 
@@ -97,7 +97,7 @@ fn nominate() {
 				.prepare_test(
 					bob,
 					precompile,
-					PCall::stake { ring_amount: 200.into(), deposits: vec![] },
+					PCall::stake { ring_amount: 200.into(), deposits: Vec::new() },
 				)
 				.execute_returns(true);
 

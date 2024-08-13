@@ -67,6 +67,9 @@ impl pallet_timestamp::Config for Runtime {
 	type Moment = Moment;
 }
 
+frame_support::parameter_types! {
+	pub TreasuryAcct: AccountId = H160::zero().into();
+}
 pub enum KtonMinting {}
 impl darwinia_deposit::SimpleAsset for KtonMinting {
 	type AccountId = AccountId;
@@ -79,13 +82,14 @@ impl darwinia_deposit::SimpleAsset for KtonMinting {
 		Ok(())
 	}
 }
-
 impl darwinia_deposit::Config for Runtime {
+	type DepositMigrator = ();
 	type Kton = KtonMinting;
 	type MaxDeposits = frame_support::traits::ConstU32<512>;
 	type MinLockingAmount = frame_support::traits::ConstU128<100>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
+	type Treasury = TreasuryAcct;
 	type WeightInfo = ();
 }
 
@@ -158,9 +162,6 @@ impl pallet_evm::Config for Runtime {
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<AccountId>;
 }
 
-frame_support::parameter_types! {
-	pub const PayoutFraction: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(40);
-}
 pub enum RingStaking {}
 impl darwinia_staking::Stake for RingStaking {
 	type AccountId = AccountId;
@@ -184,29 +185,18 @@ impl darwinia_staking::Stake for RingStaking {
 		)
 	}
 }
-pub enum KtonStaking {}
-impl darwinia_staking::Stake for KtonStaking {
-	type AccountId = AccountId;
-	type Item = Balance;
-
-	fn stake(_: &Self::AccountId, _: Self::Item) -> sp_runtime::DispatchResult {
-		Ok(())
-	}
-
-	fn unstake(_: &Self::AccountId, _: Self::Item) -> sp_runtime::DispatchResult {
-		Ok(())
-	}
-}
 impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
 	type IssuingManager = ();
-	type Kton = KtonStaking;
-	type KtonStakerNotifier = ();
+	type KtonStaking = ();
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type Ring = RingStaking;
+	type RingStaking = ();
 	type RuntimeEvent = RuntimeEvent;
 	type ShouldEndSession = ();
+	type Treasury = TreasuryAcct;
+	type UnixTime = Timestamp;
 	type WeightInfo = ();
 }
 #[cfg(not(feature = "runtime-benchmarks"))]

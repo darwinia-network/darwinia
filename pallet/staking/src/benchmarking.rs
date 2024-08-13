@@ -19,7 +19,7 @@
 // darwinia
 use crate::*;
 use darwinia_deposit::SimpleAsset;
-use dc_primitives::UNIT;
+use dc_types::UNIT;
 // polkadot-sdk
 use frame_benchmarking::v2;
 use frame_system::RawOrigin;
@@ -136,7 +136,7 @@ mod benchmarks {
 	#[benchmark]
 	fn payout() {
 		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
-		let sender = a.clone();
+		let a_cloned = a.clone();
 
 		call_on_exposure!(<Previous<T>>::insert(
 			&a,
@@ -155,7 +155,7 @@ mod benchmarks {
 		<PendingRewards<T>>::insert(&a, 500);
 
 		#[extrinsic_call]
-		_(RawOrigin::Signed(sender), a);
+		_(RawOrigin::Signed(a), a_cloned);
 	}
 
 	#[benchmark]
@@ -168,7 +168,7 @@ mod benchmarks {
 	}
 
 	#[benchmark]
-	fn set_kton_reward_distribution_contract() {
+	fn set_kton_staking_contract() {
 		// Worst-case scenario:
 		//
 		// Set successfully.

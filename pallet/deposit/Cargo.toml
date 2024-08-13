@@ -9,21 +9,25 @@ version.workspace = true
 [dependencies]
 # crates.io
 codec      = { workspace = true, package = "parity-scale-codec" }
+ethabi     = { workspace = true }
+log        = { workspace = true }
 scale-info = { workspace = true }
 
 # darwinia
-darwinia-staking-traits = { workspace = true }
-dc-inflation            = { workspace = true }
-dc-types                = { workspace = true }
+darwinia-ethtx-forwarder = { workspace = true }
+darwinia-staking-traits  = { workspace = true }
+dc-inflation             = { workspace = true }
+dc-types                 = { workspace = true }
 
-# subtrate
+# polkadot-sdk
 frame-support    = { workspace = true }
 frame-system     = { workspace = true }
 pallet-timestamp = { workspace = true }
+sp-core          = { workspace = true }
 sp-runtime       = { workspace = true }
+sp-std           = { workspace = true }
 # polkadot-sdk optional
 frame-benchmarking = { workspace = true, optional = true }
-sp-std             = { workspace = true, optional = true }
 
 [dev-dependencies]
 # polkadot-sdk
@@ -36,24 +40,29 @@ default = ["std"]
 std = [
 	# crates.io
 	"codec/std",
+	"ethabi/std",
+	"log/std",
 	"scale-info/std",
 
 	# darwinia
+	"darwinia-ethtx-forwarder/std",
 	"darwinia-staking-traits/std",
 	"dc-inflation/std",
 
-	# subtrate
+	# polkadot-sdk
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-timestamp/std",
+	"sp-core/std",
 	"sp-runtime/std",
-	"sp-std?/std",
+	"sp-std/std",
 	# polkadot-sdk optional
 	"frame-benchmarking?/std",
 ]
 
 runtime-benchmarks = [
 	# darwinia
+	"darwinia-ethtx-forwarder/runtime-benchmarks",
 	"darwinia-staking-traits/runtime-benchmarks",
 
 	# polkadot-sdk
@@ -63,7 +72,6 @@ runtime-benchmarks = [
 	"sp-runtime/runtime-benchmarks",
 	# polkadot-sdk optional
 	"frame-benchmarking/runtime-benchmarks",
-	"sp-std",
 ]
 
 try-runtime = [

@@ -45,19 +45,6 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	frame_support::traits::StorageVersion::new(2)
-		.put::<cumulus_pallet_dmp_queue::Pallet<Runtime>>();
-
-	const KTON_DAO_VAULT_ADDR: &str = "0x652182C6aBc0bBE41b5702b05a26d109A405EAcA";
-
-	#[cfg(feature = "try-runtime")]
-	assert!(array_bytes::hex_n_into::<_, AccountId, 20>(KTON_DAO_VAULT_ADDR).is_ok());
-
-	if let Ok(w) = array_bytes::hex_n_into::<_, _, 20>(KTON_DAO_VAULT_ADDR) {
-		<darwinia_staking::KtonRewardDistributionContract<Runtime>>::put(w);
-		darwinia_staking::migration::migrate_staking_reward_distribution_contract::<Runtime>(w);
-	}
-
-	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(10, 10)
+	frame_support::weights::Weight::zero()
+	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(10, 10)
 }
