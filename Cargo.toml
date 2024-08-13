@@ -18,7 +18,7 @@ edition    = "2021"
 homepage   = "https://darwinia.network"
 license    = "GPL-3.0"
 repository = "https://github.com/darwinia-network/darwinia"
-version    = "6.6.4"
+version    = "6.6.5"
 
 [workspace.dependencies]
 # crates.io

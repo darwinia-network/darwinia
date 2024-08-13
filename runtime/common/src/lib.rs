@@ -175,9 +175,9 @@ impl frame_support::weights::WeightToFeePolynomial for RefTimeToFee {
 	type Balance = Balance;
 
 	fn polynomial() -> frame_support::weights::WeightToFeeCoefficients<Self::Balance> {
-		// Map base extrinsic weight to 1/200 UNIT.
+		// Map base extrinsic weight to 1/800 UNIT.
 		let p = UNIT;
-		let q = 200
+		let q = 800
 			* Balance::from(
 				frame_support::weights::constants::ExtrinsicBaseWeight::get().ref_time(),
 			);

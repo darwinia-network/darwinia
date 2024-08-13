@@ -24,50 +24,6 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-pub const UNINCLUDED_SEGMENT_CAPACITY: u32 = 3;
-pub const SLOT_DURATION: u64 = 6_000;
-pub const MINUTES: BlockNumber = 60_000 / (SLOT_DURATION as BlockNumber);
-pub const HOURS: BlockNumber = MINUTES * 60;
-pub const DAYS: BlockNumber = HOURS * 24;
-pub struct WeightToFee;
-impl frame_support::weights::WeightToFee for WeightToFee {
-	type Balance = Balance;
-
-	fn weight_to_fee(weight: &frame_support::weights::Weight) -> Self::Balance {
-		// polkadot-sdk
-		use frame_support::weights::WeightToFeePolynomial;
-
-		let time_poly: frame_support::weights::FeePolynomial<Balance> =
-			RefTimeToFee::polynomial().into();
-		let proof_poly: frame_support::weights::FeePolynomial<Balance> =
-			darwinia_common_runtime::ProofSizeToFee::polynomial().into();
-
-		// Take the maximum instead of the sum to charge by the more scarce resource.
-		time_poly.eval(weight.ref_time()).max(proof_poly.eval(weight.proof_size()))
-	}
-}
-pub struct RefTimeToFee;
-impl frame_support::weights::WeightToFeePolynomial for RefTimeToFee {
-	type Balance = Balance;
-
-	fn polynomial() -> frame_support::weights::WeightToFeeCoefficients<Self::Balance> {
-		// Map base extrinsic weight to 1/800 UNIT.
-		let p = UNIT;
-		let q = 800
-			* Balance::from(
-				frame_support::weights::constants::ExtrinsicBaseWeight::get().ref_time(),
-			);
-
-		smallvec::smallvec![frame_support::weights::WeightToFeeCoefficient {
-			degree: 1,
-			negative: false,
-			coeff_frac: sp_runtime::Perbill::from_rational(p % q, q),
-			coeff_integer: p / q,
-		}]
-	}
-}
-pub mod pallet_config;
-
 pub mod weights;
 
 mod pallets;
@@ -75,7 +31,7 @@ pub use pallets::*;
 
 mod migration;
 
-use darwinia_common_runtime::*;
+pub use darwinia_common_runtime::*;
 pub use dc_primitives::*;
 
 // crates.io
@@ -124,7 +80,7 @@ pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia Koi"),
 	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
 	authoring_version: 0,
-	spec_version: 6_6_4_1,
+	spec_version: 6_6_5_0,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 0,
@@ -949,7 +905,7 @@ sp_api::impl_runtime_apis! {
 
 			let weight = Executive::try_runtime_upgrade(checks).unwrap();
 
-			(weight, crate::pallet_config::RuntimeBlockWeights::get().max_block)
+			(weight, pallet_config::RuntimeBlockWeights::get().max_block)
 		}
 
 		fn execute_block(
@@ -977,7 +933,7 @@ fn replay_on_idle() {
 	use frame_system::pallet_prelude::BlockNumberFor;
 
 	let weight = <frame_system::Pallet<Runtime>>::block_weight();
-	let max_weight = crate::pallet_config::RuntimeBlockWeights::get().max_block;
+	let max_weight = pallet_config::RuntimeBlockWeights::get().max_block;
 	let remaining_weight = max_weight.saturating_sub(weight.total());
 	if remaining_weight.all_gt(frame_support::weights::Weight::zero()) {
 		let _ = <AllPalletsWithSystem as OnIdle<BlockNumberFor<Runtime>>>::on_idle(
