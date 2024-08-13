@@ -45,9 +45,6 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	frame_support::traits::StorageVersion::new(2)
-		.put::<cumulus_pallet_dmp_queue::Pallet<Runtime>>();
-
-	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 1)
+	frame_support::weights::Weight::zero()
+	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 1)
 }

@@ -69,6 +69,38 @@ mod benchmarks {
 				extra: Default::default(),
 			},
 		);
+		<Deposits<T>>::insert(
+			from,
+			vec![
+				Deposit {
+					id: Default::default(),
+					value: 1,
+					start_time: Default::default(),
+					expired_time: Default::default(),
+					in_use: Default::default(),
+				};
+				<T as darwinia_deposit::Config>::MaxDeposits::get() as usize
+			],
+		);
+		<Ledgers<T>>::insert(
+			from,
+			OldLedger {
+				staked_ring: 1,
+				staked_deposits: BoundedVec::truncate_from(vec![
+					Default::default();
+					<T as darwinia_deposit::Config>::MaxDeposits::get()
+						as usize
+				]),
+				unstaking_ring: BoundedVec::truncate_from(vec![
+					(
+						Default::default(),
+						Default::default()
+					);
+					16
+				]),
+				..Default::default()
+			},
+		);
 	}
 
 	#[benchmark]

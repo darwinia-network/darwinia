@@ -162,9 +162,9 @@ frame_support::construct_runtime! {
 		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
 		Assets: pallet_assets,
-		AccountMigration: crate,
 		Deposit: darwinia_deposit,
 		Staking: darwinia_staking,
+		AccountMigration: crate,
 	}
 }
 
