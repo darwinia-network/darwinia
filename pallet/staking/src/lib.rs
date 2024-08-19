@@ -82,7 +82,7 @@ macro_rules! call_on_exposure {
 		}
 	}};
 	(<$s:ident<$t:ident>>$($f:tt)*) => {{
-		let s = <$crate::ExposureCacheStates<$t>>::get();
+		let s = <$crate::CacheStates<$t>>::get();
 
 		$crate::call_on_exposure!(s, <$s<$t>>$($f)*)
 	}};
@@ -103,7 +103,7 @@ macro_rules! call_on_cache {
 		}
 	}};
 	(<$s:ident<$t:ident>>$($f:tt)*) => {{
-		let s = <$crate::CollatorsCacheState<$t>>::get();
+		let s = <$crate::CacheStates<$t>>::get();
 
 		$crate::call_on_cache!(s, <$s<$t>>$($f)*)
 	}};
@@ -215,7 +215,7 @@ pub mod pallet {
 	#[pallet::getter(fn collator_of)]
 	pub type Collators<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, Perbill>;
 
-	/// Exposure cache states.
+	/// Collator/Exposure cache states.
 	///
 	/// To avoid extra DB RWs during new session, such as:
 	/// ```nocompile
@@ -239,15 +239,11 @@ pub mod pallet {
 	/// ```
 	#[pallet::storage]
 	#[pallet::getter(fn exposure_cache_states)]
-	pub type ExposureCacheStates<T: Config> = StorageValue<
-		_,
-		(CacheState, CacheState, CacheState),
-		ValueQuery,
-		ExposureCacheStatesDefault<T>,
-	>;
-	/// Default value for [`ExposureCacheStates`].
+	pub type CacheStates<T: Config> =
+		StorageValue<_, (CacheState, CacheState, CacheState), ValueQuery, CacheStatesDefault<T>>;
+	/// Default value for [`CacheStates`].
 	#[pallet::type_value]
-	pub fn ExposureCacheStatesDefault<T: Config>() -> (CacheState, CacheState, CacheState) {
+	pub fn CacheStatesDefault<T: Config>() -> (CacheState, CacheState, CacheState) {
 		(CacheState::Previous, CacheState::Current, CacheState::Next)
 	}
 
@@ -333,42 +329,6 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn migration_start_point)]
 	pub type MigrationStartPoint<T: Config> = StorageValue<_, Moment, ValueQuery>;
-
-	/// Collator cache state.
-	///
-	/// To avoid extra DB RWs during new session, such as:
-	/// ```nocompile
-	/// previous = current;
-	/// current = next;
-	/// next = elect();
-	/// ```
-	///
-	/// Now, with data:
-	/// ```nocompile
-	/// cache1 == previous;
-	/// cache2 == current;
-	/// cache3 == next;
-	/// ```
-	/// Just need to shift the marker and write the storage map once:
-	/// ```nocompile
-	/// mark(cache3, current);
-	/// mark(cache2, previous);
-	/// mark(cache1, next);
-	/// cache1 = elect();
-	/// ```
-	#[pallet::storage]
-	#[pallet::getter(fn collator_cache_state)]
-	pub type CollatorsCacheState<T: Config> = StorageValue<
-		_,
-		(CacheState, CacheState, CacheState),
-		ValueQuery,
-		CollatorCacheStateDefault<T>,
-	>;
-	/// Default value for [`CollatorsCacheState`].
-	#[pallet::type_value]
-	pub fn CollatorCacheStateDefault<T: Config>() -> (CacheState, CacheState, CacheState) {
-		(CacheState::Previous, CacheState::Current, CacheState::Next)
-	}
 
 	// TODO: use `BoundedVec`.
 	/// Exposure cache 0.
@@ -873,13 +833,9 @@ pub mod pallet {
 		/// loop { mutate(2, 0, 1) }
 		/// ```
 		pub fn shift_cache_states() {
-			let (s0, s1, s2) = <ExposureCacheStates<T>>::get();
+			let (s0, s1, s2) = <CacheStates<T>>::get();
 
-			<ExposureCacheStates<T>>::put((s2, s0, s1));
-
-			let (s0, s1, s2) = <CollatorsCacheState<T>>::get();
-
-			<CollatorsCacheState<T>>::put((s2, s0, s1));
+			<CacheStates<T>>::put((s2, s0, s1));
 		}
 
 		/// Elect the new collators.
@@ -912,7 +868,7 @@ pub mod pallet {
 
 			collators.sort_by(|(_, a), (_, b)| b.cmp(a));
 
-			let cache_states = <ExposureCacheStates<T>>::get();
+			let cache_states = <CacheStates<T>>::get();
 
 			collators
 				.into_iter()

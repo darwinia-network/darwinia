@@ -30,7 +30,7 @@ fn exposure_cache_states_should_work() {
 	ExtBuilder::default().build().execute_with(|| {
 		#[allow(deprecated)]
 		{
-			<ExposureCacheStates<Runtime>>::kill();
+			<CacheStates<Runtime>>::kill();
 			<ExposureCache0<Runtime>>::remove_all(None);
 			<ExposureCache1<Runtime>>::remove_all(None);
 			<ExposureCache2<Runtime>>::remove_all(None);
@@ -56,7 +56,7 @@ fn exposure_cache_states_should_work() {
 		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(1)).is_none()).unwrap());
 		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(2)).is_some()).unwrap());
 		assert_eq!(
-			<ExposureCacheStates<Runtime>>::get(),
+			<CacheStates<Runtime>>::get(),
 			(CacheState::Previous, CacheState::Current, CacheState::Next)
 		);
 
@@ -72,7 +72,7 @@ fn exposure_cache_states_should_work() {
 		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(1)).is_none()).unwrap());
 		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(2)).is_none()).unwrap());
 		assert_eq!(
-			<ExposureCacheStates<Runtime>>::get(),
+			<CacheStates<Runtime>>::get(),
 			(CacheState::Next, CacheState::Previous, CacheState::Current)
 		);
 
@@ -88,7 +88,7 @@ fn exposure_cache_states_should_work() {
 		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(1)).is_some()).unwrap());
 		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(2)).is_none()).unwrap());
 		assert_eq!(
-			<ExposureCacheStates<Runtime>>::get(),
+			<CacheStates<Runtime>>::get(),
 			(CacheState::Current, CacheState::Next, CacheState::Previous)
 		);
 
@@ -104,7 +104,7 @@ fn exposure_cache_states_should_work() {
 		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(1)).is_none()).unwrap());
 		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(2)).is_some()).unwrap());
 		assert_eq!(
-			<ExposureCacheStates<Runtime>>::get(),
+			<CacheStates<Runtime>>::get(),
 			(CacheState::Previous, CacheState::Current, CacheState::Next)
 		);
 	});
