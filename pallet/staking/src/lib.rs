@@ -749,8 +749,6 @@ pub mod pallet {
 			for n_exposure in c_exposure.nominators {
 				let n_payout = Perbill::from_rational(n_exposure.vote, c_exposure.vote) * n_payout;
 
-				dbg!(n_payout);
-
 				if collator == n_exposure.who {
 					// If the collator nominated themselves.
 
