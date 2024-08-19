@@ -797,7 +797,7 @@ fn elect_ns_should_work() {
 #[test]
 fn hybrid_election_should_work() {
 	ExtBuilder::default().collator_count(10).build().execute_with(|| {
-		mock::preset_collators(10);
+		mock::preset_collator_wait_list(10);
 		new_session();
 		new_session();
 
@@ -811,7 +811,7 @@ fn hybrid_election_should_work() {
 		new_session();
 
 		assert_eq!(
-			(100..103).map(AccountId).chain((12..20).rev().map(AccountId)).collect::<Vec<_>>(),
+			(100..102).map(AccountId).chain((12..20).rev().map(AccountId)).collect::<Vec<_>>(),
 			<pallet_session::Validators<Runtime>>::get()
 		);
 
@@ -820,7 +820,7 @@ fn hybrid_election_should_work() {
 		new_session();
 
 		assert_eq!(
-			(100..106).map(AccountId).chain((15..20).rev().map(AccountId)).collect::<Vec<_>>(),
+			(100..105).map(AccountId).chain((15..20).rev().map(AccountId)).collect::<Vec<_>>(),
 			<pallet_session::Validators<Runtime>>::get()
 		);
 
@@ -829,7 +829,7 @@ fn hybrid_election_should_work() {
 		new_session();
 
 		assert_eq!(
-			(100..108).map(AccountId).chain((17..20).rev().map(AccountId)).collect::<Vec<_>>(),
+			(100..107).map(AccountId).chain((17..20).rev().map(AccountId)).collect::<Vec<_>>(),
 			<pallet_session::Validators<Runtime>>::get()
 		);
 
@@ -838,7 +838,7 @@ fn hybrid_election_should_work() {
 		new_session();
 
 		assert_eq!(
-			(100..=110).map(AccountId).collect::<Vec<_>>(),
+			(100..110).map(AccountId).collect::<Vec<_>>(),
 			<pallet_session::Validators<Runtime>>::get()
 		);
 	});
@@ -846,10 +846,43 @@ fn hybrid_election_should_work() {
 
 #[test]
 fn hybrid_payout_should_work() {
-	ExtBuilder::default().collator_count(10).build().execute_with(|| {
-		mock::preset_collators(10);
+	ExtBuilder::default().collator_count(10).inflation_type(1).build().execute_with(|| {
+		mock::preset_collator_wait_list(10);
 		Timestamp::set_timestamp(30 * DAY_IN_MILLIS);
 		new_session();
 		new_session();
+
+		let collators =
+			(100..105).map(AccountId).chain((15..20).rev().map(AccountId)).collect::<Vec<_>>();
+		assert_eq!(collators, <pallet_session::Validators<Runtime>>::get());
+
+		let collators_balances = collators.iter().map(Balances::free_balance).collect::<Vec<_>>();
+		let session_duration = Duration::new(12 * 600, 0).as_millis();
+		Efflux::time(session_duration - <Period as Get<u64>>::get() as Moment);
+		Staking::note_authors(&collators);
+		new_session();
+		payout();
+
+		assert_eq!(
+			[
+				1_000 * UNIT,
+				1_000 * UNIT,
+				1_000 * UNIT,
+				1_000 * UNIT,
+				1_000 * UNIT,
+				1_000 * UNIT,
+				1_000 * UNIT,
+				1_000 * UNIT,
+				1_000 * UNIT,
+				1_000 * UNIT,
+			]
+			.as_slice(),
+			collators
+				.into_iter()
+				.map(Balances::free_balance)
+				.zip(collators_balances)
+				.map(|(a, b)| a - b)
+				.collect::<Vec<_>>()
+		);
 	});
 }
