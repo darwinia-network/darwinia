@@ -864,19 +864,7 @@ fn hybrid_payout_should_work() {
 		payout();
 
 		assert_eq!(
-			[
-				1_000 * UNIT,
-				1_000 * UNIT,
-				1_000 * UNIT,
-				1_000 * UNIT,
-				1_000 * UNIT,
-				1_000 * UNIT,
-				1_000 * UNIT,
-				1_000 * UNIT,
-				1_000 * UNIT,
-				1_000 * UNIT,
-			]
-			.as_slice(),
+			[1_000 * UNIT; 10].as_slice(),
 			collators
 				.into_iter()
 				.map(Balances::free_balance)

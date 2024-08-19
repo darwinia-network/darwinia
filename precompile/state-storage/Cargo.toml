@@ -20,7 +20,7 @@ sp-std        = { workspace = true }
 
 [dev-dependencies]
 # crates.io
-codec      = { workspace = true, package = "parity-scale-codec", features = ["std"] }
+codec      = { workspace = true, features = ["std"] }
 scale-info = { workspace = true, features = ["std"] }
 
 # moonbeam

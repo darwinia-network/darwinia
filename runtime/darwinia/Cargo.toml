@@ -12,7 +12,7 @@ substrate-wasm-builder = { workspace = true, optional = true }
 
 [dependencies]
 # crates.io
-codec      = { workspace = true, package = "parity-scale-codec" }
+codec      = { workspace = true }
 log        = { workspace = true }
 scale-info = { workspace = true }
 strum      = { workspace = true, features = ["derive"] }
