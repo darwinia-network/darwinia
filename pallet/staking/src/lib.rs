@@ -789,6 +789,8 @@ pub mod pallet {
 			for n_exposure in c_exposure.nominators {
 				let n_payout = Perbill::from_rational(n_exposure.vote, c_exposure.vote) * n_payout;
 
+				dbg!(n_payout);
+
 				if collator == n_exposure.who {
 					// If the collator nominated themselves.
 
@@ -827,6 +829,19 @@ pub mod pallet {
 			let (n1, n2) = Self::elect_ns();
 			let cs_from_contract = Self::try_elect(n1, Self::elect_from_contract);
 			let cs_from_pallet = Self::try_elect(n2, Self::elect);
+
+			if n1 != cs_from_contract.len() as u32 || n2 != cs_from_pallet.len() as u32 {
+				log::error!(
+					"[pallet::staking] collator count mismatch; \
+					expected collator count from contract: {n1}, from pallet: {n2}, \
+					actual collator count from contract: {}, from pallet: {}",
+					cs_from_contract.len(),
+					cs_from_pallet.len(),
+				);
+
+				return None;
+			}
+
 			let cs = [cs_from_contract, cs_from_pallet].concat();
 
 			if cs.is_empty() {

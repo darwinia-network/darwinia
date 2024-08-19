@@ -53,9 +53,14 @@ impl From<H160> for AccountId {
 		Self(H160::to_low_u64_le(&value))
 	}
 }
-impl Into<H160> for AccountId {
-	fn into(self) -> H160 {
-		H160::from_low_u64_le(self.0)
+impl From<AccountId> for u64 {
+	fn from(value: AccountId) -> Self {
+		value.0
+	}
+}
+impl From<AccountId> for H160 {
+	fn from(value: AccountId) -> Self {
+		H160::from_low_u64_le(value.0)
 	}
 }
 impl Display for AccountId {
@@ -257,10 +262,9 @@ impl crate::Stake for RingStaking {
 impl crate::Election<AccountId> for RingStaking {
 	fn elect(n: u32) -> Option<Vec<AccountId>> {
 		Some(
-			(100..=(100 + n) as u64)
+			(100..(100 + n) as u64)
 				.map(|i| {
 					let who = AccountId(i);
-					let _ = <pallet_balances::Pallet<Runtime>>::deposit_creating(&who, i as _);
 
 					assert_ok!(Session::set_keys(
 						RuntimeOrigin::signed(who),
@@ -412,8 +416,8 @@ impl Default for ExtBuilder {
 	}
 }
 
-pub fn preset_collators(n: u64) {
-	(10..(10 + n)).for_each(|i| {
+pub fn preset_collator_wait_list(n: u64) {
+	(10..10 + n).for_each(|i| {
 		let who = AccountId(i);
 		let _ = <pallet_balances::Pallet<Runtime>>::deposit_creating(&who, i as _);
 
@@ -425,6 +429,10 @@ pub fn preset_collators(n: u64) {
 		assert_ok!(Staking::stake(RuntimeOrigin::signed(who), i as _, Vec::new()));
 		assert_ok!(Staking::collect(RuntimeOrigin::signed(who), Perbill::zero()));
 		assert_ok!(Staking::nominate(RuntimeOrigin::signed(who), who));
+	});
+	(100..100 + n).for_each(|i| {
+		let who = AccountId(i);
+		let _ = <pallet_balances::Pallet<Runtime>>::deposit_creating(&who, i as _);
 	});
 }
 
