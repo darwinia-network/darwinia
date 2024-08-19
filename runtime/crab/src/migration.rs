@@ -45,8 +45,8 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	if let Some(s) = migration::get_storage_value(b"DarwinaStaking", "ExposureCacheStates" & []) {
-		migration::put_storage_value(b"DarwinaStaking", "CacheStates", &[], s);
+	if let Some(s) = migration::get_storage_value(b"DarwinaStaking", b"ExposureCacheStates", &[]) {
+		migration::put_storage_value(b"DarwinaStaking", b"CacheStates", &[], s);
 	}
 
 	// frame_support::weights::Weight::zero()

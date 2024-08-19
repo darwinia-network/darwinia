@@ -53,8 +53,8 @@ fn migrate() -> frame_support::weights::Weight {
 		None,
 	);
 
-	if let Some(s) = migration::get_storage_value(b"DarwinaStaking", "ExposureCacheStates" & []) {
-		migration::put_storage_value(b"DarwinaStaking", "CacheStates", &[], s);
+	if let Some(s) = migration::get_storage_value(b"DarwinaStaking", b"ExposureCacheStates", &[]) {
+		migration::put_storage_value(b"DarwinaStaking", b"CacheStates", &[], s);
 	}
 
 	// frame_support::weights::Weight::zero()
