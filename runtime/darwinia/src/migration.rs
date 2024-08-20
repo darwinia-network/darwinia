@@ -53,6 +53,16 @@ fn migrate() -> frame_support::weights::Weight {
 		None,
 	);
 
+	// dawinia
+	use darwinia_staking::CacheState;
+	if let Some(s) = migration::get_storage_value::<(CacheState, CacheState, CacheState)>(
+		b"DarwinaStaking",
+		b"ExposureCacheStates",
+		&[],
+	) {
+		let _ = migration::put_storage_value(b"DarwinaStaking", b"CacheStates", &[], s);
+	}
+
 	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 100)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(1, 101)
 }

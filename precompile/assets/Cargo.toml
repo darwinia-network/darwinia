@@ -24,7 +24,7 @@ sp-std        = { workspace = true }
 
 [dev-dependencies]
 # crates.io
-codec      = { workspace = true, package = "parity-scale-codec" }
+codec      = { workspace = true }
 scale-info = { workspace = true, features = ["std"] }
 sha3       = { workspace = true }
 

@@ -9,7 +9,7 @@ version.workspace = true
 [dependencies]
 # crates.io
 array-bytes = { workspace = true }
-codec       = { workspace = true, package = "parity-scale-codec" }
+codec       = { workspace = true }
 scale-info  = { workspace = true }
 
 # darwinia
