@@ -45,7 +45,8 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	migration::clear_storage_prefix(b"DarwinaStaking", b"CollatorCacheState", &[], None, None);
+	let _ =
+		migration::clear_storage_prefix(b"DarwinaStaking", b"CollatorCacheState", &[], None, None);
 
 	// dawinia
 	use darwinia_staking::CacheState;
