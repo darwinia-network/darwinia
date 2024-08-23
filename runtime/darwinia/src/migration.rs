@@ -63,6 +63,15 @@ fn migrate() -> frame_support::weights::Weight {
 		let _ = migration::put_storage_value(b"DarwinaStaking", b"CacheStates", &[], s);
 	}
 
+	if let Ok(owner) = array_bytes::hex_n_into("0x7FAcDaFB282028E4B3264fB08cd633A9142514df") {
+		let _ = pallet_assets::Pallet::transfer_ownership(
+			RuntimeOrigin::signed(ROOT),
+			AssetIds::Kton as AssetId,
+			owner,
+		);
+	}
+
+
 	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(1, 101)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(3, 103)
 }

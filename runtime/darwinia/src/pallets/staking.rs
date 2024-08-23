@@ -21,7 +21,7 @@ use crate::*;
 // polkadot-sdk
 use frame_support::traits::Currency;
 
-fast_runtime_or_not!(DURATION, BlockNumber, 5 * MINUTES, 14 * DAYS);
+darwinia_common_runtime::fast_runtime_or_not!(DURATION, BlockNumber, 5 * MINUTES, 14 * DAYS);
 
 pub enum RingStaking {}
 impl darwinia_staking::Stake for RingStaking {
