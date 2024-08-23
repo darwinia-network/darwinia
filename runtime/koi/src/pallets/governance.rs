@@ -27,8 +27,8 @@ pub use pallet_collective::Instance1 as TechnicalCollective;
 
 pub(super) use crate::*;
 
-fast_runtime_or_not!(TIME_1, BlockNumber, 2 * MINUTES, 10 * MINUTES);
-fast_runtime_or_not!(TIME_2, BlockNumber, 5 * MINUTES, 20 * MINUTES);
+darwinia_common_runtime::fast_runtime_or_not!(TIME_1, BlockNumber, 2 * MINUTES, 10 * MINUTES);
+darwinia_common_runtime::fast_runtime_or_not!(TIME_2, BlockNumber, 5 * MINUTES, 20 * MINUTES);
 
 type Time1 = ConstU32<TIME_1>;
 type Time2 = ConstU32<TIME_2>;

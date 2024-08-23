@@ -75,7 +75,7 @@ macro_rules! call_on_exposure {
 			(_, $crate::CacheState::$s, _) => Ok(<$crate::ExposureCache1<$t>>$($f)*),
 			(_, _, $crate::CacheState::$s) => Ok(<$crate::ExposureCache2<$t>>$($f)*),
 			_ => {
-				log::error!("[pallet::staking] exposure cache states must be correct; qed");
+				log::error!("exposure cache states must be correct; qed");
 
 				Err("[pallet::staking] exposure cache states must be correct; qed")
 			},
@@ -96,7 +96,7 @@ macro_rules! call_on_cache {
 			(_, $crate::CacheState::$s, _) => Ok(<$crate::CollatorsCache1<$t>>$($f)*),
 			(_, _, $crate::CacheState::$s) => Ok(<$crate::CollatorsCache2<$t>>$($f)*),
 			_ => {
-				log::error!("[pallet::staking] collators cache states must be correct; qed");
+				log::error!("collators cache states must be correct; qed");
 
 				Err("[pallet::staking] collators cache states must be correct; qed")
 			},
@@ -183,8 +183,6 @@ pub mod pallet {
 		Payout { who: T::AccountId, amount: Balance },
 		/// Unable to pay the staker's reward.
 		Unpaid { who: T::AccountId, amount: Balance },
-		/// A new collator set has been elected.
-		Elected { collators: Vec<T::AccountId> },
 	}
 
 	#[pallet::error]
@@ -780,43 +778,24 @@ pub mod pallet {
 
 			let bn = <frame_system::Pallet<T>>::block_number();
 
-			log::info!(
-				"[pallet::staking] assembling new collators for new session {index} at #{bn:?}",
-			);
+			log::info!("assembling new collators for new session {index} at #{bn:?}",);
 
 			let (n1, n2) = Self::elect_ns();
-			let cs_from_contract = Self::try_elect(n1, Self::elect_from_contract);
-			let cs_from_pallet = Self::try_elect(n2, Self::elect);
+			let cs_from_contract = Self::elect_from_contract(n1)?;
+			let cs_from_pallet = Self::elect(n2)?;
 
-			if n1 != cs_from_contract.len() as u32 || n2 != cs_from_pallet.len() as u32 {
-				log::error!(
-					"[pallet::staking] collator count mismatch; \
-					expected collator count from contract: {n1}, from pallet: {n2}, \
-					actual collator count from contract: {}, from pallet: {}",
-					cs_from_contract.len(),
-					cs_from_pallet.len(),
-				);
-
-				return None;
-			}
+			log::info!("collators from contract {cs_from_contract:?}");
+			log::info!("collators from pallet {cs_from_pallet:?}");
 
 			let cs = [cs_from_contract, cs_from_pallet].concat();
 
 			if cs.is_empty() {
-				// This error log is acceptable when testing with `genesis_collator = false`.
-				log::error!(
-					"[pallet::staking] fail to elect collators for new session {index} at #{bn:?}"
-				);
-
 				// Impossible case.
 				//
 				// But if there is an issue, retain the old collators; do not alter the session
 				// collators if any error occurs to prevent the chain from stalling.
 				None
 			} else {
-				// ? if we really need this event.
-				Self::deposit_event(Event::Elected { collators: cs.clone() });
-
 				Some(cs)
 			}
 		}
@@ -889,28 +868,22 @@ pub mod pallet {
 		pub fn elect_ns() -> (u32, u32) {
 			let n = <CollatorCount<T>>::get();
 			let n1 = Self::migration_progress() * n;
+			let n2 = n - n1;
 
-			(n1, n - n1)
+			log::info!("election ns {n1} + {n2}");
+
+			(n1, n2)
 		}
 
 		fn migration_progress() -> Perbill {
 			const TOTAL: Moment = 30 * 2 * DAY_IN_MILLIS;
 
 			let start = <MigrationStartPoint<T>>::get();
+			let prog = Perbill::from_rational(now::<T>() - start, TOTAL);
 
-			Perbill::from_rational(now::<T>() - start, TOTAL)
-		}
+			log::info!("migration progress {prog:?}");
 
-		fn try_elect<F, R>(n: u32, elect: F) -> R
-		where
-			F: FnOnce(u32) -> Option<R>,
-			R: Default,
-		{
-			if n > 0 {
-				elect(n).unwrap_or_default()
-			} else {
-				Default::default()
-			}
+			prog
 		}
 
 		fn elect_from_contract(n: u32) -> Option<Vec<T::AccountId>> {
@@ -940,7 +913,13 @@ pub mod pallet {
 		fn start_session(_: u32) {}
 
 		fn new_session(index: u32) -> Option<Vec<T::AccountId>> {
-			Self::prepare_new_session(index)
+			let maybe_collators = Self::prepare_new_session(index);
+
+			if maybe_collators.is_some() {
+				log::error!("fail to elect collators for session {index}");
+			}
+
+			maybe_collators
 		}
 	}
 }

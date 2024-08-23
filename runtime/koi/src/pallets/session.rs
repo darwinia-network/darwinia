@@ -25,10 +25,8 @@ sp_runtime::impl_opaque_keys! {
 	}
 }
 
-fast_runtime_or_not!(PERIOD, BlockNumber, 5 * MINUTES, 6 * HOURS);
-
 type Offset = ConstU32<0>;
-type Period = ConstU32<{ PERIOD }>;
+type Period = ConstU32<{ 5 * MINUTES }>;
 
 impl pallet_session::Config for Runtime {
 	type Keys = SessionKeys;
