@@ -881,7 +881,7 @@ pub mod pallet {
 			let start = <MigrationStartPoint<T>>::get();
 			let prog = Perbill::from_rational(now::<T>() - start, TOTAL);
 
-			log::info!("migration progress {prog}");
+			log::info!("migration progress {prog:?}");
 
 			prog
 		}

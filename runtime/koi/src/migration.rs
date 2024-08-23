@@ -45,10 +45,12 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	if let Ok(owner) = array_bytes::hex_n_into("0x7FAcDaFB282028E4B3264fB08cd633A9142514df") {
-		let _ = pallet_assets::Pallet::transfer_ownership(
+	if let Ok(owner) =
+		array_bytes::hex_n_into::<_, AccountId, 20>("0x7FAcDaFB282028E4B3264fB08cd633A9142514df")
+	{
+		let _ = <pallet_assets::Pallet<Runtime>>::transfer_ownership(
 			RuntimeOrigin::signed(ROOT),
-			AssetIds::KKton as AssetId,
+			codec::Compact(AssetIds::KKton as AssetId),
 			owner,
 		);
 	}
