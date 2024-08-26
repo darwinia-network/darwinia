@@ -59,7 +59,7 @@ use frame_support::{
 };
 use frame_system::{pallet_prelude::*, RawOrigin};
 use pallet_session::ShouldEndSession as _;
-use sp_core::{H160, U256};
+use sp_core::H160;
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, One, Zero},
 	Perbill,
@@ -1154,6 +1154,8 @@ pub struct IndividualExposure<AccountId> {
 }
 
 /// RING staking interface.
+///
+/// .https://github.com/darwinia-network/DIP-7/blob/2249e3baa065b7e6c42427810b722fafa37628f1/src/collator/CollatorSet.sol#L27.
 pub struct RingStaking<T>(PhantomData<T>);
 impl<T> Election<T::AccountId> for RingStaking<T>
 where
@@ -1186,7 +1188,7 @@ where
 			state_mutability: StateMutability::View,
 		};
 		let input = function
-			.encode_input(&[Token::Int(n.into())])
+			.encode_input(&[Token::Uint(n.into())])
 			.map_err(|e| log::error!("failed to encode input due to {e:?}"))
 			.ok()?;
 
@@ -1195,7 +1197,7 @@ where
 			rsc,
 			input,
 			Default::default(),
-			U256::from(10_000_000_u64),
+			1_000_000.into(),
 		)
 		.map_err(|e| log::error!("failed to forward call due to {e:?}"))
 		.ok()
