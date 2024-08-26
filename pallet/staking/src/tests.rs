@@ -874,3 +874,57 @@ fn hybrid_payout_should_work() {
 		);
 	});
 }
+
+#[test]
+fn get_top_collators_should_work() {
+	const ZERO: [u8; 20] = [0; 20];
+
+	let data = [
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 148, 244, 240, 74, 89, 79, 214, 144, 224,
+		254, 164, 111, 40, 130, 165, 178, 97, 83, 167, 47, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	];
+	#[allow(deprecated)]
+	let function = Function {
+		name: "getTopCollators".to_owned(),
+		inputs: vec![Param {
+			name: "k".to_owned(),
+			kind: ParamType::Uint(256),
+			internal_type: None,
+		}],
+		outputs: vec![Param {
+			name: "collators".to_owned(),
+			kind: ParamType::Array(Box::new(ParamType::Address)),
+			internal_type: None,
+		}],
+		constant: None,
+		state_mutability: StateMutability::View,
+	};
+	let output = function
+		.decode_output(&data)
+		.map(|o| {
+			let Some(Token::Array(addrs)) = o.into_iter().next() else { return Vec::new() };
+
+			addrs
+				.into_iter()
+				.filter_map(|addr| match addr {
+					Token::Address(addr) if addr.0 != ZERO => Some(addr.0),
+					_ => None,
+				})
+				.collect()
+		})
+		.unwrap();
+
+	assert_eq!(
+		output,
+		[
+			// 0x94f4f04a594fd690e0fea46f2882a5b26153a72f.
+			[
+				148, 244, 240, 74, 89, 79, 214, 144, 224, 254, 164, 111, 40, 130, 165, 178, 97, 83,
+				167, 47
+			]
+		]
+	);
+}
