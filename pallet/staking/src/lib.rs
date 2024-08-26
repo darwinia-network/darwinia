@@ -781,8 +781,11 @@ pub mod pallet {
 			log::info!("assembling new collators for new session {index} at #{bn:?}",);
 
 			let (n1, n2) = Self::elect_ns();
-			let cs_from_contract = Self::elect_from_contract(n1)?;
-			let cs_from_pallet = Self::elect(n2)?;
+			// TODO: update this once the migration is completed.
+			// let cs_from_contract = Self::elect_from_contract(n1)?;
+			// let cs_from_pallet = Self::elect(n2)?;
+			let cs_from_contract = Self::elect_from_contract(n1).unwrap_or_default();
+			let cs_from_pallet = Self::elect(n2).unwrap_or_default();
 
 			log::info!("collators from contract {cs_from_contract:?}");
 			log::info!("collators from pallet {cs_from_pallet:?}");
@@ -790,6 +793,9 @@ pub mod pallet {
 			let cs = [cs_from_contract, cs_from_pallet].concat();
 
 			if cs.is_empty() {
+				// TODO: update this once the migration is completed.
+				// Possible case under the hyper election mode.
+
 				// Impossible case.
 				//
 				// But if there is an issue, retain the old collators; do not alter the session
@@ -915,7 +921,7 @@ pub mod pallet {
 		fn new_session(index: u32) -> Option<Vec<T::AccountId>> {
 			let maybe_collators = Self::prepare_new_session(index);
 
-			if maybe_collators.is_some() {
+			if maybe_collators.is_none() {
 				log::error!("fail to elect collators for session {index}");
 			}
 
@@ -1202,14 +1208,18 @@ where
 		.map_err(|e| log::error!("failed to forward call due to {e:?}"))
 		.ok()
 		.and_then(|i| {
+			log::info!("getTopCollators({n})'s execution info {i:?}");
+
 			function
 				.decode_output(&i.value)
 				.map_err(|e| log::error!("failed to decode output due to {e:?}"))
 				.ok()
-				.map(|tokens| {
-					tokens
+				.map(|o| {
+					let Some(Token::Array(addrs)) = o.into_iter().next() else { return Vec::new() };
+
+					addrs
 						.into_iter()
-						.filter_map(|token| match token {
+						.filter_map(|addr| match addr {
 							Token::Address(addr) if addr.0 != ZERO =>
 								Some(T::AccountId::from(addr)),
 							_ => None,
