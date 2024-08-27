@@ -127,7 +127,6 @@ impl darwinia_deposit::Config for Runtime {
 	type DepositMigrator = ();
 	type Kton = Dummy;
 	type MaxDeposits = frame_support::traits::ConstU32<512>;
-	type MinLockingAmount = ();
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
 	type Treasury = ();

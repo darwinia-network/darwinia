@@ -138,7 +138,7 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
 		let a_cloned = a.clone();
 
-		call_on_exposure!(<Previous<T>>::insert(
+		call_on_cache_v1!(<Previous<T>>::insert(
 			&a,
 			Exposure {
 				commission: Perbill::zero(),

@@ -73,7 +73,7 @@ impl darwinia_staking::Stake for KtonStaking {
 impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
-	type IssuingManager = darwinia_staking::TreasuryIssuing<Self>;
+	type IssuingManager = darwinia_staking::TreasuryIssuing<Self, ConstU128<{ 20_000 * UNIT }>>;
 	type KtonStaking = darwinia_staking::KtonStaking<Self>;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type Ring = RingStaking;

@@ -24,6 +24,7 @@ use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 // darwinia
 use crate::*;
+use dc_types::UNIT;
 // polkadot-sdk
 use frame_support::{assert_ok, derive_impl, traits::OnInitialize};
 use sp_core::H160;
@@ -105,7 +106,6 @@ impl darwinia_deposit::Config for Runtime {
 	type DepositMigrator = ();
 	type Kton = KtonMinting;
 	type MaxDeposits = frame_support::traits::ConstU32<16>;
-	type MinLockingAmount = frame_support::traits::ConstU128<UNIT>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
 	type Treasury = TreasuryAcct;
@@ -216,7 +216,7 @@ impl crate::IssuingManager<Runtime> for StatedOnSessionEnd {
 		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
 			<crate::BalanceIssuing<Runtime>>::inflate()
 		} else {
-			<crate::TreasuryIssuing<Runtime>>::inflate()
+			<crate::TreasuryIssuing<Runtime, frame_support::traits::ConstU128<{ 20_000 * UNIT }>>>::inflate()
 		}
 	}
 
@@ -224,7 +224,7 @@ impl crate::IssuingManager<Runtime> for StatedOnSessionEnd {
 		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
 			<crate::BalanceIssuing<Runtime>>::calculate_reward(issued)
 		} else {
-			<crate::TreasuryIssuing<Runtime>>::calculate_reward(issued)
+			<crate::TreasuryIssuing<Runtime, frame_support::traits::ConstU128<{ 20_000 * UNIT }>>>::calculate_reward(issued)
 		}
 	}
 
@@ -232,7 +232,7 @@ impl crate::IssuingManager<Runtime> for StatedOnSessionEnd {
 		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
 			<crate::BalanceIssuing<Runtime>>::reward(who, amount)
 		} else {
-			<crate::TreasuryIssuing<Runtime>>::reward(who, amount)
+			<crate::TreasuryIssuing<Runtime,frame_support::traits::ConstU128<{20_000 * UNIT}>>>::reward(who, amount)
 		}
 	}
 }
@@ -454,7 +454,11 @@ pub fn new_session() {
 }
 
 pub fn payout() {
-	crate::call_on_exposure!(<Previous<Runtime>>::iter_keys().for_each(|c| {
+	crate::call_on_cache_v2!(<Previous<Runtime>>::get().into_iter().for_each(|c| {
+		let _ = Staking::payout_inner(c);
+	}))
+	.unwrap();
+	crate::call_on_cache_v1!(<Previous<Runtime>>::iter_keys().for_each(|c| {
 		let _ = Staking::payout_inner(c);
 	}))
 	.unwrap();

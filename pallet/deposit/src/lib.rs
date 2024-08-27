@@ -86,10 +86,6 @@ pub mod pallet {
 		#[pallet::constant]
 		type Treasury: Get<Self::AccountId>;
 
-		/// Minimum amount to lock at least.
-		#[pallet::constant]
-		type MinLockingAmount: Get<Balance>;
-
 		/// Maximum deposit count.
 		///
 		/// In currently design, this should not be greater than `u16::MAX`.
@@ -165,7 +161,7 @@ pub mod pallet {
 		pub fn lock(origin: OriginFor<T>, amount: Balance, months: u8) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
-			if amount < T::MinLockingAmount::get() {
+			if amount == 0 {
 				Err(<Error<T>>::LockAtLeastSome)?;
 			}
 			if months == 0 {
