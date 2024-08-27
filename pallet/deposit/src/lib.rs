@@ -329,7 +329,7 @@ pub mod pallet {
 					} else {
 						to_migrate.0 += d.value;
 						to_migrate.1.push(d.id);
-						to_migrate.2.push((d.value, d.start_time, d.expired_time));
+						to_migrate.2.push((d.value, d.start_time / 1_000, d.expired_time / 1_000));
 					}
 				}
 
