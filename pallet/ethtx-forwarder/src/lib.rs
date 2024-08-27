@@ -290,45 +290,60 @@ impl<T: Config> Pallet<T> {
 		source: H160,
 		transaction: Transaction,
 	) -> Result<(PostDispatchInfo, CallOrCreateInfo), DispatchErrorWithPostInfo> {
+		// frontier
+		use fp_evm::{CallInfo, ExitSucceed, UsedGas};
 		// moonbeam
 		use moonbeam_evm_tracer::tracer::EvmTracer;
 		// polkadot-sdk
-		use frame_support::{dispatch::PostDispatchInfo, storage::unhashed};
+		use frame_support::storage::unhashed;
 		use xcm_primitives::{EthereumXcmTracingStatus, ETHEREUM_XCM_TRACING_STORAGE_KEY};
+
+		let default_r = || {
+			Ok((
+				().into(),
+				CallOrCreateInfo::Call(CallInfo {
+					exit_reason: ExitSucceed::Returned.into(),
+					value: Default::default(),
+					used_gas: UsedGas {
+						standard: Default::default(),
+						effective: Default::default(),
+					},
+					weight_info: Default::default(),
+					logs: Default::default(),
+				}),
+			))
+		};
 
 		match unhashed::get(ETHEREUM_XCM_TRACING_STORAGE_KEY) {
 			Some(EthereumXcmTracingStatus::Block) => {
 				EvmTracer::emit_new();
 
-				let mut res = Ok(PostDispatchInfo::default());
+				let mut r = default_r();
 
 				EvmTracer::new().trace(|| {
-					res = T::ValidatedTransaction::apply(source, transaction);
+					r = T::ValidatedTransaction::apply(source, transaction);
 				});
 
-				res
+				r
 			},
 			Some(EthereumXcmTracingStatus::Transaction(traced_transaction_hash)) => {
 				if transaction.hash() == traced_transaction_hash {
-					let mut res = Ok(PostDispatchInfo::default());
+					let mut r = default_r();
 
 					EvmTracer::new().trace(|| {
-						res = T::ValidatedTransaction::apply(source, transaction);
+						r = T::ValidatedTransaction::apply(source, transaction);
 					});
 					unhashed::put::<EthereumXcmTracingStatus>(
 						ETHEREUM_XCM_TRACING_STORAGE_KEY,
 						&EthereumXcmTracingStatus::TransactionExited,
 					);
 
-					res
+					r
 				} else {
 					T::ValidatedTransaction::apply(source, transaction)
 				}
 			},
-			Some(EthereumXcmTracingStatus::TransactionExited) => Ok(PostDispatchInfo {
-				actual_weight: None,
-				pays_fee: frame_support::pallet_prelude::Pays::No,
-			}),
+			Some(EthereumXcmTracingStatus::TransactionExited) => default_r(),
 			None => T::ValidatedTransaction::apply(source, transaction),
 		}
 	}
