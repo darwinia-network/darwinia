@@ -33,10 +33,16 @@ use ethereum::{
 use scale_info::TypeInfo;
 // frontier
 use fp_ethereum::{TransactionData, ValidatedTransaction};
-use fp_evm::{CheckEvmTransaction, CheckEvmTransactionConfig, TransactionValidationError};
+use fp_evm::{
+	CallOrCreateInfo, CheckEvmTransaction, CheckEvmTransactionConfig, TransactionValidationError,
+};
 use pallet_evm::{FeeCalculator, GasWeightMapping, Runner};
 // polkadot-sdk
-use frame_support::{dispatch::DispatchResultWithPostInfo, traits::EnsureOrigin, PalletError};
+use frame_support::{
+	dispatch::{DispatchErrorWithPostInfo, DispatchResultWithPostInfo, PostDispatchInfo},
+	traits::EnsureOrigin,
+	PalletError,
+};
 use sp_core::{Get, H160, H256, U256};
 use sp_runtime::{
 	traits::{BadOrigin, UniqueSaturatedInto},
@@ -121,7 +127,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			request: ForwardRequest,
 		) -> DispatchResultWithPostInfo {
-			Self::forward_transact_inner(ensure_forward_transact(origin)?, request)
+			Self::forward_transact_inner(ensure_forward_transact(origin)?, request).map(|(r, _)| r)
 		}
 	}
 }
@@ -150,19 +156,19 @@ impl<T: Config> Pallet<T> {
 			None,
 			<T as pallet_evm::Config>::config(),
 		)
-		.map_err(|err| err.error.into())
+		.map_err(|e| e.error.into())
 	}
 
 	pub fn forward_transact_inner(
 		source: H160,
 		request: ForwardRequest,
-	) -> DispatchResultWithPostInfo {
+	) -> Result<(PostDispatchInfo, CallOrCreateInfo), DispatchErrorWithPostInfo> {
 		let transaction = Self::validated_transaction(source, request)?;
 
 		#[cfg(feature = "evm-tracing")]
 		return Self::trace_tx(source, transaction);
 		#[cfg(not(feature = "evm-tracing"))]
-		return T::ValidatedTransaction::apply(source, transaction).map(|(post_info, _)| post_info);
+		return T::ValidatedTransaction::apply(source, transaction);
 	}
 
 	fn validated_transaction(
@@ -280,7 +286,10 @@ impl<T: Config> Pallet<T> {
 	}
 
 	#[cfg(feature = "evm-tracing")]
-	fn trace_tx(source: H160, transaction: Transaction) -> DispatchResultWithPostInfo {
+	fn trace_tx(
+		source: H160,
+		transaction: Transaction,
+	) -> Result<(PostDispatchInfo, CallOrCreateInfo), DispatchErrorWithPostInfo> {
 		// moonbeam
 		use moonbeam_evm_tracer::tracer::EvmTracer;
 		// polkadot-sdk
@@ -294,8 +303,7 @@ impl<T: Config> Pallet<T> {
 				let mut res = Ok(PostDispatchInfo::default());
 
 				EvmTracer::new().trace(|| {
-					res = T::ValidatedTransaction::apply(source, transaction)
-						.map(|(post_info, _)| post_info);
+					res = T::ValidatedTransaction::apply(source, transaction);
 				});
 
 				res
@@ -305,8 +313,7 @@ impl<T: Config> Pallet<T> {
 					let mut res = Ok(PostDispatchInfo::default());
 
 					EvmTracer::new().trace(|| {
-						res = T::ValidatedTransaction::apply(source, transaction)
-							.map(|(post_info, _)| post_info);
+						res = T::ValidatedTransaction::apply(source, transaction);
 					});
 					unhashed::put::<EthereumXcmTracingStatus>(
 						ETHEREUM_XCM_TRACING_STORAGE_KEY,
@@ -316,15 +323,13 @@ impl<T: Config> Pallet<T> {
 					res
 				} else {
 					T::ValidatedTransaction::apply(source, transaction)
-						.map(|(post_info, _)| post_info)
 				}
 			},
 			Some(EthereumXcmTracingStatus::TransactionExited) => Ok(PostDispatchInfo {
 				actual_weight: None,
 				pays_fee: frame_support::pallet_prelude::Pays::No,
 			}),
-			None =>
-				T::ValidatedTransaction::apply(source, transaction).map(|(post_info, _)| post_info),
+			None => T::ValidatedTransaction::apply(source, transaction),
 		}
 	}
 }
@@ -386,19 +391,17 @@ pub fn quick_forward_transact<T>(
 	call: H160,
 	value: U256,
 	gas_limit: U256,
-) where
+) -> Result<(PostDispatchInfo, CallOrCreateInfo), DispatchError>
+where
 	T: Config,
 {
 	log::info!("forwarding {function:?} to {call:?} with {{ input: {input:?}, value: {value:?} }}");
 
-	let input = match function.encode_input(input) {
-		Ok(i) => i,
-		Err(e) => {
-			log::error!("failed to encode input due to {e:?}");
+	let input = function.encode_input(input).map_err(|e| {
+		log::error!("failed to encode input due to {e:?}");
 
-			return;
-		},
-	};
+		DispatchError::from("failed to encode input")
+	})?;
 	let req = ForwardRequest {
 		tx_type: TxType::LegacyTransaction,
 		action: TransactionAction::Call(call),
@@ -407,7 +410,5 @@ pub fn quick_forward_transact<T>(
 		gas_limit,
 	};
 
-	if let Err(e) = <Pallet<T>>::forward_transact_inner(source, req) {
-		log::error!("failed to forward ethtx due to {e:?}");
-	}
+	<Pallet<T>>::forward_transact_inner(source, req).map_err(|e| e.error)
 }

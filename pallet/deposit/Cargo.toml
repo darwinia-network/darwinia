@@ -19,6 +19,9 @@ darwinia-staking-traits  = { workspace = true }
 dc-inflation             = { workspace = true }
 dc-types                 = { workspace = true }
 
+# frontier
+fp-evm = { workspace = true }
+
 # polkadot-sdk
 frame-support    = { workspace = true }
 frame-system     = { workspace = true }
@@ -48,6 +51,9 @@ std = [
 	"darwinia-ethtx-forwarder/std",
 	"darwinia-staking-traits/std",
 	"dc-inflation/std",
+
+	# frontier
+	"fp-evm/std",
 
 	# polkadot-sdk
 	"frame-support/std",

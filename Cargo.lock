@@ -2778,6 +2778,7 @@ dependencies = [
  "dc-inflation",
  "dc-types",
  "ethabi",
+ "fp-evm",
  "frame-benchmarking",
  "frame-support",
  "frame-system",

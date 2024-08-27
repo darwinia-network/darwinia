@@ -49,6 +49,8 @@ use ethabi::{Function, Param, ParamType, StateMutability, Token};
 // darwinia
 use dc_inflation::MILLISECS_PER_YEAR;
 use dc_types::{Balance, Moment};
+// frontier
+use fp_evm::{CallOrCreateInfo, ExitReason};
 // polkadot-sdk
 use frame_support::{
 	pallet_prelude::*,
@@ -136,6 +138,10 @@ pub mod pallet {
 		DepositNotInUse,
 		/// Deposit is already expired.
 		DepositAlreadyExpired,
+		/// Invalid deposit contract.
+		InvalidDepositContract,
+		/// Migration interaction with deposit contract failed.
+		MigrationFailedOnContract,
 	}
 
 	/// All deposits.
@@ -335,7 +341,7 @@ pub mod pallet {
 
 				T::Ring::transfer(&account_id(), &who, to_claim.0, AllowDeath)?;
 				T::Ring::transfer(&account_id(), &T::Treasury::get(), to_migrate.0, AllowDeath)?;
-				T::DepositMigrator::migrate(who.clone(), to_migrate.0, to_migrate.2);
+				T::DepositMigrator::migrate(who.clone(), to_migrate.0, to_migrate.2)?;
 
 				Self::deposit_event(Event::DepositsClaimed {
 					owner: who.clone(),
@@ -458,7 +464,9 @@ where
 	T: Config,
 {
 	/// Migrate to contract.
-	fn migrate(_: T::AccountId, _: Balance, _: Vec<(Balance, Moment, Moment)>) {}
+	fn migrate(_: T::AccountId, _: Balance, _: Vec<(Balance, Moment, Moment)>) -> DispatchResult {
+		Ok(())
+	}
 }
 impl<T> MigrateToContract<T> for () where T: Config {}
 
@@ -484,16 +492,14 @@ where
 	T: Config + darwinia_ethtx_forwarder::Config,
 	T::AccountId: Into<H160>,
 {
-	fn migrate(who: T::AccountId, total: Balance, deposits: Vec<(Balance, Moment, Moment)>) {
-		let Some(dc) = <DepositContract<T>>::get() else {
-			log::error!("deposit contract must be some; qed");
-
-			return;
-		};
-		let dc = dc.into();
-
+	fn migrate(
+		who: T::AccountId,
+		total: Balance,
+		deposits: Vec<(Balance, Moment, Moment)>,
+	) -> DispatchResult {
+		let dc = <DepositContract<T>>::get().ok_or(<Error<T>>::InvalidDepositContract)?.into();
 		#[allow(deprecated)]
-		darwinia_ethtx_forwarder::quick_forward_transact::<T>(
+		let exit_reason = match darwinia_ethtx_forwarder::quick_forward_transact::<T>(
 			T::Treasury::get().into(),
 			Function {
 				name: "migrate".into(),
@@ -535,7 +541,17 @@ where
 			dc,
 			total.into(),
 			1_000_000.into(),
-		)
+		)?
+		.1
+		{
+			CallOrCreateInfo::Call(i) => i.exit_reason,
+			CallOrCreateInfo::Create(i) => i.exit_reason,
+		};
+
+		match exit_reason {
+			ExitReason::Succeed(_) => Ok(()),
+			_ => Err(<Error<T>>::MigrationFailedOnContract)?,
+		}
 	}
 }
 
