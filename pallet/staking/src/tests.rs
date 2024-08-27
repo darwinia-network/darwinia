@@ -21,6 +21,7 @@ use core::time::Duration;
 // darwinia
 use crate::{mock::*, *};
 use darwinia_deposit::Error as DepositError;
+use dc_types::UNIT;
 // polkadot-sdk
 use frame_support::{assert_noop, assert_ok, BoundedVec};
 use sp_runtime::{assert_eq_error_rate, DispatchError, Perbill};
@@ -46,15 +47,15 @@ fn exposure_cache_states_should_work() {
 			<ExposureCache2<Runtime>>::insert(AccountId(2), e);
 		}
 
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(AccountId(0)).is_some()).unwrap());
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(AccountId(1)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(AccountId(2)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(AccountId(0)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(AccountId(1)).is_some()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(AccountId(2)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(0)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(1)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(2)).is_some()).unwrap());
+		assert!(call_on_cache_v1!(<Previous<Runtime>>::get(AccountId(0)).is_some()).unwrap());
+		assert!(call_on_cache_v1!(<Previous<Runtime>>::get(AccountId(1)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Previous<Runtime>>::get(AccountId(2)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Current<Runtime>>::get(AccountId(0)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Current<Runtime>>::get(AccountId(1)).is_some()).unwrap());
+		assert!(call_on_cache_v1!(<Current<Runtime>>::get(AccountId(2)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Next<Runtime>>::get(AccountId(0)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Next<Runtime>>::get(AccountId(1)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Next<Runtime>>::get(AccountId(2)).is_some()).unwrap());
 		assert_eq!(
 			<CacheStates<Runtime>>::get(),
 			(CacheState::Previous, CacheState::Current, CacheState::Next)
@@ -62,15 +63,15 @@ fn exposure_cache_states_should_work() {
 
 		Staking::shift_cache_states();
 
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(AccountId(0)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(AccountId(1)).is_some()).unwrap());
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(AccountId(2)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(AccountId(0)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(AccountId(1)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(AccountId(2)).is_some()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(0)).is_some()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(1)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(2)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Previous<Runtime>>::get(AccountId(0)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Previous<Runtime>>::get(AccountId(1)).is_some()).unwrap());
+		assert!(call_on_cache_v1!(<Previous<Runtime>>::get(AccountId(2)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Current<Runtime>>::get(AccountId(0)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Current<Runtime>>::get(AccountId(1)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Current<Runtime>>::get(AccountId(2)).is_some()).unwrap());
+		assert!(call_on_cache_v1!(<Next<Runtime>>::get(AccountId(0)).is_some()).unwrap());
+		assert!(call_on_cache_v1!(<Next<Runtime>>::get(AccountId(1)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Next<Runtime>>::get(AccountId(2)).is_none()).unwrap());
 		assert_eq!(
 			<CacheStates<Runtime>>::get(),
 			(CacheState::Next, CacheState::Previous, CacheState::Current)
@@ -78,15 +79,15 @@ fn exposure_cache_states_should_work() {
 
 		Staking::shift_cache_states();
 
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(AccountId(0)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(AccountId(1)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(AccountId(2)).is_some()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(AccountId(0)).is_some()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(AccountId(1)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(AccountId(2)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(0)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(1)).is_some()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(2)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Previous<Runtime>>::get(AccountId(0)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Previous<Runtime>>::get(AccountId(1)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Previous<Runtime>>::get(AccountId(2)).is_some()).unwrap());
+		assert!(call_on_cache_v1!(<Current<Runtime>>::get(AccountId(0)).is_some()).unwrap());
+		assert!(call_on_cache_v1!(<Current<Runtime>>::get(AccountId(1)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Current<Runtime>>::get(AccountId(2)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Next<Runtime>>::get(AccountId(0)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Next<Runtime>>::get(AccountId(1)).is_some()).unwrap());
+		assert!(call_on_cache_v1!(<Next<Runtime>>::get(AccountId(2)).is_none()).unwrap());
 		assert_eq!(
 			<CacheStates<Runtime>>::get(),
 			(CacheState::Current, CacheState::Next, CacheState::Previous)
@@ -94,15 +95,15 @@ fn exposure_cache_states_should_work() {
 
 		Staking::shift_cache_states();
 
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(AccountId(0)).is_some()).unwrap());
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(AccountId(1)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Previous<Runtime>>::get(AccountId(2)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(AccountId(0)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(AccountId(1)).is_some()).unwrap());
-		assert!(call_on_exposure!(<Current<Runtime>>::get(AccountId(2)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(0)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(1)).is_none()).unwrap());
-		assert!(call_on_exposure!(<Next<Runtime>>::get(AccountId(2)).is_some()).unwrap());
+		assert!(call_on_cache_v1!(<Previous<Runtime>>::get(AccountId(0)).is_some()).unwrap());
+		assert!(call_on_cache_v1!(<Previous<Runtime>>::get(AccountId(1)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Previous<Runtime>>::get(AccountId(2)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Current<Runtime>>::get(AccountId(0)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Current<Runtime>>::get(AccountId(1)).is_some()).unwrap());
+		assert!(call_on_cache_v1!(<Current<Runtime>>::get(AccountId(2)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Next<Runtime>>::get(AccountId(0)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Next<Runtime>>::get(AccountId(1)).is_none()).unwrap());
+		assert!(call_on_cache_v1!(<Next<Runtime>>::get(AccountId(2)).is_some()).unwrap());
 		assert_eq!(
 			<CacheStates<Runtime>>::get(),
 			(CacheState::Previous, CacheState::Current, CacheState::Next)
@@ -606,15 +607,15 @@ fn auto_payout_should_work() {
 fn on_new_session_should_work() {
 	ExtBuilder::default().collator_count(2).genesis_collator().build().execute_with(|| {
 		assert_eq!(
-			crate::call_on_exposure!(<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			crate::call_on_cache_v1!(<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
 			[AccountId(1), AccountId(2)]
 		);
 		assert_eq!(
-			crate::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			crate::call_on_cache_v1!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
 			[AccountId(1), AccountId(2)]
 		);
 		assert_eq!(
-			crate::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			crate::call_on_cache_v1!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
 			[AccountId(1), AccountId(2)]
 		);
 
@@ -625,15 +626,15 @@ fn on_new_session_should_work() {
 
 		new_session();
 		assert_eq!(
-			crate::call_on_exposure!(<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			crate::call_on_cache_v1!(<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
 			[AccountId(1), AccountId(2)]
 		);
 		assert_eq!(
-			crate::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			crate::call_on_cache_v1!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
 			[AccountId(1), AccountId(2)]
 		);
 		assert_eq!(
-			crate::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			crate::call_on_cache_v1!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
 			[AccountId(3), AccountId(2)]
 		);
 
@@ -645,15 +646,15 @@ fn on_new_session_should_work() {
 
 		new_session();
 		assert_eq!(
-			crate::call_on_exposure!(<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			crate::call_on_cache_v1!(<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
 			[AccountId(1), AccountId(2)]
 		);
 		assert_eq!(
-			crate::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			crate::call_on_cache_v1!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
 			[AccountId(3), AccountId(2)]
 		);
 		assert_eq!(
-			crate::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			crate::call_on_cache_v1!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
 			[AccountId(4), AccountId(2)]
 		);
 
@@ -665,15 +666,15 @@ fn on_new_session_should_work() {
 
 		new_session();
 		assert_eq!(
-			crate::call_on_exposure!(<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			crate::call_on_cache_v1!(<Previous<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
 			[AccountId(3), AccountId(2)]
 		);
 		assert_eq!(
-			crate::call_on_exposure!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			crate::call_on_cache_v1!(<Current<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
 			[AccountId(4), AccountId(2)]
 		);
 		assert_eq!(
-			crate::call_on_exposure!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
+			crate::call_on_cache_v1!(<Next<Runtime>>::iter_keys().collect::<Vec<_>>()).unwrap(),
 			[AccountId(5), AccountId(2)]
 		);
 	});
@@ -857,8 +858,6 @@ fn hybrid_payout_should_work() {
 		assert_eq!(collators, <pallet_session::Validators<Runtime>>::get());
 
 		let collators_balances = collators.iter().map(Balances::free_balance).collect::<Vec<_>>();
-		let session_duration = Duration::new(12 * 600, 0).as_millis();
-		Efflux::time(session_duration - <Period as Get<u64>>::get() as Moment);
 		Staking::note_authors(&collators);
 		new_session();
 		payout();
@@ -869,6 +868,56 @@ fn hybrid_payout_should_work() {
 				.into_iter()
 				.map(Balances::free_balance)
 				.zip(collators_balances)
+				.map(|(a, b)| a - b)
+				.collect::<Vec<_>>()
+		);
+	});
+}
+
+#[test]
+fn hybrid_auto_payout_should_work() {
+	ExtBuilder::default().collator_count(4).inflation_type(1).build().execute_with(|| {
+		mock::preset_collator_wait_list(4);
+		Timestamp::set_timestamp(30 * DAY_IN_MILLIS);
+		new_session();
+		new_session();
+
+		let collators =
+			(100..102).map(AccountId).chain((12..14).rev().map(AccountId)).collect::<Vec<_>>();
+		assert_eq!(collators, <pallet_session::Validators<Runtime>>::get());
+
+		let collators_balances = collators.iter().map(Balances::free_balance).collect::<Vec<_>>();
+		Staking::note_authors(&collators);
+		new_session();
+
+		assert_eq!(
+			vec![0, 0, 0, 0],
+			collators
+				.iter()
+				.map(Balances::free_balance)
+				.zip(collators_balances.clone())
+				.map(|(a, b)| a - b)
+				.collect::<Vec<_>>()
+		);
+
+		Efflux::block(1);
+		assert_eq!(
+			vec![2_500 * UNIT, 0, 0, 2_500 * UNIT],
+			collators
+				.iter()
+				.map(Balances::free_balance)
+				.zip(collators_balances.clone())
+				.map(|(a, b)| a - b)
+				.collect::<Vec<_>>()
+		);
+
+		Efflux::block(1);
+		assert_eq!(
+			vec![2_500 * UNIT, 2_500 * UNIT, 2_500 * UNIT, 2_500 * UNIT],
+			collators
+				.iter()
+				.map(Balances::free_balance)
+				.zip(collators_balances.clone())
 				.map(|(a, b)| a - b)
 				.collect::<Vec<_>>()
 		);

@@ -90,7 +90,6 @@ impl crate::Config for Runtime {
 	type DepositMigrator = ();
 	type Kton = KtonMinting;
 	type MaxDeposits = frame_support::traits::ConstU32<16>;
-	type MinLockingAmount = frame_support::traits::ConstU128<UNIT>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
 	type Treasury = ();

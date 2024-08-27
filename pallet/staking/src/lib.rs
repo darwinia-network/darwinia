@@ -50,7 +50,7 @@ pub use darwinia_staking_traits::*;
 use codec::FullCodec;
 use ethabi::{Function, Param, ParamType, StateMutability, Token};
 // darwinia
-use dc_types::{Balance, Moment, UNIT};
+use dc_types::{Balance, Moment};
 // polkadot-sdk
 use frame_support::{
 	pallet_prelude::*,
@@ -68,7 +68,7 @@ use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
 /// Make it easier to call a function on a specific exposure storage.
 #[macro_export]
-macro_rules! call_on_exposure {
+macro_rules! call_on_cache_v1 {
 	($s_e:expr, <$s:ident<$t:ident>>$($f:tt)*) => {{
 		match $s_e {
 			($crate::CacheState::$s, _, _) => Ok(<$crate::ExposureCache0<$t>>$($f)*),
@@ -84,12 +84,12 @@ macro_rules! call_on_exposure {
 	(<$s:ident<$t:ident>>$($f:tt)*) => {{
 		let s = <$crate::CacheStates<$t>>::get();
 
-		$crate::call_on_exposure!(s, <$s<$t>>$($f)*)
+		$crate::call_on_cache_v1!(s, <$s<$t>>$($f)*)
 	}};
 }
 /// Make it easier to call a function on a specific collators storage.
 #[macro_export]
-macro_rules! call_on_cache {
+macro_rules! call_on_cache_v2 {
 	($s_e:expr, <$s:ident<$t:ident>>$($f:tt)*) => {{
 		match $s_e {
 			($crate::CacheState::$s, _, _) => Ok(<$crate::CollatorsCache0<$t>>$($f)*),
@@ -105,7 +105,7 @@ macro_rules! call_on_cache {
 	(<$s:ident<$t:ident>>$($f:tt)*) => {{
 		let s = <$crate::CacheStates<$t>>::get();
 
-		$crate::call_on_cache!(s, <$s<$t>>$($f)*)
+		$crate::call_on_cache_v2!(s, <$s<$t>>$($f)*)
 	}};
 }
 
@@ -398,12 +398,29 @@ pub mod pallet {
 			// There are already plenty of tasks to handle during the new session,
 			// so refrain from assigning any additional ones here.
 			if !T::ShouldEndSession::get() {
-				call_on_exposure!(<Previous<T>>::iter_keys()
-					// TODO?: make this value adjustable
+				let w2 = call_on_cache_v2!(<Previous<T>>::get())
+					.map(|cs| {
+						let mut cs = cs.into_iter();
+						let w = cs
+							.by_ref()
+							// ? make this value adjustable.
+							.take(1)
+							.fold(Weight::zero(), |acc, c| {
+								acc + Self::payout_inner(c).unwrap_or(Zero::zero())
+							});
+						let _ = call_on_cache_v2!(<Previous<T>>::put(cs.collect::<Vec<_>>()));
+
+						w
+					})
+					.unwrap_or_default();
+				let w1 = call_on_cache_v1!(<Previous<T>>::iter_keys()
+					// ? make this value adjustable.
 					.take(1)
-					.fold(Zero::zero(), |acc, e| acc
-						+ Self::payout_inner(e).unwrap_or(Zero::zero())))
-				.unwrap_or_default()
+					.fold(Weight::zero(), |acc, c| acc
+						+ Self::payout_inner(c).unwrap_or(Zero::zero())))
+				.unwrap_or_default();
+
+				w1 + w2
 			} else {
 				Zero::zero()
 			}
@@ -721,16 +738,11 @@ pub mod pallet {
 			let reward_r = amount.saturating_div(2);
 			let reward_k = amount.saturating_sub(reward_r);
 			let (b_total, map) = <AuthoredBlocksCount<T>>::take();
-			let collators_v2 = call_on_cache!(<Current<T>>::get()).unwrap_or_default();
 
 			map.into_iter().for_each(|(c, b)| {
 				let r = Perbill::from_rational(b, b_total).mul_floor(reward_r);
 
-				if collators_v2.contains(&c) {
-					T::RingStaking::distribute(Some(c), r);
-				} else {
-					<PendingRewards<T>>::mutate(c, |u| *u = u.map(|u| u + r).or(Some(r)));
-				}
+				<PendingRewards<T>>::mutate(c, |u| *u = u.map(|u| u + r).or(Some(r)));
 			});
 
 			T::KtonStaking::distribute(None, reward_k);
@@ -738,30 +750,49 @@ pub mod pallet {
 
 		/// Pay the reward to the collator and its nominators.
 		pub fn payout_inner(collator: T::AccountId) -> Result<Weight, DispatchError> {
-			let c_exposure =
-				call_on_exposure!(<Previous<T>>::take(&collator).ok_or(<Error<T>>::NoReward)?)?;
-			let c_total_payout =
-				<PendingRewards<T>>::take(&collator).ok_or(<Error<T>>::NoReward)?;
-			let mut c_payout = c_exposure.commission * c_total_payout;
-			let n_payout = c_total_payout - c_payout;
-			for n_exposure in c_exposure.nominators {
-				let n_payout = Perbill::from_rational(n_exposure.vote, c_exposure.vote) * n_payout;
-
-				if collator == n_exposure.who {
-					// If the collator nominated themselves.
-
-					c_payout += n_payout;
-				} else if T::IssuingManager::reward(&n_exposure.who, n_payout).is_ok() {
-					Self::deposit_event(Event::Payout { who: n_exposure.who, amount: n_payout });
-				} else {
-					Self::deposit_event(Event::Unpaid { who: n_exposure.who, amount: n_payout });
-				}
+			// Pay to V2.
+			if call_on_cache_v2!(<Previous<T>>::get()).unwrap_or_default().contains(&collator) {
+				T::RingStaking::distribute(
+					Some(collator.clone()),
+					<PendingRewards<T>>::take(&collator).ok_or(<Error<T>>::NoReward)?,
+				);
 			}
+			// Pay to V1.
+			else if let Ok(Some(c_exposure)) = call_on_cache_v1!(<Previous<T>>::take(&collator)) {
+				let c_total_payout =
+					<PendingRewards<T>>::take(&collator).ok_or(<Error<T>>::NoReward)?;
+				let mut c_payout = c_exposure.commission * c_total_payout;
+				let n_payout = c_total_payout - c_payout;
+				for n_exposure in c_exposure.nominators {
+					let n_payout =
+						Perbill::from_rational(n_exposure.vote, c_exposure.vote) * n_payout;
 
-			if T::IssuingManager::reward(&collator, c_payout).is_ok() {
-				Self::deposit_event(Event::Payout { who: collator, amount: c_payout });
+					if collator == n_exposure.who {
+						// If the collator nominated themselves.
+
+						c_payout += n_payout;
+					} else if T::IssuingManager::reward(&n_exposure.who, n_payout).is_ok() {
+						Self::deposit_event(Event::Payout {
+							who: n_exposure.who,
+							amount: n_payout,
+						});
+					} else {
+						Self::deposit_event(Event::Unpaid {
+							who: n_exposure.who,
+							amount: n_payout,
+						});
+					}
+				}
+
+				if T::IssuingManager::reward(&collator, c_payout).is_ok() {
+					Self::deposit_event(Event::Payout { who: collator, amount: c_payout });
+				} else {
+					Self::deposit_event(Event::Unpaid { who: collator, amount: c_payout });
+				}
 			} else {
-				Self::deposit_event(Event::Unpaid { who: collator, amount: c_payout });
+				// Impossible case.
+
+				Err(<Error<T>>::NoReward)?;
 			}
 
 			Ok(<T as Config>::WeightInfo::payout())
@@ -773,8 +804,8 @@ pub mod pallet {
 			<Pallet<T>>::shift_cache_states();
 
 			#[allow(deprecated)]
-			call_on_exposure!(<Next<T>>::remove_all(None)).ok()?;
-			call_on_cache!(<Next<T>>::kill()).ok()?;
+			call_on_cache_v1!(<Next<T>>::remove_all(None)).ok()?;
+			call_on_cache_v2!(<Next<T>>::kill()).ok()?;
 
 			let bn = <frame_system::Pallet<T>>::block_number();
 
@@ -794,7 +825,7 @@ pub mod pallet {
 
 			if cs.is_empty() {
 				// TODO: update this once the migration is completed.
-				// Possible case under the hyper election mode.
+				// Possible case under the hybrid election mode.
 
 				// Impossible case.
 				//
@@ -857,7 +888,7 @@ pub mod pallet {
 				.into_iter()
 				.take(n as _)
 				.map(|((c, e), _)| {
-					call_on_exposure!(cache_states, <Next<T>>::insert(&c, e)).map(|_| c).ok()
+					call_on_cache_v1!(cache_states, <Next<T>>::insert(&c, e)).map(|_| c).ok()
 				})
 				.collect()
 		}
@@ -895,7 +926,7 @@ pub mod pallet {
 		fn elect_from_contract(n: u32) -> Option<Vec<T::AccountId>> {
 			let winners = T::RingStaking::elect(n)?;
 
-			call_on_cache!(<Next<T>>::put(winners.clone())).ok()?;
+			call_on_cache_v2!(<Next<T>>::put(winners.clone())).ok()?;
 
 			Some(winners)
 		}
@@ -1083,13 +1114,14 @@ where
 }
 
 /// Transfer issued token from pallet-treasury.
-pub struct TreasuryIssuing<T>(PhantomData<T>);
-impl<T> IssuingManager<T> for TreasuryIssuing<T>
+pub struct TreasuryIssuing<T, R>(PhantomData<(T, R)>);
+impl<T, R> IssuingManager<T> for TreasuryIssuing<T, R>
 where
 	T: Config,
+	R: Get<Balance>,
 {
 	fn calculate_reward(_: Balance) -> Balance {
-		20_000 * UNIT
+		R::get()
 	}
 
 	fn reward(who: &T::AccountId, amount: Balance) -> DispatchResult {
