@@ -318,12 +318,12 @@ pub mod pallet {
 		pub fn migrate(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			let Some(ds) = <Deposits<T>>::take(&who) else { return Ok(()) };
-			let mut ds = ds.into_iter();
 			let now = Self::now();
-
+			let mut ds = ds.into_iter();
 			let mut to_claim = (0, Vec::new());
 			let mut to_migrate = (0, Vec::new(), Vec::new());
 
+			// Take 0~10 deposits to migrate.
 			for d in ds.by_ref().take(10) {
 				if d.in_use {
 					Err(<Error<T>>::DepositInUse)?;
@@ -355,6 +355,7 @@ pub mod pallet {
 			let ds = ds.collect::<Vec<_>>();
 
 			if !ds.is_empty() {
+				// Put the rest deposits back.
 				<Deposits<T>>::insert(&who, BoundedVec::truncate_from(ds));
 			}
 
@@ -546,6 +547,7 @@ where
 			],
 			dc,
 			total.into(),
+			// Approximately consume 160,000 gas per deposit on Koi testnet.
 			(200_000 * cnt as u64).into(),
 		)?
 		.1
