@@ -319,38 +319,44 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 			let Some(ds) = <Deposits<T>>::take(&who) else { return Ok(()) };
 			let now = Self::now();
+			let mut ds = ds.into_iter();
+			let mut to_claim = (0, Vec::new());
+			let mut to_migrate = (0, Vec::new(), Vec::new());
 
-			for c in ds.chunks(50) {
-				let mut to_claim = (0, Vec::new());
-				let mut to_migrate = (0, Vec::new(), Vec::new());
-
-				for d in c {
-					if d.in_use {
-						Err(<Error<T>>::DepositInUse)?;
-					}
-
-					if d.expired_time <= now {
-						to_claim.0 += d.value;
-						to_claim.1.push(d.id);
-					} else {
-						to_migrate.0 += d.value;
-						to_migrate.1.push(d.id);
-						to_migrate.2.push((d.value, d.start_time / 1_000, d.expired_time / 1_000));
-					}
+			// Take 0~10 deposits to migrate.
+			for d in ds.by_ref().take(10) {
+				if d.in_use {
+					Err(<Error<T>>::DepositInUse)?;
 				}
 
-				T::Ring::transfer(&account_id(), &who, to_claim.0, AllowDeath)?;
-				T::Ring::transfer(&account_id(), &T::Treasury::get(), to_migrate.0, AllowDeath)?;
-				T::DepositMigrator::migrate(who.clone(), to_migrate.0, to_migrate.2)?;
+				if d.expired_time <= now {
+					to_claim.0 += d.value;
+					to_claim.1.push(d.id);
+				} else {
+					to_migrate.0 += d.value;
+					to_migrate.1.push(d.id);
+					to_migrate.2.push((d.value, d.start_time / 1_000, d.expired_time / 1_000));
+				}
+			}
 
-				Self::deposit_event(Event::DepositsClaimed {
-					owner: who.clone(),
-					deposits: to_claim.1,
-				});
-				Self::deposit_event(Event::DepositsMigrated {
-					owner: who.clone(),
-					deposits: to_migrate.1,
-				});
+			T::Ring::transfer(&account_id(), &who, to_claim.0, AllowDeath)?;
+			T::Ring::transfer(&account_id(), &T::Treasury::get(), to_migrate.0, AllowDeath)?;
+			T::DepositMigrator::migrate(who.clone(), to_migrate.0, to_migrate.2)?;
+
+			Self::deposit_event(Event::DepositsClaimed {
+				owner: who.clone(),
+				deposits: to_claim.1,
+			});
+			Self::deposit_event(Event::DepositsMigrated {
+				owner: who.clone(),
+				deposits: to_migrate.1,
+			});
+
+			let ds = ds.collect::<Vec<_>>();
+
+			if !ds.is_empty() {
+				// Put the rest deposits back.
+				<Deposits<T>>::insert(&who, BoundedVec::truncate_from(ds));
 			}
 
 			Ok(())
@@ -497,6 +503,7 @@ where
 		total: Balance,
 		deposits: Vec<(Balance, Moment, Moment)>,
 	) -> DispatchResult {
+		let cnt = deposits.len();
 		let dc = <DepositContract<T>>::get().ok_or(<Error<T>>::InvalidDepositContract)?.into();
 		#[allow(deprecated)]
 		let exit_reason = match darwinia_ethtx_forwarder::quick_forward_transact::<T>(
@@ -540,7 +547,8 @@ where
 			],
 			dc,
 			total.into(),
-			1_000_000.into(),
+			// Approximately consume 160,000 gas per deposit on Koi testnet.
+			(200_000 * cnt as u64).into(),
 		)?
 		.1
 		{
