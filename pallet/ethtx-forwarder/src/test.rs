@@ -126,7 +126,7 @@ fn foraward_call_works() {
 				request,
 			));
 			let pallet_ethereum::Event::Executed { to, .. } =
-				System::read_events_for_pallet().into_iter().nth(0).expect("events expected");
+				System::read_events_for_pallet().into_iter().next().expect("events expected");
 
 			use ethabi::{Function, Param, ParamType, Token};
 			#[allow(deprecated)]
@@ -153,7 +153,6 @@ fn foraward_call_works() {
 				Default::default(),
 				U256::from(10_000_000u64),
 			)
-			.ok()
 			.expect("call should succeed");
 			let ExecutionInfoV2 { value, .. } = result;
 			assert_eq!(U256::from_big_endian(&value), U256::from(1000000));
