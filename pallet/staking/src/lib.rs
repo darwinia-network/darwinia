@@ -1283,7 +1283,7 @@ where
 		let rsc = rsc.into();
 
 		#[allow(deprecated)]
-		darwinia_ethtx_forwarder::quick_forward_transact::<T>(
+		if let Err(e) = darwinia_ethtx_forwarder::quick_forward_transact::<T>(
 			<T as Config>::Treasury::get().into(),
 			Function {
 				name: "distributeReward".into(),
@@ -1300,7 +1300,9 @@ where
 			rsc,
 			amount.into(),
 			1_000_000.into(),
-		);
+		) {
+			log::error!("failed to forward call due to {e:?}");
+		}
 	}
 }
 
@@ -1323,7 +1325,7 @@ where
 		let ksc = ksc.into();
 
 		#[allow(deprecated)]
-		darwinia_ethtx_forwarder::quick_forward_transact::<T>(
+		if let Err(e) = darwinia_ethtx_forwarder::quick_forward_transact::<T>(
 			<T as Config>::Treasury::get().into(),
 			Function {
 				name: "distributeRewards".into(),
@@ -1340,7 +1342,9 @@ where
 			ksc,
 			amount.into(),
 			1_000_000.into(),
-		);
+		) {
+			log::error!("failed to forward call due to {e:?}");
+		}
 	}
 }
 
