@@ -63,16 +63,28 @@ fn migrate() -> frame_support::weights::Weight {
 		migration::put_storage_value(b"DarwinaStaking", b"CacheStates", &[], s);
 	}
 
-	if let Ok(owner) =
+	if let Ok(dao) =
 		array_bytes::hex_n_into::<_, AccountId, 20>("0x7FAcDaFB282028E4B3264fB08cd633A9142514df")
 	{
 		let _ = <pallet_assets::Pallet<Runtime>>::transfer_ownership(
 			RuntimeOrigin::signed(ROOT),
 			codec::Compact(AssetIds::Kton as AssetId),
-			owner,
+			dao,
 		);
+
+		if let Ok(deposit) = array_bytes::hex_n_into::<_, AccountId, 20>(
+			"0x08837De0Ae21C270383D9F2de4DB03c7b1314632",
+		) {
+			let _ = <pallet_assets::Pallet<Runtime>>::set_team(
+				RuntimeOrigin::signed(dao),
+				codec::Compact(AssetIds::Kton as AssetId),
+				deposit,
+				deposit,
+				dao,
+			);
+		}
 	}
 
 	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(3, 103)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(7, 107)
 }
