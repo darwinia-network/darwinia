@@ -1,6 +1,11 @@
-#!/bin/bash
+#!/bin/sh
 
-# Usage: Run `bash abi-creator.sh` in the root of the metadata folder.
+# ## Usage
+#
+# ```sh
+# brew install solidity # macOS only
+# cd precompile/metadata && ./abi-generator.sh
+# ```
 
 sol_directory="sol"
 abi_directory="abi"
