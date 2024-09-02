@@ -43,5 +43,5 @@ interface Deposit {
 	function claim_with_penalty(uint8 depositId) external returns (bool);
 
 	/// @dev Migrate data to deposit contract
-	function migrate() external returns (bool);
+	function migrate(address who) external returns (bool);
 }
