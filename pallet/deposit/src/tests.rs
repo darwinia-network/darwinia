@@ -365,11 +365,11 @@ fn migrate_should_work() {
 
 		mock::set_in_use(1, true);
 
-		assert_noop!(Deposit::migrate(RuntimeOrigin::signed(1)), <Error<Runtime>>::DepositInUse);
+		assert_noop!(Deposit::migrate(RuntimeOrigin::signed(1), 1), <Error<Runtime>>::DepositInUse);
 
 		mock::set_in_use(1, false);
 
-		assert_ok!(Deposit::migrate(RuntimeOrigin::signed(1)));
+		assert_ok!(Deposit::migrate(RuntimeOrigin::signed(1), 1));
 		assert!(Deposit::deposit_of(1).is_none());
 	});
 }
