@@ -45,28 +45,5 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	if let Ok(dao) =
-		array_bytes::hex_n_into::<_, AccountId, 20>("0x7FAcDaFB282028E4B3264fB08cd633A9142514df")
-	{
-		let _ = <pallet_assets::Pallet<Runtime>>::transfer_ownership(
-			RuntimeOrigin::signed(ROOT),
-			codec::Compact(AssetIds::KKton as AssetId),
-			dao,
-		);
-
-		if let Ok(deposit) = array_bytes::hex_n_into::<_, AccountId, 20>(
-			"0x08837De0Ae21C270383D9F2de4DB03c7b1314632",
-		) {
-			let _ = <pallet_assets::Pallet<Runtime>>::set_team(
-				RuntimeOrigin::signed(dao),
-				codec::Compact(AssetIds::KKton as AssetId),
-				deposit,
-				deposit,
-				dao,
-			);
-		}
-	}
-
-	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(5, 5)
+	frame_support::weights::Weight::zero()
 }
