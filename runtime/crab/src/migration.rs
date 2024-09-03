@@ -77,7 +77,7 @@ fn migrate() -> frame_support::weights::Weight {
 		}
 	}
 	if let Ok(who) =
-		aray_bytes::hex_n_into::<_, AccountId, 20>("0xDeC9cD45e921F2AedE72f694743265af37d47Fa7")
+		array_bytes::hex_n_into::<_, AccountId, 20>("0xDeC9cD45e921F2AedE72f694743265af37d47Fa7")
 	{
 		<darwinia_deposit::DepositContract<Runtime>>::put(who);
 	}
