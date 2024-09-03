@@ -67,7 +67,14 @@
           "type": "function"
         },
         {
-          "inputs": [],
+          "inputs":
+          [
+            {
+              "internalType": "address",
+              "name": "who",
+              "type": "address"
+            }
+          ],
           "name": "migrate",
           "outputs":
           [
@@ -119,7 +126,7 @@
               "_0": "returns true on success, false otherwise."
             }
           },
-          "migrate()":
+          "migrate(address)":
           {
             "details": "Migrate data to deposit contract"
           }
@@ -132,9 +139,9 @@
         "claim()": "4e71d92d",
         "claim_with_penalty(uint8)": "fa04a9bf",
         "lock(uint256,uint8)": "998e4242",
-        "migrate()": "8fd3ab80"
+        "migrate(address)": "ce5494bb"
       }
     }
   },
-  "version": "0.8.17+commit.8df45f5f.Linux.g++"
+  "version": "0.8.25+commit.b61c2a91.Darwin.appleclang"
 }

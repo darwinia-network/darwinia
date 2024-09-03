@@ -64,7 +64,7 @@ fn migrate() -> frame_support::weights::Weight {
 	}
 
 	if let Ok(dao) =
-		array_bytes::hex_n_into::<_, AccountId, 20>("0x7FAcDaFB282028E4B3264fB08cd633A9142514df")
+		array_bytes::hex_n_into::<_, AccountId, 20>("0x08837De0Ae21C270383D9F2de4DB03c7b1314632")
 	{
 		let _ = <pallet_assets::Pallet<Runtime>>::transfer_ownership(
 			RuntimeOrigin::signed(ROOT),
@@ -73,7 +73,7 @@ fn migrate() -> frame_support::weights::Weight {
 		);
 
 		if let Ok(deposit) = array_bytes::hex_n_into::<_, AccountId, 20>(
-			"0x08837De0Ae21C270383D9F2de4DB03c7b1314632",
+			"0xDeC9cD45e921F2AedE72f694743265af37d47Fa7",
 		) {
 			let _ = <pallet_assets::Pallet<Runtime>>::set_team(
 				RuntimeOrigin::signed(dao),
@@ -83,6 +83,16 @@ fn migrate() -> frame_support::weights::Weight {
 				dao,
 			);
 		}
+	}
+	if let Ok(who) =
+		array_bytes::hex_n_into::<_, AccountId, 20>("0xDeC9cD45e921F2AedE72f694743265af37d47Fa7")
+	{
+		<darwinia_deposit::DepositContract<Runtime>>::put(who);
+	}
+	if let Ok(who) =
+		array_bytes::hex_n_into::<_, AccountId, 20>("0xb037E75fE2BFA42DdDC17BB90963Dafe10A5Dd11")
+	{
+		<darwinia_staking::RingStakingContract<Runtime>>::put(who);
 	}
 
 	// frame_support::weights::Weight::zero()

@@ -117,6 +117,7 @@ mod benchmarks {
 	#[benchmark]
 	fn migrate() {
 		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
+		let a_ = a.clone();
 		let max_deposits = T::MaxDeposits::get();
 
 		<Pallet<T>>::set_deposit_contract(RawOrigin::Root.into(), a.clone()).unwrap();
@@ -133,7 +134,7 @@ mod benchmarks {
 		});
 
 		#[extrinsic_call]
-		_(RawOrigin::Signed(a));
+		_(RawOrigin::Signed(a), a_);
 	}
 
 	#[benchmark]

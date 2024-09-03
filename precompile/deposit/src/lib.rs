@@ -44,8 +44,10 @@ pub struct Deposit<Runtime>(PhantomData<Runtime>);
 impl<Runtime> Deposit<Runtime>
 where
 	Runtime: darwinia_deposit::Config + pallet_evm::Config,
-	Runtime::RuntimeCall: Dispatchable<PostInfo = PostDispatchInfo> + GetDispatchInfo,
-	Runtime::RuntimeCall: From<darwinia_deposit::Call<Runtime>>,
+	Runtime::RuntimeCall: From<darwinia_deposit::Call<Runtime>>
+		+ Dispatchable<PostInfo = PostDispatchInfo>
+		+ GetDispatchInfo,
+	<Runtime as frame_system::Config>::AccountId: From<H160>,
 	<<Runtime as frame_system::Config>::RuntimeCall as Dispatchable>::RuntimeOrigin: OriginTrait,
 	<Runtime::RuntimeCall as Dispatchable>::RuntimeOrigin: From<Option<Runtime::AccountId>>,
 	AccountIdOf<Runtime>: From<H160>,
@@ -89,13 +91,13 @@ where
 		Ok(true)
 	}
 
-	#[precompile::public("migrate()")]
-	fn migrate(handle: &mut impl PrecompileHandle) -> EvmResult<bool> {
+	#[precompile::public("migrate(address)")]
+	fn migrate(handle: &mut impl PrecompileHandle, who: Address) -> EvmResult<bool> {
 		let origin: AccountIdOf<Runtime> = handle.context().caller.into();
 		RuntimeHelper::<Runtime>::try_dispatch(
 			handle,
 			Some(origin).into(),
-			darwinia_deposit::Call::<Runtime>::migrate {},
+			darwinia_deposit::Call::<Runtime>::migrate { who: H160::from(who).into() },
 		)?;
 		Ok(true)
 	}

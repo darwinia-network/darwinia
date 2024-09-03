@@ -312,11 +312,12 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Migration data to deposit contract.
+		/// Migrate the specified account's data to deposit contract.
 		#[pallet::call_index(3)]
 		#[pallet::weight(<T as Config>::WeightInfo::migrate())]
-		pub fn migrate(origin: OriginFor<T>) -> DispatchResult {
-			let who = ensure_signed(origin)?;
+		pub fn migrate(origin: OriginFor<T>, who: T::AccountId) -> DispatchResult {
+			ensure_signed(origin)?;
+
 			let Some(ds) = <Deposits<T>>::take(&who) else { return Ok(()) };
 			let now = Self::now();
 			let mut ds = ds.into_iter();
