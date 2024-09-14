@@ -22,7 +22,7 @@ pragma solidity >=0.8.3;
 address constant STATE_STORAGE_ADDRESS = 0x0000000000000000000000000000000000000400;
 
 /// @dev The StateStorage contract instance
-StateStorage constant DEPOSIT_CONTRACT = StateStorage(STATE_STORAGE_ADDRESS);
+StateStorage constant STATE_STORAGE_CONTRACT = StateStorage(STATE_STORAGE_ADDRESS);
 
 /// @title StateStorage
 /// @notice The interface of the state storage precompile
