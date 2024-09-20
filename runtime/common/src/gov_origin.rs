@@ -51,3 +51,8 @@ pub type All<T> = EnsureProportionAtLeast<AccountId, T, 1, 1>;
 /// An [`AccountId20`] generated from b"root".
 pub const ROOT: AccountId20 =
 	AccountId20([0x72, 0x6f, 0x6f, 0x74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+
+/// Deposit contract `0x46275d29113f065c2aac262f34C7a3d8a8B7377D`.
+pub const KTON_ADMIN: AccountId20 = AccountId20([
+	70, 39, 93, 41, 17, 63, 6, 92, 42, 172, 38, 47, 52, 199, 163, 216, 168, 183, 55, 125,
+]);
