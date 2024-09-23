@@ -78,7 +78,7 @@ type Service<RuntimeApi> = sc_service::PartialComponents<
 	sc_consensus::DefaultImportQueue<Block>,
 	sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi>>,
 	(
-		fc_db::Backend<Block>,
+		fc_db::Backend<Block, FullClient<RuntimeApi>>,
 		Option<fc_rpc_core::types::FilterPool>,
 		fc_rpc_core::types::FeeHistoryCache,
 		fc_rpc_core::types::FeeHistoryCacheLimit,
@@ -308,6 +308,7 @@ where
 		)
 		.await
 		.map_err(|e| sc_service::Error::Application(Box::new(e) as Box<_>))?;
+	let frontier_backend = Arc::new(frontier_backend);
 	let validator = parachain_config.role.is_authority();
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let import_queue_service = import_queue.service();
@@ -382,7 +383,6 @@ where
 		let pool = transaction_pool.clone();
 		let network = network.clone();
 		let filter_pool = filter_pool.clone();
-		let frontier_backend = frontier_backend.clone();
 		let overrides = overrides;
 		let fee_history_cache = fee_history_cache.clone();
 		let max_past_logs = eth_rpc_config.max_past_logs;
@@ -411,9 +411,9 @@ where
 				network: network.clone(),
 				sync: sync_service.clone(),
 				filter_pool: filter_pool.clone(),
-				frontier_backend: match frontier_backend.clone() {
-					fc_db::Backend::KeyValue(bd) => Arc::new(bd),
-					fc_db::Backend::Sql(bd) => Arc::new(bd),
+				frontier_backend: match &*frontier_backend {
+					fc_db::Backend::KeyValue(bd) => bd.clone(),
+					fc_db::Backend::Sql(bd) => bd.clone(),
 				},
 				max_past_logs,
 				fee_history_cache: fee_history_cache.clone(),
@@ -754,6 +754,7 @@ where
 		);
 	}
 
+	let frontier_backend = Arc::new(frontier_backend);
 	let force_authoring = config.force_authoring;
 	let backoff_authoring_blocks = None::<()>;
 	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
@@ -917,9 +918,9 @@ where
 				network: network.clone(),
 				sync: sync_service.clone(),
 				filter_pool: filter_pool.clone(),
-				frontier_backend: match frontier_backend.clone() {
-					fc_db::Backend::KeyValue(bd) => Arc::new(bd),
-					fc_db::Backend::Sql(bd) => Arc::new(bd),
+				frontier_backend: match &*frontier_backend {
+					fc_db::Backend::KeyValue(bd) => bd.clone(),
+					fc_db::Backend::Sql(bd) => bd.clone(),
 				},
 				max_past_logs,
 				fee_history_cache: fee_history_cache.clone(),
