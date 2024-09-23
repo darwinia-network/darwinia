@@ -53,7 +53,7 @@ pub fn spawn_tasks<B, BE, C>(
 	task_manager: &TaskManager,
 	client: Arc<C>,
 	backend: Arc<BE>,
-	frontier_backend: fc_db::Backend<B>,
+	frontier_backend: Arc<fc_db::Backend<B, C>>,
 	filter_pool: Option<FilterPool>,
 	overrides: Arc<OverrideHandle<B>>,
 	fee_history_cache: FeeHistoryCache,
@@ -79,7 +79,7 @@ where
 	BE: 'static + sc_client_api::backend::Backend<B>,
 	BE::State: sc_client_api::backend::StateBackend<Hashing>,
 {
-	match frontier_backend.clone() {
+	match &*frontier_backend {
 		fc_db::Backend::KeyValue(bd) => {
 			task_manager.spawn_essential_handle().spawn(
 				"frontier-mapping-sync-worker",
@@ -90,7 +90,7 @@ where
 					client.clone(),
 					backend.clone(),
 					overrides.clone(),
-					Arc::new(bd),
+					bd.clone(),
 					3,
 					0,
 					fc_mapping_sync::SyncStrategy::Parachain,
@@ -107,10 +107,10 @@ where
 				fc_mapping_sync::sql::SyncWorker::run(
 					client.clone(),
 					backend.clone(),
-					Arc::new(bd),
+					bd.clone(),
 					client.import_notification_stream(),
 					fc_mapping_sync::sql::SyncWorkerConfig {
-						read_notification_timeout: Duration::from_secs(10),
+						read_notification_timeout: Duration::from_secs(30),
 						check_indexed_blocks_interval: Duration::from_secs(60),
 					},
 					fc_mapping_sync::SyncStrategy::Parachain,
@@ -168,9 +168,9 @@ where
 				let (debug_task, debug_requester) = DebugHandler::task(
 					Arc::clone(&client),
 					Arc::clone(&backend),
-					match frontier_backend {
-						fc_db::Backend::KeyValue(bd) => Arc::new(bd),
-						fc_db::Backend::Sql(bd) => Arc::new(bd),
+					match &*frontier_backend {
+						fc_db::Backend::KeyValue(bd) => bd.clone(),
+						fc_db::Backend::Sql(bd) => bd.clone(),
 					},
 					Arc::clone(&permit_pool),
 					Arc::clone(&overrides),
@@ -216,7 +216,7 @@ pub(crate) fn backend<B, BE, C>(
 	client: Arc<C>,
 	config: &sc_service::Configuration,
 	eth_rpc_config: EthRpcConfig,
-) -> Result<fc_db::Backend<B>, String>
+) -> Result<fc_db::Backend<B, C>, String>
 where
 	B: 'static + sp_runtime::traits::Block<Hash = Hash>,
 	BE: 'static + sc_client_api::backend::Backend<B>,
@@ -229,9 +229,9 @@ where
 	let db_config_dir = db_config_dir(config);
 	let overrides = fc_storage::overrides_handle(client.clone());
 	match eth_rpc_config.frontier_backend_type {
-		FrontierBackendType::KeyValue => Ok(fc_db::Backend::<B>::KeyValue(
+		FrontierBackendType::KeyValue => Ok(fc_db::Backend::<B, C>::KeyValue(Arc::new(
 			fc_db::kv::Backend::open(Arc::clone(&client), &config.database, &db_config_dir)?,
-		)),
+		))),
 		FrontierBackendType::Sql => {
 			let db_path = db_config_dir.join("sql");
 			std::fs::create_dir_all(&db_path).expect("failed creating sql db directory");
@@ -251,7 +251,7 @@ where
 				overrides,
 			))
 			.unwrap_or_else(|err| panic!("failed creating sql backend: {:?}", err));
-			Ok(fc_db::Backend::<B>::Sql(backend))
+			Ok(fc_db::Backend::<B, C>::Sql(Arc::new(backend)))
 		},
 	}
 }
