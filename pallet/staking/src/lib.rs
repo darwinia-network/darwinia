@@ -816,7 +816,8 @@ pub mod pallet {
 			// let cs_from_contract = Self::elect_from_contract(n1)?;
 			// let cs_from_pallet = Self::elect(n2)?;
 			let cs_from_contract = Self::elect_from_contract(n1).unwrap_or_default();
-			let cs_from_pallet = Self::elect(n2).unwrap_or_default()
+			let cs_from_pallet = Self::elect(n2)
+				.unwrap_or_default()
 				.into_iter()
 				.filter(|c| !cs_from_contract.contains(c))
 				.collect();

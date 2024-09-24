@@ -269,8 +269,10 @@ impl crate::Election<AccountId> for RingStaking {
 					if Session::set_keys(
 						RuntimeOrigin::signed(who),
 						SessionKeys { uint: i.into() },
-						Vec::new()
-					).is_ok() {
+						Vec::new(),
+					)
+					.is_ok()
+					{
 						who
 					} else {
 						AccountId(0)
