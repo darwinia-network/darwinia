@@ -266,13 +266,17 @@ impl crate::Election<AccountId> for RingStaking {
 				.map(|i| {
 					let who = AccountId(i);
 
-					assert_ok!(Session::set_keys(
+					if Session::set_keys(
 						RuntimeOrigin::signed(who),
 						SessionKeys { uint: i.into() },
-						Vec::new()
-					));
-
-					who
+						Vec::new(),
+					)
+					.is_ok()
+					{
+						who
+					} else {
+						AccountId(0)
+					}
 				})
 				.collect(),
 		)

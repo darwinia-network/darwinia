@@ -86,6 +86,16 @@ runtime-benchmarks = [
 	"frame-system/runtime-benchmarks",
 ]
 
+try-runtime = [
+	# frontier
+	"pallet-evm/try-runtime",
+
+	# polkadot-sdk
+	"frame-support/try-runtime",
+	"frame-system/try-runtime",
+	"sp-runtime/try-runtime",
+]
+
 evm-tracing = [
 	# moonbeam
 	"moonbeam-evm-tracer",
