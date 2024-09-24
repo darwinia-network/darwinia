@@ -291,6 +291,7 @@ try-runtime = [
 	# darwinia
 	"darwinia-asset-limit/try-runtime",
 	"darwinia-deposit/try-runtime",
+	"darwinia-ethtx-forwarder/try-runtime",
 	"darwinia-staking/try-runtime",
 
 	# moonbeam

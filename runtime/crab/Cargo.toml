@@ -277,6 +277,7 @@ try-runtime = [
 	# darwinia
 	"darwinia-account-migration/try-runtime",
 	"darwinia-deposit/try-runtime",
+	"darwinia-ethtx-forwarder/try-runtime",
 	"darwinia-staking/try-runtime",
 
 	# frontier

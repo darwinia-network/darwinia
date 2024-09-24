@@ -96,6 +96,9 @@ runtime-benchmarks = [
 ]
 
 try-runtime = [
+	# darwinia
+	"darwinia-ethtx-forwarder/try-runtime",
+
 	# polkadot-sdk
 	"frame-support/try-runtime",
 	"frame-system/try-runtime",
