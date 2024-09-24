@@ -846,6 +846,24 @@ fn hybrid_election_should_work() {
 }
 
 #[test]
+fn dedup_election_should_work() {
+	ExtBuilder::default().collator_count(10).build().execute_with(|| {
+		let who = AccountId(100);
+		let _ = <pallet_balances::Pallet<Runtime>>::deposit_creating(&who, 100 as _);
+
+		assert_ok!(Staking::stake(RuntimeOrigin::signed(who), 100 as _, Vec::new()));
+		assert_ok!(Staking::collect(RuntimeOrigin::signed(who), Perbill::zero()));
+		assert_ok!(Staking::nominate(RuntimeOrigin::signed(who), who));
+
+		Timestamp::set_timestamp(30 * DAY_IN_MILLIS);
+		new_session();
+		new_session();
+
+		assert_eq!(vec![who], <pallet_session::Validators<Runtime>>::get());
+	});
+}
+
+#[test]
 fn hybrid_payout_should_work() {
 	ExtBuilder::default().collator_count(10).inflation_type(1).build().execute_with(|| {
 		mock::preset_collator_wait_list(10);

@@ -92,6 +92,8 @@ fn migrate() -> frame_support::weights::Weight {
 		<darwinia_staking::RingStakingContract<Runtime>>::put(who);
 	}
 
+	darwinia_staking::MigrationStartPoint::put(darwinia_staking::now());
+
 	// frame_support::weights::Weight::zero()
 	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(7, 107)
 }
