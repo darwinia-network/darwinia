@@ -1,9 +1,9 @@
 [config]
 default_to_workspace = false
-skip_core_tasks      = true
-skip_git_env_info    = true
-skip_rust_env_info   = true
-skip_crate_env_info  = true
+# skip_core_tasks      = true
+# skip_git_env_info    = true
+# skip_rust_env_info   = true
+# skip_crate_env_info  = true
 
 [env]
 CHAIN             = "all"
@@ -61,30 +61,30 @@ alias = "build-darwinia"
 
 # Build release nodes.
 
-[tasks.build-release]
+[tasks.build-release-node]
 extend = "build-node"
 env    = { "EXTRA_ARGS" = "-r" }
 
-[tasks.br]
-alias = "build-release"
+[tasks.brn]
+alias = "build-release-node"
 
 [tasks.build-release-koi]
-extend = "build-release"
-env    = { "CHAIN" = "koi" }
+extend = "build-node"
+env    = { "CHAIN" = "koi", EXTRA_ARGS = "-r" }
 
 [tasks.brk]
 alias = "build-release-koi"
 
 [tasks.build-release-crab]
-extend = "build-release"
-env    = { "CHAIN" = "crab" }
+extend = "build-node"
+env    = { "CHAIN" = "crab", EXTRA_ARGS = "-r" }
 
 [tasks.brc]
 alias = "build-release-crab"
 
 [tasks.build-release-darwinia]
-extend = "build-release"
-env    = { "CHAIN" = "darwinia" }
+extend = "build-node"
+env    = { "CHAIN" = "darwinia", EXTRA_ARGS = "-r" }
 
 [tasks.brd]
 alias = "build-release-darwinia"
@@ -95,26 +95,26 @@ alias = "build-release-darwinia"
 extend = "build-node"
 env    = { "EXTRA_ARGS" = "--features runtime-benchmarks -r" }
 
-[tasks.bbn]
+[tasks.bb]
 alias = "build-benchmark"
 
 [tasks.build-benchmark-koi]
-extend = "build-benchmark"
-env    = { "CHAIN" = "koi" }
+extend = "build-node"
+env    = { "CHAIN" = "koi", "EXTRA_ARGS" = "--features runtime-benchmarks -r" }
 
 [tasks.bbk]
 alias = "build-benchmark-koi"
 
 [tasks.build-benchmark-crab]
-extend = "build-benchmark"
-env    = { "CHAIN" = "crab" }
+extend = "build-node"
+env    = { "CHAIN" = "crab", "EXTRA_ARGS" = "--features runtime-benchmarks -r" }
 
 [tasks.bbc]
 alias = "build-benchmark-crab"
 
 [tasks.build-benchmark-darwinia]
-extend = "build-benchmark"
-env    = { "CHAIN" = "darwinia" }
+extend = "build-node"
+env    = { "CHAIN" = "darwinia", "EXTRA_ARGS" = "--features runtime-benchmarks -r" }
 
 [tasks.bbd]
 alias = "build-benchmark-darwinia"
@@ -130,14 +130,14 @@ args    = [
 	"${CHAIN}-runtime",
 	"@@split(EXTRA_ARGS, )",
 	"--",
-	"--alice",
-	"--collator",
+	"--unsafe-rpc-external",
+	"--tmp",
 	"--rpc-cors",
 	"all",
 	"--rpc-methods",
 	"unsafe",
-	"--tmp",
-	"--unsafe-rpc-external",
+	"--alice",
+	"--collator",
 	"--chain",
 	"${CHAIN}-dev"
 ]
@@ -165,23 +165,28 @@ alias = "run-dev-darwinia"
 
 # Run release dev nodes.
 
+# This can not be used directly, as it requires a chain to be specified.
+[tasks.run-release]
+extend = "run-dev"
+env    = { "EXTRA_ARGS" = "-r" }
+
 [tasks.run-release-dev-koi]
-extend = "run-release"
-env    = { "CHAIN" = "koi" }
+extend = "run-dev"
+env    = { "CHAIN" = "koi", "EXTRA_ARGS" = "-r" }
 
 [tasks.rrdk]
 alias = "run-release-dev-koi"
 
 [tasks.run-release-dev-crab]
-extend = "run-release"
-env    = { "CHAIN" = "crab" }
+extend = "run-dev"
+env    = { "CHAIN" = "crab", "EXTRA_ARGS" = "-r" }
 
 [tasks.rrdc]
 alias = "run-release-dev-crab"
 
 [tasks.run-release-dev-darwinia]
-extend = "run-release"
-env    = { "CHAIN" = "darwinia" }
+extend = "run-dev"
+env    = { "CHAIN" = "darwinia", "EXTRA_ARGS" = "-r" }
 
 [tasks.rrdd]
 alias = "run-release-dev-darwinia"

@@ -100,9 +100,9 @@ cargo build --locked -p darwinia --features all-runtime
 # Build the debug node with Koi runtime. (for Darwinia and Crab, replace the `koi` with the lowercase chain name)
 ## With cargo-make.
 ### Long version.
-cargo make build-node-koi
+cargo make build-koi
 ### Short version.
-cargo make bnk
+cargo make bk
 ## Without cargo-make.
 cargo build --locked -p darwinia --features koi-runtime
 
@@ -113,20 +113,130 @@ cargo make build-release-node
 ### Short version.
 cargo make brn
 ## Without cargo-make.
-cargo build -r --locked -p darwinia --features all-runtime
+cargo build --locked -p darwinia --features all-runtime -r
 
 # Build the release node with Koi runtime. (for Darwinia and Crab, replace the `koi` with the lowercase chain name)
 ## With cargo-make.
 ### Long version.
-cargo make build-release-node-koi
+cargo make build-release-koi
 ### Short version.
-cargo make brnk
+cargo make brk
 ## Without cargo-make.
-cargo build -r --locked -p darwinia --features koi-runtime
+cargo build --locked -p darwinia --features koi-runtime -r
+
+# Build the benchmark node with all runtime.
+## With cargo-make.
+### Long version.
+cargo make build-benchmark
+### Short version.
+cargo make bb
+## Without cargo-make.
+cargo build --locked -p darwinia --features all-runtime --features runtime-benchmarks -r
+
+# Build the benchmark node with Koi runtime. (for Darwinia and Crab, replace the `koi` with the lowercase chain name)
+## With cargo-make.
+### Long version.
+cargo make build-benchmark-koi
+### Short version.
+cargo make bbk
+## Without cargo-make.
+cargo build --locked -p darwinia --features koi-runtime --features runtime-benchmarks -r
 
 # Run dev Koi node. (for Darwinia and Crab, replace the `koi` with the lowercase chain name)
 ## With cargo-make.
 ### Long version.
 cargo make run-dev-koi
+### Short version.
+cargo make rdk
+## Without cargo-make.
+cargo run --locked -p darwinia --features koi-runtime -- --unsafe-rpc-external --tmp --rpc-cors all --rpc-methods unsafe --alice --collator --chain koi-dev
 
+# Run release dev Koi node. (for Darwinia and Crab, replace the `koi` with the lowercase chain name)
+## With cargo-make.
+### Long version.
+cargo make run-release-dev-koi
+### Short version.
+cargo make rrdk
+## Without cargo-make.
+cargo run --locked -p darwinia --features koi-runtime -r -- --unsafe-rpc-external --tmp --rpc-cors all --rpc-methods unsafe --alice --collator --chain koi-dev
+
+# Run benchmark Koi node. (for Darwinia and Crab, replace the `koi` with the lowercase chain name)
+## With cargo-make.
+### Long version.
+cargo make run-benchmark-koi
+### Short version.
+cargo make rbk
+## Without cargo-make.
+cargo run --locked -p darwinia --features koi-runtime --features runtime-benchmarks -r -- benchmark pallet --header .maintain/license-header --heap-pages 4096 --chain koi-dev --output runtime/koi/src/weights --pallets \* --extrinsic \* --steps 50 --repeat 20
+```
+
+## Public RPC Endpoint
+
+### Darwinia
+
+- `://rpc.darwinia.network` (`https` or `wss`)
+- `://darwinia-rpc.dwellir.com` (`https` or `wss`)
+
+### Crab
+
+- `://crab-rpc.darwinia.network` (`https` or `wss`)
+- `://darwiniacrab-rpc.dwellir.com` (`https` or `wss`)
+
+### Koi
+
+- `://koi-rpc.darwinia.network` (`https` or `wss`)
+
+### Pangoro
+
+- https://fraa-flashbox-2871-rpc.a.stagenet.tanssi.network
+
+## EVM Specification
+
+### Chain ID
+
+- [Koi - `701`](https://chainlist.org/chain/701)
+- [Crab - `44`](https://chainlist.org/chain/44)
+- [Darwinia - `46`](https://chainlist.org/chain/46)
+
+### Tracing Node Endpoint
+
+- Darwinia: `ws://c1.darwinia2.darwinia.network:9944`
+- Crab: `ws://c1.crab2.darwinia.network:9944`
+- Koi: `ws://g3.testnets.darwinia.network:9942`
+
+### Devnet Built-in Accounts
+
+```json
+[
+	{
+		"name": "Alith",
+		"p": "0x02509540919faacf9ab52146c9aa40db68172d83777250b28e4679176e49ccdd9f",
+		"s": "0x5fb92d6e98884f76de468fa3f6278f8807c48bebc13595d45af5bdc4da702133"
+	},
+	{
+		"name": "Baltathar",
+		"p": "0x033bc19e36ff1673910575b6727a974a9abd80c9a875d41ab3e2648dbfb9e4b518",
+		"s": "0x8075991ce870b93a8870eca0c0f91913d12f47948ca0fd25b49c6fa7cdbeee8b"
+	},
+	{
+		"name": "Charleth",
+		"p": "0x0234637bdc0e89b5d46543bcbf8edff329d2702bc995e27e9af4b1ba009a3c2a5e",
+		"s": "0x0b6e18cafb6ed99687ec547bd28139cafdd2bffe70e6b688025de6b445aa5c5b"
+	},
+	{
+		"name": "Dorothy",
+		"p": "0x02a00d60b2b408c2a14c5d70cdd2c205db8985ef737a7e55ad20ea32cc9e7c417c",
+		"s": "0x39539ab1876910bbf3a223d84a29e28f1cb4e2e456503e7e91ed39b2e7223d68"
+	},
+	{
+		"name": "Ethan",
+		"p": "0x025cdc005b752651cd3f728fb9192182acb3a9c89e19072cbd5b03f3ee1f1b3ffa",
+		"s": "0x7dce9bc8babb68fec1409be38c8e1a52650206a7ed90ff956ae8a6d15eeaaef4"
+	},
+	{
+		"name": "Faith",
+		"p": "0x037964b6c9d546da4646ada28a99e34acaa1d14e7aba861a9055f9bd200c8abf74",
+		"s": "0xb9d2ea9a615f3165812e8d44de0d24da9bbd164b65c4f0573e1ce2c8dbd9c8df"
+	}
+]
 ```
