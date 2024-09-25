@@ -40,7 +40,7 @@ jobs:
         uses: ./.github/actions/build
         with:
           package: darwinia
-          features: all-natives
+          features: all-runtime
           cache_prefix: staging-${{ env.CACHE_VERSION }}
           enable_cache: true
           enable_tar_bz2: true

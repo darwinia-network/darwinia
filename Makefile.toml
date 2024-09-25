@@ -1,136 +1,241 @@
 [config]
 default_to_workspace = false
+skip_core_tasks      = true
+skip_git_env_info    = true
+skip_rust_env_info   = true
+skip_crate_env_info  = true
 
 [env]
-WASM_BUILD_WORKSPACE_HINT = "${CARGO_MAKE_WORKING_DIRECTORY}"
+CHAIN             = "all"
+NODE_COMPILE_ARGS = "--locked -p darwinia --features"
 
-[tasks.check]
-args    = ["check"]
-command = "cargo"
-env     = { "SKIP_WASM_BUILD" = "1" }
+# Checks.
+
+[tasks.fmt]
+toolchain = "nightly"
+command   = "cargo"
+args      = ["fmt"]
 
 [tasks.clippy]
-args    = ["clippy"]
-command = "cargo"
 env     = { "SKIP_WASM_BUILD" = "1" }
+command = "cargo"
+args    = ["clippy"]
 
-[tasks.common-build]
-args = [
-	"--features",
-	"--locked",
-	"--no-default-features",
-	"--release",
-	"-p",
-	"@@split(FEATURES, )",
+[tasks.c]
+alias = "clippy"
+
+# Build nodes.
+
+[tasks.build-node]
+command = "cargo"
+args    = [
 	"build",
-	"darwinia",
+	"@@split(NODE_COMPILE_ARGS, )",
+	"${CHAIN}-runtime",
+	"@@split(EXTRA_ARGS, )",
 ]
-[tasks.common-run]
-args = [
+
+[tasks.bn]
+alias = "build-node"
+
+[tasks.build-koi]
+extend = "build-node"
+env    = { "CHAIN" = "koi" }
+
+[tasks.bk]
+alias = "build-koi"
+
+[tasks.build-crab]
+extend = "build-node"
+env    = { "CHAIN" = "crab" }
+
+[tasks.bc]
+alias = "build-crab"
+
+[tasks.build-darwinia]
+extend = "build-node"
+env    = { "CHAIN" = "darwinia" }
+
+[tasks.bd]
+alias = "build-darwinia"
+
+# Build release nodes.
+
+[tasks.build-release]
+extend = "build-node"
+env    = { "EXTRA_ARGS" = "-r" }
+
+[tasks.br]
+alias = "build-release"
+
+[tasks.build-release-koi]
+extend = "build-release"
+env    = { "CHAIN" = "koi" }
+
+[tasks.brk]
+alias = "build-release-koi"
+
+[tasks.build-release-crab]
+extend = "build-release"
+env    = { "CHAIN" = "crab" }
+
+[tasks.brc]
+alias = "build-release-crab"
+
+[tasks.build-release-darwinia]
+extend = "build-release"
+env    = { "CHAIN" = "darwinia" }
+
+[tasks.brd]
+alias = "build-release-darwinia"
+
+# Build benchmark nodes.
+
+[tasks.build-benchmark]
+extend = "build-node"
+env    = { "EXTRA_ARGS" = "--features runtime-benchmarks -r" }
+
+[tasks.bbn]
+alias = "build-benchmark"
+
+[tasks.build-benchmark-koi]
+extend = "build-benchmark"
+env    = { "CHAIN" = "koi" }
+
+[tasks.bbk]
+alias = "build-benchmark-koi"
+
+[tasks.build-benchmark-crab]
+extend = "build-benchmark"
+env    = { "CHAIN" = "crab" }
+
+[tasks.bbc]
+alias = "build-benchmark-crab"
+
+[tasks.build-benchmark-darwinia]
+extend = "build-benchmark"
+env    = { "CHAIN" = "darwinia" }
+
+[tasks.bbd]
+alias = "build-benchmark-darwinia"
+
+# Run dev nodes.
+
+# This can not be used directly, as it requires a chain to be specified.
+[tasks.run-dev]
+command = "cargo"
+args    = [
+	"run",
+	"@@split(NODE_COMPILE_ARGS, )",
+	"${CHAIN}-runtime",
+	"@@split(EXTRA_ARGS, )",
+	"--",
 	"--alice",
 	"--collator",
 	"--rpc-cors",
+	"all",
 	"--rpc-methods",
+	"unsafe",
 	"--tmp",
 	"--unsafe-rpc-external",
-	"--unsafe-ws-external",
-	"@@split(FLAGS, )",
-	"all",
-	"unsafe",
+	"--chain",
+	"${CHAIN}-dev"
 ]
 
-[tasks.build-darwinia]
-command = "cargo"
-env     = { "FEATURES" = "darwinia-native" }
-extend  = "common-build"
-[tasks.cbuild-darwinia]
-command = "cross"
-env     = { "FEATURES" = "darwinia-native" }
-extend  = "common-build"
-[tasks.run-darwinia]
-command = "target/release/darwinia"
-env     = { "FLAGS" = "--chain darwinia-dev" }
-extend  = "common-run"
+[tasks.run-dev-koi]
+extend = "run-dev"
+env    = { "CHAIN" = "koi" }
 
-[tasks.build-crab]
-command = "cargo"
-env     = { "FEATURES" = "crab-native" }
-extend  = "common-build"
-[tasks.cbuild-crab]
-command = "cross"
-env     = { "FEATURES" = "crab-native" }
-extend  = "common-build"
-[tasks.run-crab]
-command = "target/release/darwinia"
-env     = { "FLAGS" = "--chain crab-dev" }
-extend  = "common-run"
+[tasks.rdk]
+alias = "run-dev-koi"
 
-[tasks.build-koi]
-command = "cargo"
-env     = { "FEATURES" = "koi-native" }
-extend  = "common-build"
-[tasks.cbuild-koi]
-command = "cross"
-env     = { "FEATURES" = "koi-native" }
-extend  = "common-build"
-[tasks.run-koi]
-command = "target/release/darwinia"
-env     = { "FLAGS" = "--chain koi-dev" }
-extend  = "common-run"
+[tasks.run-dev-crab]
+extend = "run-dev"
+env    = { "CHAIN" = "crab" }
 
-# Build for runtime benchmarks.
-[tasks.build-bench]
-command = "cargo"
-env     = { "FEATURES" = "all-natives,runtime-benchmarks" }
-extend  = "common-build"
-[tasks.cbuild-bench]
-command = "cross"
-env     = { "FEATURES" = "all-natives,runtime-benchmarks" }
-extend  = "common-build"
+[tasks.rdc]
+alias = "run-dev-crab"
 
-# Build for try runtime.
-[tasks.build-trt]
-command = "cargo"
-env     = { "FEATURES" = "all-natives,try-runtime" }
-extend  = "common-build"
-[tasks.cbuild-trt]
-command = "cross"
-env     = { "FEATURES" = "all-natives,try-runtime" }
-extend  = "common-build"
+[tasks.run-dev-darwinia]
+extend = "run-dev"
+env    = { "CHAIN" = "darwinia" }
 
-# Build for all runtimes.
-[tasks.build-ar]
-command = "cargo"
-env     = { "FEATURES" = "all-natives" }
-extend  = "common-build"
-[tasks.cbuild-ar]
-command = "cross"
-env     = { "FEATURES" = "all-natives" }
-extend  = "common-build"
+[tasks.rdd]
+alias = "run-dev-darwinia"
 
-# Build for testnets.
-[tasks.build-tns]
-command = "cargo"
-env     = { "FEATURES" = "koi-native" }
-extend  = "common-build"
-[tasks.cbuild-tns]
-command = "cross"
-env     = { "FEATURES" = "koi-native" }
-extend  = "common-build"
+# Run release dev nodes.
 
-# Build for mainnets.
-[tasks.build-mns]
-command = "cargo"
-env     = { "FEATURES" = "crab-native,darwinia-native" }
-extend  = "common-build"
-[tasks.cbuild-mns]
-command = "cross"
-env     = { "FEATURES" = "crab-native,darwinia-native" }
-extend  = "common-build"
+[tasks.run-release-dev-koi]
+extend = "run-release"
+env    = { "CHAIN" = "koi" }
 
-[tasks.build-all]
-args    = ["--all-features", "--locked", "--release", "build"]
+[tasks.rrdk]
+alias = "run-release-dev-koi"
+
+[tasks.run-release-dev-crab]
+extend = "run-release"
+env    = { "CHAIN" = "crab" }
+
+[tasks.rrdc]
+alias = "run-release-dev-crab"
+
+[tasks.run-release-dev-darwinia]
+extend = "run-release"
+env    = { "CHAIN" = "darwinia" }
+
+[tasks.rrdd]
+alias = "run-release-dev-darwinia"
+
+# Run benchmark nodes.
+
+# This can not be used directly, as it requires a chain to be specified.
+[tasks.run-benchmark]
 command = "cargo"
-[tasks.cbuild-all]
-args    = ["--all-features", "--locked", "--release", "build"]
-command = "cross"
+args    = [
+	"run",
+	"@@split(NODE_COMPILE_ARGS, )",
+	"${CHAIN}-runtime",
+	"--features",
+	"runtime-benchmarks",
+	"-r",
+	"--",
+	"benchmark",
+	"pallet",
+	"--header",
+	".maintain/license-header",
+	"--heap-pages",
+	"4096",
+	"--chain",
+	"${CHAIN}-dev",
+	"--output",
+	"runtime/${CHAIN}/src/weights",
+	"--pallet",
+	"*",
+	"--extrinsic",
+	"*",
+	"--steps",
+	"50",
+	"--repeat",
+	"20"
+]
+
+[tasks.run-benchmark-koi]
+extend = "run-benchmark"
+env    = { "CHAIN" = "koi" }
+
+[tasks.rbk]
+alias = "run-benchmark-koi"
+
+[tasks.run-benchmark-crab]
+extend = "run-benchmark"
+env    = { "CHAIN" = "crab" }
+
+[tasks.rbc]
+alias = "run-benchmark-crab"
+
+[tasks.run-benchmark-darwinia]
+extend = "run-benchmark"
+env    = { "CHAIN" = "darwinia" }
+
+[tasks.rbd]
+alias = "run-benchmark-darwinia"

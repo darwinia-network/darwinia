@@ -22,11 +22,11 @@ pub mod frontier;
 
 mod instant_finalize;
 
-#[cfg(feature = "crab-native")]
+#[cfg(feature = "crab-runtime")]
 pub use crab_runtime::RuntimeApi as CrabRuntimeApi;
-#[cfg(feature = "darwinia-native")]
+#[cfg(feature = "darwinia-runtime")]
 pub use darwinia_runtime::RuntimeApi as DarwiniaRuntimeApi;
-#[cfg(feature = "koi-native")]
+#[cfg(feature = "koi-runtime")]
 pub use koi_runtime::RuntimeApi as KoiRuntimeApi;
 
 // std

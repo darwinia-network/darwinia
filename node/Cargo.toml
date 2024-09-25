@@ -97,27 +97,10 @@ substrate-prometheus-endpoint         = { workspace = true }
 xcm                                   = { workspace = true, features = ["std"] }
 
 [features]
-default = [
-	"crab-native",
-	"darwinia-native",
-]
-
-all-natives = [
-	# darwinia
-	"crab-native",
-	"darwinia-native",
-	"koi-native",
-]
-crab-native = [
+all-runtime = [
 	# darwinia
 	"crab-runtime",
-]
-darwinia-native = [
-	# darwinia
 	"darwinia-runtime",
-]
-koi-native = [
-	# darwinia
 	"koi-runtime",
 ]
 

@@ -30,16 +30,16 @@ jobs:
       matrix:
         node:
           - network: mainnet
-            features: darwinia-native,crab-native
+            features: darwinia-runtime,crab-runtime
             bz2: true
           - network: mainnet
-            features: darwinia-native,crab-native,evm-tracing
+            features: darwinia-runtime,crab-runtime,evm-tracing
             type: tracing
           - network: testnet
-            features: koi-native
+            features: koi-runtime
             bz2: true
           - network: testnet
-            features: koi-native,evm-tracing
+            features: koi-runtime,evm-tracing
             type: tracing
     steps:
       - name: Free disk space

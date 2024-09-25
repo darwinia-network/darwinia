@@ -237,7 +237,7 @@ pub fn run() -> Result<()> {
 	/// Creates partial components for the runtimes that are supported by the benchmarks.
 	macro_rules! construct_benchmark_partials {
 		($config:expr, $cli:ident, |$partials:ident| $code:expr) => {{
-			#[cfg(feature = "crab-native")]
+			#[cfg(feature = "crab-runtime")]
 			if $config.chain_spec.is_crab() {
 				let $partials = service::new_partial::<CrabRuntimeApi>(
 					&$config,
@@ -247,7 +247,7 @@ pub fn run() -> Result<()> {
 				return $code;
 			}
 
-			#[cfg(feature = "darwinia-native")]
+			#[cfg(feature = "darwinia-runtime")]
 			if $config.chain_spec.is_darwinia() {
 				let $partials = service::new_partial::<DarwiniaRuntimeApi>(
 					&$config,
@@ -257,7 +257,7 @@ pub fn run() -> Result<()> {
 				return $code;
 			}
 
-			#[cfg(feature = "koi-native")]
+			#[cfg(feature = "koi-runtime")]
 			if $config.chain_spec.is_koi() {
 				let $partials = service::new_partial::<KoiRuntimeApi>(
 					&$config,
@@ -267,7 +267,7 @@ pub fn run() -> Result<()> {
 				return $code;
 			}
 
-			panic!("No feature(crab-native, darwinia-native, koi-native) is enabled!");
+			panic!("No feature(crab-runtime, darwinia-runtime, koi-runtime) is enabled!");
 		}};
 	}
 
@@ -278,7 +278,7 @@ pub fn run() -> Result<()> {
 
 			set_default_ss58_version(chain_spec);
 
-			#[cfg(feature = "crab-native")]
+			#[cfg(feature = "crab-runtime")]
 			if chain_spec.is_crab() {
 				return runner.async_run(|$config| {
 					let $components = service::new_partial::<CrabRuntimeApi>(
@@ -291,7 +291,7 @@ pub fn run() -> Result<()> {
 				});
 			}
 
-			#[cfg(feature = "darwinia-native")]
+			#[cfg(feature = "darwinia-runtime")]
 			if chain_spec.is_darwinia() {
 				return runner.async_run(|$config| {
 					let $components = service::new_partial::<DarwiniaRuntimeApi>(
@@ -304,7 +304,7 @@ pub fn run() -> Result<()> {
 				});
 			}
 
-			#[cfg(feature = "koi-native")]
+			#[cfg(feature = "koi-runtime")]
 			if chain_spec.is_koi() {
 				return runner.async_run(|$config| {
 					let $components = service::new_partial::<KoiRuntimeApi>(
@@ -317,7 +317,7 @@ pub fn run() -> Result<()> {
 				});
 			}
 
-			panic!("No feature(crab-native, darwinia-native, koi-native) is enabled!");
+			panic!("No feature(crab-runtime, darwinia-runtime, koi-runtime) is enabled!");
 		}}
 	}
 
@@ -503,7 +503,7 @@ pub fn run() -> Result<()> {
 				);
 
 				if chain_spec.is_dev() {
-					#[cfg(feature = "crab-native")]
+					#[cfg(feature = "crab-runtime")]
 					if chain_spec.is_crab() {
 						return service::start_dev_node::<CrabRuntimeApi>(
 							config,
@@ -513,7 +513,7 @@ pub fn run() -> Result<()> {
 						.map_err(Into::into);
 					}
 
-					#[cfg(feature = "darwinia-native")]
+					#[cfg(feature = "darwinia-runtime")]
 					if chain_spec.is_darwinia() {
 						return service::start_dev_node::<DarwiniaRuntimeApi>(
 							config,
@@ -523,7 +523,7 @@ pub fn run() -> Result<()> {
 						.map_err(Into::into)
 					}
 
-					#[cfg(feature = "koi-native")]
+					#[cfg(feature = "koi-runtime")]
 					if chain_spec.is_koi() {
 						return service::start_dev_node::<KoiRuntimeApi>(
 							config,
@@ -538,7 +538,7 @@ pub fn run() -> Result<()> {
 					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
 						.map_err(|err| format!("Relay chain argument error: {}", err))?;
 
-				#[cfg(feature = "crab-native")]
+				#[cfg(feature = "crab-runtime")]
 				if chain_spec.is_crab() {
 					return service::start_parachain_node::<CrabRuntimeApi>(
 						config,
@@ -554,7 +554,7 @@ pub fn run() -> Result<()> {
 					.map_err(Into::into);
 				}
 
-				#[cfg(feature = "darwinia-native")]
+				#[cfg(feature = "darwinia-runtime")]
 				if chain_spec.is_darwinia() {
 					return service::start_parachain_node::<DarwiniaRuntimeApi>(
 						config,
@@ -570,7 +570,7 @@ pub fn run() -> Result<()> {
 					.map_err(Into::into);
 				}
 
-				#[cfg(feature = "koi-native")]
+				#[cfg(feature = "koi-runtime")]
 				if chain_spec.is_koi() {
 					return service::start_parachain_node::<KoiRuntimeApi>(
 						config,
@@ -586,7 +586,7 @@ pub fn run() -> Result<()> {
 					.map_err(Into::into);
 				}
 
-				panic!("No feature(crab-native, darwinia-native, koi-native) is enabled!");
+				panic!("No feature(crab-runtime, darwinia-runtime, koi-runtime) is enabled!");
 			})
 		},
 	}
@@ -604,23 +604,23 @@ fn load_spec(id: &str) -> StdResult<Box<dyn ChainSpecT>, String> {
 		id
 	};
 	let chain_spec = match id.to_lowercase().as_str() {
-		#[cfg(feature = "crab-native")]
+		#[cfg(feature = "crab-runtime")]
 		"crab" => Box::new(crab::config()),
-		#[cfg(feature = "crab-native")]
+		#[cfg(feature = "crab-runtime")]
 		"crab-genesis" => Box::new(crab::genesis_config()),
-		#[cfg(feature = "crab-native")]
+		#[cfg(feature = "crab-runtime")]
 		"crab-dev" => Box::new(crab::development_config()),
-		#[cfg(feature = "darwinia-native")]
+		#[cfg(feature = "darwinia-runtime")]
 		"darwinia" => Box::new(darwinia::config()),
-		#[cfg(feature = "darwinia-native")]
+		#[cfg(feature = "darwinia-runtime")]
 		"darwinia-genesis" => Box::new(darwinia::genesis_config()),
-		#[cfg(feature = "darwinia-native")]
+		#[cfg(feature = "darwinia-runtime")]
 		"darwinia-dev" => Box::new(darwinia::development_config()),
-		#[cfg(feature = "koi-native")]
+		#[cfg(feature = "koi-runtime")]
 		"koi" => Box::new(koi::config()),
-		#[cfg(feature = "koi-native")]
+		#[cfg(feature = "koi-runtime")]
 		"koi-genesis" => Box::new(koi::genesis_config()),
-		#[cfg(feature = "koi-native")]
+		#[cfg(feature = "koi-runtime")]
 		"koi-dev" => Box::new(koi::development_config()),
 		_ => Box::new(ChainSpec::from_json_file(PathBuf::from(id))?),
 	};

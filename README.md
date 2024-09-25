@@ -44,16 +44,28 @@
 
 [![Release](https://img.shields.io/github/v/release/darwinia-network/darwinia)](https://github.com/darwinia-network/darwinia/releases)
 
+This contains the latest release of `Darwinia2` and `Crab2`.
+
 ### Testnet
 
 [![Release](https://img.shields.io/github/v/release/darwinia-network/darwinia?include_prereleases)](https://github.com/darwinia-network/darwinia/releases)
 
+This contains the latest release of `Koi`.
+
 ### Additional
 
-https://github.com/darwinia-network/darwinia-release
+There is a "stable" release channel, which will only be updated if the on-chain runtime upgrade is performed. The "stable" release channel is available at [darwinia-release](https://github.com/darwinia-network/darwinia-release).
+
+Collators/Validators should focus on the latest [release](#release) channel.
+
+RPC/Service suppliers should focus on the "stable" release channel.
 
 ## Documentation
 
+- [Darwinia Home](https://darwinia.network)
+- [Darwinia Docs](https://docs.darwinia.network)
+- [Darwinia Improvement Proposals - DIPs](https://github.com/darwinia-network/DIPs)
+- [Rust Reference Docs](#TODO)
 
 ## Contribution
 
