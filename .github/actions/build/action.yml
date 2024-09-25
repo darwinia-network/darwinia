@@ -63,7 +63,6 @@ runs:
             darwinia-network/build-tool:latest \
               cargo b --release --locked \
                 -p darwinia \
-                --no-default-features \
                 --features=$FEATURES
         else
           mkdir -p target/release
