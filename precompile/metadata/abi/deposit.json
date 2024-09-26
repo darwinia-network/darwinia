@@ -65,27 +65,6 @@
           ],
           "stateMutability": "nonpayable",
           "type": "function"
-        },
-        {
-          "inputs":
-          [
-            {
-              "internalType": "address",
-              "name": "who",
-              "type": "address"
-            }
-          ],
-          "name": "migrate",
-          "outputs":
-          [
-            {
-              "internalType": "bool",
-              "name": "",
-              "type": "bool"
-            }
-          ],
-          "stateMutability": "nonpayable",
-          "type": "function"
         }
       ],
       "devdoc":
@@ -125,10 +104,6 @@
             {
               "_0": "returns true on success, false otherwise."
             }
-          },
-          "migrate(address)":
-          {
-            "details": "Migrate data to deposit contract"
           }
         },
         "title": "Deposit",
@@ -138,8 +113,7 @@
       {
         "claim()": "4e71d92d",
         "claim_with_penalty(uint8)": "fa04a9bf",
-        "lock(uint256,uint8)": "998e4242",
-        "migrate(address)": "ce5494bb"
+        "lock(uint256,uint8)": "998e4242"
       }
     }
   },
