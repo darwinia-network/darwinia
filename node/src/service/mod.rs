@@ -40,6 +40,9 @@ use futures::FutureExt;
 // darwinia
 use dc_primitives::*;
 // polkadot-sdk
+use cumulus_primitives_core::PersistedValidationData;
+use cumulus_primitives_parachain_inherent::ParachainInherentData;
+use cumulus_test_relay_sproof_builder::RelayStateSproofBuilder;
 use sc_client_api::{Backend, HeaderBackend};
 use sc_consensus::ImportQueue;
 use sc_network::NetworkBlock;
@@ -905,7 +908,19 @@ where
 				*timestamp,
 				slot_duration,
 			);
-			Ok((slot, timestamp))
+			let (relay_parent_storage_root, relay_chain_state) =
+				RelayStateSproofBuilder::default().into_state_root_and_proof();
+			let parachain_inherent_data = ParachainInherentData {
+				validation_data: PersistedValidationData {
+					relay_parent_number: u32::MAX,
+					relay_parent_storage_root,
+					..Default::default()
+				},
+				relay_chain_state,
+				downward_messages: Default::default(),
+				horizontal_messages: Default::default(),
+			};
+			Ok((slot, timestamp, parachain_inherent_data))
 		};
 
 		Box::new(move |deny_unsafe, subscription_task_executor| {

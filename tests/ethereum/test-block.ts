@@ -9,6 +9,17 @@ describe("Test Block RPC", () => {
 		expect(await web3.eth.getBlockNumber()).to.not.equal(0);
 	});
 
+	it("Get block by tags", async () => {
+		let earliest = await web3.eth.getBlock("earliest");
+		expect(earliest.number).to.equal(0);
+
+		let latest = await web3.eth.getBlock("latest");
+		expect(latest.number).to.be.a("number");
+
+		let pending = await web3.eth.getBlock("pending");
+		expect(pending.number).to.be.a("number");
+	});
+
 	it("Get block by hash", async () => {
 		let latest_block = await web3.eth.getBlock("latest");
 		let block = await web3.eth.getBlock(latest_block.hash);
