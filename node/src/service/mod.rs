@@ -397,7 +397,8 @@ where
 				SlotDuration::from_millis(RELAY_CHAIN_SLOT_DURATION_MILLIS as u64),
 			);
 
-			// Create a mocked parachain inherent data provider to pass all validations in the parachain system. Without this, the pending functionality will fail.
+			// Create a mocked parachain inherent data provider to pass all validations in the
+			// parachain system. Without this, the pending functionality will fail.
 			let mut state_proof_builder =
 				cumulus_test_relay_sproof_builder::RelayStateSproofBuilder::default();
 			state_proof_builder.para_id = para_id;
@@ -922,7 +923,8 @@ where
 				timestamp.timestamp(),
 				SlotDuration::from_millis(RELAY_CHAIN_SLOT_DURATION_MILLIS as u64),
 			);
-			// Create a mocked parachain inherent data provider to pass all validations in the parachain system. Without this, the pending functionality will fail.
+			// Create a mocked parachain inherent data provider to pass all validations in the
+			// parachain system. Without this, the pending functionality will fail.
 			let mut state_proof_builder =
 				cumulus_test_relay_sproof_builder::RelayStateSproofBuilder::default();
 			state_proof_builder.para_id = para_id;
