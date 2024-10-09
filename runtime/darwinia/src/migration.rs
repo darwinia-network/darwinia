@@ -100,5 +100,9 @@ fn migrate() -> frame_support::weights::Weight {
 		log::info!("successfully set KTON staking contract");
 	}
 
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(7, 9)
+	if let Ok(k) = array_bytes::hex2bytes("0x1da53b775b270400e7e61ed5cbc5a146ab1160471b1418779239ba8e2b847e42d53de13b56da115d3342f0588bc3614108837de0ae21c270383d9f2de4db03c7b1314632314d8c74970d627c9b4f4c42e06688a9f7a2866905a810c4b1a49b8cb0dca3f1bc953905609869b6e9d4fb794cd36c5f") {
+		System::kill_storage(RuntimeOrigin::root(), vec![k]);
+	}
+
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(7, 10)
 }
