@@ -904,7 +904,7 @@ where
 		prometheus_registry,
 	);
 	let rpc_extensions_builder = {
-		let client_for_cidp = client.clone();
+		let client = client.clone();
 		let pool = transaction_pool.clone();
 		let network = network.clone();
 		let filter_pool = filter_pool;
@@ -946,7 +946,7 @@ where
 
 		Box::new(move |deny_unsafe, subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {
-				client: client_for_cidp.clone(),
+				client: client.clone(),
 				pool: pool.clone(),
 				graph: pool.pool().clone(),
 				deny_unsafe,
