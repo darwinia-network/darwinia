@@ -45,47 +45,5 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	// dawinia
-	use darwinia_staking::CacheState;
-	if let Some(s) = migration::get_storage_value::<(CacheState, CacheState, CacheState)>(
-		b"DarwinaStaking",
-		b"ExposureCacheStates",
-		&[],
-	) {
-		migration::put_storage_value(b"DarwinaStaking", b"CacheStates", &[], s);
-	}
-
-	if let Ok(dao) =
-		array_bytes::hex_n_into::<_, AccountId, 20>("0x08837De0Ae21C270383D9F2de4DB03c7b1314632")
-	{
-		let _ = <pallet_assets::Pallet<Runtime>>::transfer_ownership(
-			RuntimeOrigin::signed(ROOT),
-			codec::Compact(AssetIds::CKton as AssetId),
-			dao,
-		);
-
-		if let Ok(deposit) = array_bytes::hex_n_into::<_, AccountId, 20>(
-			"0x46275d29113f065c2aac262f34C7a3d8a8B7377D",
-		) {
-			let _ = <pallet_assets::Pallet<Runtime>>::set_team(
-				RuntimeOrigin::signed(dao),
-				codec::Compact(AssetIds::CKton as AssetId),
-				deposit,
-				deposit,
-				dao,
-			);
-
-			<darwinia_deposit::DepositContract<Runtime>>::put(deposit);
-		}
-	}
-	if let Ok(who) =
-		array_bytes::hex_n_into::<_, AccountId, 20>("0xa4fFAC7A5Da311D724eD47393848f694Baee7930")
-	{
-		<darwinia_staking::RingStakingContract<Runtime>>::put(who);
-	}
-
-	<darwinia_staking::MigrationStartPoint<Runtime>>::put(darwinia_staking::now::<Runtime>());
-
-	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(7, 7)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 0)
 }

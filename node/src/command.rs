@@ -234,7 +234,7 @@ impl CliConfiguration<Self> for RelayChainCli {
 /// Parse command line arguments into service configuration.
 pub fn run() -> Result<()> {
 	#[cfg(feature = "runtime-benchmarks")]
-	/// Creates partial components for the runtimes that are supported by the benchmarks.
+	/// Creates partial components for the runtime that are supported by the benchmarks.
 	macro_rules! construct_benchmark_partials {
 		($config:expr, $cli:ident, |$partials:ident| $code:expr) => {{
 			#[cfg(feature = "crab-runtime")]

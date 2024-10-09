@@ -45,22 +45,14 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	let _ = migration::clear_storage_prefix(
-		b"BridgeKusamaGrandpa",
-		b"ImportedHeaders",
-		&[],
-		Some(100),
-		None,
-	);
-
-	// dawinia
+	// darwinia
 	use darwinia_staking::CacheState;
 	if let Some(s) = migration::get_storage_value::<(CacheState, CacheState, CacheState)>(
-		b"DarwinaStaking",
+		b"DarwiniaStaking",
 		b"ExposureCacheStates",
 		&[],
 	) {
-		migration::put_storage_value(b"DarwinaStaking", b"CacheStates", &[], s);
+		migration::put_storage_value(b"DarwiniaStaking", b"CacheStates", &[], s);
 	}
 
 	if let Ok(dao) =
@@ -85,15 +77,28 @@ fn migrate() -> frame_support::weights::Weight {
 
 			<darwinia_deposit::DepositContract<Runtime>>::put(deposit);
 		}
+
+		log::info!("successfully transfer ownership of KTON to KTON DAO");
 	}
 	if let Ok(who) =
 		array_bytes::hex_n_into::<_, AccountId, 20>("0xa4fFAC7A5Da311D724eD47393848f694Baee7930")
 	{
 		<darwinia_staking::RingStakingContract<Runtime>>::put(who);
+
+		log::info!("successfully set RING staking contract");
 	}
 
 	<darwinia_staking::MigrationStartPoint<Runtime>>::put(darwinia_staking::now::<Runtime>());
 
-	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(7, 107)
+	if let Some(k) = migration::take_storage_value::<AccountId>(
+		b"DarwiniaStaking",
+		b"KtonRewardDistributionContract",
+		&[],
+	) {
+		<darwinia_staking::KtonStakingContract<Runtime>>::put(k);
+
+		log::info!("successfully set KTON staking contract");
+	}
+
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(7, 9)
 }
