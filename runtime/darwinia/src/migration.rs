@@ -45,22 +45,14 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	let _ = migration::clear_storage_prefix(
-		b"BridgeKusamaGrandpa",
-		b"ImportedHeaders",
-		&[],
-		Some(100),
-		None,
-	);
-
-	// dawinia
+	// darwinia
 	use darwinia_staking::CacheState;
 	if let Some(s) = migration::get_storage_value::<(CacheState, CacheState, CacheState)>(
-		b"DarwinaStaking",
+		b"DarwiniaStaking",
 		b"ExposureCacheStates",
 		&[],
 	) {
-		migration::put_storage_value(b"DarwinaStaking", b"CacheStates", &[], s);
+		migration::put_storage_value(b"DarwiniaStaking", b"CacheStates", &[], s);
 	}
 
 	if let Ok(dao) =
@@ -85,15 +77,32 @@ fn migrate() -> frame_support::weights::Weight {
 
 			<darwinia_deposit::DepositContract<Runtime>>::put(deposit);
 		}
+
+		log::info!("successfully transfer ownership of KTON to KTON DAO");
 	}
 	if let Ok(who) =
 		array_bytes::hex_n_into::<_, AccountId, 20>("0xa4fFAC7A5Da311D724eD47393848f694Baee7930")
 	{
 		<darwinia_staking::RingStakingContract<Runtime>>::put(who);
+
+		log::info!("successfully set RING staking contract");
 	}
 
 	<darwinia_staking::MigrationStartPoint<Runtime>>::put(darwinia_staking::now::<Runtime>());
 
-	// frame_support::weights::Weight::zero()
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(7, 107)
+	if let Some(k) = migration::take_storage_value::<AccountId>(
+		b"DarwiniaStaking",
+		b"KtonRewardDistributionContract",
+		&[],
+	) {
+		<darwinia_staking::KtonStakingContract<Runtime>>::put(k);
+
+		log::info!("successfully set KTON staking contract");
+	}
+
+	if let Ok(k) = array_bytes::hex2bytes("0x1da53b775b270400e7e61ed5cbc5a146ab1160471b1418779239ba8e2b847e42d53de13b56da115d3342f0588bc3614108837de0ae21c270383d9f2de4db03c7b1314632314d8c74970d627c9b4f4c42e06688a9f7a2866905a810c4b1a49b8cb0dca3f1bc953905609869b6e9d4fb794cd36c5f") {
+		let _ = System::kill_storage(RuntimeOrigin::root(), vec![k]);
+	}
+
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(7, 10)
 }
