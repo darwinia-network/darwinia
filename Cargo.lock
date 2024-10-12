@@ -2639,6 +2639,7 @@ dependencies = [
  "cumulus-primitives-core",
  "cumulus-primitives-parachain-inherent",
  "cumulus-relay-chain-interface",
+ "cumulus-test-relay-sproof-builder",
  "darwinia-runtime",
  "dc-primitives",
  "fc-api",

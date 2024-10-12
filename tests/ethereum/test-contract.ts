@@ -38,6 +38,17 @@ describe("Test contract", () => {
 		expect(await inc.methods.number().call()).to.be.equal("5");
 	});
 
+	step("Get default number in pending block", async function () {
+		const result = await web3.eth.call(
+			{
+				to: inc.options.address,
+				data: inc.methods.number().encodeABI(),
+			},
+			"pending"
+		);
+		expect(web3.utils.hexToNumberString(result)).to.be.equal("5");
+	});
+
 	step("Increase number", async function () {
 		let receipt = await inc.methods.increment(3).send();
 		transact_hash = receipt.transactionHash;

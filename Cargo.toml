@@ -107,6 +107,7 @@ cumulus-primitives-core                    = { git = "https://github.com/darwini
 cumulus-primitives-parachain-inherent      = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2", default-features = false }
 cumulus-primitives-utility                 = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2", default-features = false }
 cumulus-relay-chain-interface              = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2" }
+cumulus-test-relay-sproof-builder          = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2" }
 frame-benchmarking                         = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2", default-features = false }
 frame-benchmarking-cli                     = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2" }
 frame-executive                            = { git = "https://github.com/darwinia-network/polkadot-sdk", branch = "release-polkadot-v1.7.2", default-features = false }

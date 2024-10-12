@@ -43,6 +43,7 @@ use dc_primitives::*;
 use sc_client_api::{Backend, HeaderBackend};
 use sc_consensus::ImportQueue;
 use sc_network::NetworkBlock;
+use sp_consensus_aura::{Slot, SlotDuration};
 use sp_core::Encode;
 
 #[cfg(all(feature = "runtime-benchmarks", feature = "evm-tracing"))]
@@ -389,16 +390,34 @@ where
 		let collator = parachain_config.role.is_authority();
 		let eth_rpc_config = eth_rpc_config.clone();
 		let sync_service = sync_service.clone();
-		let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 		let pending_create_inherent_data_providers = move |_, ()| async move {
-			let current = sp_timestamp::InherentDataProvider::from_system_time();
-			let next_slot = current.timestamp().as_millis() + slot_duration.as_millis();
-			let timestamp = sp_timestamp::InherentDataProvider::new(next_slot.into());
-			let slot = sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
-				*timestamp,
-				slot_duration,
+			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+			let relay_chain_slot = Slot::from_timestamp(
+				timestamp.timestamp(),
+				SlotDuration::from_millis(RELAY_CHAIN_SLOT_DURATION_MILLIS as u64),
 			);
-			Ok((slot, timestamp))
+
+			// Create a mocked parachain inherent data provider to pass all validations in the
+			// parachain system. Without this, the pending functionality will fail.
+			let mut state_proof_builder =
+				cumulus_test_relay_sproof_builder::RelayStateSproofBuilder::default();
+			state_proof_builder.para_id = para_id;
+			state_proof_builder.current_slot = relay_chain_slot;
+			state_proof_builder.included_para_head = Some(polkadot_primitives::HeadData(vec![]));
+			let (relay_parent_storage_root, relay_chain_state) =
+				state_proof_builder.into_state_root_and_proof();
+			let parachain_inherent_data =
+				cumulus_primitives_parachain_inherent::ParachainInherentData {
+					validation_data: cumulus_primitives_core::PersistedValidationData {
+						relay_parent_number: u32::MAX,
+						relay_parent_storage_root,
+						..Default::default()
+					},
+					relay_chain_state,
+					downward_messages: Default::default(),
+					horizontal_messages: Default::default(),
+				};
+			Ok((timestamp, parachain_inherent_data))
 		};
 
 		Box::new(move |deny_unsafe, subscription_task_executor| {
@@ -897,15 +916,34 @@ where
 		let collator = config.role.is_authority();
 		let eth_rpc_config = eth_rpc_config.clone();
 		let sync_service = sync_service.clone();
+
 		let pending_create_inherent_data_providers = move |_, ()| async move {
-			let current = sp_timestamp::InherentDataProvider::from_system_time();
-			let next_slot = current.timestamp().as_millis() + slot_duration.as_millis();
-			let timestamp = sp_timestamp::InherentDataProvider::new(next_slot.into());
-			let slot = sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
-				*timestamp,
-				slot_duration,
+			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+			let relay_chain_slot = Slot::from_timestamp(
+				timestamp.timestamp(),
+				SlotDuration::from_millis(RELAY_CHAIN_SLOT_DURATION_MILLIS as u64),
 			);
-			Ok((slot, timestamp))
+			// Create a mocked parachain inherent data provider to pass all validations in the
+			// parachain system. Without this, the pending functionality will fail.
+			let mut state_proof_builder =
+				cumulus_test_relay_sproof_builder::RelayStateSproofBuilder::default();
+			state_proof_builder.para_id = para_id;
+			state_proof_builder.current_slot = relay_chain_slot;
+			state_proof_builder.included_para_head = Some(polkadot_primitives::HeadData(vec![]));
+			let (relay_parent_storage_root, relay_chain_state) =
+				state_proof_builder.into_state_root_and_proof();
+			let parachain_inherent_data =
+				cumulus_primitives_parachain_inherent::ParachainInherentData {
+					validation_data: cumulus_primitives_core::PersistedValidationData {
+						relay_parent_number: u32::MAX,
+						relay_parent_storage_root,
+						..Default::default()
+					},
+					relay_chain_state,
+					downward_messages: Default::default(),
+					horizontal_messages: Default::default(),
+				};
+			Ok((timestamp, parachain_inherent_data))
 		};
 
 		Box::new(move |deny_unsafe, subscription_task_executor| {
