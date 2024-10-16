@@ -17,28 +17,18 @@ validator = true
 chain           = "koi-genesis"
 force_decorator = "generic-evm"
 id              = 2105
-[parachains.collator]
+[[parachains.collators]]
 args     = ["--database=paritydb", "--force-authoring", "-lparachain=debug"]
 command  = "tmp/darwinia"
-name     = "C1"
+name     = "c1"
 rpc_port = 10000
-
-[[parachains]]
-chain           = "koi-genesis"
-force_decorator = "generic-evm"
-id              = 2105
-[parachains.collator]
+[[parachains.collators]]
 args     = ["--database=paritydb", "--force-authoring", "-lparachain=debug"]
 command  = "tmp/darwinia"
-name     = "C2"
+name     = "c2"
 rpc_port = 10001
-
-[[parachains]]
-chain           = "koi-genesis"
-force_decorator = "generic-evm"
-id              = 2105
-[parachains.collator]
+[[parachains.collators]]
 args     = ["--database=paritydb", "--force-authoring", "-lparachain=debug"]
 command  = "tmp/darwinia"
-name     = "C3"
+name     = "c3"
 rpc_port = 10002

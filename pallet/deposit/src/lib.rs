@@ -38,16 +38,11 @@ mod weights;
 pub use weights::WeightInfo;
 
 // core
-use core::{
-	cmp::Ordering::{Equal, Greater, Less},
-	marker::PhantomData,
-	ops::ControlFlow::{Break, Continue},
-};
+use core::marker::PhantomData;
 // crates.io
 use codec::FullCodec;
 use ethabi::{Function, Param, ParamType, StateMutability, Token};
 // darwinia
-use dc_inflation::MILLISECS_PER_YEAR;
 use dc_types::{Balance, Moment};
 // frontier
 use fp_evm::{CallOrCreateInfo, ExitReason};
@@ -60,7 +55,7 @@ use frame_support::{
 use frame_system::pallet_prelude::*;
 use sp_core::H160;
 use sp_runtime::traits::AccountIdConversion;
-use sp_std::prelude::*;
+use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -72,14 +67,11 @@ pub mod pallet {
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
-		/// Weight information for extrinsics in this pallet.
+		/// Weight information for extrinsic in this pallet.
 		type WeightInfo: WeightInfo;
 
 		/// RING asset.
 		type Ring: Currency<Self::AccountId, Balance = Balance>;
-
-		/// KTON asset.
-		type Kton: SimpleAsset<AccountId = Self::AccountId>;
 
 		/// Deposit contract migrator.
 		type DepositMigrator: MigrateToContract<Self>;
@@ -87,57 +79,22 @@ pub mod pallet {
 		/// Treasury account.
 		#[pallet::constant]
 		type Treasury: Get<Self::AccountId>;
-
-		/// Maximum deposit count.
-		///
-		/// In currently design, this should not be greater than `u16::MAX`.
-		#[pallet::constant]
-		type MaxDeposits: Get<u32>;
 	}
 
 	#[allow(missing_docs)]
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// A new deposit has been created.
-		DepositCreated {
-			owner: T::AccountId,
-			deposit_id: DepositId,
-			value: Balance,
-			start_time: Moment,
-			expired_time: Moment,
-			kton_reward: Balance,
-		},
 		/// Expired deposits have been claimed.
 		DepositsClaimed { owner: T::AccountId, deposits: Vec<DepositId> },
-		/// An unexpired deposit has been claimed by paying the KTON penalty.
-		DepositClaimedWithPenalty {
-			owner: T::AccountId,
-			deposit_id: DepositId,
-			kton_penalty: Balance,
-		},
 		/// Deposits have been migrated.
 		DepositsMigrated { owner: T::AccountId, deposits: Vec<DepositId> },
 	}
 
 	#[pallet::error]
 	pub enum Error<T> {
-		/// Lock at least for a specific amount.
-		LockAtLeastSome,
-		/// Lock at least for one month.
-		LockAtLeastOneMonth,
-		/// Lock at most for thirty-six months.
-		LockAtMostThirtySixMonths,
-		/// Exceed maximum deposit count.
-		ExceedMaxDeposits,
-		/// Deposit not found.
-		DepositNotFound,
-		/// Deposit is in use.
-		DepositInUse,
-		/// Deposit is not in use.
-		DepositNotInUse,
-		/// Deposit is already expired.
-		DepositAlreadyExpired,
+		/// No deposit.
+		NoDeposit,
 		/// Invalid deposit contract.
 		InvalidDepositContract,
 		/// Migration interaction with deposit contract failed.
@@ -150,7 +107,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn deposit_of)]
 	pub type Deposits<T: Config> =
-		StorageMap<_, Blake2_128Concat, T::AccountId, BoundedVec<Deposit, T::MaxDeposits>>;
+		StorageMap<_, Blake2_128Concat, T::AccountId, BoundedVec<Deposit, ConstU32<512>>>;
 
 	// Deposit contract address.
 	#[pallet::storage]
@@ -159,204 +116,73 @@ pub mod pallet {
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
+	#[pallet::hooks]
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		fn on_idle(_: BlockNumberFor<T>, mut remaining_weight: Weight) -> Weight {
+			// At least 1 read weight is required.
+			#[cfg(not(test))]
+			if let Some(rw) = remaining_weight.checked_sub(&T::DbWeight::get().reads(1)) {
+				remaining_weight = rw;
+			} else {
+				return remaining_weight;
+			}
+
+			#[cfg(test)]
+			let wt = Weight::zero().add_ref_time(10);
+			#[cfg(not(test))]
+			let wt = <T as Config>::WeightInfo::migrate_for();
+			let mut ds_to_migrate = BTreeMap::<T::AccountId, (Vec<Deposit>, usize)>::new();
+
+			'outer: for (w, ds) in <Deposits<T>>::iter() {
+				for _ in 0..ds.len().div_ceil(10) {
+					if let Some(rw) = remaining_weight.checked_sub(&wt) {
+						remaining_weight = rw;
+
+						if let Some((_, cnt)) = ds_to_migrate.get_mut(&w) {
+							*cnt += 1;
+						} else {
+							ds_to_migrate.insert(w.clone(), (ds.to_vec(), 1));
+						}
+					} else {
+						break 'outer;
+					}
+				}
+			}
+
+			for (w, (ds, cnt)) in ds_to_migrate {
+				let mut ds = ds;
+
+				for _ in 0..cnt {
+					match Self::migrate_for_inner(&w, ds.clone()) {
+						Ok(ds_) => ds = ds_,
+						_ => break,
+					}
+				}
+
+				if ds.is_empty() {
+					<Deposits<T>>::remove(&w);
+				} else {
+					// There are still some deposits left for this account.
+					<Deposits<T>>::insert(&w, BoundedVec::truncate_from(ds));
+				}
+			}
+
+			remaining_weight
+		}
+	}
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Lock the RING for some KTON profit/interest.
-		#[pallet::call_index(0)]
-		#[pallet::weight(<T as Config>::WeightInfo::lock())]
-		pub fn lock(origin: OriginFor<T>, amount: Balance, months: u8) -> DispatchResult {
-			let who = ensure_signed(origin)?;
-
-			if amount == 0 {
-				Err(<Error<T>>::LockAtLeastSome)?;
-			}
-			if months == 0 {
-				Err(<Error<T>>::LockAtLeastOneMonth)?;
-			}
-			if months > MAX_LOCKING_MONTHS {
-				Err(<Error<T>>::LockAtMostThirtySixMonths)?;
-			}
-			if <Deposits<T>>::decode_len(&who).unwrap_or_default() as u32 >= T::MaxDeposits::get() {
-				Err(<Error<T>>::ExceedMaxDeposits)?;
-			}
-
-			let (deposit_id, start_time, expired_time) = <Deposits<T>>::try_mutate(&who, |ds| {
-				let ds = if let Some(ds) = ds {
-					ds
-				} else {
-					<frame_system::Pallet<T>>::inc_consumers(&who)?;
-
-					*ds = Some(Default::default());
-
-					ds.as_mut().expect("[pallet::deposit] `ds` must be some; qed")
-				};
-
-				// Keep the list sorted in increasing order.
-				// And find the missing id.
-				let id = match ds.iter().map(|d| d.id).try_fold(0, |i, id| match i.cmp(&id) {
-					// `Greater` never occurs, as this list is always sorted.
-					// But it's a good practice to handle it instead of marking as `unreachable!`.
-					Less | Greater => Break(i),
-					Equal => Continue(i + 1),
-				}) {
-					Continue(c) => c,
-					Break(b) => b,
-				};
-				let start_time = Self::now();
-				let expired_time = start_time + MILLISECS_PER_MONTH * months as Moment;
-
-				ds.try_insert(
-					id as _,
-					Deposit { id, value: amount, start_time, expired_time, in_use: false },
-				)
-				.map_err(|_| <Error<T>>::ExceedMaxDeposits)?;
-
-				<Result<_, DispatchError>>::Ok((id, start_time, expired_time))
-			})?;
-
-			T::Ring::transfer(&who, &account_id(), amount, AllowDeath)?;
-
-			let kton_reward = dc_inflation::deposit_interest(amount, months);
-
-			T::Kton::mint(&who, kton_reward)?;
-
-			Self::deposit_event(Event::DepositCreated {
-				owner: who,
-				deposit_id,
-				value: amount,
-				start_time,
-				expired_time,
-				kton_reward,
-			});
-
-			Ok(())
-		}
-
-		/// Claim the expired-locked RING.
-		#[pallet::call_index(1)]
-		#[pallet::weight(<T as Config>::WeightInfo::claim())]
-		pub fn claim(origin: OriginFor<T>) -> DispatchResult {
-			let who = ensure_signed(origin)?;
-			let now = Self::now();
-			let mut to_claim = (0, Vec::new());
-			let _ = <Deposits<T>>::try_mutate(&who, |maybe_ds| {
-				let ds = maybe_ds.as_mut().ok_or(())?;
-
-				ds.retain(|d| {
-					if d.expired_time <= now && !d.in_use {
-						to_claim.0 += d.value;
-						to_claim.1.push(d.id);
-
-						false
-					} else {
-						true
-					}
-				});
-
-				if ds.is_empty() {
-					<frame_system::Pallet<T>>::dec_consumers(&who);
-
-					*maybe_ds = None;
-				}
-
-				<Result<(), ()>>::Ok(())
-			});
-
-			T::Ring::transfer(&account_id(), &who, to_claim.0, AllowDeath)?;
-			Self::deposit_event(Event::DepositsClaimed { owner: who, deposits: to_claim.1 });
-
-			Ok(())
-		}
-
-		/// Claim the unexpired-locked RING by paying the KTON penalty.
-		#[pallet::call_index(2)]
-		#[pallet::weight(<T as Config>::WeightInfo::claim_with_penalty())]
-		pub fn claim_with_penalty(origin: OriginFor<T>, id: DepositId) -> DispatchResult {
-			let who = ensure_signed(origin)?;
-			let d = <Deposits<T>>::try_mutate(&who, |maybe_ds| {
-				let ds = maybe_ds.as_mut().ok_or(<Error<T>>::DepositNotFound)?;
-				let d = ds
-					.remove(ds.iter().position(|d| d.id == id).ok_or(<Error<T>>::DepositNotFound)?);
-
-				if d.in_use {
-					Err(<Error<T>>::DepositInUse)?;
-				}
-				if ds.is_empty() {
-					<frame_system::Pallet<T>>::dec_consumers(&who);
-
-					*maybe_ds = None;
-				}
-
-				Ok::<_, DispatchError>(d)
-			})?;
-			let now = Self::now();
-
-			if d.expired_time <= now {
-				Err(<Error<T>>::DepositAlreadyExpired)?;
-			}
-
-			let promise_m = (d.expired_time - d.start_time) / MILLISECS_PER_MONTH;
-			let elapsed_m = (now - d.start_time) / MILLISECS_PER_MONTH;
-			let kton_penalty = dc_inflation::deposit_interest(d.value, promise_m as _)
-				.saturating_sub(dc_inflation::deposit_interest(d.value, elapsed_m as _))
-				.max(1) * 3;
-
-			T::Kton::burn(&who, kton_penalty)?;
-			T::Ring::transfer(&account_id(), &who, d.value, AllowDeath)?;
-			Self::deposit_event(Event::DepositClaimedWithPenalty {
-				owner: who,
-				deposit_id: id,
-				kton_penalty,
-			});
-
-			Ok(())
-		}
-
 		/// Migrate the specified account's data to deposit contract.
 		#[pallet::call_index(3)]
-		#[pallet::weight(<T as Config>::WeightInfo::migrate())]
-		pub fn migrate(origin: OriginFor<T>, who: T::AccountId) -> DispatchResult {
+		#[pallet::weight(<T as Config>::WeightInfo::migrate_for())]
+		pub fn migrate_for(origin: OriginFor<T>, who: T::AccountId) -> DispatchResult {
 			ensure_signed(origin)?;
 
-			let Some(ds) = <Deposits<T>>::take(&who) else { return Ok(()) };
-			let now = Self::now();
-			let mut ds = ds.into_iter();
-			let mut to_claim = (0, Vec::new());
-			let mut to_migrate = (0, Vec::new(), Vec::new());
+			let ds = <Deposits<T>>::take(&who).ok_or(<Error<T>>::NoDeposit)?;
+			let ds = Self::migrate_for_inner(&who, ds)?;
 
-			// Take 0~10 deposits to migrate.
-			for d in ds.by_ref().take(10) {
-				if d.in_use {
-					Err(<Error<T>>::DepositInUse)?;
-				}
-
-				if d.expired_time <= now {
-					to_claim.0 += d.value;
-					to_claim.1.push(d.id);
-				} else {
-					to_migrate.0 += d.value;
-					to_migrate.1.push(d.id);
-					to_migrate.2.push((d.value, d.start_time / 1_000, d.expired_time / 1_000));
-				}
-			}
-
-			T::Ring::transfer(&account_id(), &who, to_claim.0, AllowDeath)?;
-			T::Ring::transfer(&account_id(), &T::Treasury::get(), to_migrate.0, AllowDeath)?;
-			T::DepositMigrator::migrate(who.clone(), to_migrate.0, to_migrate.2)?;
-
-			Self::deposit_event(Event::DepositsClaimed {
-				owner: who.clone(),
-				deposits: to_claim.1,
-			});
-			Self::deposit_event(Event::DepositsMigrated {
-				owner: who.clone(),
-				deposits: to_migrate.1,
-			});
-
-			let ds = ds.collect::<Vec<_>>();
-
+			// Put the rest deposits back.
 			if !ds.is_empty() {
-				// Put the rest deposits back.
 				<Deposits<T>>::insert(&who, BoundedVec::truncate_from(ds));
 			}
 
@@ -384,56 +210,45 @@ pub mod pallet {
 		fn now() -> Moment {
 			<pallet_timestamp::Pallet<T> as UnixTime>::now().as_millis()
 		}
-	}
-	impl<T> darwinia_staking_traits::Stake for Pallet<T>
-	where
-		T: Config,
-	{
-		type AccountId = T::AccountId;
-		type Item = DepositId;
 
-		fn stake(who: &Self::AccountId, item: Self::Item) -> DispatchResult {
-			<Deposits<T>>::try_mutate(who, |ds| {
-				let ds = ds.as_mut().ok_or(<Error<T>>::DepositNotFound)?;
-				let d = ds.iter_mut().find(|d| d.id == item).ok_or(<Error<T>>::DepositNotFound)?;
+		fn migrate_for_inner<I>(
+			who: &T::AccountId,
+			deposits: I,
+		) -> Result<Vec<Deposit>, DispatchError>
+		where
+			I: IntoIterator<Item = Deposit>,
+		{
+			let now = Self::now();
+			let mut deposits = deposits.into_iter();
+			let mut to_claim = (0, Vec::new());
+			let mut to_migrate = (0, Vec::new(), Vec::new());
 
-				if d.in_use {
-					Err(<Error<T>>::DepositInUse)?
+			// Take 0~10 deposits to migrate.
+			for d in deposits.by_ref().take(10) {
+				if d.expired_time <= now {
+					to_claim.0 += d.value;
+					to_claim.1.push(d.id);
 				} else {
-					d.in_use = true;
-
-					Ok(())
+					to_migrate.0 += d.value;
+					to_migrate.1.push(d.id);
+					to_migrate.2.push((d.value, d.start_time / 1_000, d.expired_time / 1_000));
 				}
-			})
-		}
+			}
 
-		fn unstake(who: &Self::AccountId, item: Self::Item) -> DispatchResult {
-			<Deposits<T>>::try_mutate(who, |ds| {
-				let ds = ds.as_mut().ok_or(<Error<T>>::DepositNotFound)?;
-				let d = ds.iter_mut().find(|d| d.id == item).ok_or(<Error<T>>::DepositNotFound)?;
+			T::Ring::transfer(&account_id(), &who, to_claim.0, AllowDeath)?;
+			T::Ring::transfer(&account_id(), &T::Treasury::get(), to_migrate.0, AllowDeath)?;
+			T::DepositMigrator::migrate(who.clone(), to_migrate.0, to_migrate.2)?;
 
-				if d.in_use {
-					d.in_use = false;
+			Self::deposit_event(Event::DepositsClaimed {
+				owner: who.clone(),
+				deposits: to_claim.1,
+			});
+			Self::deposit_event(Event::DepositsMigrated {
+				owner: who.clone(),
+				deposits: to_migrate.1,
+			});
 
-					Ok(())
-				} else {
-					Err(<Error<T>>::DepositNotInUse)?
-				}
-			})
-		}
-	}
-	impl<T> darwinia_staking_traits::StakeExt for Pallet<T>
-	where
-		T: Config,
-	{
-		type Amount = Balance;
-
-		fn amount(who: &Self::AccountId, item: Self::Item) -> Result<Self::Amount, DispatchError> {
-			Ok(<Deposits<T>>::get(who)
-				.and_then(|ds| {
-					ds.into_iter().find_map(|d| if d.id == item { Some(d.value) } else { None })
-				})
-				.ok_or(<Error<T>>::DepositNotFound)?)
+			Ok(deposits.collect())
 		}
 	}
 }
@@ -441,29 +256,6 @@ pub use pallet::*;
 
 /// Deposit identifier.
 pub type DepositId = u16;
-// https://github.com/polkadot-js/apps/issues/8591
-// Max deposits in Darwinia is 322.
-// Max deposits in Crab is 220.
-// Maybe we will use `WeakBoundedVec` later.
-// pub type DepositId = u8;
-
-/// Milliseconds per month.
-pub const MILLISECS_PER_MONTH: Moment = MILLISECS_PER_YEAR / 12;
-
-/// The maximum locking period for a deposit.
-pub const MAX_LOCKING_MONTHS: u8 = 36;
-
-/// Simple asset APIs.
-pub trait SimpleAsset {
-	/// Account type.
-	type AccountId;
-
-	/// Mint API.
-	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> DispatchResult;
-
-	/// Burn API.
-	fn burn(who: &Self::AccountId, amount: Balance) -> DispatchResult;
-}
 
 /// Migrate to contract trait.
 pub trait MigrateToContract<T>

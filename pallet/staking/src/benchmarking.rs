@@ -119,8 +119,7 @@ mod benchmarks {
 	fn chill() {
 		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
 
-		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, UNIT + 1);
+		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, UNIT);
 
 		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, Default::default()).unwrap();
 		<Pallet<T>>::collect(RawOrigin::Signed(a.clone()).into(), Default::default()).unwrap();
@@ -137,22 +136,6 @@ mod benchmarks {
 	fn payout() {
 		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
 		let a_cloned = a.clone();
-
-		call_on_cache_v1!(<Previous<T>>::insert(
-			&a,
-			Exposure {
-				commission: Perbill::zero(),
-				vote: 32,
-				nominators: (0..32)
-					.map(|i| IndividualExposure {
-						who: frame_benchmarking::account("", i, i),
-						vote: 1,
-					})
-					.collect(),
-			},
-		))
-		.unwrap();
-		<PendingRewards<T>>::insert(&a, 500);
 
 		#[extrinsic_call]
 		_(RawOrigin::Signed(a), a_cloned);

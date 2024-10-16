@@ -458,11 +458,7 @@ pub fn new_session() {
 }
 
 pub fn payout() {
-	crate::call_on_cache_v2!(<Previous<Runtime>>::get().into_iter().for_each(|c| {
-		let _ = Staking::payout_inner(c);
-	}))
-	.unwrap();
-	crate::call_on_cache_v1!(<Previous<Runtime>>::iter_keys().for_each(|c| {
+	crate::call_on_cache!(<Previous<Runtime>>::get().into_iter().for_each(|c| {
 		let _ = Staking::payout_inner(c);
 	}))
 	.unwrap();

@@ -2775,8 +2775,6 @@ name = "darwinia-deposit"
 version = "6.7.1"
 dependencies = [
  "darwinia-ethtx-forwarder",
- "darwinia-staking-traits",
- "dc-inflation",
  "dc-types",
  "ethabi",
  "fp-evm",
@@ -2784,7 +2782,6 @@ dependencies = [
  "frame-support",
  "frame-system",
  "log",
- "pallet-assets",
  "pallet-balances",
  "pallet-timestamp",
  "parity-scale-codec",
@@ -3013,7 +3010,6 @@ version = "6.7.1"
 dependencies = [
  "darwinia-deposit",
  "darwinia-ethtx-forwarder",
- "darwinia-staking-traits",
  "dc-inflation",
  "dc-types",
  "ethabi",
@@ -3035,15 +3031,6 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std 14.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.7.2)",
-]
-
-[[package]]
-name = "darwinia-staking-traits"
-version = "6.7.1"
-dependencies = [
- "parity-scale-codec",
- "scale-info",
- "sp-runtime",
 ]
 
 [[package]]
@@ -3077,7 +3064,6 @@ name = "dc-inflation"
 version = "6.7.1"
 dependencies = [
  "dc-types",
- "primitive-types",
  "sp-arithmetic",
  "substrate-fixed",
 ]

@@ -52,72 +52,13 @@ use core::marker::PhantomData;
 
 /// Weight functions needed for darwinia_deposit.
 pub trait WeightInfo {
-	fn lock() -> Weight;
-	fn claim() -> Weight;
-	fn claim_with_penalty() -> Weight;
-	fn migrate() -> Weight;
+	fn migrate_for() -> Weight;
 	fn set_deposit_contract() -> Weight;
 }
 
 /// Weights for darwinia_deposit using the Substrate node and recommended hardware.
 pub struct SubstrateWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
-	/// Storage: `Deposit::Deposits` (r:1 w:1)
-	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
-	/// Storage: `Timestamp::Now` (r:1 w:0)
-	/// Proof: `Timestamp::Now` (`max_values`: Some(1), `max_size`: Some(8), added: 503, mode: `MaxEncodedLen`)
-	/// Storage: `System::Account` (r:1 w:1)
-	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
-	/// Storage: `Assets::Asset` (r:1 w:1)
-	/// Proof: `Assets::Asset` (`max_values`: None, `max_size`: Some(166), added: 2641, mode: `MaxEncodedLen`)
-	/// Storage: `Assets::Account` (r:1 w:1)
-	/// Proof: `Assets::Account` (`max_values`: None, `max_size`: Some(114), added: 2589, mode: `MaxEncodedLen`)
-	fn lock() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `26812`
-		//  Estimated: `29615`
-		// Minimum execution time: 92_000 nanoseconds.
-		Weight::from_parts(98_000_000, 0)
-			.saturating_add(Weight::from_parts(29615, 0))
-			.saturating_add(T::DbWeight::get().reads(5_u64))
-			.saturating_add(T::DbWeight::get().writes(4_u64))
-	}
-	/// Storage: `Timestamp::Now` (r:1 w:0)
-	/// Proof: `Timestamp::Now` (`max_values`: Some(1), `max_size`: Some(8), added: 503, mode: `MaxEncodedLen`)
-	/// Storage: `Deposit::Deposits` (r:1 w:1)
-	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
-	/// Storage: `System::Account` (r:1 w:1)
-	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
-	fn claim() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `26541`
-		//  Estimated: `29615`
-		// Minimum execution time: 70_000 nanoseconds.
-		Weight::from_parts(82_000_000, 0)
-			.saturating_add(Weight::from_parts(29615, 0))
-			.saturating_add(T::DbWeight::get().reads(3_u64))
-			.saturating_add(T::DbWeight::get().writes(2_u64))
-	}
-	/// Storage: `Deposit::Deposits` (r:1 w:1)
-	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
-	/// Storage: `Timestamp::Now` (r:1 w:0)
-	/// Proof: `Timestamp::Now` (`max_values`: Some(1), `max_size`: Some(8), added: 503, mode: `MaxEncodedLen`)
-	/// Storage: `Assets::Account` (r:1 w:1)
-	/// Proof: `Assets::Account` (`max_values`: None, `max_size`: Some(114), added: 2589, mode: `MaxEncodedLen`)
-	/// Storage: `Assets::Asset` (r:1 w:1)
-	/// Proof: `Assets::Asset` (`max_values`: None, `max_size`: Some(166), added: 2641, mode: `MaxEncodedLen`)
-	/// Storage: `System::Account` (r:1 w:1)
-	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
-	fn claim_with_penalty() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `26863`
-		//  Estimated: `29615`
-		// Minimum execution time: 92_000 nanoseconds.
-		Weight::from_parts(100_000_000, 0)
-			.saturating_add(Weight::from_parts(29615, 0))
-			.saturating_add(T::DbWeight::get().reads(5_u64))
-			.saturating_add(T::DbWeight::get().writes(4_u64))
-	}
 	/// Storage: `Deposit::Deposits` (r:1 w:1)
 	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
 	/// Storage: `Timestamp::Now` (r:1 w:0)
@@ -134,7 +75,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	/// Proof: `System::Digest` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
 	/// Storage: `Ethereum::Pending` (r:1 w:1)
 	/// Proof: `Ethereum::Pending` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
-	fn migrate() -> Weight {
+	fn migrate_for() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `27516`
 		//  Estimated: `33456`
@@ -163,62 +104,6 @@ impl WeightInfo for () {
 	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
 	/// Storage: `Timestamp::Now` (r:1 w:0)
 	/// Proof: `Timestamp::Now` (`max_values`: Some(1), `max_size`: Some(8), added: 503, mode: `MaxEncodedLen`)
-	/// Storage: `System::Account` (r:1 w:1)
-	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
-	/// Storage: `Assets::Asset` (r:1 w:1)
-	/// Proof: `Assets::Asset` (`max_values`: None, `max_size`: Some(166), added: 2641, mode: `MaxEncodedLen`)
-	/// Storage: `Assets::Account` (r:1 w:1)
-	/// Proof: `Assets::Account` (`max_values`: None, `max_size`: Some(114), added: 2589, mode: `MaxEncodedLen`)
-	fn lock() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `26812`
-		//  Estimated: `29615`
-		// Minimum execution time: 92_000 nanoseconds.
-		Weight::from_parts(98_000_000, 0)
-			.saturating_add(Weight::from_parts(29615, 0))
-			.saturating_add(RocksDbWeight::get().reads(5_u64))
-			.saturating_add(RocksDbWeight::get().writes(4_u64))
-	}
-	/// Storage: `Timestamp::Now` (r:1 w:0)
-	/// Proof: `Timestamp::Now` (`max_values`: Some(1), `max_size`: Some(8), added: 503, mode: `MaxEncodedLen`)
-	/// Storage: `Deposit::Deposits` (r:1 w:1)
-	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
-	/// Storage: `System::Account` (r:1 w:1)
-	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
-	fn claim() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `26541`
-		//  Estimated: `29615`
-		// Minimum execution time: 70_000 nanoseconds.
-		Weight::from_parts(82_000_000, 0)
-			.saturating_add(Weight::from_parts(29615, 0))
-			.saturating_add(RocksDbWeight::get().reads(3_u64))
-			.saturating_add(RocksDbWeight::get().writes(2_u64))
-	}
-	/// Storage: `Deposit::Deposits` (r:1 w:1)
-	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
-	/// Storage: `Timestamp::Now` (r:1 w:0)
-	/// Proof: `Timestamp::Now` (`max_values`: Some(1), `max_size`: Some(8), added: 503, mode: `MaxEncodedLen`)
-	/// Storage: `Assets::Account` (r:1 w:1)
-	/// Proof: `Assets::Account` (`max_values`: None, `max_size`: Some(114), added: 2589, mode: `MaxEncodedLen`)
-	/// Storage: `Assets::Asset` (r:1 w:1)
-	/// Proof: `Assets::Asset` (`max_values`: None, `max_size`: Some(166), added: 2641, mode: `MaxEncodedLen`)
-	/// Storage: `System::Account` (r:1 w:1)
-	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
-	fn claim_with_penalty() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `26863`
-		//  Estimated: `29615`
-		// Minimum execution time: 92_000 nanoseconds.
-		Weight::from_parts(100_000_000, 0)
-			.saturating_add(Weight::from_parts(29615, 0))
-			.saturating_add(RocksDbWeight::get().reads(5_u64))
-			.saturating_add(RocksDbWeight::get().writes(4_u64))
-	}
-	/// Storage: `Deposit::Deposits` (r:1 w:1)
-	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
-	/// Storage: `Timestamp::Now` (r:1 w:0)
-	/// Proof: `Timestamp::Now` (`max_values`: Some(1), `max_size`: Some(8), added: 503, mode: `MaxEncodedLen`)
 	/// Storage: `System::Account` (r:3 w:2)
 	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
 	/// Storage: `Deposit::DepositContract` (r:1 w:0)
@@ -231,7 +116,7 @@ impl WeightInfo for () {
 	/// Proof: `System::Digest` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
 	/// Storage: `Ethereum::Pending` (r:1 w:1)
 	/// Proof: `Ethereum::Pending` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
-	fn migrate() -> Weight {
+	fn migrate_for() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `27516`
 		//  Estimated: `33456`

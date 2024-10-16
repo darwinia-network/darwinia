@@ -15,7 +15,6 @@ scale-info = { workspace = true }
 
 # darwinia
 darwinia-ethtx-forwarder = { workspace = true }
-darwinia-staking-traits  = { workspace = true }
 dc-inflation             = { workspace = true }
 dc-types                 = { workspace = true }
 # darwinia optional
@@ -61,7 +60,6 @@ std = [
 
 	# darwinia
 	"darwinia-ethtx-forwarder/std",
-	"darwinia-staking-traits/std",
 	"dc-inflation/std",
 	# darwinia optional
 	"darwinia-deposit?/std",
@@ -86,7 +84,6 @@ runtime-benchmarks = [
 	# darwinia
 	"darwinia-deposit",
 	"darwinia-ethtx-forwarder/runtime-benchmarks",
-	"darwinia-staking-traits/runtime-benchmarks",
 
 	# polkadot-sdk
 	"frame-benchmarking/runtime-benchmarks",
