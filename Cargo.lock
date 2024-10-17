@@ -3008,7 +3008,6 @@ dependencies = [
 name = "darwinia-staking"
 version = "6.7.1"
 dependencies = [
- "darwinia-deposit",
  "darwinia-ethtx-forwarder",
  "dc-inflation",
  "dc-types",

@@ -52,8 +52,8 @@ use core::marker::PhantomData;
 
 /// Weight functions needed for darwinia_staking.
 pub trait WeightInfo {
-	fn unstake_all() -> Weight;
-	fn payout_for() -> Weight;
+	fn unstake_all_for() -> Weight;
+	fn allocate_ring_staking_reward_of() -> Weight;
 	fn set_ring_staking_contract() -> Weight;
 	fn set_kton_staking_contract() -> Weight;
 	fn set_collator_count() -> Weight;
@@ -73,7 +73,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	/// Storage: `DarwiniaStaking::RateLimit` (r:1 w:0)
 	/// Proof: `DarwiniaStaking::RateLimit` (`max_values`: Some(1), `max_size`: Some(16), added: 511, mode: `MaxEncodedLen`)
 	/// The range of component `x` is `[0, 1023]`.
-	fn unstake_all() -> Weight {
+	fn unstake_all_for() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `2330`
 		//  Estimated: `83902`
@@ -91,7 +91,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	/// Proof: `DarwiniaStaking::PendingRewards` (`max_values`: None, `max_size`: None, mode: `Measured`)
 	/// Storage: `System::Account` (r:32 w:32)
 	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
-	fn payout_for() -> Weight {
+	fn allocate_ring_staking_reward_of() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `2330`
 		//  Estimated: `83902`
@@ -149,7 +149,7 @@ impl WeightInfo for () {
 	/// Storage: `DarwiniaStaking::RateLimit` (r:1 w:0)
 	/// Proof: `DarwiniaStaking::RateLimit` (`max_values`: Some(1), `max_size`: Some(16), added: 511, mode: `MaxEncodedLen`)
 	/// The range of component `x` is `[0, 1023]`.
-	fn unstake_all() -> Weight {
+	fn unstake_all_for() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `2330`
 		//  Estimated: `83902`
@@ -159,7 +159,7 @@ impl WeightInfo for () {
 			.saturating_add(RocksDbWeight::get().reads(35_u64))
 			.saturating_add(RocksDbWeight::get().writes(34_u64))
 	}
-	fn payout_for() -> Weight {
+	fn allocate_ring_staking_reward_of() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `2330`
 		//  Estimated: `83902`
