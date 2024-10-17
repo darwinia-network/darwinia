@@ -196,7 +196,7 @@ pub enum StatedOnSessionEnd {}
 impl crate::IssuingManager<Runtime> for StatedOnSessionEnd {
 	fn inflate() -> Balance {
 		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
-			<crate::BalanceIssuing<Runtime>>::inflate()
+			<crate::BalancesIssuing<Runtime>>::inflate()
 		} else {
 			<crate::TreasuryIssuing<Runtime, frame_support::traits::ConstU128<{ 20_000 * UNIT }>>>::inflate()
 		}
@@ -204,17 +204,17 @@ impl crate::IssuingManager<Runtime> for StatedOnSessionEnd {
 
 	fn calculate_reward(issued: Balance) -> Balance {
 		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
-			<crate::BalanceIssuing<Runtime>>::calculate_reward(issued)
+			<crate::BalancesIssuing<Runtime>>::calculate_reward(issued)
 		} else {
 			<crate::TreasuryIssuing<Runtime, frame_support::traits::ConstU128<{ 20_000 * UNIT }>>>::calculate_reward(issued)
 		}
 	}
 
-	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
+	fn reward(amount: Balance) -> sp_runtime::DispatchResult {
 		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
-			<crate::BalanceIssuing<Runtime>>::reward(who, amount)
+			<crate::BalancesIssuing<Runtime>>::reward(amount)
 		} else {
-			<crate::TreasuryIssuing<Runtime,frame_support::traits::ConstU128<{20_000 * UNIT}>>>::reward(who, amount)
+			<crate::TreasuryIssuing<Runtime,frame_support::traits::ConstU128<{20_000 * UNIT}>>>::reward( amount)
 		}
 	}
 }
@@ -303,11 +303,11 @@ impl Efflux {
 
 pub struct ExtBuilder;
 impl ExtBuilder {
-	// pub fn inflation_type(self, r#type: u8) -> Self {
-	// 	INFLATION_TYPE.with(|v| *v.borrow_mut() = r#type);
+	pub fn inflation_type(self, r#type: u8) -> Self {
+		INFLATION_TYPE.with(|v| *v.borrow_mut() = r#type);
 
-	// 	self
-	// }
+		self
+	}
 
 	pub fn build(self) -> TestExternalities {
 		let _ = pretty_env_logger::try_init();
@@ -317,7 +317,7 @@ impl ExtBuilder {
 		pallet_balances::GenesisConfig::<Runtime> {
 			balances: (1..=1_000)
 				.map(|i| (AccountId(i), 100))
-				.chain([(Treasury::account_id(), 1 << 64), (account_id(), 1 << 64)])
+				.chain([(Treasury::account_id(), 1 << 126), (account_id(), 1 << 126)])
 				.collect(),
 		}
 		.assimilate_storage(&mut storage)
@@ -371,8 +371,12 @@ pub fn finalize_block(number: BlockNumber) {
 pub fn new_session() {
 	let now = System::block_number();
 	let target = now + <Period as sp_runtime::traits::Get<BlockNumber>>::get();
+	let collators = Session::validators();
 
-	(now..target).for_each(|_| Efflux::block(1));
+	(now..target).zip(collators.into_iter().cycle()).for_each(|(_, who)| {
+		Staking::note_authors(&[who]);
+		Efflux::block(1);
+	});
 }
 
 pub fn events() -> Vec<Event<Runtime>> {

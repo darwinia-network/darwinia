@@ -46,7 +46,7 @@ impl darwinia_staking::Stake for RingStaking {
 impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
 	type Deposit = Deposit;
-	type IssuingManager = darwinia_staking::BalanceIssuing<Self>;
+	type IssuingManager = darwinia_staking::BalancesIssuing<Self>;
 	type KtonStaking = darwinia_staking::KtonStaking<Self>;
 	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
 	type Ring = RingStaking;

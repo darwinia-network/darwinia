@@ -95,10 +95,10 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// A payout has been made for the staker.
-		Payout { who: T::AccountId, amount: Balance },
-		/// Unable to pay the staker's reward.
-		Unpaid { who: T::AccountId, amount: Balance },
+		/// Reward allocated to the account.
+		RewardAllocated { who: T::AccountId, amount: Balance },
+		/// Fail to allocate the reward to the account.
+		RewardAllocationFailed { who: T::AccountId, amount: Balance },
 		/// Unstake all stakes for the account.
 		UnstakeAllFor { who: T::AccountId },
 	}
@@ -279,14 +279,27 @@ pub mod pallet {
 	where
 		T: Config,
 	{
+		pub(crate) fn note_authors(authors: &[T::AccountId]) {
+			<AuthoredBlockCount<T>>::mutate(|(total_block_count, author_map)| {
+				authors.iter().cloned().for_each(|who| {
+					author_map
+						.entry(who)
+						.and_modify(|authored_block_count| *authored_block_count += One::one())
+						.or_insert(One::one());
+
+					*total_block_count += One::one();
+				});
+			});
+		}
+
 		/// Allocate the session reward.
 		pub fn allocate_session_reward(amount: Balance) {
 			let treasury = <T as Config>::Treasury::get();
 
-			if T::IssuingManager::reward(&treasury, amount).is_ok() {
-				Self::deposit_event(Event::Payout { who: treasury, amount });
+			if T::IssuingManager::reward(amount).is_ok() {
+				Self::deposit_event(Event::RewardAllocated { who: treasury, amount });
 			} else {
-				Self::deposit_event(Event::Unpaid { who: treasury, amount });
+				Self::deposit_event(Event::RewardAllocationFailed { who: treasury, amount });
 			}
 
 			let reward_to_ring_staking = amount.saturating_div(2);
@@ -314,22 +327,9 @@ pub mod pallet {
 		) -> DispatchResult {
 			T::RingStaking::allocate(Some(who.clone()), amount);
 
-			Self::deposit_event(Event::Payout { who, amount });
+			Self::deposit_event(Event::RewardAllocated { who, amount });
 
 			Ok(())
-		}
-
-		fn note_authors(authors: &[T::AccountId]) {
-			<AuthoredBlockCount<T>>::mutate(|(total_block_count, author_map)| {
-				authors.iter().cloned().for_each(|who| {
-					author_map
-						.entry(who)
-						.and_modify(|authored_block_count| *authored_block_count += One::one())
-						.or_insert(One::one());
-
-					*total_block_count += One::one();
-				});
-			});
 		}
 
 		fn prepare_new_session(i: u32) -> Option<Vec<T::AccountId>> {
@@ -460,6 +460,15 @@ pub mod pallet {
 }
 pub use pallet::*;
 
+/// Election interface.
+pub trait Election<AccountId> {
+	/// Elect the new collators.
+	fn elect(_: u32) -> Option<Vec<AccountId>> {
+		None
+	}
+}
+impl<AccountId> Election<AccountId> for () {}
+
 /// Issuing and reward manager.
 pub trait IssuingManager<T>
 where
@@ -484,31 +493,14 @@ where
 	}
 
 	/// The reward function.
-	fn reward(_: &T::AccountId, _: Balance) -> DispatchResult {
+	fn reward(_: Balance) -> DispatchResult {
 		Ok(())
 	}
 }
 impl<T> IssuingManager<T> for () where T: Config {}
-
-/// Election interface.
-pub trait Election<AccountId> {
-	/// Elect the new collators.
-	fn elect(_: u32) -> Option<Vec<AccountId>> {
-		None
-	}
-}
-impl<AccountId> Election<AccountId> for () {}
-
-/// Allocate the reward to a contract.
-pub trait Reward<AccountId> {
-	/// Allocate the reward.
-	fn allocate(_: Option<AccountId>, _: Balance) {}
-}
-impl<AccountId> Reward<AccountId> for () {}
-
 /// Issue new token from pallet-balances.
-pub struct BalanceIssuing<T>(PhantomData<T>);
-impl<T> IssuingManager<T> for BalanceIssuing<T>
+pub struct BalancesIssuing<T>(PhantomData<T>);
+impl<T> IssuingManager<T> for BalancesIssuing<T>
 where
 	T: Config,
 {
@@ -530,13 +522,12 @@ where
 		PAYOUT_FRAC * issued
 	}
 
-	fn reward(who: &T::AccountId, amount: Balance) -> DispatchResult {
-		let _ = T::Currency::deposit_creating(who, amount);
+	fn reward(amount: Balance) -> DispatchResult {
+		let _ = T::Currency::deposit_creating(&T::Treasury::get(), amount);
 
 		Ok(())
 	}
 }
-
 /// Transfer issued token from pallet-treasury.
 pub struct TreasuryIssuing<T, R>(PhantomData<(T, R)>);
 impl<T, R> IssuingManager<T> for TreasuryIssuing<T, R>
@@ -547,17 +538,14 @@ where
 	fn calculate_reward(_: Balance) -> Balance {
 		R::get()
 	}
-
-	fn reward(who: &T::AccountId, amount: Balance) -> DispatchResult {
-		let treasury = <T as Config>::Treasury::get();
-
-		if who == &treasury {
-			Ok(())
-		} else {
-			T::Currency::transfer(&treasury, who, amount, ExistenceRequirement::KeepAlive)
-		}
-	}
 }
+
+/// Allocate the reward to a contract.
+pub trait Reward<AccountId> {
+	/// Allocate the reward.
+	fn allocate(_: Option<AccountId>, _: Balance) {}
+}
+impl<AccountId> Reward<AccountId> for () {}
 
 /// A convertor from collators id.
 ///
