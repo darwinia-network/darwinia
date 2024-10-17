@@ -28,7 +28,7 @@ use dc_types::UNIT;
 // polkadot-sdk
 use frame_support::{
 	assert_ok, derive_impl,
-	traits::{OnFinalize, OnInitialize},
+	traits::{OnFinalize, OnIdle, OnInitialize},
 };
 use sp_core::H160;
 use sp_io::TestExternalities;
@@ -244,7 +244,7 @@ impl crate::Election<AccountId> for RingStaking {
 	}
 }
 impl crate::Reward<AccountId> for RingStaking {
-	fn distribute(who: Option<AccountId>, amount: Balance) {
+	fn allocate(who: Option<AccountId>, amount: Balance) {
 		let Some(who) = who else { return };
 		let _ = Balances::transfer_keep_alive(
 			RuntimeOrigin::signed(Treasury::account_id()),
@@ -255,7 +255,7 @@ impl crate::Reward<AccountId> for RingStaking {
 }
 pub enum KtonStaking {}
 impl crate::Reward<AccountId> for KtonStaking {
-	fn distribute(_: Option<AccountId>, amount: Balance) {
+	fn allocate(_: Option<AccountId>, amount: Balance) {
 		let _ = Balances::transfer_keep_alive(
 			RuntimeOrigin::signed(TreasuryAcct::get()),
 			<KtonStakingContract<Runtime>>::get().unwrap(),
@@ -329,13 +329,9 @@ impl ExtBuilder {
 		}
 		.assimilate_storage(&mut storage)
 		.unwrap();
-		crate::GenesisConfig::<Runtime> {
-			collator_count: 3,
-			collators: (1..=3).map(|i| AccountId(i)).collect(),
-			..Default::default()
-		}
-		.assimilate_storage(&mut storage)
-		.unwrap();
+		crate::GenesisConfig::<Runtime> { collator_count: 3, ..Default::default() }
+			.assimilate_storage(&mut storage)
+			.unwrap();
 
 		let mut ext = TestExternalities::from(storage);
 
@@ -368,6 +364,7 @@ pub fn initialize_block(number: BlockNumber) {
 }
 
 pub fn finalize_block(number: BlockNumber) {
+	AllPalletsWithSystem::on_idle(number, Weight::MAX);
 	AllPalletsWithSystem::on_finalize(number);
 }
 

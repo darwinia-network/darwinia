@@ -19,7 +19,7 @@
 // darwinia
 use crate::{mock::*, *};
 // polkadot-sdk
-use frame_support::{assert_noop, assert_ok};
+use frame_support::{assert_noop, assert_ok, traits::OnIdle};
 use sp_runtime::DispatchError;
 
 #[test]
@@ -77,99 +77,53 @@ fn get_top_collators_should_work() {
 }
 
 #[test]
-fn collator_caches_should_work() {
-	ExtBuilder.build().execute_with(|| {
-		assert!(call_on_cache!(<Previous<Runtime>>::get()).unwrap().is_empty());
-		assert!(call_on_cache!(<Current<Runtime>>::get()).unwrap().is_empty());
-		assert_eq!(
-			call_on_cache!(<Next<Runtime>>::get()).unwrap(),
-			vec![AccountId(1), AccountId(2), AccountId(3)]
-		);
-		assert_eq!(
-			<CacheStates<Runtime>>::get(),
-			(CacheState::Previous, CacheState::Current, CacheState::Next)
-		);
-
-		Staking::shift_cache_states();
-
-		assert!(call_on_cache!(<Previous<Runtime>>::get()).unwrap().is_empty());
-		assert_eq!(
-			call_on_cache!(<Current<Runtime>>::get()).unwrap(),
-			vec![AccountId(1), AccountId(2), AccountId(3)]
-		);
-		assert!(call_on_cache!(<Next<Runtime>>::get()).unwrap().is_empty());
-		assert_eq!(
-			<CacheStates<Runtime>>::get(),
-			(CacheState::Next, CacheState::Previous, CacheState::Current)
-		);
-
-		Staking::shift_cache_states();
-
-		assert_eq!(
-			call_on_cache!(<Previous<Runtime>>::get()).unwrap(),
-			vec![AccountId(1), AccountId(2), AccountId(3)]
-		);
-		assert!(call_on_cache!(<Current<Runtime>>::get()).unwrap().is_empty());
-		assert!(call_on_cache!(<Next<Runtime>>::get()).unwrap().is_empty());
-		assert_eq!(
-			<CacheStates<Runtime>>::get(),
-			(CacheState::Current, CacheState::Next, CacheState::Previous)
-		);
-
-		Staking::shift_cache_states();
-
-		assert!(call_on_cache!(<Previous<Runtime>>::get()).unwrap().is_empty());
-		assert!(call_on_cache!(<Current<Runtime>>::get()).unwrap().is_empty());
-		assert_eq!(
-			call_on_cache!(<Next<Runtime>>::get()).unwrap(),
-			vec![AccountId(1), AccountId(2), AccountId(3)]
-		);
-		assert_eq!(
-			<CacheStates<Runtime>>::get(),
-			(CacheState::Previous, CacheState::Current, CacheState::Next)
-		);
-	});
-}
-
-#[test]
 fn elect_should_work() {
 	ExtBuilder.build().execute_with(|| {
-		assert_eq!(
-			call_on_cache!(<Next<Runtime>>::get()).unwrap(),
-			vec![AccountId(1), AccountId(2), AccountId(3)]
-		);
-
 		NEXT_COLLATOR_ID.with(|v| *v.borrow_mut() = 4);
-		new_session();
 
 		assert_eq!(
-			call_on_cache!(<Next<Runtime>>::get()).unwrap(),
+			<Runtime as Config>::RingStaking::elect(<CollatorCount<Runtime>>::get()).unwrap(),
 			vec![AccountId(4), AccountId(5), AccountId(6)]
 		);
 	});
 }
 
 #[test]
-fn auto_payout_should_work() {
+fn on_idle_allocate_ring_staking_reward_should_work() {
 	ExtBuilder.build().execute_with(|| {
-		Efflux::block(1);
-
-		(1..=3).for_each(|i| <PendingRewards<Runtime>>::insert(AccountId(i), i as Balance));
+		(1..=512).for_each(|i| <PendingRewards<Runtime>>::insert(AccountId(i), 1));
 
 		System::reset_events();
-		Efflux::block(1);
-		dbg!(<PendingRewards<Runtime>>::iter().collect::<Vec<_>>());
-		assert_eq!(events(), vec![Event::Payout { who: AccountId(2), amount: 2 }]);
+		AllPalletsWithSystem::on_idle(0, Weight::zero().add_ref_time(128));
+		assert_eq!(events().into_iter().filter(|e| matches!(e, Event::Payout { .. })).count(), 128);
 
 		System::reset_events();
-		Efflux::block(1);
-		dbg!(<PendingRewards<Runtime>>::iter().collect::<Vec<_>>());
-		assert_eq!(events(), vec![Event::Payout { who: AccountId(3), amount: 3 }]);
+		AllPalletsWithSystem::on_idle(0, Weight::MAX);
+		assert_eq!(events().into_iter().filter(|e| matches!(e, Event::Payout { .. })).count(), 384);
+	});
+}
+
+#[test]
+fn on_idle_unstake_should_work() {
+	ExtBuilder.build().execute_with(|| {
+		(1..=512).for_each(|i| {
+			<Ledgers<Runtime>>::insert(
+				AccountId(i),
+				Ledger { ring: i as _, deposits: BoundedVec::new() },
+			)
+		});
 
 		System::reset_events();
-		Efflux::block(1);
-		dbg!(<PendingRewards<Runtime>>::iter().collect::<Vec<_>>());
-		assert_eq!(events(), vec![Event::Payout { who: AccountId(1), amount: 1 }]);
+		AllPalletsWithSystem::on_idle(0, Weight::zero().add_ref_time(128));
+		assert_eq!(<Ledgers<Runtime>>::iter().count(), 384);
+
+		System::reset_events();
+		AllPalletsWithSystem::on_idle(0, Weight::MAX);
+		assert_eq!(<Ledgers<Runtime>>::iter().count(), 0);
+
+		(1..512).for_each(|who| {
+			assert_eq!(Balances::free_balance(AccountId(who)), 100 + who as Balance);
+		});
 	});
 }
 
@@ -186,14 +140,27 @@ fn unstake_all_for_should_work() {
 			<Error<Runtime>>::NoRecord
 		);
 
-		<Ledgers<Runtime>>::insert(AccountId(1), Ledger { ring: 1, deposits: Default::default() });
+		<Ledgers<Runtime>>::insert(AccountId(1), Ledger { ring: 1, deposits: BoundedVec::new() });
 		assert_ok!(Staking::unstake_all_for(RuntimeOrigin::signed(AccountId(1)), AccountId(1)));
 	});
 }
 
 #[test]
-fn payout_for_should_work() {
-	ExtBuilder.build().execute_with(|| {});
+fn allocate_ring_staking_reward_of_should_work() {
+	ExtBuilder.build().execute_with(|| {
+		let who = AccountId(1);
+
+		assert_noop!(
+			Staking::allocate_ring_staking_reward_of(RuntimeOrigin::signed(who), who),
+			<Error<Runtime>>::NoReward
+		);
+
+		<PendingRewards<Runtime>>::insert(who, 1);
+		System::reset_events();
+
+		assert_ok!(Staking::allocate_ring_staking_reward_of(RuntimeOrigin::signed(who), who));
+		assert_eq!(events(), vec![Event::Payout { who, amount: 1 }]);
+	});
 }
 
 #[test]
@@ -210,5 +177,31 @@ fn set_collator_count_should_work() {
 
 		assert_ok!(Staking::set_collator_count(RuntimeOrigin::root(), 1));
 		assert_eq!(Staking::collator_count(), 1);
+	});
+}
+
+#[test]
+fn set_ring_staking_contract_should_work() {
+	ExtBuilder.build().execute_with(|| {
+		assert_noop!(
+			Staking::set_ring_staking_contract(RuntimeOrigin::signed(AccountId(1)), AccountId(1)),
+			DispatchError::BadOrigin
+		);
+
+		assert_ok!(Staking::set_ring_staking_contract(RuntimeOrigin::root(), AccountId(1)));
+		assert_eq!(Staking::ring_staking_contract(), Some(AccountId(1)));
+	});
+}
+
+#[test]
+fn set_kton_staking_contract_should_work() {
+	ExtBuilder.build().execute_with(|| {
+		assert_noop!(
+			Staking::set_kton_staking_contract(RuntimeOrigin::signed(AccountId(1)), AccountId(1)),
+			DispatchError::BadOrigin
+		);
+
+		assert_ok!(Staking::set_kton_staking_contract(RuntimeOrigin::root(), AccountId(1)));
+		assert_eq!(Staking::kton_staking_contract(), Some(AccountId(1)));
 	});
 }

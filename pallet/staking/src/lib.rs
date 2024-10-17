@@ -186,6 +186,7 @@ pub mod pallet {
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
 		fn on_idle(_: BlockNumberFor<T>, mut remaining_weight: Weight) -> Weight {
+			Self::idle_allocate_ring_staking_reward(&mut remaining_weight);
 			Self::idle_unstake(&mut remaining_weight);
 
 			remaining_weight
@@ -199,9 +200,9 @@ pub mod pallet {
 		pub fn unstake_all_for(origin: OriginFor<T>, who: T::AccountId) -> DispatchResult {
 			ensure_signed(origin)?;
 
-			let l = <Ledgers<T>>::take(&who).ok_or(<Error<T>>::NoRecord)?;
+			let leger = <Ledgers<T>>::take(&who).ok_or(<Error<T>>::NoRecord)?;
 
-			Self::unstake_all_for_inner(who, l)?;
+			Self::unstake_all_for_inner(who, leger)?;
 
 			Ok(())
 		}
@@ -216,7 +217,9 @@ pub mod pallet {
 		) -> DispatchResult {
 			ensure_signed(origin)?;
 
-			Self::allocate_ring_staking_reward_of_inner(who)?;
+			let amount = <PendingRewards<T>>::take(&who).ok_or(<Error<T>>::NoReward)?;
+
+			Self::allocate_ring_staking_reward_of_inner(who, amount)?;
 
 			Ok(())
 		}
@@ -305,9 +308,10 @@ pub mod pallet {
 			T::KtonStaking::allocate(None, reward_to_kton_staking);
 		}
 
-		pub(crate) fn allocate_ring_staking_reward_of_inner(who: T::AccountId) -> DispatchResult {
-			let amount = <PendingRewards<T>>::take(&who).ok_or(<Error<T>>::NoReward)?;
-
+		pub(crate) fn allocate_ring_staking_reward_of_inner(
+			who: T::AccountId,
+			amount: Balance,
+		) -> DispatchResult {
 			T::RingStaking::allocate(Some(who.clone()), amount);
 
 			Self::deposit_event(Event::Payout { who, amount });
@@ -342,6 +346,37 @@ pub mod pallet {
 			}
 		}
 
+		fn idle_allocate_ring_staking_reward(remaining_weight: &mut Weight) {
+			// At least 1 read weight is required.
+			if let Some(rw) = remaining_weight.checked_sub(&T::DbWeight::get().reads(1)) {
+				*remaining_weight = rw;
+			} else {
+				return;
+			}
+
+			#[cfg(test)]
+			let weight = Weight::zero().add_ref_time(1);
+			#[cfg(not(test))]
+			let weight = T::WeightInfo::allocate_ring_staking_reward_of();
+			let mut reward_to_allocate = Vec::new();
+
+			for (who, amount) in <PendingRewards<T>>::iter() {
+				if let Some(rw) = remaining_weight.checked_sub(&weight) {
+					*remaining_weight = rw;
+
+					reward_to_allocate.push((who, amount));
+				} else {
+					break;
+				}
+			}
+
+			for (who, amount) in reward_to_allocate {
+				let _ = Self::allocate_ring_staking_reward_of_inner(who.clone(), amount);
+
+				<PendingRewards<T>>::remove(&who);
+			}
+		}
+
 		fn idle_unstake(remaining_weight: &mut Weight) {
 			// At least 1 read weight is required.
 			if let Some(rw) = remaining_weight.checked_sub(&T::DbWeight::get().reads(1)) {
@@ -350,9 +385,9 @@ pub mod pallet {
 				return;
 			}
 
-			#[cfg(feature = "test")]
+			#[cfg(test)]
 			let weight = Weight::zero().add_ref_time(1);
-			#[cfg(not(feature = "test"))]
+			#[cfg(not(test))]
 			let weight = T::WeightInfo::unstake_all_for();
 			let mut ledgers_to_migrate = Vec::new();
 
@@ -367,7 +402,9 @@ pub mod pallet {
 			}
 
 			for (who, l) in ledgers_to_migrate {
-				let _ = Self::unstake_all_for_inner(who, l);
+				let _ = Self::unstake_all_for_inner(who.clone(), l);
+
+				<Ledgers<T>>::remove(&who);
 			}
 		}
 
