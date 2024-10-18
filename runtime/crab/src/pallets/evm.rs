@@ -107,8 +107,6 @@ where
 					handle,
 				)),
 			// [0x600, 0x800) reserved for other stable precompiles.
-			a if a == addr(0x601) =>
-				Some(<darwinia_precompile_staking::Staking<Runtime>>::execute(handle)),
 			a if a == addr(0x602) =>
 				Some(<pallet_evm_precompile_conviction_voting::ConvictionVotingPrecompile<Runtime>>::execute(handle)),
 			// [0x800..) reserved for the experimental precompiles.

@@ -144,7 +144,7 @@ impl pallet_session::Config for Runtime {
 
 frame_support::parameter_types! {
 	pub const TreasuryPalletId: frame_support::PalletId = frame_support::PalletId(*b"da/trsry");
-	pub TreasuryAcct: AccountId = Treasury::account_id();
+	pub TreasuryAccount: AccountId = Treasury::account_id();
 }
 #[cfg(feature = "runtime-benchmarks")]
 pub struct DummyBenchmarkHelper;
@@ -175,7 +175,7 @@ impl pallet_treasury::Config for Runtime {
 	type MaxApprovals = ();
 	type OnSlash = ();
 	type PalletId = TreasuryPalletId;
-	type Paymaster = frame_support::traits::tokens::PayFromAccount<Balances, TreasuryAcct>;
+	type Paymaster = frame_support::traits::tokens::PayFromAccount<Balances, TreasuryAccount>;
 	type PayoutPeriod = ();
 	type ProposalBond = ();
 	type ProposalBondMaximum = ();
@@ -257,7 +257,7 @@ pub enum KtonStaking {}
 impl crate::Reward<AccountId> for KtonStaking {
 	fn allocate(_: Option<AccountId>, amount: Balance) {
 		let _ = Balances::transfer_keep_alive(
-			RuntimeOrigin::signed(TreasuryAcct::get()),
+			RuntimeOrigin::signed(TreasuryAccount::get()),
 			<KtonStakingContract<Runtime>>::get().unwrap(),
 			amount,
 		);
@@ -269,7 +269,7 @@ impl crate::Config for Runtime {
 	type KtonStaking = KtonStaking;
 	type RingStaking = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
-	type Treasury = TreasuryAcct;
+	type Treasury = TreasuryAccount;
 	type UnixTime = Timestamp;
 	type WeightInfo = ();
 }

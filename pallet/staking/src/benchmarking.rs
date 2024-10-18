@@ -33,9 +33,8 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
 		let a_cloned = a.clone();
 
-		// Worst-case scenario:
-		//
-		// The total number of deposit items has reached `darwinia_deposits::Config::MaxDeposits`.
+		<Ledgers<T>>::insert(&a, Ledger { ring: 1, deposits: BoundedVec::new() });
+
 		#[extrinsic_call]
 		_(RawOrigin::Signed(a), a_cloned);
 	}
@@ -44,6 +43,8 @@ mod benchmarks {
 	fn allocate_ring_staking_reward_of() {
 		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
 		let a_cloned = a.clone();
+
+		<PendingRewards<T>>::insert(&a, 1);
 
 		#[extrinsic_call]
 		_(RawOrigin::Signed(a), a_cloned);
@@ -78,7 +79,7 @@ mod benchmarks {
 
 	frame_benchmarking::impl_benchmark_test_suite!(
 		Pallet,
-		crate::mock::ExtBuilder::default().build(),
+		crate::mock::ExtBuilder.build(),
 		crate::mock::Runtime
 	);
 }
