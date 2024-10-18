@@ -235,7 +235,7 @@ pub mod pallet {
 				}
 			}
 
-			T::Ring::transfer(&account_id(), &who, to_claim.0, AllowDeath)?;
+			T::Ring::transfer(&account_id(), who, to_claim.0, AllowDeath)?;
 			T::Ring::transfer(&account_id(), &T::Treasury::get(), to_migrate.0, AllowDeath)?;
 			T::DepositMigrator::migrate(who.clone(), to_migrate.0, to_migrate.2)?;
 

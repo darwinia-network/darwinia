@@ -1630,7 +1630,6 @@ dependencies = [
  "darwinia-deposit",
  "darwinia-ethtx-forwarder",
  "darwinia-precompile-assets",
- "darwinia-precompile-deposit",
  "darwinia-precompile-staking",
  "darwinia-precompile-state-storage",
  "darwinia-staking",
@@ -2843,26 +2842,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-precompile-deposit"
-version = "6.7.1"
-dependencies = [
- "darwinia-deposit",
- "fp-evm",
- "frame-support",
- "frame-system",
- "pallet-balances",
- "pallet-evm",
- "pallet-timestamp",
- "parity-scale-codec",
- "precompile-utils 0.1.0",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std 14.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.7.2)",
-]
-
-[[package]]
 name = "darwinia-precompile-staking"
 version = "6.7.1"
 dependencies = [
@@ -2923,7 +2902,6 @@ dependencies = [
  "darwinia-deposit",
  "darwinia-ethtx-forwarder",
  "darwinia-precompile-assets",
- "darwinia-precompile-deposit",
  "darwinia-precompile-staking",
  "darwinia-precompile-state-storage",
  "darwinia-staking",
@@ -5754,7 +5732,6 @@ dependencies = [
  "darwinia-deposit",
  "darwinia-ethtx-forwarder",
  "darwinia-precompile-assets",
- "darwinia-precompile-deposit",
  "darwinia-precompile-staking",
  "darwinia-precompile-state-storage",
  "darwinia-staking",

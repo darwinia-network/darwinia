@@ -19,43 +19,13 @@
 // darwinia
 use crate::*;
 
-pub enum RingStaking {}
-impl darwinia_staking::Stake for RingStaking {
-	type AccountId = AccountId;
-	type Item = Balance;
-
-	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		<Balances as frame_support::traits::Currency<_>>::transfer(
-			who,
-			&darwinia_staking::account_id(),
-			item,
-			frame_support::traits::ExistenceRequirement::AllowDeath,
-		)
-	}
-
-	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		<Balances as frame_support::traits::Currency<_>>::transfer(
-			&darwinia_staking::account_id(),
-			who,
-			item,
-			frame_support::traits::ExistenceRequirement::AllowDeath,
-		)
-	}
-}
-
 impl darwinia_staking::Config for Runtime {
 	type Currency = Balances;
-	type Deposit = Deposit;
 	type IssuingManager = darwinia_staking::BalancesIssuing<Self>;
 	type KtonStaking = darwinia_staking::KtonStaking<Self>;
-	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
-	type Ring = RingStaking;
 	type RingStaking = darwinia_staking::RingStaking<Self>;
 	type RuntimeEvent = RuntimeEvent;
-	type ShouldEndSession = darwinia_staking::ShouldEndSession<Self>;
 	type Treasury = pallet_config::TreasuryAccount;
 	type UnixTime = Timestamp;
 	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;
 }
-#[cfg(not(feature = "runtime-benchmarks"))]
-impl darwinia_staking::DepositConfig for Runtime {}

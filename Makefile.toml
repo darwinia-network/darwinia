@@ -19,7 +19,7 @@ args      = ["fmt"]
 [tasks.clippy]
 env     = { "SKIP_WASM_BUILD" = "1" }
 command = "cargo"
-args    = ["clippy"]
+args    = ["clippy", "--all-features"]
 
 [tasks.c]
 alias = "clippy"

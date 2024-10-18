@@ -25,8 +25,6 @@ mod tests;
 
 // core
 use core::marker::PhantomData;
-// darwinia
-use darwinia_staking::Stake;
 // moonbeam
 use precompile_utils::prelude::*;
 // polkadot-sdk
@@ -35,7 +33,7 @@ use frame_support::{
 	traits::OriginTrait,
 };
 use sp_core::{H160, U256};
-use sp_runtime::{traits::Dispatchable, Perbill};
+use sp_runtime::traits::Dispatchable;
 use sp_std::prelude::*;
 
 pub struct Staking<Runtime>(PhantomData<Runtime>);
@@ -50,97 +48,37 @@ where
 	<Runtime::RuntimeCall as Dispatchable>::RuntimeOrigin: From<Option<Runtime::AccountId>>,
 	<Runtime as frame_system::Config>::AccountId: From<H160>,
 	<<Runtime as frame_system::Config>::RuntimeCall as Dispatchable>::RuntimeOrigin: OriginTrait,
-	<<Runtime as darwinia_staking::Config>::Deposit as Stake>::Item: From<u16>,
 {
-	#[precompile::public("stake(uint256,uint16[])")]
-	fn stake(
-		handle: &mut impl PrecompileHandle,
-		ring_amount: U256,
-		deposits: Vec<u16>,
-	) -> EvmResult<bool> {
-		let origin = handle.context().caller.into();
-		let deposits = deposits.into_iter().map(|i| i.into()).collect();
+	// #[precompile::public("unstake(uint256,uint16[])")]
+	// fn unstake(
+	// 	handle: &mut impl PrecompileHandle,
+	// 	ring_amount: U256,
+	// 	deposits: Vec<u16>,
+	// ) -> EvmResult<bool> {
+	// 	let origin = handle.context().caller.into();
+	// 	let deposits = deposits.into_iter().map(|i| i.into()).collect();
 
-		RuntimeHelper::<Runtime>::try_dispatch(
-			handle,
-			Some(origin).into(),
-			darwinia_staking::Call::<Runtime>::stake {
-				ring_amount: ring_amount.as_u128(),
-				deposits,
-			},
-		)?;
-		Ok(true)
-	}
+	// 	RuntimeHelper::<Runtime>::try_dispatch(
+	// 		handle,
+	// 		Some(origin).into(),
+	// 		darwinia_staking::Call::<Runtime>::unstake {
+	// 			ring_amount: ring_amount.as_u128(),
+	// 			deposits,
+	// 		},
+	// 	)?;
+	// 	Ok(true)
+	// }
 
-	#[precompile::public("unstake(uint256,uint16[])")]
-	fn unstake(
-		handle: &mut impl PrecompileHandle,
-		ring_amount: U256,
-		deposits: Vec<u16>,
-	) -> EvmResult<bool> {
-		let origin = handle.context().caller.into();
-		let deposits = deposits.into_iter().map(|i| i.into()).collect();
+	// #[precompile::public("payout(address)")]
+	// fn payout(handle: &mut impl PrecompileHandle, who: Address) -> EvmResult<bool> {
+	// 	let who: H160 = who.into();
+	// 	let origin = handle.context().caller.into();
 
-		RuntimeHelper::<Runtime>::try_dispatch(
-			handle,
-			Some(origin).into(),
-			darwinia_staking::Call::<Runtime>::unstake {
-				ring_amount: ring_amount.as_u128(),
-				deposits,
-			},
-		)?;
-		Ok(true)
-	}
-
-	#[precompile::public("collect(uint32)")]
-	fn collect(handle: &mut impl PrecompileHandle, commission: u32) -> EvmResult<bool> {
-		let origin = handle.context().caller.into();
-
-		RuntimeHelper::<Runtime>::try_dispatch(
-			handle,
-			Some(origin).into(),
-			darwinia_staking::Call::<Runtime>::collect {
-				commission: Perbill::from_percent(commission),
-			},
-		)?;
-		Ok(true)
-	}
-
-	#[precompile::public("nominate(address)")]
-	fn nominate(handle: &mut impl PrecompileHandle, target: Address) -> EvmResult<bool> {
-		let target: H160 = target.into();
-		let origin = handle.context().caller.into();
-
-		RuntimeHelper::<Runtime>::try_dispatch(
-			handle,
-			Some(origin).into(),
-			darwinia_staking::Call::<Runtime>::nominate { target: target.into() },
-		)?;
-		Ok(true)
-	}
-
-	#[precompile::public("chill()")]
-	fn chill(handle: &mut impl PrecompileHandle) -> EvmResult<bool> {
-		let origin = handle.context().caller.into();
-
-		RuntimeHelper::<Runtime>::try_dispatch(
-			handle,
-			Some(origin).into(),
-			darwinia_staking::Call::<Runtime>::chill {},
-		)?;
-		Ok(true)
-	}
-
-	#[precompile::public("payout(address)")]
-	fn payout(handle: &mut impl PrecompileHandle, who: Address) -> EvmResult<bool> {
-		let who: H160 = who.into();
-		let origin = handle.context().caller.into();
-
-		RuntimeHelper::<Runtime>::try_dispatch(
-			handle,
-			Some(origin).into(),
-			darwinia_staking::Call::<Runtime>::payout { who: who.into() },
-		)?;
-		Ok(true)
-	}
+	// 	RuntimeHelper::<Runtime>::try_dispatch(
+	// 		handle,
+	// 		Some(origin).into(),
+	// 		darwinia_staking::Call::<Runtime>::payout { who: who.into() },
+	// 	)?;
+	// 	Ok(true)
+	// }
 }

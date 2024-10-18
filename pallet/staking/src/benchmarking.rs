@@ -18,7 +18,6 @@
 
 // darwinia
 use crate::*;
-use dc_types::UNIT;
 // polkadot-sdk
 use frame_benchmarking::v2;
 use frame_system::RawOrigin;
@@ -28,12 +27,10 @@ use sp_std::prelude::*;
 mod benchmarks {
 	// darwinia
 	use super::*;
-	// polkadot-sdk
-	use frame_support::traits::Currency;
 
 	#[benchmark]
 	fn unstake_all_for() {
-		let a = frame_benchmarking::whitelisted_caller();
+		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
 		let a_cloned = a.clone();
 
 		// Worst-case scenario:

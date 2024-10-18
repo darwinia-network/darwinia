@@ -59,62 +59,6 @@ impl<T: frame_system::Config> darwinia_deposit::WeightInfo for WeightInfo<T> {
 	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
 	/// Storage: `Timestamp::Now` (r:1 w:0)
 	/// Proof: `Timestamp::Now` (`max_values`: Some(1), `max_size`: Some(8), added: 503, mode: `MaxEncodedLen`)
-	/// Storage: `System::Account` (r:1 w:1)
-	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
-	/// Storage: `Assets::Asset` (r:1 w:1)
-	/// Proof: `Assets::Asset` (`max_values`: None, `max_size`: Some(166), added: 2641, mode: `MaxEncodedLen`)
-	/// Storage: `Assets::Account` (r:1 w:1)
-	/// Proof: `Assets::Account` (`max_values`: None, `max_size`: Some(114), added: 2589, mode: `MaxEncodedLen`)
-	fn lock() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `26812`
-		//  Estimated: `29615`
-		// Minimum execution time: 83_000_000 picoseconds.
-		Weight::from_parts(100_000_000, 0)
-			.saturating_add(Weight::from_parts(0, 29615))
-			.saturating_add(T::DbWeight::get().reads(5))
-			.saturating_add(T::DbWeight::get().writes(4))
-	}
-	/// Storage: `Timestamp::Now` (r:1 w:0)
-	/// Proof: `Timestamp::Now` (`max_values`: Some(1), `max_size`: Some(8), added: 503, mode: `MaxEncodedLen`)
-	/// Storage: `Deposit::Deposits` (r:1 w:1)
-	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
-	/// Storage: `System::Account` (r:1 w:1)
-	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
-	fn claim() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `26541`
-		//  Estimated: `29615`
-		// Minimum execution time: 65_000_000 picoseconds.
-		Weight::from_parts(84_000_000, 0)
-			.saturating_add(Weight::from_parts(0, 29615))
-			.saturating_add(T::DbWeight::get().reads(3))
-			.saturating_add(T::DbWeight::get().writes(2))
-	}
-	/// Storage: `Deposit::Deposits` (r:1 w:1)
-	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
-	/// Storage: `Timestamp::Now` (r:1 w:0)
-	/// Proof: `Timestamp::Now` (`max_values`: Some(1), `max_size`: Some(8), added: 503, mode: `MaxEncodedLen`)
-	/// Storage: `Assets::Account` (r:1 w:1)
-	/// Proof: `Assets::Account` (`max_values`: None, `max_size`: Some(114), added: 2589, mode: `MaxEncodedLen`)
-	/// Storage: `Assets::Asset` (r:1 w:1)
-	/// Proof: `Assets::Asset` (`max_values`: None, `max_size`: Some(166), added: 2641, mode: `MaxEncodedLen`)
-	/// Storage: `System::Account` (r:1 w:1)
-	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
-	fn claim_with_penalty() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `26863`
-		//  Estimated: `29615`
-		// Minimum execution time: 95_000_000 picoseconds.
-		Weight::from_parts(111_000_000, 0)
-			.saturating_add(Weight::from_parts(0, 29615))
-			.saturating_add(T::DbWeight::get().reads(5))
-			.saturating_add(T::DbWeight::get().writes(4))
-	}
-	/// Storage: `Deposit::Deposits` (r:1 w:1)
-	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
-	/// Storage: `Timestamp::Now` (r:1 w:0)
-	/// Proof: `Timestamp::Now` (`max_values`: Some(1), `max_size`: Some(8), added: 503, mode: `MaxEncodedLen`)
 	/// Storage: `System::Account` (r:3 w:2)
 	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
 	/// Storage: `Deposit::DepositContract` (r:1 w:0)
@@ -127,15 +71,15 @@ impl<T: frame_system::Config> darwinia_deposit::WeightInfo for WeightInfo<T> {
 	/// Proof: `System::Digest` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
 	/// Storage: `Ethereum::Pending` (r:1 w:1)
 	/// Proof: `Ethereum::Pending` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
-	fn migrate() -> Weight {
+	fn migrate_for() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `27484`
-		//  Estimated: `33424`
-		// Minimum execution time: 3_936_000_000 picoseconds.
-		Weight::from_parts(4_548_000_000, 0)
-			.saturating_add(Weight::from_parts(0, 33424))
-			.saturating_add(T::DbWeight::get().reads(11))
-			.saturating_add(T::DbWeight::get().writes(4))
+		//  Measured:  `27516`
+		//  Estimated: `33456`
+		// Minimum execution time: 4_057_000 nanoseconds.
+		Weight::from_parts(4_577_000_000, 0)
+			.saturating_add(Weight::from_parts(33456, 0))
+			.saturating_add(T::DbWeight::get().reads(11_u64))
+			.saturating_add(T::DbWeight::get().writes(4_u64))
 	}
 	/// Storage: `Deposit::DepositContract` (r:0 w:1)
 	/// Proof: `Deposit::DepositContract` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
@@ -143,9 +87,9 @@ impl<T: frame_system::Config> darwinia_deposit::WeightInfo for WeightInfo<T> {
 		// Proof Size summary in bytes:
 		//  Measured:  `0`
 		//  Estimated: `0`
-		// Minimum execution time: 2_000_000 picoseconds.
+		// Minimum execution time: 2_000 nanoseconds.
 		Weight::from_parts(3_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 0))
-			.saturating_add(T::DbWeight::get().writes(1))
+			.saturating_add(T::DbWeight::get().writes(1_u64))
 	}
 }

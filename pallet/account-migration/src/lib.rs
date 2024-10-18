@@ -108,10 +108,7 @@ pub mod pallet {
 		> + pallet_assets::Config<Balance = Balance, AssetId = AssetId>
 		+ pallet_balances::Config<Balance = Balance>
 		+ darwinia_deposit::Config
-		+ darwinia_staking::Config<
-			Deposit = darwinia_deposit::Pallet<Self>,
-			MaxDeposits = ConstU32<512>,
-		>
+		+ darwinia_staking::Config
 	{
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
