@@ -1613,7 +1613,7 @@ dependencies = [
 
 [[package]]
 name = "crab-runtime"
-version = "6.7.1"
+version = "6.7.2"
 dependencies = [
  "array-bytes 6.2.3",
  "cumulus-pallet-aura-ext",
@@ -2622,7 +2622,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia"
-version = "6.7.1"
+version = "6.7.2"
 dependencies = [
  "array-bytes 6.2.3",
  "async-trait",
@@ -2706,7 +2706,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-account-migration"
-version = "6.7.1"
+version = "6.7.2"
 dependencies = [
  "array-bytes 6.2.3",
  "darwinia-deposit",
@@ -2730,7 +2730,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-asset-limit"
-version = "6.7.1"
+version = "6.7.2"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2741,7 +2741,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-common-runtime"
-version = "6.7.1"
+version = "6.7.2"
 dependencies = [
  "array-bytes 6.2.3",
  "cumulus-primitives-core",
@@ -2772,7 +2772,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-deposit"
-version = "6.7.1"
+version = "6.7.2"
 dependencies = [
  "darwinia-ethtx-forwarder",
  "darwinia-staking-traits",
@@ -2797,7 +2797,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-ethtx-forwarder"
-version = "6.7.1"
+version = "6.7.2"
 dependencies = [
  "array-bytes 6.2.3",
  "ethabi",
@@ -2826,7 +2826,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-assets"
-version = "6.7.1"
+version = "6.7.2"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -2847,7 +2847,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-deposit"
-version = "6.7.1"
+version = "6.7.2"
 dependencies = [
  "darwinia-deposit",
  "fp-evm",
@@ -2867,7 +2867,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-staking"
-version = "6.7.1"
+version = "6.7.2"
 dependencies = [
  "darwinia-deposit",
  "darwinia-staking",
@@ -2889,7 +2889,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-state-storage"
-version = "6.7.1"
+version = "6.7.2"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -2908,7 +2908,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-runtime"
-version = "6.7.1"
+version = "6.7.2"
 dependencies = [
  "array-bytes 6.2.3",
  "cumulus-pallet-aura-ext",
@@ -3009,7 +3009,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking"
-version = "6.7.1"
+version = "6.7.2"
 dependencies = [
  "darwinia-deposit",
  "darwinia-ethtx-forwarder",
@@ -3039,7 +3039,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking-traits"
-version = "6.7.1"
+version = "6.7.2"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -3074,7 +3074,7 @@ dependencies = [
 
 [[package]]
 name = "dc-inflation"
-version = "6.7.1"
+version = "6.7.2"
 dependencies = [
  "dc-types",
  "primitive-types",
@@ -3084,7 +3084,7 @@ dependencies = [
 
 [[package]]
 name = "dc-primitives"
-version = "6.7.1"
+version = "6.7.2"
 dependencies = [
  "dc-types",
  "fp-account",
@@ -3094,7 +3094,7 @@ dependencies = [
 
 [[package]]
 name = "dc-types"
-version = "6.7.1"
+version = "6.7.2"
 
 [[package]]
 name = "der"
@@ -5752,7 +5752,7 @@ checksum = "c33070833c9ee02266356de0c43f723152bd38bd96ddf52c82b3af10c9138b28"
 
 [[package]]
 name = "koi-runtime"
-version = "6.7.1"
+version = "6.7.2"
 dependencies = [
  "array-bytes 6.2.3",
  "cumulus-pallet-aura-ext",
