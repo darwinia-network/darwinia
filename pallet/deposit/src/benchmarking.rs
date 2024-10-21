@@ -35,8 +35,8 @@ mod benchmarks {
 
 		<Pallet<T>>::set_deposit_contract(RawOrigin::Root.into(), a.clone()).unwrap();
 
-		T::Ring::make_free_balance_be(&account_id(), 512);
-		T::Ring::make_free_balance_be(&T::Treasury::get(), 2 << 127);
+		T::Ring::make_free_balance_be(&account_id(), 2 << 126);
+		T::Ring::make_free_balance_be(&T::Treasury::get(), 2 << 126);
 
 		// Worst-case scenario:
 		//

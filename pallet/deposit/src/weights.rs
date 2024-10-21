@@ -64,17 +64,27 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
 	/// Storage: `Timestamp::Now` (r:1 w:0)
 	/// Proof: `Timestamp::Now` (`max_values`: Some(1), `max_size`: Some(8), added: 503, mode: `MaxEncodedLen`)
-	/// Storage: `System::Account` (r:1 w:1)
+	/// Storage: `System::Account` (r:3 w:2)
 	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
+	/// Storage: `Deposit::DepositContract` (r:1 w:0)
+	/// Proof: `Deposit::DepositContract` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
+	/// Storage: `TransactionPayment::NextFeeMultiplier` (r:1 w:0)
+	/// Proof: `TransactionPayment::NextFeeMultiplier` (`max_values`: Some(1), `max_size`: Some(16), added: 511, mode: `MaxEncodedLen`)
+	/// Storage: `EVM::AccountCodes` (r:2 w:0)
+	/// Proof: `EVM::AccountCodes` (`max_values`: None, `max_size`: None, mode: `Measured`)
+	/// Storage: `System::Digest` (r:1 w:0)
+	/// Proof: `System::Digest` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
+	/// Storage: `Ethereum::Pending` (r:1 w:1)
+	/// Proof: `Ethereum::Pending` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
 	fn migrate_for() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `26491`
-		//  Estimated: `29615`
-		// Minimum execution time: 65_000 nanoseconds.
-		Weight::from_parts(67_000_000, 0)
-			.saturating_add(Weight::from_parts(29615, 0))
-			.saturating_add(T::DbWeight::get().reads(3_u64))
-			.saturating_add(T::DbWeight::get().writes(2_u64))
+		//  Measured:  `27516`
+		//  Estimated: `33456`
+		// Minimum execution time: 220_000 nanoseconds.
+		Weight::from_parts(225_000_000, 0)
+			.saturating_add(Weight::from_parts(33456, 0))
+			.saturating_add(T::DbWeight::get().reads(11_u64))
+			.saturating_add(T::DbWeight::get().writes(4_u64))
 	}
 	/// Storage: `Deposit::DepositContract` (r:0 w:1)
 	/// Proof: `Deposit::DepositContract` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
@@ -95,17 +105,27 @@ impl WeightInfo for () {
 	/// Proof: `Deposit::Deposits` (`max_values`: None, `max_size`: Some(26150), added: 28625, mode: `MaxEncodedLen`)
 	/// Storage: `Timestamp::Now` (r:1 w:0)
 	/// Proof: `Timestamp::Now` (`max_values`: Some(1), `max_size`: Some(8), added: 503, mode: `MaxEncodedLen`)
-	/// Storage: `System::Account` (r:1 w:1)
+	/// Storage: `System::Account` (r:3 w:2)
 	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
+	/// Storage: `Deposit::DepositContract` (r:1 w:0)
+	/// Proof: `Deposit::DepositContract` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
+	/// Storage: `TransactionPayment::NextFeeMultiplier` (r:1 w:0)
+	/// Proof: `TransactionPayment::NextFeeMultiplier` (`max_values`: Some(1), `max_size`: Some(16), added: 511, mode: `MaxEncodedLen`)
+	/// Storage: `EVM::AccountCodes` (r:2 w:0)
+	/// Proof: `EVM::AccountCodes` (`max_values`: None, `max_size`: None, mode: `Measured`)
+	/// Storage: `System::Digest` (r:1 w:0)
+	/// Proof: `System::Digest` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
+	/// Storage: `Ethereum::Pending` (r:1 w:1)
+	/// Proof: `Ethereum::Pending` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
 	fn migrate_for() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `26491`
-		//  Estimated: `29615`
-		// Minimum execution time: 65_000 nanoseconds.
-		Weight::from_parts(67_000_000, 0)
-			.saturating_add(Weight::from_parts(29615, 0))
-			.saturating_add(RocksDbWeight::get().reads(3_u64))
-			.saturating_add(RocksDbWeight::get().writes(2_u64))
+		//  Measured:  `27516`
+		//  Estimated: `33456`
+		// Minimum execution time: 220_000 nanoseconds.
+		Weight::from_parts(225_000_000, 0)
+			.saturating_add(Weight::from_parts(33456, 0))
+			.saturating_add(RocksDbWeight::get().reads(11_u64))
+			.saturating_add(RocksDbWeight::get().writes(4_u64))
 	}
 	/// Storage: `Deposit::DepositContract` (r:0 w:1)
 	/// Proof: `Deposit::DepositContract` (`max_values`: Some(1), `max_size`: Some(20), added: 515, mode: `MaxEncodedLen`)
