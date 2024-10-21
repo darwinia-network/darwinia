@@ -1,9 +1,9 @@
 [config]
 default_to_workspace = false
-# skip_core_tasks      = true
-# skip_git_env_info    = true
-# skip_rust_env_info   = true
-# skip_crate_env_info  = true
+skip_core_tasks      = true
+skip_git_env_info    = true
+skip_rust_env_info   = true
+skip_crate_env_info  = true
 
 [env]
 CHAIN             = "all"
@@ -19,7 +19,7 @@ args      = ["fmt"]
 [tasks.clippy]
 env     = { "SKIP_WASM_BUILD" = "1" }
 command = "cargo"
-args    = ["clippy"]
+args    = ["clippy", "--all-features"]
 
 [tasks.c]
 alias = "clippy"

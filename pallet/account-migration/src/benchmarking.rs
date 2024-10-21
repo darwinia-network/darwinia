@@ -79,18 +79,14 @@ mod benchmarks {
 					expired_time: Default::default(),
 					in_use: Default::default(),
 				};
-				<T as darwinia_deposit::Config>::MaxDeposits::get() as usize
+				512
 			],
 		);
 		<Ledgers<T>>::insert(
 			from,
 			OldLedger {
 				staked_ring: 1,
-				staked_deposits: BoundedVec::truncate_from(vec![
-					Default::default();
-					<T as darwinia_deposit::Config>::MaxDeposits::get()
-						as usize
-				]),
+				staked_deposits: BoundedVec::truncate_from(vec![Default::default(); 512]),
 				unstaking_ring: BoundedVec::truncate_from(vec![
 					(
 						Default::default(),

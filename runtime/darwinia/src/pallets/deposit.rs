@@ -19,34 +19,8 @@
 // darwinia
 use crate::*;
 
-pub enum KtonMinting {}
-impl darwinia_deposit::SimpleAsset for KtonMinting {
-	type AccountId = AccountId;
-
-	fn mint(beneficiary: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		Assets::mint(
-			RuntimeOrigin::signed(KTON_ADMIN),
-			(AssetIds::Kton as AssetId).into(),
-			*beneficiary,
-			amount,
-		)
-	}
-
-	fn burn(who: &Self::AccountId, amount: Balance) -> sp_runtime::DispatchResult {
-		let asset_id = AssetIds::Kton as _;
-
-		if Assets::balance(asset_id, who) < amount {
-			Err(<pallet_assets::Error<Runtime>>::BalanceLow)?;
-		}
-
-		Assets::burn(RuntimeOrigin::signed(KTON_ADMIN), asset_id.into(), *who, amount)
-	}
-}
-
 impl darwinia_deposit::Config for Runtime {
 	type DepositMigrator = darwinia_deposit::DepositMigrator<Self>;
-	type Kton = KtonMinting;
-	type MaxDeposits = ConstU32<512>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
 	type Treasury = pallet_config::TreasuryAccount;

@@ -398,12 +398,14 @@ where
 			);
 
 			// Create a mocked parachain inherent data provider to pass all validations in the
-			// parachain system. Without this, the pending functionality will fail.
-			let mut state_proof_builder =
-				cumulus_test_relay_sproof_builder::RelayStateSproofBuilder::default();
-			state_proof_builder.para_id = para_id;
-			state_proof_builder.current_slot = relay_chain_slot;
-			state_proof_builder.included_para_head = Some(polkadot_primitives::HeadData(vec![]));
+			// parachain system.
+			// Without this, the pending functionality will fail.
+			let state_proof_builder = cumulus_test_relay_sproof_builder::RelayStateSproofBuilder {
+				para_id,
+				current_slot: relay_chain_slot,
+				included_para_head: Some(polkadot_primitives::HeadData(vec![])),
+				..Default::default()
+			};
 			let (relay_parent_storage_root, relay_chain_state) =
 				state_proof_builder.into_state_root_and_proof();
 			let parachain_inherent_data =
@@ -924,12 +926,14 @@ where
 				SlotDuration::from_millis(RELAY_CHAIN_SLOT_DURATION_MILLIS as u64),
 			);
 			// Create a mocked parachain inherent data provider to pass all validations in the
-			// parachain system. Without this, the pending functionality will fail.
-			let mut state_proof_builder =
-				cumulus_test_relay_sproof_builder::RelayStateSproofBuilder::default();
-			state_proof_builder.para_id = para_id;
-			state_proof_builder.current_slot = relay_chain_slot;
-			state_proof_builder.included_para_head = Some(polkadot_primitives::HeadData(vec![]));
+			// parachain system.
+			// Without this, the pending functionality will fail.
+			let state_proof_builder = cumulus_test_relay_sproof_builder::RelayStateSproofBuilder {
+				para_id,
+				current_slot: relay_chain_slot,
+				included_para_head: Some(polkadot_primitives::HeadData(vec![])),
+				..Default::default()
+			};
 			let (relay_parent_storage_root, relay_chain_state) =
 				state_proof_builder.into_state_root_and_proof();
 			let parachain_inherent_data =

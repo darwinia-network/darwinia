@@ -24,8 +24,6 @@
 #[cfg(test)]
 mod test;
 
-// crates.io
-use primitive_types::U256;
 // darwinia
 use dc_types::{Balance, Moment};
 // github
@@ -147,34 +145,4 @@ pub fn issuing_in_period(period: Moment, elapsed: Moment) -> Option<Balance> {
 	let to_issue_per_millisecs = U94F34::checked_from_num(to_issue)? / MILLISECS_PER_YEAR;
 
 	Some(to_issue_per_millisecs.checked_mul(U94F34::checked_from_num(period)?)?.floor().to_num())
-}
-
-/// Calculate the reward of a deposit.
-///
-/// Reference(s):
-/// - <https://github.com/evolutionlandorg/bank/blob/master/contracts/GringottsBank.sol#L280>
-pub fn deposit_interest(amount: Balance, months: u8) -> Balance {
-	// The result of `((quot - 1) * precision + rem * precision / d)` is `197` when months is
-	// `12`.
-	//
-	// The default interest is `1_000`.
-	// So, we directly use `1_970_000` here instead `interest * 197 * 10^7`.
-	fn f(amount: U256, precision: U256, quot: U256, rem: U256, d: U256) -> Option<Balance> {
-		Some(
-			(amount.checked_mul(
-				precision.checked_mul(quot.checked_sub(1_u8.into())?)? + precision * rem / d,
-			)? / 1_970_000_u32)
-				.as_u128(),
-		)
-	}
-
-	let amount = U256::from(amount);
-	let months = U256::from(months);
-	let n = U256::from(67_u8).pow(months);
-	let d = U256::from(66_u8).pow(months);
-	let quot = n / d;
-	let rem = n % d;
-	let precision = U256::from(1_000_u16);
-
-	f(amount, precision, quot, rem, d).unwrap_or_default()
 }

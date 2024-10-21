@@ -61,9 +61,7 @@ pub fn development_config() -> ChainSpec {
 		"darwiniaStaking": {
 			"now": SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
 			"elapsedTime": 0,
-			"rateLimit": 20_000_000 * UNIT,
-			"collatorCount": collators.len(),
-			"collators": collators.iter().map(|(a, _)| (a, UNIT)).collect::<Vec<_>>()
+			"collatorCount": collators.len()
 		},
 		"session": {
 			"keys": collators.into_iter().map(|(a, sks)| (a, a, sks)).collect::<Vec<_>>()
@@ -166,9 +164,7 @@ pub fn genesis_config() -> ChainSpec {
 		"darwiniaStaking": {
 			"now": SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
 			"elapsedTime": 0,
-			"rateLimit": 20_000_000 * UNIT,
-			"collatorCount": 3,
-			"collators": collators.iter().map(|(a, _)| (a, UNIT)).collect::<Vec<_>>()
+			"collatorCount": 3
 		},
 		"session": {
 			"keys": collators.iter().map(|(a, sks)| (a, a, sks)).collect::<Vec<_>>()

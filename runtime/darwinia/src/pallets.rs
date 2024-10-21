@@ -42,8 +42,6 @@ mod assets;
 pub use assets::*;
 
 mod deposit;
-#[cfg(feature = "runtime-benchmarks")]
-pub use deposit::*;
 
 mod account_migration;
 

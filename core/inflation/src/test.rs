@@ -81,23 +81,3 @@ fn issuing_map_should_work() {
 		unissued -= issued;
 	});
 }
-
-#[test]
-fn deposit_interest_should_work() {
-	let precision = 10_000_f64;
-
-	for (&expect_interest, months) in [
-		0.0761_f64, 0.1522, 0.2335, 0.3096, 0.3959, 0.4771, 0.5634, 0.6446, 0.7309, 0.8223, 0.9086,
-		1.0000, 1.0913, 1.1878, 1.2842, 1.3807, 1.4771, 1.5736, 1.6751, 1.7766, 1.8832, 1.9898,
-		2.0964, 2.2030, 2.3147, 2.4263, 2.5380, 2.6548, 2.7715, 2.8934, 3.0101, 3.1370, 3.2588,
-		3.3857, 3.5126, 3.6446,
-	]
-	.iter()
-	.zip(1_u8..)
-	{
-		let interest = deposit_interest(10_000_u128 * UNIT, months) as f64 / UNIT as f64;
-		let interest = (interest * precision).floor() / precision;
-
-		assert_eq!(interest, expect_interest);
-	}
-}

@@ -25,8 +25,6 @@ darwinia-common-runtime           = { workspace = true }
 darwinia-deposit                  = { workspace = true }
 darwinia-ethtx-forwarder          = { workspace = true }
 darwinia-precompile-assets        = { workspace = true }
-darwinia-precompile-deposit       = { workspace = true }
-darwinia-precompile-staking       = { workspace = true }
 darwinia-precompile-state-storage = { workspace = true }
 darwinia-staking                  = { workspace = true }
 dc-primitives                     = { workspace = true }
@@ -134,8 +132,6 @@ std = [
 	"darwinia-deposit/std",
 	"darwinia-ethtx-forwarder/std",
 	"darwinia-precompile-assets/std",
-	"darwinia-precompile-deposit/std",
-	"darwinia-precompile-staking/std",
 	"darwinia-precompile-state-storage/std",
 	"darwinia-staking/std",
 	"dc-primitives/std",
@@ -229,7 +225,6 @@ runtime-benchmarks = [
 	"darwinia-deposit/runtime-benchmarks",
 	"darwinia-ethtx-forwarder/runtime-benchmarks",
 	"darwinia-precompile-assets/runtime-benchmarks",
-	"darwinia-precompile-staking/runtime-benchmarks",
 	"darwinia-staking/runtime-benchmarks",
 
 	# frontier

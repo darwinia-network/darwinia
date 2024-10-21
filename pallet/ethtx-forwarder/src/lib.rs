@@ -186,8 +186,8 @@ impl<T: Config> Pallet<T> {
 				action: request.action,
 				value: request.value,
 				input: request.input,
-				// copied from:
-				// https://github.com/rust-ethereum/ethereum/blob/24739cc8ba6e9d8ee30ada8ec92161e4c48d578e/src/transaction.rs#L798
+				// Copied from:
+				// - https://github.com/rust-ethereum/ethereum/blob/24739cc8ba6e9d8ee30ada8ec92161e4c48d578e/src/transaction.rs#L798
 				signature: TransactionSignature::new(
 					38,
 					H256([
@@ -211,8 +211,8 @@ impl<T: Config> Pallet<T> {
 					value: request.value,
 					input: request.input,
 					access_list: Default::default(),
-					// copied from:
-					// https://github.com/rust-ethereum/ethereum/blob/24739cc8ba6e9d8ee30ada8ec92161e4c48d578e/src/transaction.rs#L873-L875
+					// Copied from:
+					// - https://github.com/rust-ethereum/ethereum/blob/24739cc8ba6e9d8ee30ada8ec92161e4c48d578e/src/transaction.rs#L873-L875
 					odd_y_parity: false,
 					// 36b241b061a36a32ab7fe86c7aa9eb592dd59018cd0443adc0903590c16b02b0
 					r: H256([
@@ -237,8 +237,8 @@ impl<T: Config> Pallet<T> {
 					value: request.value,
 					input: request.input,
 					access_list: Default::default(),
-					// copied from:
-					// https://github.com/rust-ethereum/ethereum/blob/24739cc8ba6e9d8ee30ada8ec92161e4c48d578e/src/transaction.rs#L873-L875
+					// Copied from:
+					// - https://github.com/rust-ethereum/ethereum/blob/24739cc8ba6e9d8ee30ada8ec92161e4c48d578e/src/transaction.rs#L873-L875
 					odd_y_parity: false,
 					// 36b241b061a36a32ab7fe86c7aa9eb592dd59018cd0443adc0903590c16b02b0
 					r: H256([
@@ -280,7 +280,11 @@ impl<T: Config> Pallet<T> {
 		.validate_in_block_for(&who)
 		.and_then(|v| v.with_base_fee())
 		.and_then(|v| v.with_balance_for(&who))
-		.map_err(|e| <Error<T>>::ValidationError(e))?;
+		.map_err(|e| {
+			log::error!("transaction validation failed due to {e:?}");
+
+			<Error<T>>::ValidationError(e)
+		})?;
 
 		Ok(transaction)
 	}
@@ -358,7 +362,7 @@ pub enum TxType {
 }
 
 // TODO: replace it with upstream error type
-#[derive(Encode, Decode, TypeInfo, PalletError)]
+#[derive(Debug, Encode, Decode, TypeInfo, PalletError)]
 pub enum TxErrorWrapper {
 	GasLimitTooLow,
 	GasLimitTooHigh,
