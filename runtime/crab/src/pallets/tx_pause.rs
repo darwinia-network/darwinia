@@ -29,7 +29,7 @@ pub struct TxPauseWhitelistedCalls;
 // 		false
 // 	}
 // }
-#[cfg(not(feature = "runtime-benchmarks"))]
+// #[cfg(not(feature = "runtime-benchmarks"))]
 impl frame_support::traits::Contains<pallet_tx_pause::RuntimeCallNameOf<Runtime>>
 	for TxPauseWhitelistedCalls
 {
