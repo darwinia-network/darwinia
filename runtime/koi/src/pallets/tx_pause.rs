@@ -21,15 +21,15 @@ use crate::*;
 
 pub struct TxPauseWhitelistedCalls;
 // This conflicts with runtime test.
-// #[cfg(feature = "runtime-benchmarks")]
-// impl frame_support::traits::Contains<pallet_tx_pause::RuntimeCallNameOf<Runtime>>
-// 	for TxPauseWhitelistedCalls
-// {
-// 	fn contains(_: &pallet_tx_pause::RuntimeCallNameOf<Runtime>) -> bool {
-// 		false
-// 	}
-// }
-// #[cfg(not(feature = "runtime-benchmarks"))]
+#[cfg(feature = "runtime-benchmarks")]
+impl frame_support::traits::Contains<pallet_tx_pause::RuntimeCallNameOf<Runtime>>
+	for TxPauseWhitelistedCalls
+{
+	fn contains(_: &pallet_tx_pause::RuntimeCallNameOf<Runtime>) -> bool {
+		false
+	}
+}
+#[cfg(not(feature = "runtime-benchmarks"))]
 impl frame_support::traits::Contains<pallet_tx_pause::RuntimeCallNameOf<Runtime>>
 	for TxPauseWhitelistedCalls
 {

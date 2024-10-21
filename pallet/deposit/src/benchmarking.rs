@@ -35,8 +35,8 @@ mod benchmarks {
 
 		<Pallet<T>>::set_deposit_contract(RawOrigin::Root.into(), a.clone()).unwrap();
 
-		T::Ring::make_free_balance_be(&a, 512);
 		T::Ring::make_free_balance_be(&account_id(), 512);
+		T::Ring::make_free_balance_be(&T::Treasury::get(), 2 << 127);
 
 		// Worst-case scenario:
 		//
@@ -45,8 +45,14 @@ mod benchmarks {
 			let mut v = BoundedVec::new();
 
 			(0..512).for_each(|id| {
-				v.try_push(Deposit { id, value: 1, start_time: 0, expired_time: 0, in_use: false })
-					.unwrap();
+				v.try_push(Deposit {
+					id,
+					value: 1,
+					start_time: 0,
+					expired_time: Moment::MAX,
+					in_use: false,
+				})
+				.unwrap();
 			});
 
 			v

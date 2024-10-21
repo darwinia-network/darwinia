@@ -33,6 +33,7 @@ mod benchmarks {
 		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
 		let a_cloned = a.clone();
 
+		T::Currency::make_free_balance_be(&account_id(), 1);
 		<Ledgers<T>>::insert(&a, Ledger { ring: 1, deposits: BoundedVec::new() });
 
 		#[extrinsic_call]
