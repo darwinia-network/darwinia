@@ -78,11 +78,11 @@ pub fn development_config() -> ChainSpec {
 		// EVM stuff.
 		"evm": {
 			"accounts": BTreeMap::from_iter(
-				<DarwiniaPrecompiles<Runtime>>::used_addresses()
-					.iter()
+				Precompiles::set()
+					.into_iter()
 					.map(|p| {
 						(
-							p.to_owned(),
+							H160(p),
 							GenesisAccount {
 								nonce: Default::default(),
 								balance: Default::default(),
@@ -225,9 +225,9 @@ pub fn genesis_config() -> ChainSpec {
 		// EVM stuff.
 		"evm": {
 			"accounts": BTreeMap::from_iter(
-				<DarwiniaPrecompiles<Runtime>>::used_addresses().iter().map(|p| {
+				Precompiles::set().into_iter().map(|p| {
 					(
-						p,
+						H160(p),
 						GenesisAccount {
 							nonce: Default::default(),
 							balance: Default::default(),

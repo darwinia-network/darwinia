@@ -102,7 +102,7 @@ where
 		Self(Default::default())
 	}
 
-	pub fn used_addresses() -> [H160; 1] {
+	pub fn set() -> [H160; 1] {
 		[addr(1)]
 	}
 }
@@ -120,7 +120,7 @@ where
 
 	fn is_precompile(&self, address: H160, _gas: u64) -> fp_evm::IsPrecompileResult {
 		fp_evm::IsPrecompileResult::Answer {
-			is_precompile: Self::used_addresses().contains(&address),
+			is_precompile: Self::set().contains(&address),
 			extra_cost: 0,
 		}
 	}
