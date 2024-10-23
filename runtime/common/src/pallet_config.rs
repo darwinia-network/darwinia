@@ -1,3 +1,76 @@
+pub mod precompiles {
+	pub const ADDR_EC_RECOVER: [u8; 20] = address_of(0x01);
+	pub const ADDR_SHA256: [u8; 20] = address_of(0x02);
+	pub const ADDR_RIPEMD160: [u8; 20] = address_of(0x03);
+	pub const ADDR_IDENTITY: [u8; 20] = address_of(0x04);
+	pub const ADDR_MODEXP: [u8; 20] = address_of(0x05);
+	pub const ADDR_BN128_ADD: [u8; 20] = address_of(0x06);
+	pub const ADDR_BN128_MUL: [u8; 20] = address_of(0x07);
+	pub const ADDR_BN128_PAIRING: [u8; 20] = address_of(0x08);
+	pub const ADDR_BLAKE2F: [u8; 20] = address_of(0x09);
+	pub const ADDR_BLS12381_G1_ADD: [u8; 20] = address_of(0x0c);
+	pub const ADDR_BLS12381_G1_MUL: [u8; 20] = address_of(0x0d);
+	pub const ADDR_BLS12381_G1_MULTI_EXP: [u8; 20] = address_of(0x0e);
+	pub const ADDR_BLS12381_G2_ADD: [u8; 20] = address_of(0x0f);
+	pub const ADDR_BLS12381_G2_MUL: [u8; 20] = address_of(0x10);
+	pub const ADDR_BLS12381_G2_MULTI_EXP: [u8; 20] = address_of(0x11);
+	pub const ADDR_BLS12381_PAIRING: [u8; 20] = address_of(0x12);
+	pub const ADDR_BLS12381_MAP_G1: [u8; 20] = address_of(0x13);
+	pub const ADDR_BLS12381_MAP_G2: [u8; 20] = address_of(0x14);
+	// [0x400, 0x800) for stable precompiles.
+	pub const ADDR_STATE_STORAGE: [u8; 20] = address_of(0x400);
+	pub const ADDR_DISPATCH: [u8; 20] = address_of(0x401);
+	// [0x402, 0x600) for assets precompiles.
+	pub const ADDR_KTON: [u8; 20] = address_of(0x402);
+	pub const ADDR_USDT: [u8; 20] = address_of(0x403);
+	pub const ADDR_PINK: [u8; 20] = address_of(0x404);
+	pub const ADDR_DOT: [u8; 20] = address_of(0x405);
+	pub const ADDR_DEPOSIT_DEPRECATED: [u8; 20] = address_of(0x600);
+	pub const ADDR_STAKING_DEPRECATED: [u8; 20] = address_of(0x601);
+	pub const ADDR_CONVICTION_VOTING: [u8; 20] = address_of(0x602);
+	// [0x800..) for the experimental precompiles.
+	pub const ADDR_EXPERIMENTAL: [u8; 20] = address_of(0x800);
+
+	pub const fn address_of(v: u64) -> [u8; 20] {
+		[
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			((v >> 56) & 0xff) as u8,
+			((v >> 48) & 0xff) as u8,
+			((v >> 40) & 0xff) as u8,
+			((v >> 32) & 0xff) as u8,
+			((v >> 24) & 0xff) as u8,
+			((v >> 16) & 0xff) as u8,
+			((v >> 8) & 0xff) as u8,
+			(v & 0xff) as u8,
+		]
+	}
+
+	#[test]
+	fn address_of_should_work() {
+		// polkadot-sdk
+		use sp_core::H160;
+
+		fn non_const_address_of(v: u64) -> H160 {
+			H160::from_low_u64_be(v)
+		}
+
+		for code in 0x01..=0x800 {
+			assert_eq!(address_of(code), non_const_address_of(code).0);
+		}
+	}
+}
+
 // darwinia
 use dc_primitives::*;
 // polkadot-sdk
@@ -18,12 +91,12 @@ pub const MAXIMUM_BLOCK_WEIGHT: frame_support::weights::Weight =
 		cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
 	);
 
+const BLOCK_GAS_LIMIT: u64 = 20_000_000;
+
 #[cfg(not(feature = "runtime-benchmarks"))]
 const EXISTENTIAL_DEPOSIT: Balance = 0;
 #[cfg(feature = "runtime-benchmarks")]
 const EXISTENTIAL_DEPOSIT: Balance = 1;
-
-const BLOCK_GAS_LIMIT: u64 = 20_000_000;
 
 frame_support::parameter_types! {
 	pub const ExistentialDeposit: Balance = EXISTENTIAL_DEPOSIT;

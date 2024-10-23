@@ -263,7 +263,6 @@ impl pallet_evm::FeeCalculator for FixedGasPrice {
 pub struct AssetIdConverter;
 impl darwinia_precompile_assets::AccountToAssetId<AccountId, AssetId> for AssetIdConverter {
 	fn account_to_asset_id(account_id: AccountId) -> AssetId {
-		let addr: H160 = account_id.into();
-		addr.to_low_u64_be()
+		H160::from(account_id).to_low_u64_be()
 	}
 }
