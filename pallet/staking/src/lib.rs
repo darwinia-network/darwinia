@@ -347,64 +347,62 @@ pub mod pallet {
 		}
 
 		fn idle_allocate_ring_staking_reward(remaining_weight: &mut Weight) {
-			// At least 1 read weight is required.
-			if let Some(rw) = remaining_weight.checked_sub(&T::DbWeight::get().reads(1)) {
-				*remaining_weight = rw;
-			} else {
-				return;
-			}
+			const MAX_TASKS: usize = 10;
 
 			#[cfg(test)]
-			let weight = Weight::zero().add_ref_time(1);
+			let wt = Weight::zero().add_ref_time(1);
 			#[cfg(not(test))]
-			let weight = T::WeightInfo::allocate_ring_staking_reward_of();
-			let mut reward_to_allocate = Vec::new();
+			let wt = T::WeightInfo::allocate_ring_staking_reward_of();
+			let mut consumer = <PendingRewards<T>>::iter().drain();
 
-			for (who, amount) in <PendingRewards<T>>::iter() {
-				if let Some(rw) = remaining_weight.checked_sub(&weight) {
+			for i in 0..MAX_TASKS {
+				if i >= MAX_TASKS {
+					break;
+				}
+
+				if let Some(rw) = remaining_weight.checked_sub(&wt) {
 					*remaining_weight = rw;
-
-					reward_to_allocate.push((who, amount));
 				} else {
 					break;
 				}
-			}
+				if let Some((k, v)) = consumer.next() {
+					let _ = Self::allocate_ring_staking_reward_of_inner(k, v);
+				} else {
+					// There is nothing to do; add the weight back.
+					*remaining_weight += wt;
 
-			for (who, amount) in reward_to_allocate {
-				let _ = Self::allocate_ring_staking_reward_of_inner(who.clone(), amount);
-
-				<PendingRewards<T>>::remove(&who);
+					break;
+				}
 			}
 		}
 
 		fn idle_unstake(remaining_weight: &mut Weight) {
-			// At least 1 read weight is required.
-			if let Some(rw) = remaining_weight.checked_sub(&T::DbWeight::get().reads(1)) {
-				*remaining_weight = rw;
-			} else {
-				return;
-			}
+			const MAX_TASKS: usize = 10;
 
 			#[cfg(test)]
-			let weight = Weight::zero().add_ref_time(1);
+			let wt = Weight::zero().add_ref_time(1);
 			#[cfg(not(test))]
-			let weight = T::WeightInfo::unstake_all_for();
-			let mut ledgers_to_migrate = Vec::new();
+			let wt = T::WeightInfo::unstake_all_for();
+			let mut consumer = <Ledgers<T>>::iter().drain();
 
-			for (who, l) in <Ledgers<T>>::iter() {
-				if let Some(rw) = remaining_weight.checked_sub(&weight) {
+			for i in 0..MAX_TASKS {
+				if i >= MAX_TASKS {
+					break;
+				}
+
+				if let Some(rw) = remaining_weight.checked_sub(&wt) {
 					*remaining_weight = rw;
-
-					ledgers_to_migrate.push((who, l));
 				} else {
 					break;
 				}
-			}
+				if let Some((k, v)) = consumer.next() {
+					let _ = Self::unstake_all_for_inner(k, v);
+				} else {
+					// There is nothing to do; add the weight back.
+					*remaining_weight += wt;
 
-			for (who, l) in ledgers_to_migrate {
-				let _ = Self::unstake_all_for_inner(who.clone(), l);
-
-				<Ledgers<T>>::remove(&who);
+					break;
+				}
 			}
 		}
 

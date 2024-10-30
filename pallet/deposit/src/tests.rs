@@ -63,35 +63,38 @@ fn on_idle_should_work() {
 		assert_eq!(Deposit::deposit_of(2).unwrap().len(), 512);
 		assert_eq!(Deposit::deposit_of(3).unwrap().len(), 512);
 
-		AllPalletsWithSystem::on_idle(0, Weight::zero());
+		<Deposit as OnIdle<_>>::on_idle(0, Weight::zero());
 		assert_eq!(Deposit::deposit_of(1).unwrap().len(), 512);
 		assert_eq!(Deposit::deposit_of(2).unwrap().len(), 512);
 		assert_eq!(Deposit::deposit_of(3).unwrap().len(), 512);
-		AllPalletsWithSystem::on_idle(0, Weight::MAX);
-		assert!(Deposit::deposit_of(1).is_none());
-		assert!(Deposit::deposit_of(2).is_none());
+		<Deposit as OnIdle<_>>::on_idle(0, Weight::zero().add_ref_time(10));
+		assert_eq!(Deposit::deposit_of(1).unwrap().len(), 512);
+		assert_eq!(Deposit::deposit_of(2).unwrap().len(), 512);
+		assert_eq!(Deposit::deposit_of(3).unwrap().len(), 502);
+		<Deposit as OnIdle<_>>::on_idle(0, Weight::MAX);
+		assert_eq!(Deposit::deposit_of(1).unwrap().len(), 512);
+		assert_eq!(Deposit::deposit_of(2).unwrap().len(), 512);
+		assert_eq!(Deposit::deposit_of(3).unwrap().len(), 492);
+
+		(0..50).for_each(|_| {
+			<Deposit as OnIdle<_>>::on_idle(0, Weight::MAX);
+		});
+		assert_eq!(Deposit::deposit_of(1).unwrap().len(), 512);
+		assert_eq!(Deposit::deposit_of(2).unwrap().len(), 512);
 		assert!(Deposit::deposit_of(3).is_none());
 
-		// ---
-
-		<Deposits<Runtime>>::insert(1, mock_deposits(512));
-		<Deposits<Runtime>>::insert(2, mock_deposits(512));
-		<Deposits<Runtime>>::insert(3, mock_deposits(512));
-		assert_eq!(Deposit::deposit_of(1).unwrap().len(), 512);
+		(0..50).for_each(|_| {
+			<Deposit as OnIdle<_>>::on_idle(0, Weight::MAX);
+		});
+		assert_eq!(Deposit::deposit_of(1).unwrap().len(), 12);
 		assert_eq!(Deposit::deposit_of(2).unwrap().len(), 512);
-		assert_eq!(Deposit::deposit_of(3).unwrap().len(), 512);
+		assert!(Deposit::deposit_of(3).is_none());
 
-		AllPalletsWithSystem::on_idle(0, Weight::zero().add_ref_time(256));
-		assert_eq!(Deposit::deposit_of(1).unwrap().len(), 512);
-		assert_eq!(Deposit::deposit_of(2).unwrap().len(), 512);
-		// 512 - 256 / 10 * 10 = 252
-		assert_eq!(Deposit::deposit_of(3).unwrap().len(), 262);
-		AllPalletsWithSystem::on_idle(0, Weight::zero().add_ref_time(1_234));
+		(0..54).for_each(|_| {
+			<Deposit as OnIdle<_>>::on_idle(0, Weight::MAX);
+		});
 		assert!(Deposit::deposit_of(1).is_none());
-		// 512 => 520 weight
-		// 1_234 - 520 * 2 = 194
-		// 262 - 194 / 10 * 10 = 72
-		assert_eq!(Deposit::deposit_of(2).unwrap().len(), 72);
+		assert!(Deposit::deposit_of(2).is_none());
 		assert!(Deposit::deposit_of(3).is_none());
 	});
 }

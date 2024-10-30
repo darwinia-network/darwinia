@@ -19,9 +19,10 @@
 // darwinia
 use crate::{mock::*, *};
 // polkadot-sdk
-use frame_support::{assert_noop, assert_ok};
+use frame_support::{assert_noop, assert_ok, traits::OnIdle};
 use frame_system::AccountInfo;
 use pallet_balances::AccountData;
+use sp_core::H256;
 use sp_keyring::{ed25519::Keyring as Ek, sr25519::Keyring as Sk};
 use sp_runtime::{
 	traits::ValidateUnsigned,
@@ -139,7 +140,7 @@ fn migrate_multisig_should_work() {
 				signature: signature.0,
 				new_multisig_params: None
 			}),
-			TransactionValidityError::Invalid(InvalidTransaction::Custom(E_DUPLICATIVE_SUBMISSION))
+			TransactionValidityError::Invalid(InvalidTransaction::Custom(E_DUPLICATED_SUBMISSION))
 		);
 
 		assert!(<Multisigs<Runtime>>::get(&multisig).is_some());
@@ -174,5 +175,24 @@ fn migrate_multisig_should_work() {
 
 		assert!(<Multisigs<Runtime>>::get(&multisig).is_none());
 		assert_eq!(<frame_system::Account<Runtime>>::get(to).consumers, 1);
+	});
+}
+
+#[test]
+fn on_idle_should_work() {
+	new_test_ext().execute_with(|| {
+		(0..1_024).for_each(|i| {
+			<Ledgers<Runtime>>::insert(
+				AccountId32::from(H256::from_low_u64_le(i).0),
+				OldLedger::default(),
+			);
+		});
+		assert_eq!(<Ledgers<Runtime>>::iter().count(), 1_024);
+
+		<AccountMigration as OnIdle<_>>::on_idle(0, Weight::zero().add_ref_time(5));
+		assert_eq!(<Ledgers<Runtime>>::iter().count(), 1_019);
+
+		<AccountMigration as OnIdle<_>>::on_idle(0, Weight::MAX);
+		assert_eq!(<Ledgers<Runtime>>::iter().count(), 1_009);
 	});
 }
