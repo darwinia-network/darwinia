@@ -188,7 +188,12 @@ pub mod pallet {
 					break;
 				}
 
-				consumer.next();
+				if consumer.next().is_none() {
+					// There is nothing to do; add the weight back.
+					remaining_weight += wt;
+
+					break;
+				}
 			}
 
 			remaining_weight

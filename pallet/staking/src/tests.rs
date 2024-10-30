@@ -94,17 +94,26 @@ fn on_idle_allocate_ring_staking_reward_should_work() {
 		(1..=512).for_each(|i| <PendingRewards<Runtime>>::insert(AccountId(i), 1));
 
 		System::reset_events();
-		AllPalletsWithSystem::on_idle(0, Weight::zero().add_ref_time(128));
+		<Staking as OnIdle<_>>::on_idle(0, Weight::zero().add_ref_time(5));
 		assert_eq!(
 			events().into_iter().filter(|e| matches!(e, Event::RewardAllocated { .. })).count(),
-			128
+			5
 		);
 
 		System::reset_events();
-		AllPalletsWithSystem::on_idle(0, Weight::MAX);
+		<Staking as OnIdle<_>>::on_idle(0, Weight::MAX);
 		assert_eq!(
 			events().into_iter().filter(|e| matches!(e, Event::RewardAllocated { .. })).count(),
-			384
+			10
+		);
+
+		System::reset_events();
+		while <PendingRewards<Runtime>>::iter().count() != 0 {
+			<Staking as OnIdle<_>>::on_idle(0, Weight::MAX);
+		}
+		assert_eq!(
+			events().into_iter().filter(|e| matches!(e, Event::RewardAllocated { .. })).count(),
+			497
 		);
 	});
 }
@@ -112,6 +121,8 @@ fn on_idle_allocate_ring_staking_reward_should_work() {
 #[test]
 fn on_idle_unstake_should_work() {
 	ExtBuilder.build().execute_with(|| {
+		// Skip 1 to 3 collators.
+		// Since they have session rewards which make calculation more complex.
 		(4..=515).for_each(|i| {
 			<Ledgers<Runtime>>::insert(
 				AccountId(i),
@@ -120,15 +131,17 @@ fn on_idle_unstake_should_work() {
 		});
 
 		System::reset_events();
-		AllPalletsWithSystem::on_idle(0, Weight::zero().add_ref_time(128));
-		assert_eq!(<Ledgers<Runtime>>::iter().count(), 384);
+		<Staking as OnIdle<_>>::on_idle(0, Weight::zero().add_ref_time(5));
+		assert_eq!(<Ledgers<Runtime>>::iter().count(), 507);
 
 		System::reset_events();
-		AllPalletsWithSystem::on_idle(0, Weight::MAX);
-		assert_eq!(<Ledgers<Runtime>>::iter().count(), 0);
+		<Staking as OnIdle<_>>::on_idle(0, Weight::MAX);
+		assert_eq!(<Ledgers<Runtime>>::iter().count(), 497);
 
-		// Skip 1 to 3 collators.
-		// Since they have session rewards which make calculation more complex.
+		while <Ledgers<Runtime>>::iter().count() != 0 {
+			<Staking as OnIdle<_>>::on_idle(0, Weight::MAX);
+		}
+
 		(4..515).for_each(|who| {
 			assert_eq!(Balances::free_balance(AccountId(who)), 100 + who as Balance);
 		});

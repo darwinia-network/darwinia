@@ -189,10 +189,10 @@ fn on_idle_should_work() {
 		});
 		assert_eq!(<Ledgers<Runtime>>::iter().count(), 1_024);
 
-		<Pallet<Runtime> as OnIdle<_>>::on_idle(0, Weight::zero().add_ref_time(5));
+		<AccountMigration as OnIdle<_>>::on_idle(0, Weight::zero().add_ref_time(5));
 		assert_eq!(<Ledgers<Runtime>>::iter().count(), 1_019);
 
-		<Pallet<Runtime> as OnIdle<_>>::on_idle(0, Weight::MAX);
+		<AccountMigration as OnIdle<_>>::on_idle(0, Weight::MAX);
 		assert_eq!(<Ledgers<Runtime>>::iter().count(), 1_009);
 	});
 }

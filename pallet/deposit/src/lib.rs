@@ -55,7 +55,7 @@ use frame_support::{
 use frame_system::pallet_prelude::*;
 use sp_core::H160;
 use sp_runtime::traits::AccountIdConversion;
-use sp_std::{collections::btree_map::BTreeMap, prelude::*};
+use sp_std::prelude::*;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -119,52 +119,32 @@ pub mod pallet {
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
 		fn on_idle(_: BlockNumberFor<T>, mut remaining_weight: Weight) -> Weight {
-			// At least 1 read weight is required.
+			#[cfg(test)]
+			let wt = Weight::zero().add_ref_time(10);
 			#[cfg(not(test))]
-			if let Some(rw) = remaining_weight.checked_sub(&T::DbWeight::get().reads(1)) {
+			let wt = <T as Config>::WeightInfo::migrate_for();
+
+			if let Some(rw) = remaining_weight.checked_sub(&wt) {
 				remaining_weight = rw;
 			} else {
 				return remaining_weight;
 			}
 
-			#[cfg(test)]
-			let wt = Weight::zero().add_ref_time(10);
-			#[cfg(not(test))]
-			let wt = <T as Config>::WeightInfo::migrate_for();
-			let mut ds_to_migrate = BTreeMap::<T::AccountId, (Vec<Deposit>, usize)>::new();
+			let Some((k, v)) = <Deposits<T>>::iter().drain().next() else {
+				// There is nothing to do; add the weight back.
+				remaining_weight += wt;
 
-			'outer: for (w, ds) in <Deposits<T>>::iter() {
-				for _ in 0..ds.len().div_ceil(10) {
-					if let Some(rw) = remaining_weight.checked_sub(&wt) {
-						remaining_weight = rw;
+				return remaining_weight;
+			};
 
-						if let Some((_, cnt)) = ds_to_migrate.get_mut(&w) {
-							*cnt += 1;
-						} else {
-							ds_to_migrate.insert(w.clone(), (ds.to_vec(), 1));
-						}
-					} else {
-						break 'outer;
-					}
-				}
-			}
-
-			for (w, (ds, cnt)) in ds_to_migrate {
-				let mut ds = ds;
-
-				for _ in 0..cnt {
-					match Self::migrate_for_inner(&w, ds.clone()) {
-						Ok(ds_) => ds = ds_,
-						_ => break,
-					}
-				}
-
-				if ds.is_empty() {
-					<Deposits<T>>::remove(&w);
-				} else {
+			if let Ok(remaining_deposits) = Self::migrate_for_inner(&k, v.clone()) {
+				if !remaining_deposits.is_empty() {
 					// There are still some deposits left for this account.
-					<Deposits<T>>::insert(&w, BoundedVec::truncate_from(ds));
+					<Deposits<T>>::insert(&k, remaining_deposits);
 				}
+			} else {
+				// Put the deposits back if migration failed.
+				<Deposits<T>>::insert(&k, v);
 			}
 
 			remaining_weight
@@ -178,12 +158,12 @@ pub mod pallet {
 		pub fn migrate_for(origin: OriginFor<T>, who: T::AccountId) -> DispatchResult {
 			ensure_signed(origin)?;
 
-			let ds = <Deposits<T>>::take(&who).ok_or(<Error<T>>::NoDeposit)?;
-			let ds = Self::migrate_for_inner(&who, ds)?;
+			let deposits = <Deposits<T>>::take(&who).ok_or(<Error<T>>::NoDeposit)?;
+			let deposits = Self::migrate_for_inner(&who, deposits)?;
 
 			// Put the rest deposits back.
-			if !ds.is_empty() {
-				<Deposits<T>>::insert(&who, BoundedVec::truncate_from(ds));
+			if !deposits.is_empty() {
+				<Deposits<T>>::insert(&who, deposits);
 			}
 
 			Ok(())
@@ -214,7 +194,7 @@ pub mod pallet {
 		fn migrate_for_inner<I>(
 			who: &T::AccountId,
 			deposits: I,
-		) -> Result<Vec<Deposit>, DispatchError>
+		) -> Result<BoundedVec<Deposit, ConstU32<512>>, DispatchError>
 		where
 			I: IntoIterator<Item = Deposit>,
 		{
@@ -251,7 +231,7 @@ pub mod pallet {
 				});
 			}
 
-			Ok(deposits.collect())
+			Ok(BoundedVec::truncate_from(deposits.collect()))
 		}
 	}
 }
