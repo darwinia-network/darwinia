@@ -106,17 +106,6 @@ impl darwinia_deposit::Config for Runtime {
 	type WeightInfo = ();
 }
 
-impl darwinia_staking::Config for Runtime {
-	type Currency = Balances;
-	type IssuingManager = ();
-	type KtonStaking = ();
-	type RingStaking = ();
-	type RuntimeEvent = RuntimeEvent;
-	type Treasury = ();
-	type UnixTime = Timestamp;
-	type WeightInfo = ();
-}
-
 impl crate::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
@@ -129,7 +118,6 @@ frame_support::construct_runtime! {
 		Balances: pallet_balances,
 		Assets: pallet_assets,
 		Deposit: darwinia_deposit,
-		Staking: darwinia_staking,
 		AccountMigration: crate,
 	}
 }

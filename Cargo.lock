@@ -2708,7 +2708,6 @@ version = "6.7.2"
 dependencies = [
  "array-bytes 6.2.3",
  "darwinia-deposit",
- "darwinia-staking",
  "dc-primitives",
  "frame-benchmarking",
  "frame-support",
