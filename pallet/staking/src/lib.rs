@@ -27,6 +27,80 @@
 #![deny(missing_docs)]
 #![allow(clippy::needless_borrows_for_generic_args)]
 
+#[allow(missing_docs)]
+pub mod migration {
+	// darwinia
+	use crate::*;
+	// polkadot-sdk
+	use frame_support::migration;
+
+	const PALLET: &[u8] = b"DarwiniaStaking";
+
+	pub fn migrate<T>() -> (u64, u64)
+	where
+		T: Config,
+	{
+		fn clear(item: &[u8], r: &mut u64, w: &mut u64) {
+			let res = migration::clear_storage_prefix(PALLET, item, &[], None, None);
+
+			*r += res.loops as u64;
+			*w += res.backend as u64;
+		}
+
+		let rw @ (mut r, mut w) = (1, 1);
+
+		clear(b"Collators", &mut r, &mut w);
+		clear(b"Nominators", &mut r, &mut w);
+		clear(b"ExposureCacheStates", &mut r, &mut w);
+		clear(b"ExposureCache0", &mut r, &mut w);
+		clear(b"ExposureCache1", &mut r, &mut w);
+		clear(b"ExposureCache2", &mut r, &mut w);
+		clear(b"CacheStates", &mut r, &mut w);
+		clear(b"CollatorsCache0", &mut r, &mut w);
+		clear(b"CollatorsCache1", &mut r, &mut w);
+		clear(b"CollatorsCache2", &mut r, &mut w);
+		clear(b"MigrationStartPoint", &mut r, &mut w);
+		clear(b"RateLimit", &mut r, &mut w);
+		clear(b"RateLimitState", &mut r, &mut w);
+
+		if let Some(abc) = migration::take_storage_value::<(
+			BlockNumberFor<T>,
+			BTreeMap<T::AccountId, BlockNumberFor<T>>,
+		)>(PALLET, b"AuthoredBlocksCount", &[])
+		{
+			<AuthoredBlockCount<T>>::put(abc);
+		}
+
+		rw
+	}
+
+	pub fn post_check<T>()
+	where
+		T: Config,
+	{
+		fn assert_is_none(item: &[u8]) {
+			assert!(!migration::have_storage_value(PALLET, item, &[]));
+		}
+
+		assert_is_none(b"Collators");
+		assert_is_none(b"Nominators");
+		assert_is_none(b"ExposureCacheStates");
+		assert_is_none(b"ExposureCache0");
+		assert_is_none(b"ExposureCache1");
+		assert_is_none(b"ExposureCache2");
+		assert_is_none(b"CacheStates");
+		assert_is_none(b"CollatorsCache0");
+		assert_is_none(b"CollatorsCache1");
+		assert_is_none(b"CollatorsCache2");
+		assert_is_none(b"MigrationStartPoint");
+		assert_is_none(b"RateLimit");
+		assert_is_none(b"RateLimitState");
+		assert_is_none(b"AuthoredBlocksCount");
+
+		assert!(<AuthoredBlockCount<T>>::exists());
+	}
+}
+
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
