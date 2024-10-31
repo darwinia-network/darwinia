@@ -1,8 +1,5 @@
 pub use frame_support::migration;
 
-// polkadot-sdk
-use frame_support::migration;
-
 /// Pallet migration helper.
 pub struct PalletCleaner {
 	pub name: &'static [u8],
