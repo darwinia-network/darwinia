@@ -258,7 +258,8 @@ pub fn genesis_config() -> ChainSpec {
 	.with_properties(properties())
 	.with_genesis_config_patch(genesis_config_patch)
 	.with_boot_nodes(vec![
-		"/dns/g1.crab2.darwinia.network/tcp/30333/ws/p2p/12D3KooWEDiHG6pjt53HqnfYepnLzp9rFTh8MJrBX7AZeGShBMM4".parse().unwrap()
+		"/dns/g1.crab2.darwinia.network/tcp/30333/ws/p2p/12D3KooWEDiHG6pjt53HqnfYepnLzp9rFTh8MJrBX7AZeGShBMM4".parse().unwrap(),
+		"/dns/g2.crab2.darwinia.network/tcp/30333/ws/p2p/12D3KooWJeZ7xoj912homUscXe6JxW1suJ1M2BvjPuGWt18HHokJ".parse().unwrap(),
 	])
 	.with_telemetry_endpoints(
 		TelemetryEndpoints::new(vec![(TELEMETRY_URL.into(), 0)]).unwrap()
