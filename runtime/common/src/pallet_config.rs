@@ -8,15 +8,16 @@ pub mod precompiles {
 	pub const ADDR_BN128_MUL: [u8; 20] = address_of(0x07);
 	pub const ADDR_BN128_PAIRING: [u8; 20] = address_of(0x08);
 	pub const ADDR_BLAKE2F: [u8; 20] = address_of(0x09);
-	pub const ADDR_BLS12381_G1_ADD: [u8; 20] = address_of(0x0c);
-	pub const ADDR_BLS12381_G1_MUL: [u8; 20] = address_of(0x0d);
-	pub const ADDR_BLS12381_G1_MULTI_EXP: [u8; 20] = address_of(0x0e);
-	pub const ADDR_BLS12381_G2_ADD: [u8; 20] = address_of(0x0f);
-	pub const ADDR_BLS12381_G2_MUL: [u8; 20] = address_of(0x10);
-	pub const ADDR_BLS12381_G2_MULTI_EXP: [u8; 20] = address_of(0x11);
-	pub const ADDR_BLS12381_PAIRING: [u8; 20] = address_of(0x12);
-	pub const ADDR_BLS12381_MAP_G1: [u8; 20] = address_of(0x13);
-	pub const ADDR_BLS12381_MAP_G2: [u8; 20] = address_of(0x14);
+	// https://github.com/ethereum/go-ethereum/blob/e56bbd77a44fc26550a862801690461e49e02503/core/vm/contracts.go#L131-L139.
+	pub const ADDR_BLS12381_G1_ADD: [u8; 20] = address_of(0x0b);
+	pub const ADDR_BLS12381_G1_MUL: [u8; 20] = address_of(0x0c);
+	pub const ADDR_BLS12381_G1_MULTI_EXP: [u8; 20] = address_of(0x0d);
+	pub const ADDR_BLS12381_G2_ADD: [u8; 20] = address_of(0x0e);
+	pub const ADDR_BLS12381_G2_MUL: [u8; 20] = address_of(0x0f);
+	pub const ADDR_BLS12381_G2_MULTI_EXP: [u8; 20] = address_of(0x10);
+	pub const ADDR_BLS12381_PAIRING: [u8; 20] = address_of(0x11);
+	pub const ADDR_BLS12381_MAP_G1: [u8; 20] = address_of(0x12);
+	pub const ADDR_BLS12381_MAP_G2: [u8; 20] = address_of(0x13);
 	// [0x400, 0x800) for stable precompiles.
 	pub const ADDR_STATE_STORAGE: [u8; 20] = address_of(0x400);
 	pub const ADDR_DISPATCH: [u8; 20] = address_of(0x401);
