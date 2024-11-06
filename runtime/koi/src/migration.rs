@@ -49,5 +49,5 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 fn migrate() -> frame_support::weights::Weight {
 	let (r, w) = darwinia_staking::migration::migrate::<Runtime>();
 
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 0)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(r, w)
 }
