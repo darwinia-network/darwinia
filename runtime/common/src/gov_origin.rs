@@ -79,4 +79,9 @@ where
 			r => Err(O::from(r)),
 		})
 	}
+
+	#[cfg(feature = "runtime-benchmarks")]
+	fn try_successful_origin() -> Result<O, ()> {
+		Ok(O::from(RawOrigin::Root))
+	}
 }
