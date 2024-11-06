@@ -17,8 +17,8 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 mod origin;
+pub use origin::custom_origins;
 use origin::*;
-pub use origin::{custom_origins, GeneralAdmin};
 
 mod track;
 use track::*;
@@ -42,7 +42,7 @@ impl pallet_collective::Config<TechnicalCollective> for Runtime {
 	type Proposal = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeOrigin = RuntimeOrigin;
-	type SetMembersOrigin = RootOr<GeneralAdmin>;
+	type SetMembersOrigin = Root;
 	type WeightInfo = weights::pallet_collective::WeightInfo<Self>;
 }
 
@@ -80,6 +80,11 @@ impl pallet_referenda::Config for Runtime {
 
 impl custom_origins::Config for Runtime {}
 
+frame_support::parameter_types! {
+	// 0x005493b5658e6201F06FE2adF492610635505F4C.
+	pub RingDaoAccount: AccountId = [0, 84, 147, 181, 101, 142, 98, 1, 240, 111, 226, 173, 244, 146, 97, 6, 53, 80, 95, 76].into();
+}
+
 // The purpose of this pallet is to queue calls to be dispatched as by root later => the Dispatch
 // origin corresponds to the Gov2 Whitelist track.
 impl pallet_whitelist::Config for Runtime {
@@ -88,7 +93,10 @@ impl pallet_whitelist::Config for Runtime {
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = weights::pallet_whitelist::WeightInfo<Self>;
-	type WhitelistOrigin = RootOrAtLeastFourFifth<TechnicalCollective>;
+	type WhitelistOrigin = frame_support::traits::EitherOf<
+		RingDao<RingDaoAccount>,
+		AtLeastFourFifth<TechnicalCollective>,
+	>;
 }
 
 frame_support::parameter_types! {
@@ -96,7 +104,7 @@ frame_support::parameter_types! {
 }
 
 impl pallet_treasury::Config for Runtime {
-	type ApproveOrigin = RootOr<GeneralAdmin>;
+	type ApproveOrigin = Root;
 	type AssetKind = ();
 	type BalanceConverter = frame_support::traits::tokens::UnityAssetBalanceConversion;
 	#[cfg(feature = "runtime-benchmarks")]
@@ -115,13 +123,11 @@ impl pallet_treasury::Config for Runtime {
 	type ProposalBond = ProposalBond;
 	type ProposalBondMaximum = ();
 	type ProposalBondMinimum = ConstU128<DARWINIA_PROPOSAL_REQUIREMENT>;
-	type RejectOrigin = RootOr<GeneralAdmin>;
+	type RejectOrigin = Root;
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
-	type SpendOrigin = EitherOf<
-		frame_system::EnsureRootWithSuccess<Self::AccountId, pallet_config::MaxBalance>,
-		Spender,
-	>;
+	type SpendOrigin =
+		frame_system::EnsureRootWithSuccess<Self::AccountId, pallet_config::MaxBalance>;
 	type SpendPeriod = Time1;
 	type WeightInfo = weights::pallet_treasury::WeightInfo<Self>;
 }

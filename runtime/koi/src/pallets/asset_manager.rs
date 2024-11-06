@@ -143,7 +143,7 @@ impl pallet_asset_manager::Config for Runtime {
 	type AssetRegistrar = AssetRegistrar;
 	type AssetRegistrarMetadata = xcm_config::AssetRegistrarMetadata;
 	type Balance = Balance;
-	type ForeignAssetModifierOrigin = RootOr<GeneralAdmin>;
+	type ForeignAssetModifierOrigin = Root;
 	type ForeignAssetType = AssetType;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = weights::pallet_asset_manager::WeightInfo<Self>;

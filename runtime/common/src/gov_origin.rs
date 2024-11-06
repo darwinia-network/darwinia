@@ -16,8 +16,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-pub use frame_support::traits::{EitherOf, EitherOfDiverse};
+pub use frame_support::{
+	dispatch::RawOrigin,
+	traits::{EitherOf, EitherOfDiverse, EnsureOrigin, Get},
+};
 
+// core
+use core::marker::PhantomData;
 // darwinia
 use dc_primitives::AccountId;
 // frontier
@@ -56,3 +61,22 @@ pub const ROOT: AccountId20 =
 pub const KTON_ADMIN: AccountId20 = AccountId20([
 	70, 39, 93, 41, 17, 63, 6, 92, 42, 172, 38, 47, 52, 199, 163, 216, 168, 183, 55, 125,
 ]);
+
+/// Ensure the origin is RingDAO.
+pub struct RingDao<RingDaoAccount>(PhantomData<RingDaoAccount>)
+where
+	RingDaoAccount: Get<AccountId20>;
+impl<O, RingDaoAccount> EnsureOrigin<O> for RingDao<RingDaoAccount>
+where
+	O: Into<Result<RawOrigin<AccountId20>, O>> + From<RawOrigin<AccountId20>>,
+	RingDaoAccount: Get<AccountId20>,
+{
+	type Success = ();
+
+	fn try_origin(o: O) -> Result<Self::Success, O> {
+		o.into().and_then(|o| match o {
+			RawOrigin::Signed(who) if who == RingDaoAccount::get() => Ok(()),
+			r => Err(O::from(r)),
+		})
+	}
+}
