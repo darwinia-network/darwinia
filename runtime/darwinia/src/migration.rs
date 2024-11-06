@@ -29,12 +29,37 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::DispatchError> {
 		log::info!("pre");
 
+		assert!(migration::storage_iter::<()>(b"Vesting", b"Vesting").count() == 1);
+		assert_eq!(
+			Balances::locks(
+				// 0x081cbab52e2dbcd52f441c7ae9ad2a3be42e2284.
+				AccountId::from([
+					8, 28, 186, 181, 46, 45, 188, 213, 47, 68, 28, 122, 233, 173, 42, 59, 228, 46,
+					34, 132,
+				]),
+			)
+			.into_iter()
+			.map(|l| l.id)
+			.collect::<Vec<_>>(),
+			[*b"vesting "],
+		);
+
 		Ok(Vec::new())
 	}
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
 		log::info!("post");
+
+		assert!(migration::storage_iter::<()>(b"Vesting", b"Vesting").count() == 0);
+		assert!(Balances::locks(
+			// 0x081cbab52e2dbcd52f441c7ae9ad2a3be42e2284.
+			AccountId::from([
+				8, 28, 186, 181, 46, 45, 188, 213, 47, 68, 28, 122, 233, 173, 42, 59, 228, 46, 34,
+				132,
+			]),
+		)
+		.is_empty());
 
 		Ok(())
 	}
@@ -45,64 +70,18 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	// darwinia
-	use darwinia_staking::CacheState;
-	if let Some(s) = migration::get_storage_value::<(CacheState, CacheState, CacheState)>(
-		b"DarwiniaStaking",
-		b"ExposureCacheStates",
-		&[],
-	) {
-		migration::put_storage_value(b"DarwiniaStaking", b"CacheStates", &[], s);
-	}
+	// polkadot-sdk
+	use frame_support::traits::LockableCurrency;
 
-	if let Ok(dao) =
-		array_bytes::hex_n_into::<_, AccountId, 20>("0x08837De0Ae21C270383D9F2de4DB03c7b1314632")
-	{
-		let _ = <pallet_assets::Pallet<Runtime>>::transfer_ownership(
-			RuntimeOrigin::signed(ROOT),
-			codec::Compact(AssetIds::Kton as AssetId),
-			dao,
-		);
+	let _ = migration::clear_storage_prefix(b"Vesting", b"Vesting", &[], None, None);
 
-		if let Ok(deposit) = array_bytes::hex_n_into::<_, AccountId, 20>(
-			"0x46275d29113f065c2aac262f34C7a3d8a8B7377D",
-		) {
-			let _ = <pallet_assets::Pallet<Runtime>>::set_team(
-				RuntimeOrigin::signed(dao),
-				codec::Compact(AssetIds::Kton as AssetId),
-				deposit,
-				deposit,
-				dao,
-			);
+	Balances::remove_lock(
+		*b"vesting ",
+		// 0x081cbab52e2dbcd52f441c7ae9ad2a3be42e2284.
+		&AccountId::from([
+			8, 28, 186, 181, 46, 45, 188, 213, 47, 68, 28, 122, 233, 173, 42, 59, 228, 46, 34, 132,
+		]),
+	);
 
-			<darwinia_deposit::DepositContract<Runtime>>::put(deposit);
-		}
-
-		log::info!("successfully transfer ownership of KTON to KTON DAO");
-	}
-	if let Ok(who) =
-		array_bytes::hex_n_into::<_, AccountId, 20>("0xa4fFAC7A5Da311D724eD47393848f694Baee7930")
-	{
-		<darwinia_staking::RingStakingContract<Runtime>>::put(who);
-
-		log::info!("successfully set RING staking contract");
-	}
-
-	<darwinia_staking::MigrationStartPoint<Runtime>>::put(darwinia_staking::now::<Runtime>());
-
-	if let Some(k) = migration::take_storage_value::<AccountId>(
-		b"DarwiniaStaking",
-		b"KtonRewardDistributionContract",
-		&[],
-	) {
-		<darwinia_staking::KtonStakingContract<Runtime>>::put(k);
-
-		log::info!("successfully set KTON staking contract");
-	}
-
-	if let Ok(k) = array_bytes::hex2bytes("0x1da53b775b270400e7e61ed5cbc5a146ab1160471b1418779239ba8e2b847e42d53de13b56da115d3342f0588bc3614108837de0ae21c270383d9f2de4db03c7b1314632314d8c74970d627c9b4f4c42e06688a9f7a2866905a810c4b1a49b8cb0dca3f1bc953905609869b6e9d4fb794cd36c5f") {
-		let _ = System::kill_storage(RuntimeOrigin::root(), vec![k]);
-	}
-
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(7, 10)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 5)
 }
