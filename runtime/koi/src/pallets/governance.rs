@@ -88,15 +88,13 @@ frame_support::parameter_types! {
 // The purpose of this pallet is to queue calls to be dispatched as by root later => the Dispatch
 // origin corresponds to the Gov2 Whitelist track.
 impl pallet_whitelist::Config for Runtime {
-	type DispatchWhitelistedOrigin = RootOr<WhitelistedCaller>;
+	type DispatchWhitelistedOrigin =
+		RootOr<frame_support::traits::EitherOf<WhitelistedCaller, RingDao<RingDaoAccount>>>;
 	type Preimages = Preimage;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = weights::pallet_whitelist::WeightInfo<Self>;
-	type WhitelistOrigin = frame_support::traits::EitherOf<
-		RingDao<RingDaoAccount>,
-		AtLeastFourFifth<TechnicalCollective>,
-	>;
+	type WhitelistOrigin = AtLeastFourFifth<TechnicalCollective>;
 }
 
 frame_support::parameter_types! {
