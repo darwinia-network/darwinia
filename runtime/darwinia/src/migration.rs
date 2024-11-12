@@ -29,6 +29,21 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::DispatchError> {
 		log::info!("pre");
 
+		assert!(migration::storage_iter::<()>(b"Vesting", b"Vesting").count() == 1);
+		assert_eq!(
+			Balances::locks(
+				// 0x081cbab52e2dbcd52f441c7ae9ad2a3be42e2284.
+				AccountId::from([
+					8, 28, 186, 181, 46, 45, 188, 213, 47, 68, 28, 122, 233, 173, 42, 59, 228, 46,
+					34, 132,
+				]),
+			)
+			.into_iter()
+			.map(|l| l.id)
+			.collect::<Vec<_>>(),
+			[*b"vesting "],
+		);
+
 		Ok(Vec::new())
 	}
 
@@ -37,6 +52,16 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 		log::info!("post");
 
 		darwinia_staking::migration::post_check::<Runtime>();
+
+		assert!(migration::storage_iter::<()>(b"Vesting", b"Vesting").count() == 0);
+		assert!(Balances::locks(
+			// 0x081cbab52e2dbcd52f441c7ae9ad2a3be42e2284.
+			AccountId::from([
+				8, 28, 186, 181, 46, 45, 188, 213, 47, 68, 28, 122, 233, 173, 42, 59, 228, 46, 34,
+				132,
+			]),
+		)
+		.is_empty());
 
 		Ok(())
 	}
@@ -47,7 +72,19 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	let (r, w) = darwinia_staking::migration::migrate::<Runtime>();
+	// polkadot-sdk
+	use frame_support::traits::LockableCurrency;
 
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(r, w)
+	let (r, w) = darwinia_staking::migration::migrate::<Runtime>();
+	let _ = migration::clear_storage_prefix(b"Vesting", b"Vesting", &[], None, None);
+
+	Balances::remove_lock(
+		*b"vesting ",
+		// 0x081cbab52e2dbcd52f441c7ae9ad2a3be42e2284.
+		&AccountId::from([
+			8, 28, 186, 181, 46, 45, 188, 213, 47, 68, 28, 122, 233, 173, 42, 59, 228, 46, 34, 132,
+		]),
+	);
+
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(r, w + 5)
 }

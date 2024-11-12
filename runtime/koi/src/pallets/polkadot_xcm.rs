@@ -205,7 +205,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 }
 
 impl pallet_xcm::Config for Runtime {
-	type AdminOrigin = RootOr<GeneralAdmin>;
+	type AdminOrigin = Root;
 	// ^ Override for AdvertisedXcmVersion default
 	type AdvertisedXcmVersion = pallet_xcm::CurrentXcmVersion;
 	type Currency = Balances;
