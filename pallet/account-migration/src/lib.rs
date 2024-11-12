@@ -24,7 +24,7 @@
 //! These two algorithm are not compatible.
 //! Thus, an account migration is required.
 //!
-//! ## Technical detail
+//! ## Technical Detail
 //!
 //! Users must send an extrinsic themselves to migrate their account(s).
 //! This extrinsic should be unsigned, the reason is the same as `pallet-claims`.
@@ -56,7 +56,6 @@ pub use weights::WeightInfo;
 
 // darwinia
 use darwinia_deposit::{Deposit, DepositId};
-use darwinia_staking::Ledger;
 use dc_primitives::{AccountId as AccountId20, AssetId, Balance, BlockNumber, Nonce};
 // polkadot-sdk
 use frame_support::{
@@ -90,13 +89,10 @@ pub mod pallet {
 	pub(crate) const E_ACCOUNT_NOT_FOUND: u8 = 1;
 	/// Invalid signature.
 	pub(crate) const E_INVALID_SIGNATURE: u8 = 2;
-	/// Duplicative submission.
-	pub(crate) const E_DUPLICATIVE_SUBMISSION: u8 = 3;
+	/// Duplicated submission.
+	pub(crate) const E_DUPLICATED_SUBMISSION: u8 = 3;
 	/// The account is not a member of the multisig.
 	pub(crate) const E_NOT_MULTISIG_MEMBER: u8 = 4;
-
-	#[pallet::pallet]
-	pub struct Pallet<T>(_);
 
 	#[pallet::config]
 	pub trait Config:
@@ -108,15 +104,11 @@ pub mod pallet {
 		> + pallet_assets::Config<Balance = Balance, AssetId = AssetId>
 		+ pallet_balances::Config<Balance = Balance>
 		+ darwinia_deposit::Config
-		+ darwinia_staking::Config<
-			Deposit = darwinia_deposit::Pallet<Self>,
-			MaxDeposits = ConstU32<512>,
-		>
 	{
 		/// Override the [`frame_system::Config::RuntimeEvent`].
 		type RuntimeEvent: From<Event> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
-		/// Weight information for extrinsics in this pallet.
+		/// Weight information for extrinsic in this pallet.
 		type WeightInfo: WeightInfo;
 	}
 
@@ -161,7 +153,7 @@ pub mod pallet {
 	#[pallet::getter(fn deposit_of)]
 	pub type Deposits<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, Vec<Deposit>>;
 
-	/// [`darwinia_staking::migration::v2::OldLedger`] data.
+	/// Old ledger data.
 	#[pallet::storage]
 	#[pallet::getter(fn ledger_of)]
 	pub type Ledgers<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, OldLedger>;
@@ -172,6 +164,41 @@ pub mod pallet {
 	#[pallet::getter(fn multisig_of)]
 	pub type Multisigs<T: Config> = StorageMap<_, Identity, AccountId32, MultisigMigrationDetail>;
 
+	#[pallet::pallet]
+	pub struct Pallet<T>(_);
+	#[pallet::hooks]
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		fn on_idle(_: BlockNumberFor<T>, mut remaining_weight: Weight) -> Weight {
+			const MAX_TASKS: usize = 10;
+
+			#[cfg(test)]
+			let wt = Weight::zero().add_ref_time(1);
+			#[cfg(not(test))]
+			let wt = T::DbWeight::get().writes(1);
+			let mut consumer = <Ledgers<T>>::iter().drain();
+
+			for i in 0..MAX_TASKS {
+				if i >= MAX_TASKS {
+					break;
+				}
+
+				if let Some(rw) = remaining_weight.checked_sub(&wt) {
+					remaining_weight = rw;
+				} else {
+					break;
+				}
+
+				if consumer.next().is_none() {
+					// There is nothing to do; add the weight back.
+					remaining_weight += wt;
+
+					break;
+				}
+			}
+
+			remaining_weight
+		}
+	}
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		/// Migrate all the account data under the `from` to `to`.
@@ -317,7 +344,7 @@ pub mod pallet {
 						if who == submitter {
 							// Reject duplicative submission.
 							if *ok {
-								return InvalidTransaction::Custom(E_DUPLICATIVE_SUBMISSION).into();
+								return InvalidTransaction::Custom(E_DUPLICATED_SUBMISSION).into();
 							}
 
 							is_member = true;
@@ -356,7 +383,7 @@ pub mod pallet {
 
 		fn pre_check_duplicative(multisig: &AccountId32) -> Result<(), TransactionValidityError> {
 			if <Multisigs<T>>::contains_key(multisig) {
-				Err(InvalidTransaction::Custom(E_DUPLICATIVE_SUBMISSION))?
+				Err(InvalidTransaction::Custom(E_DUPLICATED_SUBMISSION))?
 			} else {
 				Ok(())
 			}
@@ -420,32 +447,16 @@ pub mod pallet {
 						asset_details,
 					);
 				}
-				if let Some(l) = <Ledgers<T>>::take(from) {
-					if l.staked_ring > 0 {
-						<pallet_balances::Pallet<T> as Currency<_>>::transfer(
-							to,
-							&darwinia_staking::account_id(),
-							l.staked_ring,
-							AllowDeath,
-						)?;
-					}
-
-					if let Some(ds) = <Deposits<T>>::take(from) {
-						<pallet_balances::Pallet<T> as Currency<_>>::transfer(
-							to,
-							&darwinia_deposit::account_id(),
-							ds.iter().map(|d| d.value).sum(),
-							AllowDeath,
-						)?;
-						<darwinia_deposit::Deposits<T>>::insert(
-							to,
-							BoundedVec::try_from(ds).map_err(|_| <Error<T>>::ExceedMaxDeposits)?,
-						);
-					}
-
-					<darwinia_staking::Ledgers<T>>::insert(
+				if let Some(ds) = <Deposits<T>>::take(from) {
+					<pallet_balances::Pallet<T> as Currency<_>>::transfer(
 						to,
-						Ledger { ring: l.staked_ring, deposits: l.staked_deposits },
+						&darwinia_deposit::account_id(),
+						ds.iter().map(|d| d.value).sum(),
+						AllowDeath,
+					)?;
+					<darwinia_deposit::Deposits<T>>::insert(
+						to,
+						BoundedVec::try_from(ds).map_err(|_| <Error<T>>::ExceedMaxDeposits)?,
 					);
 				}
 			}

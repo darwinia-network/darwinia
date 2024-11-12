@@ -26,7 +26,10 @@ use serde::{Deserialize, Serialize};
 use crate::*;
 use dc_types::UNIT;
 // polkadot-sdk
-use frame_support::{assert_ok, derive_impl, traits::OnInitialize};
+use frame_support::{
+	assert_ok, derive_impl,
+	traits::{OnFinalize, OnIdle, OnInitialize},
+};
 use sp_core::H160;
 use sp_io::TestExternalities;
 use sp_runtime::{BuildStorage, RuntimeAppPublic};
@@ -90,28 +93,6 @@ impl pallet_balances::Config for Runtime {
 	type ExistentialDeposit = ();
 }
 
-pub enum KtonMinting {}
-impl darwinia_deposit::SimpleAsset for KtonMinting {
-	type AccountId = AccountId;
-
-	fn mint(_: &Self::AccountId, _: Balance) -> sp_runtime::DispatchResult {
-		Ok(())
-	}
-
-	fn burn(_: &Self::AccountId, _: Balance) -> sp_runtime::DispatchResult {
-		Ok(())
-	}
-}
-impl darwinia_deposit::Config for Runtime {
-	type DepositMigrator = ();
-	type Kton = KtonMinting;
-	type MaxDeposits = frame_support::traits::ConstU32<16>;
-	type Ring = Balances;
-	type RuntimeEvent = RuntimeEvent;
-	type Treasury = TreasuryAcct;
-	type WeightInfo = ();
-}
-
 frame_support::parameter_types! {
 	pub static SessionHandlerCollators: Vec<AccountId> = Vec::new();
 	pub static SessionChangeBlock: BlockNumber = 0;
@@ -121,7 +102,7 @@ sp_runtime::impl_opaque_keys! {
 		pub uint: SessionHandler,
 	}
 }
-pub type Period = frame_support::traits::ConstU64<3>;
+pub type Period = frame_support::traits::ConstU64<5>;
 pub struct SessionHandler;
 impl pallet_session::SessionHandler<AccountId> for SessionHandler {
 	const KEY_TYPE_IDS: &'static [sp_runtime::KeyTypeId] =
@@ -163,7 +144,7 @@ impl pallet_session::Config for Runtime {
 
 frame_support::parameter_types! {
 	pub const TreasuryPalletId: frame_support::PalletId = frame_support::PalletId(*b"da/trsry");
-	pub TreasuryAcct: AccountId = Treasury::account_id();
+	pub TreasuryAccount: AccountId = Treasury::account_id();
 }
 #[cfg(feature = "runtime-benchmarks")]
 pub struct DummyBenchmarkHelper;
@@ -194,7 +175,7 @@ impl pallet_treasury::Config for Runtime {
 	type MaxApprovals = ();
 	type OnSlash = ();
 	type PalletId = TreasuryPalletId;
-	type Paymaster = frame_support::traits::tokens::PayFromAccount<Balances, TreasuryAcct>;
+	type Paymaster = frame_support::traits::tokens::PayFromAccount<Balances, TreasuryAccount>;
 	type PayoutPeriod = ();
 	type ProposalBond = ();
 	type ProposalBondMaximum = ();
@@ -209,12 +190,13 @@ impl pallet_treasury::Config for Runtime {
 
 frame_support::parameter_types! {
 	pub static InflationType: u8 = 0;
+	pub static NextCollatorId: u64 = 1;
 }
 pub enum StatedOnSessionEnd {}
 impl crate::IssuingManager<Runtime> for StatedOnSessionEnd {
 	fn inflate() -> Balance {
 		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
-			<crate::BalanceIssuing<Runtime>>::inflate()
+			<crate::BalancesIssuing<Runtime>>::inflate()
 		} else {
 			<crate::TreasuryIssuing<Runtime, frame_support::traits::ConstU128<{ 20_000 * UNIT }>>>::inflate()
 		}
@@ -222,78 +204,60 @@ impl crate::IssuingManager<Runtime> for StatedOnSessionEnd {
 
 	fn calculate_reward(issued: Balance) -> Balance {
 		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
-			<crate::BalanceIssuing<Runtime>>::calculate_reward(issued)
+			<crate::BalancesIssuing<Runtime>>::calculate_reward(issued)
 		} else {
 			<crate::TreasuryIssuing<Runtime, frame_support::traits::ConstU128<{ 20_000 * UNIT }>>>::calculate_reward(issued)
 		}
 	}
 
-	fn reward(who: &AccountId, amount: Balance) -> sp_runtime::DispatchResult {
+	fn reward(amount: Balance) -> sp_runtime::DispatchResult {
 		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
-			<crate::BalanceIssuing<Runtime>>::reward(who, amount)
+			<crate::BalancesIssuing<Runtime>>::reward(amount)
 		} else {
-			<crate::TreasuryIssuing<Runtime,frame_support::traits::ConstU128<{20_000 * UNIT}>>>::reward(who, amount)
+			<crate::TreasuryIssuing<Runtime,frame_support::traits::ConstU128<{20_000 * UNIT}>>>::reward( amount)
 		}
 	}
 }
 pub enum RingStaking {}
-impl crate::Stake for RingStaking {
-	type AccountId = AccountId;
-	type Item = Balance;
-
-	fn stake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		<Balances as frame_support::traits::Currency<_>>::transfer(
-			who,
-			&crate::account_id(),
-			item,
-			frame_support::traits::ExistenceRequirement::AllowDeath,
-		)
-	}
-
-	fn unstake(who: &Self::AccountId, item: Self::Item) -> sp_runtime::DispatchResult {
-		<Balances as frame_support::traits::Currency<_>>::transfer(
-			&crate::account_id(),
-			who,
-			item,
-			frame_support::traits::ExistenceRequirement::AllowDeath,
-		)
-	}
-}
 impl crate::Election<AccountId> for RingStaking {
-	fn elect(n: u32) -> Option<Vec<AccountId>> {
+	fn elect(x: u32) -> Option<Vec<AccountId>> {
+		let start = NextCollatorId::get();
+		let end = start + x as u64;
+
+		assert!(end < 1_000);
+
 		Some(
-			(100..(100 + n) as u64)
+			(start..end)
 				.map(|i| {
 					let who = AccountId(i);
 
-					if Session::set_keys(
+					assert_ok!(Session::set_keys(
 						RuntimeOrigin::signed(who),
 						SessionKeys { uint: i.into() },
 						Vec::new(),
-					)
-					.is_ok()
-					{
-						who
-					} else {
-						AccountId(0)
-					}
+					));
+
+					who
 				})
 				.collect(),
 		)
 	}
 }
 impl crate::Reward<AccountId> for RingStaking {
-	fn distribute(who: Option<AccountId>, amount: Balance) {
+	fn allocate(who: Option<AccountId>, amount: Balance) {
 		let Some(who) = who else { return };
-		let _ =
-			Balances::transfer_keep_alive(RuntimeOrigin::signed(TreasuryAcct::get()), who, amount);
+		let _ = Balances::transfer_keep_alive(
+			RuntimeOrigin::signed(Treasury::account_id()),
+			who,
+			amount,
+		);
 	}
 }
 pub enum KtonStaking {}
 impl crate::Reward<AccountId> for KtonStaking {
-	fn distribute(_: Option<AccountId>, amount: Balance) {
+	fn allocate(_: Option<AccountId>, amount: Balance) {
 		let _ = Balances::transfer_keep_alive(
-			RuntimeOrigin::signed(TreasuryAcct::get()),
+			RuntimeOrigin::signed(TreasuryAccount::get()),
 			<KtonStakingContract<Runtime>>::get().unwrap(),
 			amount,
 		);
@@ -301,27 +265,20 @@ impl crate::Reward<AccountId> for KtonStaking {
 }
 impl crate::Config for Runtime {
 	type Currency = Balances;
-	type Deposit = Deposit;
 	type IssuingManager = StatedOnSessionEnd;
 	type KtonStaking = KtonStaking;
-	type MaxDeposits = <Self as darwinia_deposit::Config>::MaxDeposits;
-	type Ring = RingStaking;
 	type RingStaking = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
-	type ShouldEndSession = crate::ShouldEndSession<Self>;
-	type Treasury = TreasuryAcct;
+	type Treasury = TreasuryAccount;
 	type UnixTime = Timestamp;
 	type WeightInfo = ();
 }
-#[cfg(not(feature = "runtime-benchmarks"))]
-impl crate::DepositConfig for Runtime {}
 
 frame_support::construct_runtime! {
 	pub enum Runtime {
 		System: frame_system,
 		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
-		Deposit: darwinia_deposit,
 		Session: pallet_session,
 		Treasury: pallet_treasury,
 		Staking: crate,
@@ -344,10 +301,7 @@ impl Efflux {
 	}
 }
 
-pub struct ExtBuilder {
-	collator_count: u32,
-	genesis_collator: bool,
-}
+pub struct ExtBuilder;
 impl ExtBuilder {
 	pub fn inflation_type(self, r#type: u8) -> Self {
 		INFLATION_TYPE.with(|v| *v.borrow_mut() = r#type);
@@ -355,115 +309,76 @@ impl ExtBuilder {
 		self
 	}
 
-	pub fn collator_count(mut self, collator_count: u32) -> Self {
-		self.collator_count = collator_count;
-
-		self
-	}
-
-	pub fn genesis_collator(mut self) -> Self {
-		self.genesis_collator = true;
-
-		self
-	}
-
 	pub fn build(self) -> TestExternalities {
-		// let _ = pretty_env_logger::try_init();
+		let _ = pretty_env_logger::try_init();
 		let mut storage =
 			<frame_system::GenesisConfig<Runtime>>::default().build_storage().unwrap();
 
 		pallet_balances::GenesisConfig::<Runtime> {
-			balances: (1..=10)
-				.map(|i| (AccountId(i), 1_000 * UNIT))
-				.chain([(TreasuryAcct::get(), 1_000_000 * UNIT)])
+			balances: (1..=1_000)
+				.map(|i| (AccountId(i), 100))
+				.chain([(Treasury::account_id(), 1 << 126), (account_id(), 1 << 126)])
 				.collect(),
 		}
 		.assimilate_storage(&mut storage)
 		.unwrap();
-		crate::GenesisConfig::<Runtime> {
-			rate_limit: 100 * UNIT,
-			collator_count: self.collator_count,
-			collators: if self.genesis_collator {
-				(1..=self.collator_count as u64).map(|i| (AccountId(i), i as _)).collect()
-			} else {
-				Default::default()
-			},
-			..Default::default()
+		pallet_session::GenesisConfig::<Runtime> {
+			keys: (1..=3)
+				.map(|i| (AccountId(i), AccountId(i), SessionKeys { uint: i.into() }))
+				.collect(),
 		}
 		.assimilate_storage(&mut storage)
 		.unwrap();
-		if self.genesis_collator {
-			pallet_session::GenesisConfig::<Runtime> {
-				keys: (1..=self.collator_count as u64)
-					.map(|i| (AccountId(i), AccountId(i), SessionKeys { uint: i.into() }))
-					.collect(),
-			}
+		crate::GenesisConfig::<Runtime> { collator_count: 3, ..Default::default() }
 			.assimilate_storage(&mut storage)
 			.unwrap();
-		}
 
 		let mut ext = TestExternalities::from(storage);
 
 		ext.execute_with(|| {
-			<RingStakingContract<Runtime>>::put(AccountId(718));
-			<KtonStakingContract<Runtime>>::put(AccountId(719));
+			<RingStakingContract<Runtime>>::put(AccountId(1_001));
+			<KtonStakingContract<Runtime>>::put(AccountId(1_002));
 
+			preset_session_keys();
 			new_session();
 		});
 
 		ext
 	}
 }
-impl Default for ExtBuilder {
-	fn default() -> Self {
-		Self { collator_count: 1, genesis_collator: false }
-	}
-}
 
-pub fn preset_collator_wait_list(n: u64) {
-	(10..10 + n).for_each(|i| {
-		let who = AccountId(i);
-		let _ = <pallet_balances::Pallet<Runtime>>::deposit_creating(&who, i as _);
-
+pub fn preset_session_keys() {
+	(1..1_000).for_each(|i| {
 		assert_ok!(Session::set_keys(
-			RuntimeOrigin::signed(who),
+			RuntimeOrigin::signed(AccountId(i)),
 			SessionKeys { uint: i.into() },
 			Vec::new()
 		));
-		assert_ok!(Staking::stake(RuntimeOrigin::signed(who), i as _, Vec::new()));
-		assert_ok!(Staking::collect(RuntimeOrigin::signed(who), Perbill::zero()));
-		assert_ok!(Staking::nominate(RuntimeOrigin::signed(who), who));
-	});
-	(100..100 + n).for_each(|i| {
-		let who = AccountId(i);
-		let _ = <pallet_balances::Pallet<Runtime>>::deposit_creating(&who, i as _);
 	});
 }
 
 pub fn initialize_block(number: BlockNumber) {
 	System::set_block_number(number);
 	Efflux::time(1);
-	<AllPalletsWithSystem as OnInitialize<BlockNumber>>::on_initialize(number);
+	AllPalletsWithSystem::on_initialize(number);
 }
 
 pub fn finalize_block(number: BlockNumber) {
-	<AllPalletsWithSystem as frame_support::traits::OnFinalize<BlockNumber>>::on_finalize(number);
+	AllPalletsWithSystem::on_idle(number, Weight::MAX);
+	AllPalletsWithSystem::on_finalize(number);
 }
 
 pub fn new_session() {
 	let now = System::block_number();
 	let target = now + <Period as sp_runtime::traits::Get<BlockNumber>>::get();
+	let collators = Session::validators();
 
-	(now..target).for_each(|_| Efflux::block(1));
+	(now..target).zip(collators.into_iter().cycle()).for_each(|(_, who)| {
+		Staking::note_authors(&[who]);
+		Efflux::block(1);
+	});
 }
 
-pub fn payout() {
-	crate::call_on_cache_v2!(<Previous<Runtime>>::get().into_iter().for_each(|c| {
-		let _ = Staking::payout_inner(c);
-	}))
-	.unwrap();
-	crate::call_on_cache_v1!(<Previous<Runtime>>::iter_keys().for_each(|c| {
-		let _ = Staking::payout_inner(c);
-	}))
-	.unwrap();
+pub fn events() -> Vec<Event<Runtime>> {
+	System::read_events_for_pallet()
 }

@@ -7,9 +7,6 @@ readme            = "README.md"
 version.workspace = true
 
 [dependencies]
-# crates.io
-primitive-types = { version = "0.12", default-features = false }
-
 # darwinia
 dc-types = { workspace = true }
 
@@ -22,9 +19,6 @@ sp-arithmetic = { workspace = true, features = ["std"] }
 [features]
 default = ["std"]
 std = [
-	# crates.io
-	"primitive-types/std",
-
 	# github
 	"substrate-fixed/std",
 ]

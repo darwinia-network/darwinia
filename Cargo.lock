@@ -1630,8 +1630,6 @@ dependencies = [
  "darwinia-deposit",
  "darwinia-ethtx-forwarder",
  "darwinia-precompile-assets",
- "darwinia-precompile-deposit",
- "darwinia-precompile-staking",
  "darwinia-precompile-state-storage",
  "darwinia-staking",
  "dc-primitives",
@@ -2710,7 +2708,6 @@ version = "6.7.2"
 dependencies = [
  "array-bytes 6.2.3",
  "darwinia-deposit",
- "darwinia-staking",
  "dc-primitives",
  "frame-benchmarking",
  "frame-support",
@@ -2775,8 +2772,6 @@ name = "darwinia-deposit"
 version = "6.7.2"
 dependencies = [
  "darwinia-ethtx-forwarder",
- "darwinia-staking-traits",
- "dc-inflation",
  "dc-types",
  "ethabi",
  "fp-evm",
@@ -2784,7 +2779,6 @@ dependencies = [
  "frame-support",
  "frame-system",
  "log",
- "pallet-assets",
  "pallet-balances",
  "pallet-timestamp",
  "parity-scale-codec",
@@ -2846,48 +2840,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-precompile-deposit"
-version = "6.7.2"
-dependencies = [
- "darwinia-deposit",
- "fp-evm",
- "frame-support",
- "frame-system",
- "pallet-balances",
- "pallet-evm",
- "pallet-timestamp",
- "parity-scale-codec",
- "precompile-utils 0.1.0",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std 14.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.7.2)",
-]
-
-[[package]]
-name = "darwinia-precompile-staking"
-version = "6.7.2"
-dependencies = [
- "darwinia-deposit",
- "darwinia-staking",
- "dc-primitives",
- "fp-evm",
- "frame-support",
- "frame-system",
- "pallet-balances",
- "pallet-evm",
- "pallet-timestamp",
- "parity-scale-codec",
- "precompile-utils 0.1.0",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std 14.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.7.2)",
-]
-
-[[package]]
 name = "darwinia-precompile-state-storage"
 version = "6.7.2"
 dependencies = [
@@ -2926,8 +2878,6 @@ dependencies = [
  "darwinia-deposit",
  "darwinia-ethtx-forwarder",
  "darwinia-precompile-assets",
- "darwinia-precompile-deposit",
- "darwinia-precompile-staking",
  "darwinia-precompile-state-storage",
  "darwinia-staking",
  "dc-inflation",
@@ -3011,9 +2961,7 @@ dependencies = [
 name = "darwinia-staking"
 version = "6.7.2"
 dependencies = [
- "darwinia-deposit",
  "darwinia-ethtx-forwarder",
- "darwinia-staking-traits",
  "dc-inflation",
  "dc-types",
  "ethabi",
@@ -3035,15 +2983,6 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std 14.0.0 (git+https://github.com/darwinia-network/polkadot-sdk?branch=release-polkadot-v1.7.2)",
-]
-
-[[package]]
-name = "darwinia-staking-traits"
-version = "6.7.2"
-dependencies = [
- "parity-scale-codec",
- "scale-info",
- "sp-runtime",
 ]
 
 [[package]]
@@ -3077,7 +3016,6 @@ name = "dc-inflation"
 version = "6.7.2"
 dependencies = [
  "dc-types",
- "primitive-types",
  "sp-arithmetic",
  "substrate-fixed",
 ]
@@ -5769,8 +5707,6 @@ dependencies = [
  "darwinia-deposit",
  "darwinia-ethtx-forwarder",
  "darwinia-precompile-assets",
- "darwinia-precompile-deposit",
- "darwinia-precompile-staking",
  "darwinia-precompile-state-storage",
  "darwinia-staking",
  "dc-primitives",

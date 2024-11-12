@@ -6,7 +6,6 @@ members = [
 	"core/*",
 	"node",
 	"pallet/*",
-	"pallet/*/traits",
 	"precompile/*",
 	"runtime/*",
 ]
@@ -40,12 +39,9 @@ darwinia-common-runtime           = { path = "runtime/common", default-features 
 darwinia-deposit                  = { path = "pallet/deposit", default-features = false }
 darwinia-ethtx-forwarder          = { path = "pallet/ethtx-forwarder", default-features = false }
 darwinia-precompile-assets        = { path = "precompile/assets", default-features = false }
-darwinia-precompile-deposit       = { path = "precompile/deposit", default-features = false }
-darwinia-precompile-staking       = { path = "precompile/staking", default-features = false }
 darwinia-precompile-state-storage = { path = "precompile/state-storage", default-features = false }
 darwinia-runtime                  = { path = "runtime/darwinia" }
 darwinia-staking                  = { path = "pallet/staking", default-features = false }
-darwinia-staking-traits           = { path = "pallet/staking/traits", default-features = false }
 dc-inflation                      = { path = "core/inflation", default-features = false }
 dc-primitives                     = { path = "core/primitives", default-features = false }
 dc-types                          = { path = "core/types" }

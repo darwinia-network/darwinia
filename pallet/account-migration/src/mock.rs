@@ -23,31 +23,6 @@ use frame_support::derive_impl;
 use sp_io::TestExternalities;
 use sp_runtime::BuildStorage;
 
-pub struct Dummy;
-impl darwinia_deposit::SimpleAsset for Dummy {
-	type AccountId = AccountId;
-
-	fn mint(_: &Self::AccountId, _: Balance) -> sp_runtime::DispatchResult {
-		Ok(())
-	}
-
-	fn burn(_: &Self::AccountId, _: Balance) -> sp_runtime::DispatchResult {
-		Ok(())
-	}
-}
-impl darwinia_staking::Stake for Dummy {
-	type AccountId = AccountId;
-	type Item = Balance;
-
-	fn stake(_: &Self::AccountId, _: Self::Item) -> sp_runtime::DispatchResult {
-		Ok(())
-	}
-
-	fn unstake(_: &Self::AccountId, _: Self::Item) -> sp_runtime::DispatchResult {
-		Ok(())
-	}
-}
-
 #[sp_version::runtime_version]
 pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia2"),
@@ -125,30 +100,11 @@ frame_support::parameter_types! {
 
 impl darwinia_deposit::Config for Runtime {
 	type DepositMigrator = ();
-	type Kton = Dummy;
-	type MaxDeposits = frame_support::traits::ConstU32<512>;
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
 	type Treasury = ();
 	type WeightInfo = ();
 }
-
-impl darwinia_staking::Config for Runtime {
-	type Currency = Balances;
-	type Deposit = Deposit;
-	type IssuingManager = ();
-	type KtonStaking = ();
-	type MaxDeposits = frame_support::traits::ConstU32<512>;
-	type Ring = Dummy;
-	type RingStaking = ();
-	type RuntimeEvent = RuntimeEvent;
-	type ShouldEndSession = ();
-	type Treasury = ();
-	type UnixTime = Timestamp;
-	type WeightInfo = ();
-}
-#[cfg(not(feature = "runtime-benchmarks"))]
-impl darwinia_staking::DepositConfig for Runtime {}
 
 impl crate::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -162,7 +118,6 @@ frame_support::construct_runtime! {
 		Balances: pallet_balances,
 		Assets: pallet_assets,
 		Deposit: darwinia_deposit,
-		Staking: darwinia_staking,
 		AccountMigration: crate,
 	}
 }

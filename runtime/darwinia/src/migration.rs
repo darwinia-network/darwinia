@@ -51,6 +51,8 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
 		log::info!("post");
 
+		darwinia_staking::migration::post_check::<Runtime>();
+
 		assert!(migration::storage_iter::<()>(b"Vesting", b"Vesting").count() == 0);
 		assert!(Balances::locks(
 			// 0x081cbab52e2dbcd52f441c7ae9ad2a3be42e2284.
@@ -73,6 +75,7 @@ fn migrate() -> frame_support::weights::Weight {
 	// polkadot-sdk
 	use frame_support::traits::LockableCurrency;
 
+	let (r, w) = darwinia_staking::migration::migrate::<Runtime>();
 	let _ = migration::clear_storage_prefix(b"Vesting", b"Vesting", &[], None, None);
 
 	Balances::remove_lock(
@@ -83,5 +86,5 @@ fn migrate() -> frame_support::weights::Weight {
 		]),
 	);
 
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 5)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(r, w + 5)
 }

@@ -18,8 +18,6 @@
 
 // darwinia
 use crate::*;
-use darwinia_deposit::SimpleAsset;
-use dc_types::UNIT;
 // polkadot-sdk
 use frame_benchmarking::v2;
 use frame_system::RawOrigin;
@@ -29,142 +27,37 @@ use sp_std::prelude::*;
 mod benchmarks {
 	// darwinia
 	use super::*;
-	// polkadot-sdk
-	use frame_support::traits::Currency;
-
-	fn deposit_for<T>(who: &T::AccountId, count: u32) -> Vec<DepositId<T>>
-	where
-		T: Config + darwinia_deposit::Config,
-	{
-		(0..count.min(<<T as darwinia_deposit::Config>::MaxDeposits>::get()) as u16)
-			.map(|x| {
-				<darwinia_deposit::Pallet<T>>::lock(
-					RawOrigin::Signed(who.to_owned()).into(),
-					UNIT,
-					1,
-				)
-				.unwrap();
-
-				x.into()
-			})
-			.collect()
-	}
 
 	#[benchmark]
-	fn stake(x: Linear<0, 1_023>) {
-		let a = frame_benchmarking::whitelisted_caller();
-
-		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, 1_024 * UNIT + 1);
-		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
-
-		let deposits = deposit_for::<T>(&a, x);
-
-		// Worst-case scenario:
-		//
-		// The total number of deposit items has reached `darwinia_deposits::Config::MaxDeposits`.
-		#[extrinsic_call]
-		_(RawOrigin::Signed(a), UNIT, deposits);
-	}
-
-	#[benchmark]
-	fn unstake(x: Linear<0, 1_023>) {
-		let a = frame_benchmarking::whitelisted_caller();
-
-		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, 1_024 * UNIT + 1);
-		<T as darwinia_deposit::Config>::Kton::mint(&a, UNIT).unwrap();
-
-		let deposits = deposit_for::<T>(&a, x);
-
-		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, deposits.clone()).unwrap();
-
-		// Worst-case scenario:
-		//
-		// The total number of deposit items has reached `darwinia_deposits::Config::MaxDeposits`.
-		#[extrinsic_call]
-		_(RawOrigin::Signed(a), UNIT, deposits);
-	}
-
-	#[benchmark]
-	fn collect() {
-		let a = frame_benchmarking::whitelisted_caller();
-
-		// Worst-case scenario:
-		//
-		// None.
-		#[extrinsic_call]
-		_(RawOrigin::Signed(a), Default::default());
-	}
-
-	#[benchmark]
-	fn nominate() {
+	fn unstake_all_for() {
 		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
 		let a_cloned = a.clone();
 
-		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, UNIT + 1);
-
-		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, Default::default()).unwrap();
-		<Pallet<T>>::collect(RawOrigin::Signed(a.clone()).into(), Default::default()).unwrap();
-
-		// Worst-case scenario:
-		//
-		// Nominate the target collator successfully.
-		#[extrinsic_call]
-		_(RawOrigin::Signed(a), a_cloned);
-	}
-
-	#[benchmark]
-	fn chill() {
-		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
-
-		// Remove `+ 1` after https://github.com/paritytech/substrate/pull/13655.
-		<T as darwinia_deposit::Config>::Ring::make_free_balance_be(&a, UNIT + 1);
-
-		<Pallet<T>>::stake(RawOrigin::Signed(a.clone()).into(), UNIT, Default::default()).unwrap();
-		<Pallet<T>>::collect(RawOrigin::Signed(a.clone()).into(), Default::default()).unwrap();
-		<Pallet<T>>::nominate(RawOrigin::Signed(a.clone()).into(), a.clone()).unwrap();
-
-		// Worst-case scenario:
-		//
-		// Collect and nominate at the same time.
-		#[extrinsic_call]
-		_(RawOrigin::Signed(a));
-	}
-
-	#[benchmark]
-	fn payout() {
-		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
-		let a_cloned = a.clone();
-
-		call_on_cache_v1!(<Previous<T>>::insert(
-			&a,
-			Exposure {
-				commission: Perbill::zero(),
-				vote: 32,
-				nominators: (0..32)
-					.map(|i| IndividualExposure {
-						who: frame_benchmarking::account("", i, i),
-						vote: 1,
-					})
-					.collect(),
-			},
-		))
-		.unwrap();
-		<PendingRewards<T>>::insert(&a, 500);
+		T::Currency::make_free_balance_be(&account_id(), 1);
+		<Ledgers<T>>::insert(&a, Ledger { ring: 1, deposits: BoundedVec::new() });
 
 		#[extrinsic_call]
 		_(RawOrigin::Signed(a), a_cloned);
 	}
 
 	#[benchmark]
-	fn set_rate_limit() {
+	fn allocate_ring_staking_reward_of() {
+		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
+		let a_cloned = a.clone();
+
+		<PendingRewards<T>>::insert(&a, 1);
+
+		#[extrinsic_call]
+		_(RawOrigin::Signed(a), a_cloned);
+	}
+
+	#[benchmark]
+	fn set_ring_staking_contract() {
 		// Worst-case scenario:
 		//
 		// Set successfully.
 		#[extrinsic_call]
-		_(RawOrigin::Root, 1);
+		_(RawOrigin::Root, frame_benchmarking::whitelisted_caller::<T::AccountId>());
 	}
 
 	#[benchmark]
@@ -187,7 +80,7 @@ mod benchmarks {
 
 	frame_benchmarking::impl_benchmark_test_suite!(
 		Pallet,
-		crate::mock::ExtBuilder::default().build(),
+		crate::mock::ExtBuilder.build(),
 		crate::mock::Runtime
 	);
 }

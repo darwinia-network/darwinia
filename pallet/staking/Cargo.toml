@@ -15,11 +15,8 @@ scale-info = { workspace = true }
 
 # darwinia
 darwinia-ethtx-forwarder = { workspace = true }
-darwinia-staking-traits  = { workspace = true }
 dc-inflation             = { workspace = true }
 dc-types                 = { workspace = true }
-# darwinia optional
-darwinia-deposit = { workspace = true, optional = true }
 
 # frontier
 fp-evm = { workspace = true }
@@ -40,9 +37,6 @@ frame-benchmarking = { workspace = true, optional = true }
 pretty_env_logger = { version = "0.5" }
 serde             = { version = "1.0", features = ["derive"] }
 
-# darwinia
-darwinia-deposit = { workspace = true, features = ["std"] }
-
 # polkadot-sdk
 pallet-balances  = { workspace = true, features = ["std"] }
 pallet-session   = { workspace = true, features = ["std"] }
@@ -61,10 +55,7 @@ std = [
 
 	# darwinia
 	"darwinia-ethtx-forwarder/std",
-	"darwinia-staking-traits/std",
 	"dc-inflation/std",
-	# darwinia optional
-	"darwinia-deposit?/std",
 
 	# frontier
 	"fp-evm/std",
@@ -84,9 +75,7 @@ std = [
 
 runtime-benchmarks = [
 	# darwinia
-	"darwinia-deposit",
 	"darwinia-ethtx-forwarder/runtime-benchmarks",
-	"darwinia-staking-traits/runtime-benchmarks",
 
 	# polkadot-sdk
 	"frame-benchmarking/runtime-benchmarks",

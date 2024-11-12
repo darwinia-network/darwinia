@@ -36,6 +36,8 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
 		log::info!("post");
 
+		darwinia_staking::migration::post_check::<Runtime>();
+
 		Ok(())
 	}
 
@@ -45,5 +47,7 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 0)
+	let (r, w) = darwinia_staking::migration::migrate::<Runtime>();
+
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(r, w)
 }

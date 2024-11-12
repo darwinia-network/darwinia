@@ -25,22 +25,11 @@ frame_support::parameter_types! {
 	pub const Version: sp_version::RuntimeVersion = VERSION;
 }
 
-pub enum LockAndStake {}
-impl frame_support::traits::Contains<RuntimeCall> for LockAndStake {
-	fn contains(c: &RuntimeCall) -> bool {
-		matches!(
-			c,
-			RuntimeCall::DarwiniaStaking(darwinia_staking::Call::stake { .. })
-				| RuntimeCall::Deposit(darwinia_deposit::Call::lock { .. })
-		)
-	}
-}
-
 #[derive_impl(frame_system::config_preludes::ParaChainDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
-	type BaseCallFilter = frame_support::traits::EverythingBut<LockAndStake>;
+	type BaseCallFilter = frame_support::traits::Everything;
 	type Block = Block;
 	type BlockLength = pallet_config::RuntimeBlockLength;
 	type BlockWeights = pallet_config::RuntimeBlockWeights;
