@@ -80,16 +80,20 @@ impl pallet_referenda::Config for Runtime {
 
 impl custom_origins::Config for Runtime {}
 
-frame_support::parameter_types! {
+frame_support::ord_parameter_types! {
 	// 0x005493b5658e6201F06FE2adF492610635505F4C.
-	pub RingDaoAccount: AccountId = [0, 84, 147, 181, 101, 142, 98, 1, 240, 111, 226, 173, 244, 146, 97, 6, 53, 80, 95, 76].into();
+	pub const RingDaoAccount: AccountId = AccountId::from([0, 84, 147, 181, 101, 142, 98, 1, 240, 111, 226, 173, 244, 146, 97, 6, 53, 80, 95, 76]);
 }
 
 // The purpose of this pallet is to queue calls to be dispatched as by root later => the Dispatch
 // origin corresponds to the Gov2 Whitelist track.
 impl pallet_whitelist::Config for Runtime {
-	type DispatchWhitelistedOrigin =
-		RootOr<frame_support::traits::EitherOf<WhitelistedCaller, RingDao<RingDaoAccount>>>;
+	type DispatchWhitelistedOrigin = RootOrDiverse<
+		frame_support::traits::EitherOfDiverse<
+			WhitelistedCaller,
+			frame_system::EnsureSignedBy<RingDaoAccount, AccountId>,
+		>,
+	>;
 	type Preimages = Preimage;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
