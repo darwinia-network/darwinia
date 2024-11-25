@@ -40,14 +40,26 @@ pub mod migration {
 	where
 		T: Config,
 	{
+		let ver = StorageVersion::get::<Pallet<T>>();
+		let (mut r, mut w) = (1, 0);
+
+		if ver != 2 {
+			log::warn!(
+				"\
+				[pallet::staking] skipping v2 to v3 migration: executed on wrong storage version.\
+				Expected version 2, found {ver:?}\
+				",
+			);
+
+			return (r, w);
+		}
+
 		fn clear(item: &[u8], r: &mut u64, w: &mut u64) {
 			let res = migration::clear_storage_prefix(PALLET, item, &[], None, None);
 
 			*r += res.loops as u64;
 			*w += res.backend as u64;
 		}
-
-		let rw @ (mut r, mut w) = (1, 1);
 
 		clear(b"Collators", &mut r, &mut w);
 		clear(b"Nominators", &mut r, &mut w);
@@ -69,9 +81,16 @@ pub mod migration {
 		)>(PALLET, b"AuthoredBlocksCount", &[])
 		{
 			<AuthoredBlockCount<T>>::put(abc);
+
+			r += 1;
+			w += 1;
 		}
 
-		rw
+		StorageVersion::new(3).put::<Pallet<T>>();
+
+		w += 1;
+
+		(r, w)
 	}
 
 	pub fn post_check<T>()
@@ -137,6 +156,8 @@ const PAYOUT_FRAC: Perbill = Perbill::from_percent(40);
 pub mod pallet {
 	// darwinia
 	use crate::*;
+
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(3);
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
@@ -256,6 +277,7 @@ pub mod pallet {
 	}
 
 	#[pallet::pallet]
+	#[pallet::storage_version(STORAGE_VERSION)]
 	pub struct Pallet<T>(_);
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
