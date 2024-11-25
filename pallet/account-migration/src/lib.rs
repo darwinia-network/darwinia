@@ -177,11 +177,7 @@ pub mod pallet {
 			let wt = T::DbWeight::get().writes(1);
 			let mut consumer = <Ledgers<T>>::iter().drain();
 
-			for i in 0..MAX_TASKS {
-				if i >= MAX_TASKS {
-					break;
-				}
-
+			for _ in 0..MAX_TASKS {
 				if let Some(rw) = remaining_weight.checked_sub(&wt) {
 					remaining_weight = rw;
 				} else {

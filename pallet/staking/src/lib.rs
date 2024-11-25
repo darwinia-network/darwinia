@@ -429,11 +429,7 @@ pub mod pallet {
 			let wt = T::WeightInfo::allocate_ring_staking_reward_of();
 			let mut consumer = <PendingRewards<T>>::iter().drain();
 
-			for i in 0..MAX_TASKS {
-				if i >= MAX_TASKS {
-					break;
-				}
-
+			for _ in 0..MAX_TASKS {
 				if let Some(rw) = remaining_weight.checked_sub(&wt) {
 					*remaining_weight = rw;
 				} else {
@@ -459,11 +455,7 @@ pub mod pallet {
 			let wt = T::WeightInfo::unstake_all_for();
 			let mut consumer = <Ledgers<T>>::iter().drain();
 
-			for i in 0..MAX_TASKS {
-				if i >= MAX_TASKS {
-					break;
-				}
-
+			for _ in 0..MAX_TASKS {
 				if let Some(rw) = remaining_weight.checked_sub(&wt) {
 					*remaining_weight = rw;
 				} else {
