@@ -77,7 +77,7 @@ use dc_primitives::*;
 // polkadot-sdk
 use sp_core::U256;
 use sp_runtime::traits::AccountIdConversion;
-use sp_std::prelude::*;
+use sp_std::vec;
 
 /// We assume that ~5% of the block weight is consumed by `on_initialize` handlers. This is
 /// used to limit the maximal weight of a single extrinsic.
@@ -137,7 +137,6 @@ frame_support::parameter_types! {
 	pub MaximumSchedulerWeight: frame_support::weights::Weight = sp_runtime::Perbill::from_percent(80)
 		* RuntimeBlockWeights::get().max_block;
 
-	pub AssetCreators: Vec<AccountId> = vec![super::gov_origin::ROOT];
 	pub TreasuryAccount: AccountId = TreasuryPid::get().into_account_truncating();
 
 	pub MaxProposalWeight: frame_support::weights::Weight = sp_runtime::Perbill::from_percent(50) * RuntimeBlockWeights::get().max_block;
@@ -153,4 +152,8 @@ frame_support::parameter_types! {
 	);
 	// FIXME: https://github.com/rust-lang/rust/issues/88581
 	pub GasLimitPovSizeRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(BlockPovSizeLimit::get()) + 1;
+}
+
+frame_support::ord_parameter_types! {
+	pub const AssetCreator: AccountId = super::gov_origin::ROOT;
 }
