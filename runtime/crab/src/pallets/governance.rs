@@ -74,10 +74,25 @@ impl pallet_referenda::Config for Runtime {
 
 impl custom_origins::Config for Runtime {}
 
+frame_support::ord_parameter_types! {
+	// 0x663fC3000f0101BF16FDc9F73F02DA6Efa8c5875.
+	pub const DispatchWhitelistedDao: AccountId = AccountId::from([
+		102, 63, 195, 0, 15, 1, 1, 191, 22, 253, 201, 247, 63, 2, 218, 110, 250, 140, 88, 117,
+	]);
+}
+
 // The purpose of this pallet is to queue calls to be dispatched as by root later => the Dispatch
 // origin corresponds to the Gov2 Whitelist track.
 impl pallet_whitelist::Config for Runtime {
-	type DispatchWhitelistedOrigin = RootOr<WhitelistedCaller>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type DispatchWhitelistedOrigin = Root;
+	#[cfg(not(feature = "runtime-benchmarks"))]
+	type DispatchWhitelistedOrigin = RootOrDiverse<
+		frame_support::traits::EitherOfDiverse<
+			WhitelistedCaller,
+			frame_system::EnsureSignedBy<DispatchWhitelistedDao, Self::AccountId>,
+		>,
+	>;
 	type Preimages = Preimage;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;

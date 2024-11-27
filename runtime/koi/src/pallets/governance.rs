@@ -82,23 +82,28 @@ impl custom_origins::Config for Runtime {}
 
 frame_support::ord_parameter_types! {
 	// 0x005493b5658e6201F06FE2adF492610635505F4C.
-	pub const RingDaoAccount: AccountId = AccountId::from([0, 84, 147, 181, 101, 142, 98, 1, 240, 111, 226, 173, 244, 146, 97, 6, 53, 80, 95, 76]);
+	pub const DispatchWhitelistedDao: AccountId = AccountId::from([
+		0, 84, 147, 181, 101, 142, 98, 1, 240, 111, 226, 173, 244, 146, 97, 6, 53, 80, 95, 76
+	]);
 }
 
 // The purpose of this pallet is to queue calls to be dispatched as by root later => the Dispatch
 // origin corresponds to the Gov2 Whitelist track.
 impl pallet_whitelist::Config for Runtime {
+	#[cfg(feature = "runtime-benchmarks")]
+	type DispatchWhitelistedOrigin = Root;
+	#[cfg(not(feature = "runtime-benchmarks"))]
 	type DispatchWhitelistedOrigin = RootOrDiverse<
 		frame_support::traits::EitherOfDiverse<
 			WhitelistedCaller,
-			frame_system::EnsureSignedBy<RingDaoAccount, AccountId>,
+			frame_system::EnsureSignedBy<DispatchWhitelistedDao, Self::AccountId>,
 		>,
 	>;
 	type Preimages = Preimage;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = weights::pallet_whitelist::WeightInfo<Self>;
-	type WhitelistOrigin = AtLeastFourFifth<TechnicalCollective>;
+	type WhitelistOrigin = RootOrAtLeastFourFifth<TechnicalCollective>;
 }
 
 frame_support::parameter_types! {
