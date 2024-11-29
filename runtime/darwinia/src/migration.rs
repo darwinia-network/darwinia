@@ -86,5 +86,11 @@ fn migrate() -> frame_support::weights::Weight {
 		]),
 	);
 
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(r, w + 5)
+	let _ = Balances::transfer_all(
+		RuntimeOrigin::signed(PalletId(*b"dar/depo").into_account_truncating()),
+		&Treasury::account_id(),
+		false,
+	);
+
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(r, w + 10)
 }

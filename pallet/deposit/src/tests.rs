@@ -27,7 +27,7 @@ use frame_support::{assert_ok, traits::OnIdle};
 #[test]
 fn migrate_should_work() {
 	new_test_ext().execute_with(|| {
-		let _ = Balances::deposit_creating(&account_id(), 2);
+		let _ = Balances::deposit_creating(&0, 2);
 
 		<Deposits<Runtime>>::insert(
 			1,
@@ -52,9 +52,18 @@ fn on_idle_should_work() {
 				.collect(),
 		)
 	}
+	fn mock_zero_deposits(count: u16) -> BoundedVec<DepositS, ConstU32<512>> {
+		BoundedVec::truncate_from(
+			(0..count)
+				.map(|id| DepositS { id, value: 0, start_time: 0, expired_time: 0, in_use: false })
+				.collect(),
+		)
+	}
 
 	new_test_ext().execute_with(|| {
-		let _ = Balances::deposit_creating(&account_id(), 10_000);
+		System::set_block_number(1);
+
+		let _ = Balances::deposit_creating(&0, 10_000);
 
 		<Deposits<Runtime>>::insert(1, mock_deposits(512));
 		<Deposits<Runtime>>::insert(2, mock_deposits(512));
@@ -90,11 +99,28 @@ fn on_idle_should_work() {
 		assert_eq!(Deposit::deposit_of(2).unwrap().len(), 512);
 		assert!(Deposit::deposit_of(3).is_none());
 
+		System::reset_events();
 		(0..54).for_each(|_| {
 			<Deposit as OnIdle<_>>::on_idle(0, Weight::MAX);
 		});
+		assert_eq!(events().into_iter().count(), 54);
 		assert!(Deposit::deposit_of(1).is_none());
 		assert!(Deposit::deposit_of(2).is_none());
 		assert!(Deposit::deposit_of(3).is_none());
+	});
+	new_test_ext().execute_with(|| {
+		System::set_block_number(1);
+
+		let _ = Balances::deposit_creating(&0, 10_000);
+
+		<Deposits<Runtime>>::insert(1, mock_zero_deposits(512));
+		assert_eq!(Deposit::deposit_of(1).unwrap().len(), 512);
+
+		System::reset_events();
+		(0..52).for_each(|_| {
+			<Deposit as OnIdle<_>>::on_idle(0, Weight::MAX);
+		});
+		assert_eq!(events().into_iter().count(), 0);
+		assert!(Deposit::deposit_of(1).is_none());
 	});
 }
