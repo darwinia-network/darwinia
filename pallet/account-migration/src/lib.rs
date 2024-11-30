@@ -446,7 +446,7 @@ pub mod pallet {
 				if let Some(ds) = <Deposits<T>>::take(from) {
 					<pallet_balances::Pallet<T> as Currency<_>>::transfer(
 						to,
-						&darwinia_deposit::account_id(),
+						&<T as darwinia_deposit::Config>::Treasury::get(),
 						ds.iter().map(|d| d.value).sum(),
 						AllowDeath,
 					)?;

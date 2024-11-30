@@ -304,10 +304,7 @@ macro_rules! impl_account_migration_tests {
 
 						assert_ok!(migrate(from, to));
 						assert_eq!(Balances::free_balance(to), 80);
-						assert_eq!(
-							Balances::free_balance(&darwinia_deposit::account_id::<AccountId>()),
-							20
-						);
+						assert_eq!(Balances::free_balance(&Treasury::account_id()), 20);
 						assert_eq!(Deposit::deposit_of(to).unwrap().len(), 2);
 						assert_eq!(Assets::maybe_balance(KTON_ID, to).unwrap(), 100);
 					});

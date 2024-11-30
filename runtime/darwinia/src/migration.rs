@@ -73,7 +73,8 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 
 fn migrate() -> frame_support::weights::Weight {
 	// polkadot-sdk
-	use frame_support::traits::LockableCurrency;
+	use frame_support::{traits::LockableCurrency, PalletId};
+	use sp_runtime::traits::AccountIdConversion;
 
 	let (r, w) = darwinia_staking::migration::migrate::<Runtime>();
 	let _ = migration::clear_storage_prefix(b"Vesting", b"Vesting", &[], None, None);
@@ -88,7 +89,7 @@ fn migrate() -> frame_support::weights::Weight {
 
 	let _ = Balances::transfer_all(
 		RuntimeOrigin::signed(PalletId(*b"dar/depo").into_account_truncating()),
-		&Treasury::account_id(),
+		Treasury::account_id(),
 		false,
 	);
 
