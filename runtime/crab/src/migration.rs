@@ -21,7 +21,7 @@
 use crate::*;
 // polkadot-sdk
 #[allow(unused_imports)]
-use frame_support::{migration, storage::unhashed};
+use frame_support::{migration, storage::unhashed, PalletId};
 
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
@@ -52,6 +52,11 @@ fn migrate() -> frame_support::weights::Weight {
 	}
 
 	let (r, w) = darwinia_staking::migration::migrate::<Runtime>();
+	let _ = Balances::transfer_all(
+		RuntimeOrigin::signed(PalletId(*b"dar/depo").into_account_truncating()),
+		Treasury::account_id(),
+		false,
+	);
 
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(r, w + 1)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(r, w + 6)
 }
