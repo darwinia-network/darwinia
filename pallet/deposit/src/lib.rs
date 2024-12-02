@@ -86,6 +86,8 @@ pub mod pallet {
 		DepositsClaimed { owner: T::AccountId, deposits: Vec<DepositId> },
 		/// Deposits have been migrated.
 		DepositsMigrated { owner: T::AccountId, deposits: Vec<DepositId> },
+		/// Migration interaction with deposit contract failed.
+		MigrationFailedOnContract { exit_reason: ExitReason },
 	}
 
 	#[pallet::error]
@@ -330,7 +332,11 @@ where
 
 		match exit_reason {
 			ExitReason::Succeed(_) => Ok(()),
-			_ => Err(<Error<T>>::MigrationFailedOnContract)?,
+			exit_reason => {
+				<Pallet<T>>::deposit_event(Event::MigrationFailedOnContract { exit_reason });
+
+				Err(<Error<T>>::MigrationFailedOnContract)?
+			},
 		}
 	}
 }
