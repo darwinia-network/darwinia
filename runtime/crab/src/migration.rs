@@ -21,7 +21,7 @@
 use crate::*;
 // polkadot-sdk
 #[allow(unused_imports)]
-use frame_support::{migration, storage::unhashed, PalletId};
+use frame_support::{migration, storage::unhashed};
 
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
@@ -45,6 +45,10 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
+	/// polkadot-sdk
+	use frame_support::PalletId;
+	use sp_runtime::traits::AccountIdConversion;
+
 	let _ = Balances::transfer_all(
 		RuntimeOrigin::signed(PalletId(*b"dar/depo").into_account_truncating()),
 		Treasury::account_id(),
