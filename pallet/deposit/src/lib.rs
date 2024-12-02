@@ -88,6 +88,8 @@ pub mod pallet {
 		DepositsMigrated { owner: T::AccountId, deposits: Vec<DepositId> },
 		/// Migration interaction with deposit contract failed.
 		MigrationFailedOnContract { exit_reason: ExitReason },
+		/// Migration interaction with refund failed.
+		MigrationFailedOnRefund,
 	}
 
 	#[pallet::error]
@@ -215,7 +217,13 @@ pub mod pallet {
 			}
 
 			if to_claim.0 != 0 {
-				T::Ring::transfer(&T::Treasury::get(), who, to_claim.0, AllowDeath)?;
+				if let Err(e) = T::Ring::transfer(&T::Treasury::get(), who, to_claim.0, AllowDeath)
+				{
+					Self::deposit_event(Event::MigrationFailedOnRefund);
+
+					Err(e)?;
+				}
+
 				Self::deposit_event(Event::DepositsClaimed {
 					owner: who.clone(),
 					deposits: to_claim.1,
