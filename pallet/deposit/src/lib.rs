@@ -40,7 +40,6 @@ pub use weights::WeightInfo;
 // core
 use core::marker::PhantomData;
 // crates.io
-use codec::FullCodec;
 use ethabi::{Function, Param, ParamType, StateMutability, Token};
 // darwinia
 use dc_types::{Balance, Moment};
@@ -50,11 +49,9 @@ use fp_evm::{CallOrCreateInfo, ExitReason};
 use frame_support::{
 	pallet_prelude::*,
 	traits::{Currency, ExistenceRequirement::AllowDeath, UnixTime},
-	PalletId,
 };
 use frame_system::pallet_prelude::*;
 use sp_core::H160;
-use sp_runtime::traits::AccountIdConversion;
 use sp_std::prelude::*;
 
 #[frame_support::pallet]
@@ -109,6 +106,15 @@ pub mod pallet {
 	pub type Deposits<T: Config> =
 		StorageMap<_, Blake2_128Concat, T::AccountId, BoundedVec<Deposit, ConstU32<512>>>;
 
+	/// Failures of migration.
+	///
+	/// The first value is the deposits that failed to migrate,
+	/// the second value is the type of failure.
+	#[pallet::storage]
+	#[pallet::getter(fn migration_failure_of)]
+	pub type MigrationFailures<T: Config> =
+		StorageMap<_, Blake2_128Concat, T::AccountId, (BoundedVec<Deposit, ConstU32<512>>, u8)>;
+
 	// Deposit contract address.
 	#[pallet::storage]
 	#[pallet::getter(fn deposit_contract)]
@@ -137,14 +143,16 @@ pub mod pallet {
 				return remaining_weight;
 			};
 
-			if let Ok(remaining_deposits) = Self::migrate_for_inner(&k, v.clone()) {
-				if !remaining_deposits.is_empty() {
+			match Self::migrate_for_inner(&k, v.clone()) {
+				Ok(remaining_deposits) if !remaining_deposits.is_empty() => {
 					// There are still some deposits left for this account.
 					<Deposits<T>>::insert(&k, remaining_deposits);
-				}
-			} else {
-				// Put the deposits back if migration failed.
-				<Deposits<T>>::insert(&k, v);
+				},
+				Err((_, ty)) => {
+					// Migration failed, record the failures.
+					<MigrationFailures<T>>::insert(&k, (v, ty));
+				},
+				_ => (),
 			}
 
 			remaining_weight
@@ -159,7 +167,7 @@ pub mod pallet {
 			ensure_signed(origin)?;
 
 			let deposits = <Deposits<T>>::take(&who).ok_or(<Error<T>>::NoDeposit)?;
-			let deposits = Self::migrate_for_inner(&who, deposits)?;
+			let deposits = Self::migrate_for_inner(&who, deposits).map_err(|(e, _)| e)?;
 
 			// Put the rest deposits back.
 			if !deposits.is_empty() {
@@ -194,7 +202,7 @@ pub mod pallet {
 		fn migrate_for_inner<I>(
 			who: &T::AccountId,
 			deposits: I,
-		) -> Result<BoundedVec<Deposit, ConstU32<512>>, DispatchError>
+		) -> Result<BoundedVec<Deposit, ConstU32<512>>, (DispatchError, u8)>
 		where
 			I: IntoIterator<Item = Deposit>,
 		{
@@ -204,7 +212,7 @@ pub mod pallet {
 			let mut to_migrate = (0, Vec::new(), Vec::new());
 
 			// Take 0~10 deposits to migrate.
-			for d in deposits.by_ref().take(10) {
+			for d in deposits.by_ref().take(10).filter(|d| d.value != 0) {
 				if d.expired_time <= now {
 					to_claim.0 += d.value;
 					to_claim.1.push(d.id);
@@ -216,15 +224,16 @@ pub mod pallet {
 			}
 
 			if to_claim.0 != 0 {
-				T::Ring::transfer(&account_id(), who, to_claim.0, AllowDeath)?;
+				T::Ring::transfer(&T::Treasury::get(), who, to_claim.0, AllowDeath)
+					.map_err(|e| (e, 0))?;
 				Self::deposit_event(Event::DepositsClaimed {
 					owner: who.clone(),
 					deposits: to_claim.1,
 				});
 			}
 			if to_migrate.0 != 0 {
-				T::Ring::transfer(&account_id(), &T::Treasury::get(), to_migrate.0, AllowDeath)?;
-				T::DepositMigrator::migrate(who.clone(), to_migrate.0, to_migrate.2)?;
+				T::DepositMigrator::migrate(who.clone(), to_migrate.0, to_migrate.2)
+					.map_err(|e| (e, 1))?;
 				Self::deposit_event(Event::DepositsMigrated {
 					owner: who.clone(),
 					deposits: to_migrate.1,
@@ -337,12 +346,4 @@ where
 			_ => Err(<Error<T>>::MigrationFailedOnContract)?,
 		}
 	}
-}
-
-/// The account of the deposit pot.
-pub fn account_id<A>() -> A
-where
-	A: FullCodec,
-{
-	PalletId(*b"dar/depo").into_account_truncating()
 }

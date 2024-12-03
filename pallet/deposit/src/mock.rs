@@ -71,3 +71,7 @@ pub fn new_test_ext() -> TestExternalities {
 
 	storage.into()
 }
+
+pub fn events() -> Vec<Event<Runtime>> {
+	System::read_events_for_pallet()
+}
