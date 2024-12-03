@@ -86,10 +86,6 @@ pub mod pallet {
 		DepositsClaimed { owner: T::AccountId, deposits: Vec<DepositId> },
 		/// Deposits have been migrated.
 		DepositsMigrated { owner: T::AccountId, deposits: Vec<DepositId> },
-		/// Migration interaction with deposit contract failed.
-		MigrationFailedOnContract { exit_reason: ExitReason },
-		/// Migration interaction with refund failed.
-		MigrationFailedOnRefund,
 	}
 
 	#[pallet::error]
@@ -109,6 +105,15 @@ pub mod pallet {
 	#[pallet::getter(fn deposit_of)]
 	pub type Deposits<T: Config> =
 		StorageMap<_, Blake2_128Concat, T::AccountId, BoundedVec<Deposit, ConstU32<512>>>;
+
+	/// Failures of migration.
+	///
+	/// The first value is the deposits that failed to migrate,
+	/// the second value is the type of failure.
+	#[pallet::storage]
+	#[pallet::getter(fn migration_failure_of)]
+	pub type MigrationFailures<T: Config> =
+		StorageMap<_, Blake2_128Concat, T::AccountId, (BoundedVec<Deposit, ConstU32<512>>, u8)>;
 
 	// Deposit contract address.
 	#[pallet::storage]
@@ -138,14 +143,16 @@ pub mod pallet {
 				return remaining_weight;
 			};
 
-			if let Ok(remaining_deposits) = Self::migrate_for_inner(&k, v.clone()) {
-				if !remaining_deposits.is_empty() {
+			match Self::migrate_for_inner(&k, v.clone()) {
+				Ok(remaining_deposits) if !remaining_deposits.is_empty() => {
 					// There are still some deposits left for this account.
 					<Deposits<T>>::insert(&k, remaining_deposits);
-				}
-			} else {
-				// Put the deposits back if migration failed.
-				<Deposits<T>>::insert(&k, v);
+				},
+				Err((_, ty)) => {
+					// Migration failed, record the failures.
+					<MigrationFailures<T>>::insert(&k, (v, ty));
+				},
+				_ => (),
 			}
 
 			remaining_weight
@@ -160,7 +167,7 @@ pub mod pallet {
 			ensure_signed(origin)?;
 
 			let deposits = <Deposits<T>>::take(&who).ok_or(<Error<T>>::NoDeposit)?;
-			let deposits = Self::migrate_for_inner(&who, deposits)?;
+			let deposits = Self::migrate_for_inner(&who, deposits).map_err(|(e, _)| e)?;
 
 			// Put the rest deposits back.
 			if !deposits.is_empty() {
@@ -195,7 +202,7 @@ pub mod pallet {
 		fn migrate_for_inner<I>(
 			who: &T::AccountId,
 			deposits: I,
-		) -> Result<BoundedVec<Deposit, ConstU32<512>>, DispatchError>
+		) -> Result<BoundedVec<Deposit, ConstU32<512>>, (DispatchError, u8)>
 		where
 			I: IntoIterator<Item = Deposit>,
 		{
@@ -217,20 +224,16 @@ pub mod pallet {
 			}
 
 			if to_claim.0 != 0 {
-				if let Err(e) = T::Ring::transfer(&T::Treasury::get(), who, to_claim.0, AllowDeath)
-				{
-					Self::deposit_event(Event::MigrationFailedOnRefund);
-
-					Err(e)?;
-				}
-
+				T::Ring::transfer(&T::Treasury::get(), who, to_claim.0, AllowDeath)
+					.map_err(|e| (e, 0))?;
 				Self::deposit_event(Event::DepositsClaimed {
 					owner: who.clone(),
 					deposits: to_claim.1,
 				});
 			}
 			if to_migrate.0 != 0 {
-				T::DepositMigrator::migrate(who.clone(), to_migrate.0, to_migrate.2)?;
+				T::DepositMigrator::migrate(who.clone(), to_migrate.0, to_migrate.2)
+					.map_err(|e| (e, 1))?;
 				Self::deposit_event(Event::DepositsMigrated {
 					owner: who.clone(),
 					deposits: to_migrate.1,
@@ -340,11 +343,7 @@ where
 
 		match exit_reason {
 			ExitReason::Succeed(_) => Ok(()),
-			exit_reason => {
-				<Pallet<T>>::deposit_event(Event::MigrationFailedOnContract { exit_reason });
-
-				Err(<Error<T>>::MigrationFailedOnContract)?
-			},
+			_ => Err(<Error<T>>::MigrationFailedOnContract)?,
 		}
 	}
 }

@@ -192,8 +192,6 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Reward allocated to the account.
 		RewardAllocated { who: T::AccountId, amount: Balance },
-		/// Fail to allocate the reward to the account.
-		RewardAllocationFailed { who: T::AccountId, amount: Balance },
 		/// Unstake all stakes for the account.
 		UnstakeAllFor { who: T::AccountId },
 	}
@@ -224,6 +222,11 @@ pub mod pallet {
 	#[pallet::getter(fn authored_block_count)]
 	pub type AuthoredBlockCount<T: Config> =
 		StorageValue<_, (BlockNumberFor<T>, BTreeMap<T::AccountId, BlockNumberFor<T>>), ValueQuery>;
+
+	/// Unissued reward to Treasury.
+	#[pallet::storage]
+	#[pallet::getter(fn unissued_reward)]
+	pub type UnissuedReward<T: Config> = StorageValue<_, Balance, ValueQuery>;
 
 	/// All outstanding rewards since the last payment.
 	#[pallet::storage]
@@ -395,7 +398,7 @@ pub mod pallet {
 			if T::IssuingManager::reward(amount).is_ok() {
 				Self::deposit_event(Event::RewardAllocated { who: treasury, amount });
 			} else {
-				Self::deposit_event(Event::RewardAllocationFailed { who: treasury, amount });
+				<UnissuedReward<T>>::mutate(|v| *v += amount);
 			}
 
 			let reward_to_ring_staking = amount.saturating_div(2);

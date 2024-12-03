@@ -123,4 +123,12 @@ fn on_idle_should_work() {
 		assert_eq!(events().into_iter().count(), 0);
 		assert!(Deposit::deposit_of(1).is_none());
 	});
+	new_test_ext().execute_with(|| {
+		<Deposits<Runtime>>::insert(1, mock_deposits(512));
+		assert_eq!(Deposit::deposit_of(1).unwrap().len(), 512);
+
+		<Deposit as OnIdle<_>>::on_idle(0, Weight::MAX);
+		assert!(Deposit::deposit_of(1).is_none());
+		assert_eq!(Deposit::migration_failure_of(1).unwrap().0.into_iter().count(), 512);
+	});
 }
