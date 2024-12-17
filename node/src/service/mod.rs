@@ -48,18 +48,26 @@ use sp_core::Encode;
 
 #[cfg(all(feature = "runtime-benchmarks", feature = "evm-tracing"))]
 type HostFunctions = (
+	cumulus_client_service::storage_proof_size::HostFunctions,
 	frame_benchmarking::benchmarking::HostFunctions,
 	moonbeam_primitives_ext::moonbeam_ext::HostFunctions,
 	sp_io::SubstrateHostFunctions,
 );
 #[cfg(all(feature = "runtime-benchmarks", not(feature = "evm-tracing")))]
-type HostFunctions =
-	(frame_benchmarking::benchmarking::HostFunctions, sp_io::SubstrateHostFunctions);
+type HostFunctions = (
+	cumulus_client_service::storage_proof_size::HostFunctions,
+	frame_benchmarking::benchmarking::HostFunctions,
+	sp_io::SubstrateHostFunctions,
+);
 #[cfg(all(not(feature = "runtime-benchmarks"), feature = "evm-tracing"))]
-type HostFunctions =
-	(moonbeam_primitives_ext::moonbeam_ext::HostFunctions, sp_io::SubstrateHostFunctions);
+type HostFunctions = (
+	cumulus_client_service::storage_proof_size::HostFunctions,
+	moonbeam_primitives_ext::moonbeam_ext::HostFunctions,
+	sp_io::SubstrateHostFunctions,
+);
 #[cfg(not(any(feature = "evm-tracing", feature = "runtime-benchmarks")))]
-type HostFunctions = sp_io::SubstrateHostFunctions;
+type HostFunctions =
+	(cumulus_client_service::storage_proof_size::HostFunctions, sp_io::SubstrateHostFunctions);
 
 /// Full client backend type.
 type FullBackend = sc_service::TFullBackend<Block>;
@@ -181,10 +189,11 @@ where
 		.transpose()?;
 	let executor = sc_service::new_wasm_executor::<HostFunctions>(config);
 	let (client, backend, keystore_container, task_manager) =
-		sc_service::new_full_parts::<Block, RuntimeApi, _>(
+		sc_service::new_full_parts_record_import::<Block, RuntimeApi, _>(
 			config,
 			telemetry.as_ref().map(|(_, telemetry)| telemetry.handle()),
 			executor,
+			true,
 		)?;
 	let client = Arc::new(client);
 	let telemetry_worker_handle = telemetry.as_ref().map(|(worker, _)| worker.handle());

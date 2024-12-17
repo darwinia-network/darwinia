@@ -441,6 +441,7 @@ pub fn run() -> Result<()> {
 			// darwinia
 			use dc_primitives::{Block, Hashing};
 			// polkadot-sdk
+			use cumulus_client_service::storage_proof_size::HostFunctions as ReclaimHostFunctions;
 			use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 
 			let runner = cli.create_runner(&**cmd)?;
@@ -449,7 +450,7 @@ pub fn run() -> Result<()> {
 
 			match &**cmd {
 				BenchmarkCmd::Pallet(cmd) =>
-					runner.sync_run(|config| cmd.run::<Hashing, ()>(config)),
+					runner.sync_run(|config| cmd.run::<Hashing, ReclaimHostFunctions>(config)),
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
 					construct_benchmark_partials!(config, cli, |partials| {
 						let db = partials.backend.expose_db();
