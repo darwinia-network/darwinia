@@ -116,7 +116,7 @@ pub type Barrier = xcm_builder::TrailingSetTopicAsId<(
 	xcm_builder::TakeWeightCredit,
 	xcm_builder::WithComputedOrigin<
 		(
-			// If the message is one that immediately attemps to pay for execution, then
+			// If the message is one that immediately attempts to pay for execution, then
 			// allow it.
 			xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
 			// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality
@@ -173,6 +173,9 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type Barrier = Barrier;
 	type CallDispatcher = RuntimeCall;
 	type FeeManager = ();
+	type HrmpChannelAcceptedHandler = ();
+	type HrmpChannelClosingHandler = ();
+	type HrmpNewChannelOpenRequestHandler = ();
 	type IsReserve = orml_xcm_support::MultiNativeAsset<
 		xcm_primitives::AbsoluteAndRelativeReserve<SelfLocationAbsolute>,
 	>;
