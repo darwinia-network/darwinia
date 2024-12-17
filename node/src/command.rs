@@ -439,7 +439,7 @@ pub fn run() -> Result<()> {
 		#[cfg(feature = "runtime-benchmarks")]
 		Some(Subcommand::Benchmark(cmd)) => {
 			// darwinia
-			use dc_primitives::Block;
+			use dc_primitives::{Block, Hashing};
 			// polkadot-sdk
 			use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 
@@ -449,7 +449,7 @@ pub fn run() -> Result<()> {
 
 			match &**cmd {
 				BenchmarkCmd::Pallet(cmd) =>
-					runner.sync_run(|config| cmd.run::<Block, ()>(config)),
+					runner.sync_run(|config| cmd.run::<Hashing, ()>(config)),
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
 					construct_benchmark_partials!(config, cli, |partials| {
 						let db = partials.backend.expose_db();
