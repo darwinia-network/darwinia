@@ -405,7 +405,6 @@ where
 				timestamp.timestamp(),
 				SlotDuration::from_millis(RELAY_CHAIN_SLOT_DURATION_MILLIS as u64),
 			);
-
 			// Create a mocked parachain inherent data provider to pass all validations in the
 			// parachain system.
 			// Without this, the pending functionality will fail.
@@ -428,6 +427,7 @@ where
 					downward_messages: Default::default(),
 					horizontal_messages: Default::default(),
 				};
+				
 			Ok((timestamp, parachain_inherent_data))
 		};
 

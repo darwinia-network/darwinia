@@ -24,7 +24,7 @@ use frame_support::derive_impl;
 use sp_io::TestExternalities;
 use sp_runtime::BuildStorage;
 
-#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
+#[derive_impl(frame_system::config_preludes::TestDefaultConfig)]
 impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type Block = frame_system::mocking::MockBlock<Self>;
