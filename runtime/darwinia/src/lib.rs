@@ -426,6 +426,37 @@ sp_api::impl_runtime_apis! {
 		}
 	}
 
+	impl xcm_runtime_apis::fees::XcmPaymentApi<Block> for Runtime {
+		fn query_acceptable_payment_assets(xcm_version: xcm::Version) -> Result<Vec<xcm::VersionedAssetId>, xcm_runtime_apis::fees::Error> {
+			if !matches!(xcm_version, 3 | 4) {
+				return Err(xcm_runtime_apis::fees::Error::UnhandledXcmVersion);
+			}
+			Ok([xcm::VersionedAssetId::V4(xcm_config::TokenLocation::get().into())]
+				.into_iter()
+				.filter_map(|asset| asset.into_version(xcm_version).ok())
+				.collect())
+		}
+
+		fn query_weight_to_asset_fee(weight: frame_support::weights::Weight, asset: xcm::VersionedAssetId) -> Result<u128, xcm_runtime_apis::fees::Error> {
+			let local_asset = xcm::VersionedAssetId::V4(xcm_config::TokenLocation::get().into());
+			let asset = asset
+				.into_version(4)
+				.map_err(|_| xcm_runtime_apis::fees::Error::VersionedConversionFailed)?;
+
+			if  asset != local_asset { return Err(xcm_runtime_apis::fees::Error::AssetNotFound); }
+
+			Ok(WeightToFee::weight_to_fee(&weight))
+		}
+
+		fn query_xcm_weight(message: xcm::VersionedXcm<()>) -> Result<frame_support::weights::Weight, xcm_runtime_apis::fees::Error> {
+			XcmPallet::query_xcm_weight(message)
+		}
+
+		fn query_delivery_fees(destination: xcm::VersionedLocation, message: xcm::VersionedXcm<()>) -> Result<xcm::VersionedAssets, xcm_runtime_apis::fees::Error> {
+			XcmPallet::query_delivery_fees(destination, message)
+		}
+	}
+
 	impl fp_rpc::EthereumRuntimeRPCApi<Block> for Runtime {
 		fn chain_id() -> u64 {
 			<<Runtime as pallet_evm::Config>::ChainId as sp_core::Get<u64>>::get()

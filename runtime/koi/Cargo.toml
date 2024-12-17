@@ -107,6 +107,7 @@ sp-version                                 = { workspace = true }
 xcm                                        = { workspace = true }
 xcm-builder                                = { workspace = true }
 xcm-executor                               = { workspace = true }
+xcm-runtime-apis                           = { workspace = true }
 # polkadot-sdk optional
 cumulus-pallet-session-benchmarking = { workspace = true, optional = true }
 frame-benchmarking                  = { workspace = true, optional = true }
@@ -219,6 +220,7 @@ std = [
 	"sp-version/std",
 	"xcm-builder/std",
 	"xcm-executor/std",
+	"xcm-runtime-apis/std",
 	"xcm/std",
 	# polkadot-sdk optional
 	"cumulus-pallet-session-benchmarking?/std",

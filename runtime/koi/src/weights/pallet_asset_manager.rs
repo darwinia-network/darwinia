@@ -73,26 +73,6 @@ impl<T: frame_system::Config> pallet_asset_manager::WeightInfo for WeightInfo<T>
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(4))
 	}
-	/// Storage: `AssetManager::AssetTypeId` (r:1 w:0)
-	/// Proof: `AssetManager::AssetTypeId` (`max_values`: None, `max_size`: None, mode: `Measured`)
-	/// Storage: `AssetManager::SupportedFeePaymentAssets` (r:1 w:1)
-	/// Proof: `AssetManager::SupportedFeePaymentAssets` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
-	/// Storage: `AssetManager::AssetTypeUnitsPerSecond` (r:0 w:1)
-	/// Proof: `AssetManager::AssetTypeUnitsPerSecond` (`max_values`: None, `max_size`: None, mode: `Measured`)
-	/// The range of component `x` is `[5, 100]`.
-	fn set_asset_units_per_second(x: u32, ) -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `595 + x * (9 ±0)`
-		//  Estimated: `3983 + x * (10 ±0)`
-		// Minimum execution time: 14_000_000 picoseconds.
-		Weight::from_parts(15_105_975, 0)
-			.saturating_add(Weight::from_parts(0, 3983))
-			// Standard Error: 1_786
-			.saturating_add(Weight::from_parts(301_769, 0).saturating_mul(x.into()))
-			.saturating_add(T::DbWeight::get().reads(2))
-			.saturating_add(T::DbWeight::get().writes(2))
-			.saturating_add(Weight::from_parts(0, 10).saturating_mul(x.into()))
-	}
 	/// Storage: `AssetManager::SupportedFeePaymentAssets` (r:1 w:1)
 	/// Proof: `AssetManager::SupportedFeePaymentAssets` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
 	/// Storage: `AssetManager::AssetIdType` (r:1 w:1)
@@ -114,45 +94,5 @@ impl<T: frame_system::Config> pallet_asset_manager::WeightInfo for WeightInfo<T>
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(6))
 			.saturating_add(Weight::from_parts(0, 14).saturating_mul(x.into()))
-	}
-	/// Storage: `AssetManager::SupportedFeePaymentAssets` (r:1 w:1)
-	/// Proof: `AssetManager::SupportedFeePaymentAssets` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
-	/// Storage: `AssetManager::AssetTypeUnitsPerSecond` (r:0 w:1)
-	/// Proof: `AssetManager::AssetTypeUnitsPerSecond` (`max_values`: None, `max_size`: None, mode: `Measured`)
-	/// The range of component `x` is `[5, 100]`.
-	fn remove_supported_asset(x: u32, ) -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `196 + x * (5 ±0)`
-		//  Estimated: `1678 + x * (5 ±0)`
-		// Minimum execution time: 9_000_000 picoseconds.
-		Weight::from_parts(9_692_616, 0)
-			.saturating_add(Weight::from_parts(0, 1678))
-			// Standard Error: 1_249
-			.saturating_add(Weight::from_parts(257_773, 0).saturating_mul(x.into()))
-			.saturating_add(T::DbWeight::get().reads(1))
-			.saturating_add(T::DbWeight::get().writes(2))
-			.saturating_add(Weight::from_parts(0, 5).saturating_mul(x.into()))
-	}
-	/// Storage: `AssetManager::SupportedFeePaymentAssets` (r:1 w:1)
-	/// Proof: `AssetManager::SupportedFeePaymentAssets` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
-	/// Storage: `AssetManager::AssetIdType` (r:1 w:1)
-	/// Proof: `AssetManager::AssetIdType` (`max_values`: None, `max_size`: None, mode: `Measured`)
-	/// Storage: `AssetManager::AssetTypeUnitsPerSecond` (r:0 w:1)
-	/// Proof: `AssetManager::AssetTypeUnitsPerSecond` (`max_values`: None, `max_size`: None, mode: `Measured`)
-	/// Storage: `AssetManager::AssetTypeId` (r:0 w:1)
-	/// Proof: `AssetManager::AssetTypeId` (`max_values`: None, `max_size`: None, mode: `Measured`)
-	/// The range of component `x` is `[5, 100]`.
-	fn remove_existing_asset_type(x: u32, ) -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `486 + x * (10 ±0)`
-		//  Estimated: `3949 + x * (10 ±0)`
-		// Minimum execution time: 15_000_000 picoseconds.
-		Weight::from_parts(17_006_542, 0)
-			.saturating_add(Weight::from_parts(0, 3949))
-			// Standard Error: 1_907
-			.saturating_add(Weight::from_parts(256_544, 0).saturating_mul(x.into()))
-			.saturating_add(T::DbWeight::get().reads(2))
-			.saturating_add(T::DbWeight::get().writes(4))
-			.saturating_add(Weight::from_parts(0, 10).saturating_mul(x.into()))
 	}
 }

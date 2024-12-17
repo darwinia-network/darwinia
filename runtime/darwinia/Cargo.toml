@@ -93,6 +93,7 @@ polkadot-runtime-common                    = { workspace = true }
 xcm                                        = { workspace = true }
 xcm-builder                                = { workspace = true }
 xcm-executor                               = { workspace = true }
+xcm-runtime-apis                           = { workspace = true }
 # pallet-tx-pause                            = { workspace = true }
 pallet-utility      = { workspace = true }
 pallet-whitelist    = { workspace = true }
@@ -206,6 +207,7 @@ std = [
 	"polkadot-runtime-common/std",
 	"xcm-builder/std",
 	"xcm-executor/std",
+	"xcm-runtime-apis/std",
 	"xcm/std",
 	# "pallet-tx-pause/std",
 	"pallet-utility/std",
