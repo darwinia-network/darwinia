@@ -396,7 +396,7 @@ pub mod pallet {
 				ValidTransaction::with_tag_prefix("account-migration")
 					.and_provides(from)
 					.priority(100)
-					.longevity(TransactionLongevity::max_value())
+					.longevity(TransactionLongevity::MAX)
 					.propagate(true)
 					.build()
 			} else {
@@ -563,8 +563,12 @@ pub(crate) fn verify_curve_25519_signature(
 	message: &[u8],
 	signature: &Signature,
 ) -> bool {
-	Ss(signature.to_owned()).verify(message, &Sp(public_key.to_owned().into()))
-		|| Es(signature.to_owned()).verify(message, &Ep(public_key.to_owned().into()))
+	Ss::from(signature.to_owned())
+		.verify(message, &Sp::from(<AccountId32 as AsRef<[u8; 32]>>::as_ref(public_key).to_owned()))
+		|| Es::from(signature.to_owned()).verify(
+			message,
+			&Ep::from(<AccountId32 as AsRef<[u8; 32]>>::as_ref(public_key).to_owned()),
+		)
 }
 
 /// Calculate the multisig account.
