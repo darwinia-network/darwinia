@@ -21,6 +21,7 @@ use crate::*;
 
 impl pallet_message_queue::Config for Runtime {
 	type HeapSize = sp_core::ConstU32<{ 64 * 1024 }>;
+	type IdleMaxServiceWeight = pallet_config::MessageQueueServiceWeight;
 	type MaxStale = sp_core::ConstU32<8>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type MessageProcessor = pallet_message_queue::mock_helpers::NoopMessageProcessor<
