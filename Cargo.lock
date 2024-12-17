@@ -1498,6 +1498,7 @@ dependencies = [
  "cumulus-pallet-xcmp-queue",
  "cumulus-primitives-aura",
  "cumulus-primitives-core",
+ "cumulus-primitives-storage-weight-reclaim",
  "cumulus-primitives-utility",
  "darwinia-account-migration",
  "darwinia-common-runtime",
@@ -2235,6 +2236,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "cumulus-primitives-storage-weight-reclaim"
+version = "7.0.2"
+source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2407#f2081f6657f011634a483e3a4c91e54150c974c7"
+dependencies = [
+ "cumulus-primitives-core",
+ "cumulus-primitives-proof-size-hostfunction",
+ "docify",
+ "frame-support 37.0.1 (git+https://github.com/paritytech/polkadot-sdk?branch=stable2407)",
+ "frame-system 37.1.0 (git+https://github.com/paritytech/polkadot-sdk?branch=stable2407)",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-runtime 39.0.3 (git+https://github.com/paritytech/polkadot-sdk?branch=stable2407)",
+]
+
+[[package]]
 name = "cumulus-primitives-utility"
 version = "0.16.1"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2407#f2081f6657f011634a483e3a4c91e54150c974c7"
@@ -2735,6 +2752,7 @@ dependencies = [
  "cumulus-pallet-xcmp-queue",
  "cumulus-primitives-aura",
  "cumulus-primitives-core",
+ "cumulus-primitives-storage-weight-reclaim",
  "cumulus-primitives-utility",
  "darwinia-account-migration",
  "darwinia-asset-limit",
@@ -6051,6 +6069,7 @@ dependencies = [
  "cumulus-pallet-xcmp-queue",
  "cumulus-primitives-aura",
  "cumulus-primitives-core",
+ "cumulus-primitives-storage-weight-reclaim",
  "cumulus-primitives-utility",
  "darwinia-asset-limit",
  "darwinia-common-runtime",
