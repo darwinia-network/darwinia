@@ -48,26 +48,22 @@ use sp_core::Encode;
 
 #[cfg(all(feature = "runtime-benchmarks", feature = "evm-tracing"))]
 type HostFunctions = (
-	cumulus_client_service::storage_proof_size::HostFunctions,
+	cumulus_client_service::ParachainHostFunctions,
 	frame_benchmarking::benchmarking::HostFunctions,
 	moonbeam_primitives_ext::moonbeam_ext::HostFunctions,
-	sp_io::SubstrateHostFunctions,
 );
 #[cfg(all(feature = "runtime-benchmarks", not(feature = "evm-tracing")))]
 type HostFunctions = (
-	cumulus_client_service::storage_proof_size::HostFunctions,
+	cumulus_client_service::ParachainHostFunctions,
 	frame_benchmarking::benchmarking::HostFunctions,
-	sp_io::SubstrateHostFunctions,
 );
 #[cfg(all(not(feature = "runtime-benchmarks"), feature = "evm-tracing"))]
 type HostFunctions = (
-	cumulus_client_service::storage_proof_size::HostFunctions,
+	cumulus_client_service::ParachainHostFunctions,
 	moonbeam_primitives_ext::moonbeam_ext::HostFunctions,
-	sp_io::SubstrateHostFunctions,
 );
 #[cfg(not(any(feature = "evm-tracing", feature = "runtime-benchmarks")))]
-type HostFunctions =
-	(cumulus_client_service::storage_proof_size::HostFunctions, sp_io::SubstrateHostFunctions);
+type HostFunctions = cumulus_client_service::ParachainHostFunctions;
 
 /// Full client backend type.
 type FullBackend = sc_service::TFullBackend<Block>;
@@ -427,7 +423,7 @@ where
 					downward_messages: Default::default(),
 					horizontal_messages: Default::default(),
 				};
-				
+
 			Ok((timestamp, parachain_inherent_data))
 		};
 
