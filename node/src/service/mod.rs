@@ -582,8 +582,6 @@ where
 	RuntimeApi: 'static + Send + Sync + sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>>,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
 {
-	let slot_duration = cumulus_client_consensus_aura::slot_duration(&*client)?;
-
 	Ok(cumulus_client_consensus_aura::equivocation_import_queue::fully_verifying_import_queue::<
 		sp_consensus_aura::sr25519::AuthorityPair,
 		_,
@@ -598,7 +596,6 @@ where
 
 			Ok(timestamp)
 		},
-		slot_duration,
 		&task_manager.spawn_essential_handle(),
 		config.prometheus_registry(),
 		telemetry,
@@ -642,7 +639,6 @@ where
 		 collator_key,
 		 overseer_handle,
 		 announce_block| {
-			let slot_duration = cumulus_client_consensus_aura::slot_duration(&*client)?;
 			let proposer_factory = sc_basic_authorship::ProposerFactory::with_proof_recording(
 				task_manager.spawn_handle(),
 				client.clone(),
@@ -673,7 +669,6 @@ where
 				collator_key,
 				para_id,
 				overseer_handle,
-				slot_duration,
 				relay_chain_slot_duration,
 				proposer,
 				collator_service,
@@ -778,7 +773,6 @@ where
 	let frontier_backend = Arc::new(frontier_backend);
 	let force_authoring = config.force_authoring;
 	let backoff_authoring_blocks = None::<()>;
-	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 	let proposer_factory = sc_basic_authorship::ProposerFactory::new(
 		task_manager.spawn_handle(),
 		client.clone(),
@@ -801,7 +795,6 @@ where
 			_,
 			_,
 		>(sc_consensus_aura::StartAuraParams {
-			slot_duration,
 			client: client.clone(),
 			select_chain,
 			block_import: instant_finalize::InstantFinalizeBlockImport::new(client.clone()),
