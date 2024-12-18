@@ -81,9 +81,8 @@ pallet-evm-precompile-conviction-voting = { git = "https://github.com/darwinia-n
 xcm-primitives                          = { git = "https://github.com/darwinia-network/moonbeam", branch = "stable2407", default-features = false }
 
 # open-web3-stack
-# https://github.com/open-web3-stack/open-runtime-module-library/commit/144a9625bc0cbd1afb81088f4d8a79a931811b49
-orml-xcm-support = { version = "=1.0", default-features = false }
-orml-xtokens     = { version = "=1.0", default-features = false }
+orml-xcm-support = { git = "https://github.com/darwinia-network/open-runtime-module-library", branch = "stable2407", default-features = false }
+orml-xtokens     = { git = "https://github.com/darwinia-network/open-runtime-module-library", branch = "stable2407", default-features = false }
 
 # polkadot-sdk
 cumulus-client-cli                         = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407" }
@@ -102,7 +101,7 @@ cumulus-pallet-xcmp-queue                  = { git = "https://github.com/parityt
 cumulus-primitives-aura                    = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407", default-features = false }
 cumulus-primitives-core                    = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407", default-features = false }
 cumulus-primitives-parachain-inherent      = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407", default-features = false }
-cumulus-primitives-storage-weight-reclaim  = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407" }
+cumulus-primitives-storage-weight-reclaim  = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407", default-features = false }
 cumulus-primitives-utility                 = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407", default-features = false }
 cumulus-relay-chain-interface              = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407" }
 cumulus-test-relay-sproof-builder          = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407" }
