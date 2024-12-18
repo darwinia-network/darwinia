@@ -32,7 +32,8 @@ frame_support::parameter_types! {
 		0,
 		[PalletInstance(<Balances as frame_support::traits::PalletInfoAccess>::index() as u8)]
 	);
-	pub UniversalLocation: InteriorLocation = Parachain(ParachainInfo::parachain_id().into()).into();
+	pub UniversalLocation: InteriorLocation =
+		[GlobalConsensus(RelayNetwork::get()), Parachain(ParachainInfo::parachain_id().into())].into();
 	/// The amount of weight an XCM operation takes. This is a safe overestimate.
 	pub BaseXcmWeight: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 1024);
 	/// Xcm fees will go to the treasury account
