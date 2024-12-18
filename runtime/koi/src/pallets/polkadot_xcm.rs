@@ -126,6 +126,8 @@ pub type Barrier = xcm_builder::TrailingSetTopicAsId<(
 			xcm_builder::AllowExplicitUnpaidExecutionFrom<xcm_config::ParentOrParentsPlurality>,
 			// Subscriptions for version tracking are OK.
 			xcm_builder::AllowSubscriptionsFrom<xcm_config::ParentRelayOrSiblingParachains>,
+			// HRMP notifications from the relay chain are OK.
+			xcm_builder::AllowHrmpNotificationsFromRelayChain,
 		),
 		UniversalLocation,
 		ConstU32<8>,
