@@ -102,7 +102,6 @@ pub mod pallet {
 	///
 	/// The items must be sorted by the id.
 	#[pallet::storage]
-	#[pallet::getter(fn deposit_of)]
 	pub type Deposits<T: Config> =
 		StorageMap<_, Blake2_128Concat, T::AccountId, BoundedVec<Deposit, ConstU32<512>>>;
 
@@ -111,13 +110,11 @@ pub mod pallet {
 	/// The first value is the deposits that failed to migrate,
 	/// the second value is the type of failure.
 	#[pallet::storage]
-	#[pallet::getter(fn migration_failure_of)]
 	pub type MigrationFailures<T: Config> =
 		StorageMap<_, Blake2_128Concat, T::AccountId, (BoundedVec<Deposit, ConstU32<512>>, u8)>;
 
 	// Deposit contract address.
 	#[pallet::storage]
-	#[pallet::getter(fn deposit_contract)]
 	pub type DepositContract<T: Config> = StorageValue<_, T::AccountId>;
 
 	#[pallet::pallet]

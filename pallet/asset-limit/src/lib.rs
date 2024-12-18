@@ -57,7 +57,6 @@ pub mod pallet {
 
 	/// Stores the asset limit for foreign assets.
 	#[pallet::storage]
-	#[pallet::getter(fn foreign_asset_limit)]
 	pub type ForeignAssetLimit<T: Config> = StorageMap<_, Twox128, T::ForeignAssetType, u128>;
 
 	#[pallet::call]
