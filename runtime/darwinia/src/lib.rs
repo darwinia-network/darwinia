@@ -433,24 +433,41 @@ sp_api::impl_runtime_apis! {
 
 	impl xcm_runtime_apis::fees::XcmPaymentApi<Block> for Runtime {
 		fn query_acceptable_payment_assets(xcm_version: xcm::Version) -> Result<Vec<xcm::VersionedAssetId>, xcm_runtime_apis::fees::Error> {
-			if !matches!(xcm_version, 3 | 4) {
-				return Err(xcm_runtime_apis::fees::Error::UnhandledXcmVersion);
-			}
-			Ok([xcm::VersionedAssetId::V4(xcm_config::TokenLocation::get().into())]
+			// polkadot-sdk
+			use xcm::IntoVersion;
+
+			let acceptable = vec![
+				// Native token.
+				xcm::VersionedAssetId::from(xcm::latest::AssetId(SelfReserve::get()))
+			];
+
+			Ok(acceptable
 				.into_iter()
 				.filter_map(|asset| asset.into_version(xcm_version).ok())
 				.collect())
 		}
 
 		fn query_weight_to_asset_fee(weight: frame_support::weights::Weight, asset: xcm::VersionedAssetId) -> Result<u128, xcm_runtime_apis::fees::Error> {
-			let local_asset = xcm::VersionedAssetId::V4(xcm_config::TokenLocation::get().into());
-			let asset = asset
-				.into_version(4)
-				.map_err(|_| xcm_runtime_apis::fees::Error::VersionedConversionFailed)?;
+			// polkadot-sdk
+			use frame_support::weights::WeightToFee;
+			use xcm::IntoVersion;
 
-			if  asset != local_asset { return Err(xcm_runtime_apis::fees::Error::AssetNotFound); }
+			match asset.try_as::<xcm::latest::AssetId>() {
+				Ok(asset_id) if asset_id.0 == SelfReserve::get() => {
+					// Native token.
+					Ok(WeightToFee::weight_to_fee(&weight))
+				},
+				Ok(asset_id) => {
+					log::trace!(target: "xcm::xcm_fee_payment_runtime_api", "query_weight_to_asset_fee - unhandled asset_id: {asset_id:?}!");
 
-			Ok(WeightToFee::weight_to_fee(&weight))
+					Err(xcm_runtime_apis::fees::Error::AssetNotFound)
+				},
+				Err(_) => {
+					log::trace!(target: "xcm::xcm_fee_payment_runtime_api", "query_weight_to_asset_fee - failed to convert asset: {asset:?}!");
+
+					Err(xcm_runtime_apis::fees::Error::VersionedConversionFailed)
+				}
+			}
 		}
 
 		fn query_xcm_weight(message: xcm::VersionedXcm<()>) -> Result<frame_support::weights::Weight, xcm_runtime_apis::fees::Error> {
