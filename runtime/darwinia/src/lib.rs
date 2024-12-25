@@ -72,7 +72,10 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
-	migration::CustomOnRuntimeUpgrade,
+	(
+		migration::CustomOnRuntimeUpgrade,
+		cumulus_pallet_xcmp_queue::migration::v5::MigrateV4ToV5<Runtime>,
+	)
 >;
 
 /// Runtime version.

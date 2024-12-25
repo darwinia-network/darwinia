@@ -21,9 +21,13 @@ use crate::*;
 
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type ChannelInfo = ParachainSystem;
-	type ControllerOrigin = Root;
+	type ControllerOrigin = RootOr<GeneralAdmin>;
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
+	type MaxActiveOutboundChannels = ConstU32<128>;
 	type MaxInboundSuspended = sp_core::ConstU32<1_000>;
+	// Most on-chain HRMP channels are configured to use 102400 bytes of max message size, so we
+	// need to set the page size larger than that until we reduce the channel size on-chain.
+	type MaxPageSize = ConstU32<{ 103 * 1_024 }>;
 	type PriceForSiblingDelivery = polkadot_runtime_common::xcm_sender::NoPriceForMessageDelivery<
 		cumulus_primitives_core::ParaId,
 	>;
@@ -37,4 +41,9 @@ impl cumulus_pallet_xcmp_queue::Config for Runtime {
 		cumulus_primitives_core::ParaId,
 		message_queue::ParaIdToSibling,
 	>;
+}
+
+impl cumulus_pallet_xcmp_queue::migration::v5::V5Config for Runtime {
+	// This must be the same as the `ChannelInfo` from the `Config`:
+	type ChannelList = ParachainSystem;
 }
