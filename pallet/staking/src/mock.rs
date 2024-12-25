@@ -162,7 +162,6 @@ where
 	}
 }
 impl pallet_treasury::Config for Runtime {
-	type ApproveOrigin = frame_system::EnsureRoot<AccountId>;
 	type AssetKind = ();
 	type BalanceConverter = frame_support::traits::tokens::UnityAssetBalanceConversion;
 	#[cfg(feature = "runtime-benchmarks")]
@@ -173,7 +172,6 @@ impl pallet_treasury::Config for Runtime {
 	type BurnDestination = ();
 	type Currency = Balances;
 	type MaxApprovals = ();
-	type OnSlash = ();
 	type PalletId = TreasuryPalletId;
 	type Paymaster = frame_support::traits::tokens::PayFromAccount<Balances, TreasuryAccount>;
 	type PayoutPeriod = ();

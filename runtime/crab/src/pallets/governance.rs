@@ -101,7 +101,6 @@ impl pallet_whitelist::Config for Runtime {
 }
 
 impl pallet_treasury::Config for Runtime {
-	type ApproveOrigin = RootOr<GeneralAdmin>;
 	type AssetKind = ();
 	type BalanceConverter = frame_support::traits::tokens::UnityAssetBalanceConversion;
 	#[cfg(feature = "runtime-benchmarks")]
@@ -112,7 +111,6 @@ impl pallet_treasury::Config for Runtime {
 	type BurnDestination = ();
 	type Currency = Balances;
 	type MaxApprovals = ConstU32<100>;
-	type OnSlash = Treasury;
 	type PalletId = pallet_config::TreasuryPid;
 	type Paymaster =
 		frame_support::traits::tokens::PayFromAccount<Balances, pallet_config::TreasuryAccount>;
