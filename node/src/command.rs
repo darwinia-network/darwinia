@@ -359,6 +359,7 @@ pub fn run() -> Result<()> {
 		Some(Subcommand::PurgeChain(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			let chain_spec = &runner.config().chain_spec;
+			let polkadot_cli = RelayChainCli::new(runner.config(), cli.relay_chain_args.iter());
 
 			set_default_ss58_version(chain_spec);
 			runner.sync_run(|config| {
@@ -407,10 +408,6 @@ pub fn run() -> Result<()> {
 					}
 				};
 
-				let polkadot_cli = RelayChainCli::new(
-					&config,
-					[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
-				);
 				let polkadot_config = SubstrateCli::create_configuration(
 					&polkadot_cli,
 					&polkadot_cli,
@@ -475,16 +472,13 @@ pub fn run() -> Result<()> {
 		None => {
 			let runner = cli.create_runner(&cli.run.normalize())?;
 			let collator_options = cli.run.collator_options();
+			let polkadot_cli = RelayChainCli::new(runner.config(), cli.relay_chain_args.iter());
 
 			runner.run_node_until_exit(|config| async move {
 				let chain_spec = &config.chain_spec;
 
 				set_default_ss58_version(chain_spec);
 
-				let polkadot_cli = RelayChainCli::new(
-					&config,
-					[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
-				);
 				let tokio_handle = config.tokio_handle.clone();
 				let para_id = Extensions::try_get(&*config.chain_spec)
 					.map(|e| e.para_id)
