@@ -137,22 +137,6 @@ pub type Barrier = xcm_builder::TrailingSetTopicAsId<(
 	xcm_builder::AllowKnownQueryResponses<PolkadotXcm>,
 )>;
 
-/// This is the struct that will handle the revenue from xcm fees
-/// We do not burn anything because we want to mimic exactly what
-/// the sovereign account has
-pub type XcmFeesToAccount = xcm_primitives::XcmFeesToAccount<
-	Assets,
-	(
-		xcm_builder::ConvertedConcreteId<
-			AssetId,
-			Balance,
-			xcm_primitives::AsAssetType<AssetId, AssetType, AssetManager>,
-			xcm_executor::traits::JustTry,
-		>,
-	),
-	AccountId,
-	XcmFeesAccount,
->;
 pub type XcmWeigher = xcm_builder::FixedWeightBounds<BaseXcmWeight, RuntimeCall, MaxInstructions>;
 /// No local origins on this chain are allowed to dispatch XCM sends/executions.
 pub type LocalOriginToLocation =
@@ -165,6 +149,38 @@ pub type XcmRouter = xcm_builder::WithUniqueTopic<(
 	// ..and XCMP to communicate with the sibling chains.
 	XcmpQueue,
 )>;
+
+frame_support::parameter_types! {
+	/// Location of Asset Hub
+   pub AssetHubLocation: Location = Location::new(1, [Parachain(1000)]);
+   pub RelayLocationFilter: AssetFilter = Wild(AllOf {
+	   fun: WildFungible,
+	   id: xcm::prelude::AssetId(RelayLocation::get()),
+   });
+   pub RelayChainNativeAssetFromAssetHub: (AssetFilter, Location) = (
+	   RelayLocationFilter::get(),
+	   AssetHubLocation::get()
+   );
+   // We need this to be able to catch when someone is trying to execute a non-
+   // cross-chain transfer in xtokens through the absolute path way
+   pub SelfLocationAbsolute: Location = Location {
+		parents:1,
+		interior: [
+			Parachain(ParachainInfo::parachain_id().into())
+		].into()
+	};
+}
+
+type Reserves = (
+	// Assets bridged from different consensus systems held in reserve on Asset Hub.
+	xcm_primitives::IsBridgedConcreteAssetFrom<AssetHubLocation>,
+	// Relaychain (DOT) from Asset Hub
+	xcm_builder::Case<RelayChainNativeAssetFromAssetHub>,
+	// Assets which the reserve is the same as the origin.
+	xcm_primitives::MultiNativeAsset<
+		xcm_primitives::AbsoluteAndRelativeReserve<SelfLocationAbsolute>,
+	>,
+);
 
 pub struct XcmExecutorConfig;
 impl xcm_executor::Config for XcmExecutorConfig {
@@ -181,9 +197,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type HrmpChannelAcceptedHandler = ();
 	type HrmpChannelClosingHandler = ();
 	type HrmpNewChannelOpenRequestHandler = ();
-	type IsReserve = orml_xcm_support::MultiNativeAsset<
-		xcm_primitives::AbsoluteAndRelativeReserve<SelfLocationAbsolute>,
-	>;
+	type IsReserve = Reserves;
 	type IsTeleporter = ();
 	type MaxAssetsIntoHolding = MaxAssetsIntoHolding;
 	type MessageExporter = ();
@@ -193,16 +207,11 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type RuntimeCall = RuntimeCall;
 	type SafeCallFilter = frame_support::traits::Everything;
 	type SubscriptionService = PolkadotXcm;
-	type Trader = (
-		xcm_builder::UsingComponents<
-			<Runtime as pallet_transaction_payment::Config>::WeightToFee,
-			SelfReserve,
-			AccountId,
-			Balances,
-			DealWithFees<Runtime>,
-		>,
-		xcm_primitives::FirstAssetTrader<AssetType, AssetManager, XcmFeesToAccount>,
-	);
+	// As trader we use the XcmWeightTrader pallet.
+	// For each foreign asset, the fee is computed based on its relative price (also
+	// stored in the XcmWeightTrader pallet) against the native asset.
+	// For the native asset fee is computed using WeightToFee implementation.
+	type Trader = pallet_xcm_weight_trader::Trader<Runtime>;
 	type TransactionalProcessor = xcm_builder::FrameTransactionalProcessor;
 	type UniversalAliases = frame_support::traits::Nothing;
 	// Teleporting is disabled.

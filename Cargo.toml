@@ -78,6 +78,7 @@ moonbeam-rpc-primitives-debug           = { git = "https://github.com/darwinia-n
 moonbeam-rpc-trace                      = { git = "https://github.com/darwinia-network/moonbeam", branch = "stable2407" }
 pallet-asset-manager                    = { git = "https://github.com/darwinia-network/moonbeam", branch = "stable2407", default-features = false }
 pallet-evm-precompile-conviction-voting = { git = "https://github.com/darwinia-network/moonbeam", branch = "stable2407", default-features = false }
+pallet-xcm-weight-trader                = { git = "https://github.com/darwinia-network/moonbeam", branch = "stable2407", default-features = false }
 xcm-primitives                          = { git = "https://github.com/darwinia-network/moonbeam", branch = "stable2407", default-features = false }
 
 # open-web3-stack

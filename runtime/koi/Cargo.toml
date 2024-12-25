@@ -45,6 +45,7 @@ pallet-evm-precompile-simple   = { workspace = true }
 moonbeam-rpc-primitives-debug           = { workspace = true }
 pallet-asset-manager                    = { workspace = true }
 pallet-evm-precompile-conviction-voting = { workspace = true }
+pallet-xcm-weight-trader                = { workspace = true }
 precompile-utils                        = { workspace = true }
 xcm-primitives                          = { workspace = true }
 # moonbeam optional
@@ -52,7 +53,6 @@ moonbeam-evm-tracer = { workspace = true, optional = true }
 
 # open-web3-stack
 orml-xcm-support = { workspace = true }
-orml-xtokens     = { workspace = true }
 
 # polkadot-sdk
 cumulus-pallet-aura-ext                    = { workspace = true }
@@ -159,6 +159,7 @@ std = [
 	"moonbeam-rpc-primitives-debug/std",
 	"pallet-asset-manager/std",
 	"pallet-evm-precompile-conviction-voting/std",
+	"pallet-xcm-weight-trader/std",
 	"precompile-utils/std",
 	"xcm-primitives/std",
 	# moonbeam optional
@@ -166,7 +167,6 @@ std = [
 
 	# open-web3-stack
 	"orml-xcm-support/std",
-	"orml-xtokens/std",
 
 	# polkadot-sdk
 	"cumulus-pallet-aura-ext/std",
@@ -245,10 +245,8 @@ runtime-benchmarks = [
 
 	# moonbeam
 	"pallet-asset-manager/runtime-benchmarks",
+	"pallet-xcm-weight-trader/runtime-benchmarks",
 	"xcm-primitives/runtime-benchmarks",
-
-	# open-web3-stack
-	"orml-xtokens/runtime-benchmarks",
 
 	# polkadot-sdk
 	"cumulus-pallet-parachain-system/runtime-benchmarks",
@@ -293,9 +291,6 @@ try-runtime = [
 
 	# moonbeam
 	"pallet-asset-manager/try-runtime",
-
-	# open-web3-stack
-	"orml-xtokens/try-runtime",
 
 	# frontier
 	"fp-self-contained/try-runtime",

@@ -180,7 +180,7 @@ mod runtime {
 	#[runtime::pallet_index(26)]
 	pub type XcmpQueue = cumulus_pallet_xcmp_queue;
 	#[runtime::pallet_index(27)]
-	pub type XcmPallet = pallet_xcm;
+	pub type PolkadotXcm = pallet_xcm;
 	#[runtime::pallet_index(28)]
 	pub type CumulusXcm = cumulus_pallet_xcm;
 	// #[runtime::pallet_index(29)]
@@ -191,10 +191,11 @@ mod runtime {
 	pub type MessageQueue = pallet_message_queue;
 	#[runtime::pallet_index(31)]
 	pub type AssetManager = pallet_asset_manager;
-	#[runtime::pallet_index(32)]
-	pub type XTokens = orml_xtokens;
+	// Previously 32: XTokens
 	#[runtime::pallet_index(33)]
 	pub type AssetLimit = darwinia_asset_limit;
+	#[runtime::pallet_index(38)]
+	pub type XcmWeightTrader = pallet_xcm_weight_trader;
 
 	// EVM stuff.
 	#[runtime::pallet_index(34)]
@@ -403,30 +404,11 @@ sp_api::impl_runtime_apis! {
 
 	impl xcm_runtime_apis::fees::XcmPaymentApi<Block> for Runtime {
 		fn query_acceptable_payment_assets(xcm_version: xcm::Version) -> Result<Vec<xcm::VersionedAssetId>, xcm_runtime_apis::fees::Error> {
-			let acceptable_assets = vec![xcm::latest::AssetId(RelayLocation::get())];
-
-			PolkadotXcm::query_acceptable_payment_assets(xcm_version, acceptable_assets)
+			XcmWeightTrader::query_acceptable_payment_assets(xcm_version)
 		}
 
 		fn query_weight_to_asset_fee(weight: frame_support::weights::Weight, asset: xcm::VersionedAssetId) -> Result<u128, xcm_runtime_apis::fees::Error> {
-			// polkadot-sdk
-			use frame_support::weights::WeightToFee as _;
-
-			match asset.try_as::<xcm::latest::AssetId>() {
-				Ok(asset_id) if asset_id.0 == RelayLocation::get() => {
-					Ok(WeightToFee::weight_to_fee(&weight))
-				},
-				Ok(asset_id) => {
-					log::trace!(target: "xcm::xcm_runtime_apis", "query_weight_to_asset_fee - unhandled asset_id: {asset_id:?}!");
-
-					Err(xcm_runtime_apis::fees::Error::AssetNotFound)
-				},
-				Err(_) => {
-					log::trace!(target: "xcm::xcm_runtime_apis", "query_weight_to_asset_fee - failed to convert asset: {asset:?}!");
-
-					Err(xcm_runtime_apis::fees::Error::VersionedConversionFailed)
-				}
-			}
+			XcmWeightTrader::query_weight_to_asset_fee(weight, asset)
 		}
 
 		fn query_xcm_weight(message: xcm::VersionedXcm<()>) -> Result<frame_support::weights::Weight, xcm_runtime_apis::fees::Error> {
