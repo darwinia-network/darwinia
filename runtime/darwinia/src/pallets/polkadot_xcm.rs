@@ -207,6 +207,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	// Teleporting is disabled.
 	type UniversalLocation = UniversalLocation;
 	type Weigher = xcm_builder::FixedWeightBounds<TempFixedXcmWeight, RuntimeCall, MaxInstructions>;
+	type XcmRecorder = PolkadotXcm;
 	type XcmSender = XcmRouter;
 }
 

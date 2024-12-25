@@ -1512,7 +1512,6 @@ version = "6.8.1"
 dependencies = [
  "array-bytes 7.1.0",
  "cumulus-pallet-aura-ext",
- "cumulus-pallet-dmp-queue",
  "cumulus-pallet-parachain-system",
  "cumulus-pallet-session-benchmarking",
  "cumulus-pallet-xcm",
@@ -2082,23 +2081,6 @@ dependencies = [
  "sp-application-crypto",
  "sp-consensus-aura",
  "sp-runtime",
-]
-
-[[package]]
-name = "cumulus-pallet-dmp-queue"
-version = "0.16.0"
-source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2407#f2081f6657f011634a483e3a4c91e54150c974c7"
-dependencies = [
- "cumulus-primitives-core",
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "parity-scale-codec",
- "scale-info",
- "sp-io",
- "sp-runtime",
- "staging-xcm",
 ]
 
 [[package]]
@@ -2767,7 +2749,6 @@ version = "6.8.1"
 dependencies = [
  "array-bytes 7.1.0",
  "cumulus-pallet-aura-ext",
- "cumulus-pallet-dmp-queue",
  "cumulus-pallet-parachain-system",
  "cumulus-pallet-session-benchmarking",
  "cumulus-pallet-xcm",
@@ -5838,7 +5819,6 @@ version = "6.8.1"
 dependencies = [
  "array-bytes 7.1.0",
  "cumulus-pallet-aura-ext",
- "cumulus-pallet-dmp-queue",
  "cumulus-pallet-parachain-system",
  "cumulus-pallet-session-benchmarking",
  "cumulus-pallet-xcm",

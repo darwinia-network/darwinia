@@ -214,22 +214,29 @@ impl frame_support::weights::WeightToFeePolynomial for ProofSizeToFee {
 ///
 /// Burn the base fee and allocate the tips to the block producer.
 pub struct DealWithFees<R>(core::marker::PhantomData<R>);
-impl<R> frame_support::traits::OnUnbalanced<pallet_balances::NegativeImbalance<R>>
-	for DealWithFees<R>
+impl<R>
+	frame_support::traits::OnUnbalanced<
+		frame_support::traits::fungible::Credit<R::AccountId, pallet_balances::Pallet<R>>,
+	> for DealWithFees<R>
 where
 	R: pallet_authorship::Config + pallet_balances::Config,
 {
 	fn on_unbalanceds<B>(
-		mut fees_then_tips: impl Iterator<Item = pallet_balances::NegativeImbalance<R>>,
+		mut fees_then_tips: impl Iterator<
+			Item = frame_support::traits::fungible::Credit<
+				R::AccountId,
+				pallet_balances::Pallet<R>,
+			>,
+		>,
 	) {
 		// polkadot-sdk
-		use frame_support::traits::Currency;
+		use frame_support::traits::fungible::Balanced;
 
 		if fees_then_tips.next().is_some() {
 			if let Some(tips) = fees_then_tips.next() {
 				if let Some(author) = <pallet_authorship::Pallet<R>>::author() {
 					// Tip the block producer here.
-					<pallet_balances::Pallet<R>>::resolve_creating(&author, tips);
+					let _ = <pallet_balances::Pallet<R>>::resolve(&author, tips);
 				}
 
 				// Burn the tips here. (IMPOSSIBLE CASE)

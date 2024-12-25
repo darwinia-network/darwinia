@@ -75,7 +75,7 @@ pub type Executive = frame_executive::Executive<
 	(
 		migration::CustomOnRuntimeUpgrade,
 		cumulus_pallet_xcmp_queue::migration::v5::MigrateV4ToV5<Runtime>,
-	)
+	),
 >;
 
 /// Runtime version.
@@ -99,142 +99,263 @@ pub fn native_version() -> sp_version::NativeVersion {
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 #[cfg(not(feature = "dev"))]
-frame_support::construct_runtime! {
-	pub enum Runtime {
-		// System stuff.
-		System: frame_system = 0,
-		ParachainSystem: cumulus_pallet_parachain_system = 1,
-		Timestamp: pallet_timestamp = 2,
-		ParachainInfo: parachain_info = 3,
+#[frame_support::runtime]
+mod runtime {
+	#[runtime::runtime]
+	#[runtime::derive(
+		RuntimeCall,
+		RuntimeEvent,
+		RuntimeError,
+		RuntimeOrigin,
+		RuntimeFreezeReason,
+		RuntimeHoldReason,
+		RuntimeSlashReason,
+		RuntimeLockId,
+		RuntimeTask
+	)]
+	pub struct Runtime;
 
-		// Monetary stuff.
-		// Leave 4 here.
-		// To keep balances consistent with the existing XCM configurations.
-		Balances: pallet_balances = 5,
-		TransactionPayment: pallet_transaction_payment = 6,
-		Assets: pallet_assets = 7,
-		// Vesting: pallet_vesting = 8,
-		Deposit: darwinia_deposit = 9,
-		AccountMigration: darwinia_account_migration = 10,
+	// System stuff.
+	#[runtime::pallet_index(0)]
+	pub type System = frame_system;
+	#[runtime::pallet_index(1)]
+	pub type ParachainSystem = cumulus_pallet_parachain_system;
+	#[runtime::pallet_index(2)]
+	pub type Timestamp = pallet_timestamp;
+	#[runtime::pallet_index(3)]
+	pub type ParachainInfo = parachain_info;
 
-		// Consensus stuff.
-		Authorship: pallet_authorship = 11,
-		DarwiniaStaking: darwinia_staking = 12,
-		Session: pallet_session = 13,
-		Aura: pallet_aura = 14,
-		AuraExt: cumulus_pallet_aura_ext = 15,
-		// MessageGadget: darwinia_message_gadget = 16,
-		// EcdsaAuthority: darwinia_ecdsa_authority = 17,
+	// Monetary stuff.
+	// Leave 4 here.
+	// To keep balances consistent with the existing XCM configurations.
+	#[runtime::pallet_index(5)]
+	pub type Balances = pallet_balances;
+	#[runtime::pallet_index(6)]
+	pub type TransactionPayment = pallet_transaction_payment;
+	#[runtime::pallet_index(7)]
+	pub type Assets = pallet_assets;
+	// #[runtime::pallet_index(8)]
+	// pub type Vesting = pallet_vesting;
+	#[runtime::pallet_index(9)]
+	pub type Deposit = darwinia_deposit;
+	#[runtime::pallet_index(10)]
+	pub type AccountMigration = darwinia_account_migration;
 
-		// Governance stuff.
-		// PhragmenElection: pallet_elections_phragmen = 21,
-		// TechnicalMembership: pallet_membership::<Instance1> = 22,
-		// Council: pallet_collective::<Instance1> = 19,
-		TechnicalCommittee: pallet_collective::<Instance2> = 20,
-		Treasury: pallet_treasury = 23,
-		// Tips: pallet_tips = 24,
-		// Democracy: pallet_democracy = 18,
-		ConvictionVoting: pallet_conviction_voting = 48,
-		Referenda: pallet_referenda = 49,
-		Origins: custom_origins = 50,
-		Whitelist: pallet_whitelist = 51,
+	// Consensus stuff.
+	#[runtime::pallet_index(11)]
+	pub type Authorship = pallet_authorship;
+	#[runtime::pallet_index(12)]
+	pub type DarwiniaStaking = darwinia_staking;
+	#[runtime::pallet_index(13)]
+	pub type Session = pallet_session;
+	#[runtime::pallet_index(14)]
+	pub type Aura = pallet_aura;
+	#[runtime::pallet_index(15)]
+	pub type AuraExt = cumulus_pallet_aura_ext;
+	// #[runtime::pallet_index(16)]
+	// pub type MessageGadget = darwinia_message_gadget;
+	// #[runtime::pallet_index(17)]
+	// pub type EcdsaAuthority = darwinia_ecdsa_authority;
 
-		// Utility stuff.
-		// Sudo: pallet_sudo = 25,
-		Utility: pallet_utility = 26,
-		// Identity: pallet_identity = 27,
-		Scheduler: pallet_scheduler = 28,
-		Preimage: pallet_preimage = 29,
-		Proxy: pallet_proxy = 30,
-		// TxPause: pallet_tx_pause = 52,
+	// Governance stuff.
+	// #[runtime::pallet_index(21)]
+	// pub type PhragmenElection = pallet_elections_phragmen;
+	// #[runtime::pallet_index(22)]
+	// pub type TechnicalMembership = pallet_membership::Pallet<Runtime, Instance1>;
+	// #[runtime::pallet_index(19)]
+	// pub type Council = pallet_collective::Pallet<Runtime, Instance1>;
+	#[runtime::pallet_index(20)]
+	pub type TechnicalCommittee = pallet_collective::Pallet<Runtime, Instance2>;
+	#[runtime::pallet_index(23)]
+	pub type Treasury = pallet_treasury;
+	// #[runtime::pallet_index(24)]
+	// pub type Tips = pallet_tips;
+	// #[runtime::pallet_index(18)]
+	// pub type Democracy = pallet_democracy;
+	#[runtime::pallet_index(48)]
+	pub type ConvictionVoting = pallet_conviction_voting;
+	#[runtime::pallet_index(49)]
+	pub type Referenda = pallet_referenda;
+	#[runtime::pallet_index(50)]
+	pub type Origins = custom_origins;
+	#[runtime::pallet_index(51)]
+	pub type Whitelist = pallet_whitelist;
 
-		// XCM stuff.
-		XcmpQueue: cumulus_pallet_xcmp_queue = 32,
-		PolkadotXcm: pallet_xcm = 33,
-		CumulusXcm: cumulus_pallet_xcm = 34,
-		// EthereumXcm: pallet_ethereum_xcm = 44,
-		DmpQueue: cumulus_pallet_dmp_queue = 35,
-		MessageQueue: pallet_message_queue = 39,
-		AssetManager: pallet_asset_manager = 45,
-		XTokens: orml_xtokens = 46,
-		AssetLimit: darwinia_asset_limit = 47,
+	// Utility stuff.
+	// #[runtime::pallet_index(25)]
+	// pub type Sudo = pallet_sudo;
+	#[runtime::pallet_index(26)]
+	pub type Utility = pallet_utility;
+	// #[runtime::pallet_index(27)]
+	// pub type Identity = pallet_identity;
+	#[runtime::pallet_index(28)]
+	pub type Scheduler = pallet_scheduler;
+	#[runtime::pallet_index(29)]
+	pub type Preimage = pallet_preimage;
+	#[runtime::pallet_index(30)]
+	pub type Proxy = pallet_proxy;
+	// #[runtime::pallet_index(52)]
+	// pub type TxPause = pallet_tx_pause;
 
-		// EVM stuff.
-		Ethereum: pallet_ethereum = 36,
-		EVM: pallet_evm = 37,
-		EthTxForwarder: darwinia_ethtx_forwarder = 38,
-	}
+	// XCM stuff.
+	#[runtime::pallet_index(32)]
+	pub type XcmpQueue = cumulus_pallet_xcmp_queue;
+	#[runtime::pallet_index(33)]
+	pub type XcmPallet = pallet_xcm;
+	#[runtime::pallet_index(34)]
+	pub type CumulusXcm = cumulus_pallet_xcm;
+	// #[runtime::pallet_index(44)]
+	// pub type EthereumXcm = pallet_ethereum_xcm;
+	// #[runtime::pallet_index(35)]
+	// pub type DmpQueue = cumulus_pallet_dmp_queue;
+	#[runtime::pallet_index(39)]
+	pub type MessageQueue = pallet_message_queue;
+	#[runtime::pallet_index(45)]
+	pub type AssetManager = pallet_asset_manager;
+	#[runtime::pallet_index(46)]
+	pub type XTokens = orml_xtokens;
+	#[runtime::pallet_index(47)]
+	pub type AssetLimit = darwinia_asset_limit;
+
+	// EVM stuff.
+	#[runtime::pallet_index(36)]
+	pub type Ethereum = pallet_ethereum;
+	#[runtime::pallet_index(37)]
+	pub type EVM = pallet_evm;
+	#[runtime::pallet_index(38)]
+	pub type EthTxForwarder = darwinia_ethtx_forwarder;
 }
 // Create the runtime by composing the FRAME pallets that were previously configured.
 #[cfg(feature = "dev")]
-frame_support::construct_runtime! {
-	pub enum Runtime {
-		// System stuff.
-		System: frame_system = 0,
-		ParachainSystem: cumulus_pallet_parachain_system = 1,
-		Timestamp: pallet_timestamp = 2,
-		ParachainInfo: parachain_info = 3,
+#[frame_support::runtime]
+mod runtime {
+	#[runtime::runtime]
+	#[runtime::derive(
+		RuntimeCall,
+		RuntimeEvent,
+		RuntimeError,
+		RuntimeOrigin,
+		RuntimeFreezeReason,
+		RuntimeHoldReason,
+		RuntimeSlashReason,
+		RuntimeLockId,
+		RuntimeTask
+	)]
+	pub struct Runtime;
 
-		// Monetary stuff.
-		// Leave 4 here.
-		// To keep balances consistent with the existing XCM configurations.
-		Balances: pallet_balances = 5,
-		TransactionPayment: pallet_transaction_payment = 6,
-		Assets: pallet_assets = 7,
-		// Vesting: pallet_vesting = 8,
-		Deposit: darwinia_deposit = 9,
-		AccountMigration: darwinia_account_migration = 10,
+	// System stuff.
+	#[runtime::pallet_index(0)]
+	pub type System = frame_system;
+	#[runtime::pallet_index(1)]
+	pub type ParachainSystem = cumulus_pallet_parachain_system;
+	#[runtime::pallet_index(2)]
+	pub type Timestamp = pallet_timestamp;
+	#[runtime::pallet_index(3)]
+	pub type ParachainInfo = parachain_info;
 
-		// Consensus stuff.
-		Authorship: pallet_authorship = 11,
-		DarwiniaStaking: darwinia_staking = 12,
-		Session: pallet_session = 13,
-		Aura: pallet_aura = 14,
-		AuraExt: cumulus_pallet_aura_ext = 15,
-		// MessageGadget: darwinia_message_gadget = 16,
-		// EcdsaAuthority: darwinia_ecdsa_authority = 17,
+	// Monetary stuff.
+	// Leave 4 here.
+	// To keep balances consistent with the existing XCM configurations.
+	#[runtime::pallet_index(5)]
+	pub type Balances = pallet_balances;
+	#[runtime::pallet_index(6)]
+	pub type TransactionPayment = pallet_transaction_payment;
+	#[runtime::pallet_index(7)]
+	pub type Assets = pallet_assets;
+	// #[runtime::pallet_index(8)]
+	// pub type Vesting = pallet_vesting;
+	#[runtime::pallet_index(9)]
+	pub type Deposit = darwinia_deposit;
+	#[runtime::pallet_index(10)]
+	pub type AccountMigration = darwinia_account_migration;
 
-		// Governance stuff.
-		// PhragmenElection: pallet_elections_phragmen = 21,
-		// TechnicalMembership: pallet_membership::<Instance1> = 22,
-		// Council: pallet_collective::<Instance1> = 19,
-		TechnicalCommittee: pallet_collective::<Instance2> = 20,
-		Treasury: pallet_treasury = 23,
-		// Tips: pallet_tips = 24,
-		// Democracy: pallet_democracy = 18,
-		ConvictionVoting: pallet_conviction_voting = 48,
-		Referenda: pallet_referenda = 49,
-		Origins: custom_origins = 50,
-		Whitelist: pallet_whitelist = 51,
+	// Consensus stuff.
+	#[runtime::pallet_index(11)]
+	pub type Authorship = pallet_authorship;
+	#[runtime::pallet_index(12)]
+	pub type DarwiniaStaking = darwinia_staking;
+	#[runtime::pallet_index(13)]
+	pub type Session = pallet_session;
+	#[runtime::pallet_index(14)]
+	pub type Aura = pallet_aura;
+	#[runtime::pallet_index(15)]
+	pub type AuraExt = cumulus_pallet_aura_ext;
+	// #[runtime::pallet_index(16)]
+	// pub type MessageGadget = darwinia_message_gadget;
+	// #[runtime::pallet_index(17)]
+	// pub type EcdsaAuthority = darwinia_ecdsa_authority;
 
-		// Utility stuff.
-		// Sudo: pallet_sudo = 25,
-		Utility: pallet_utility = 26,
-		// Identity: pallet_identity = 27,
-		Scheduler: pallet_scheduler = 28,
-		Preimage: pallet_preimage = 29,
-		Proxy: pallet_proxy = 30,
-		// TxPause: pallet_tx_pause = 52,
+	// Governance stuff.
+	// #[runtime::pallet_index(21)]
+	// pub type PhragmenElection = pallet_elections_phragmen;
+	// #[runtime::pallet_index(22)]
+	// pub type TechnicalMembership = pallet_membership::Pallet<Runtime, Instance1>;
+	// #[runtime::pallet_index(19)]
+	// pub type Council = pallet_collective::Pallet<Runtime, Instance1>;
+	#[runtime::pallet_index(20)]
+	pub type TechnicalCommittee = pallet_collective::Pallet<Runtime, Instance2>;
+	#[runtime::pallet_index(23)]
+	pub type Treasury = pallet_treasury;
+	// #[runtime::pallet_index(24)]
+	// pub type Tips = pallet_tips;
+	// #[runtime::pallet_index(18)]
+	// pub type Democracy = pallet_democracy;
+	#[runtime::pallet_index(48)]
+	pub type ConvictionVoting = pallet_conviction_voting;
+	#[runtime::pallet_index(49)]
+	pub type Referenda = pallet_referenda;
+	#[runtime::pallet_index(50)]
+	pub type Origins = custom_origins;
+	#[runtime::pallet_index(51)]
+	pub type Whitelist = pallet_whitelist;
 
-		// XCM stuff.
-		XcmpQueue: cumulus_pallet_xcmp_queue = 32,
-		PolkadotXcm: pallet_xcm = 33,
-		CumulusXcm: cumulus_pallet_xcm = 34,
-		// EthereumXcm: pallet_ethereum_xcm = 44,
-		DmpQueue: cumulus_pallet_dmp_queue = 35,
-		MessageQueue: pallet_message_queue = 39,
-		AssetManager: pallet_asset_manager = 45,
-		XTokens: orml_xtokens = 46,
-		AssetLimit: darwinia_asset_limit = 47,
+	// Utility stuff.
+	// #[runtime::pallet_index(25)]
+	// pub type Sudo = pallet_sudo;
+	#[runtime::pallet_index(26)]
+	pub type Utility = pallet_utility;
+	// #[runtime::pallet_index(27)]
+	// pub type Identity = pallet_identity;
+	#[runtime::pallet_index(28)]
+	pub type Scheduler = pallet_scheduler;
+	#[runtime::pallet_index(29)]
+	pub type Preimage = pallet_preimage;
+	#[runtime::pallet_index(30)]
+	pub type Proxy = pallet_proxy;
+	// #[runtime::pallet_index(52)]
+	// pub type TxPause = pallet_tx_pause;
 
-		// EVM stuff.
-		Ethereum: pallet_ethereum = 36,
-		EVM: pallet_evm = 37,
-		EthTxForwarder: darwinia_ethtx_forwarder = 38,
+	// XCM stuff.
+	#[runtime::pallet_index(32)]
+	pub type XcmpQueue = cumulus_pallet_xcmp_queue;
+	#[runtime::pallet_index(33)]
+	pub type XcmPallet = pallet_xcm;
+	#[runtime::pallet_index(34)]
+	pub type CumulusXcm = cumulus_pallet_xcm;
+	// #[runtime::pallet_index(44)]
+	// pub type EthereumXcm = pallet_ethereum_xcm;
+	// #[runtime::pallet_index(35)]
+	// pub type DmpQueue = cumulus_pallet_dmp_queue;
+	#[runtime::pallet_index(39)]
+	pub type MessageQueue = pallet_message_queue;
+	#[runtime::pallet_index(45)]
+	pub type AssetManager = pallet_asset_manager;
+	#[runtime::pallet_index(46)]
+	pub type XTokens = orml_xtokens;
+	#[runtime::pallet_index(47)]
+	pub type AssetLimit = darwinia_asset_limit;
 
-		// Dev stuff.
-		Sudo: pallet_sudo = 255,
-	}
+	// EVM stuff.
+	#[runtime::pallet_index(36)]
+	pub type Ethereum = pallet_ethereum;
+	#[runtime::pallet_index(37)]
+	pub type EVM = pallet_evm;
+	#[runtime::pallet_index(38)]
+	pub type EthTxForwarder = darwinia_ethtx_forwarder;
+
+	// Dev stuff.
+	#[runtime::pallet_index(255)]
+	pub type Sudo = pallet_sudo;
 }
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -463,21 +584,21 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn query_xcm_weight(message: xcm::VersionedXcm<()>) -> Result<frame_support::weights::Weight, xcm_runtime_apis::fees::Error> {
-			XcmPallet::query_xcm_weight(message)
+			PolkadotXcm::query_xcm_weight(message)
 		}
 
 		fn query_delivery_fees(destination: xcm::VersionedLocation, message: xcm::VersionedXcm<()>) -> Result<xcm::VersionedAssets, xcm_runtime_apis::fees::Error> {
-			XcmPallet::query_delivery_fees(destination, message)
+			PolkadotXcm::query_delivery_fees(destination, message)
 		}
 	}
 
 	impl xcm_runtime_apis::dry_run::DryRunApi<Block, RuntimeCall, RuntimeEvent, OriginCaller> for Runtime {
 		fn dry_run_call(origin: OriginCaller, call: RuntimeCall) -> Result<xcm_runtime_apis::dry_run::CallDryRunEffects<RuntimeEvent>, xcm_runtime_apis::dry_run::Error> {
-			PolkadotXcm::dry_run_call::<Runtime, xcm_config::XcmRouter, OriginCaller, RuntimeCall>(origin, call)
+			PolkadotXcm::dry_run_call::<Runtime, XcmRouter, OriginCaller, RuntimeCall>(origin, call)
 		}
 
 		fn dry_run_xcm(origin_location: xcm::VersionedLocation, xcm: xcm::VersionedXcm<RuntimeCall>) -> Result<xcm_runtime_apis::dry_run::XcmDryRunEffects<RuntimeEvent>, xcm_runtime_apis::dry_run::Error> {
-			PolkadotXcm::dry_run_xcm::<Runtime, xcm_config::XcmRouter, RuntimeCall, xcm_config::XcmConfig>(origin_location, xcm)
+			PolkadotXcm::dry_run_xcm::<Runtime, XcmRouter, RuntimeCall, XcmExecutorConfig>(origin_location, xcm)
 		}
 	}
 
@@ -743,6 +864,10 @@ sp_api::impl_runtime_apis! {
 				pallet_ethereum::CurrentBlock::<Runtime>::get(),
 				pallet_ethereum::CurrentTransactionStatuses::<Runtime>::get()
 			)
+		}
+
+		fn initialize_pending_block(header: &<Block as sp_runtime::traits::Block>::Header) {
+			Executive::initialize_block(header);
 		}
 	}
 

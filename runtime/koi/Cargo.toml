@@ -56,7 +56,6 @@ orml-xtokens     = { workspace = true }
 
 # polkadot-sdk
 cumulus-pallet-aura-ext                    = { workspace = true }
-cumulus-pallet-dmp-queue                   = { workspace = true }
 cumulus-pallet-parachain-system            = { workspace = true }
 cumulus-pallet-xcm                         = { workspace = true }
 cumulus-pallet-xcmp-queue                  = { workspace = true }
@@ -171,7 +170,6 @@ std = [
 
 	# polkadot-sdk
 	"cumulus-pallet-aura-ext/std",
-	"cumulus-pallet-dmp-queue/std",
 	"cumulus-pallet-parachain-system/std",
 	"cumulus-pallet-xcm/std",
 	"cumulus-pallet-xcmp-queue/std",
@@ -306,7 +304,6 @@ try-runtime = [
 
 	# polkadot-sdk
 	"cumulus-pallet-aura-ext/try-runtime",
-	"cumulus-pallet-dmp-queue/try-runtime",
 	"cumulus-pallet-parachain-system/try-runtime",
 	"cumulus-pallet-xcm/try-runtime",
 	"cumulus-pallet-xcmp-queue/try-runtime",

@@ -25,7 +25,7 @@ impl pallet_transaction_payment::Config for Runtime {
 	type LengthToFee =
 		frame_support::weights::ConstantMultiplier<Balance, ConstU128<{ 10 * MICROUNIT }>>;
 	type OnChargeTransaction =
-		pallet_transaction_payment::CurrencyAdapter<Balances, DealWithFees<Runtime>>;
+		pallet_transaction_payment::FungibleAdapter<Balances, DealWithFees<Runtime>>;
 	type OperationalFeeMultiplier = sp_runtime::traits::ConstU8<5>;
 	type RuntimeEvent = RuntimeEvent;
 	type WeightToFee = WeightToFee;
