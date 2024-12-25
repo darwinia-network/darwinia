@@ -39,21 +39,21 @@ use sp_runtime::traits::AccountIdConversion;
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {
-		"Darwinia".into()
+		Self::executable_name()
 	}
 
 	fn impl_version() -> String {
-		let commit_hash = env!("SUBSTRATE_CLI_COMMIT_HASH");
-
-		format!("{NODE_VERSION}-{commit_hash}")
+		env!("SUBSTRATE_CLI_IMPL_VERSION").into()
 	}
 
 	fn description() -> String {
 		format!(
-			"Darwinia\n\nThe command-line arguments provided first will be \
-			passed to the parachain node, while the arguments provided after -- will be passed \
-			to the relay chain node.\n\n\
-			{} <parachain-args> -- <relay-chain-args>",
+			"The command-line arguments provided first will be passed to the parachain node, \n\
+			and the arguments provided after -- will be passed to the relay chain node. \n\
+			\n\
+			Example: \n\
+			\n\
+			{} [parachain-args] -- [relay-chain-args]",
 			Self::executable_name()
 		)
 	}
@@ -77,33 +77,27 @@ impl SubstrateCli for Cli {
 
 impl SubstrateCli for RelayChainCli {
 	fn impl_name() -> String {
-		"Darwinia".into()
+		Cli::impl_name()
 	}
 
 	fn impl_version() -> String {
-		env!("SUBSTRATE_CLI_IMPL_VERSION").into()
+		Cli::impl_version()
 	}
 
 	fn description() -> String {
-		format!(
-			"Darwinia\n\nThe command-line arguments provided first will be \
-			passed to the parachain node, while the arguments provided after -- will be passed \
-			to the relay chain node.\n\n\
-			{} <parachain-args> -- <relay-chain-args>",
-			Self::executable_name()
-		)
+		Cli::description()
 	}
 
 	fn author() -> String {
-		env!("CARGO_PKG_AUTHORS").into()
+		Cli::author()
 	}
 
 	fn support_url() -> String {
-		"https://github.com/darwinia-network/darwinia/issues/new".into()
+		Cli::support_url()
 	}
 
 	fn copyright_start_year() -> i32 {
-		2018
+		Cli::copyright_start_year()
 	}
 
 	fn load_spec(&self, id: &str) -> StdResult<Box<dyn ChainSpecT>, String> {
@@ -490,12 +484,9 @@ pub fn run() -> Result<()> {
 				let storage_monitor = cli.storage_monitor;
 				let eth_rpc_config = cli.eth_args.build_eth_rpc_config();
 
-				log::info!("Parachain id: {id:?}");
-				log::info!("Parachain Account: {parachain_account}");
-				log::info!(
-					"Is collating: {}",
-					if config.role.is_authority() { "yes" } else { "no" }
-				);
+				log::info!("🪪 Parachain id: {:?}", id);
+				log::info!("🧾 Parachain Account: {}", parachain_account);
+				log::info!("✍️ Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
 				if chain_spec.is_dev() {
 					#[cfg(feature = "crab-runtime")]
