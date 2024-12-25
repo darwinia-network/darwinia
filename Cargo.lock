@@ -2302,7 +2302,7 @@ dependencies = [
  "async-trait",
  "cumulus-primitives-core",
  "futures 0.3.31",
- "jsonrpsee-core 0.23.2",
+ "jsonrpsee-core",
  "parity-scale-codec",
  "polkadot-overseer",
  "sc-client-api",
@@ -2359,7 +2359,7 @@ dependencies = [
  "either",
  "futures 0.3.31",
  "futures-timer",
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "parity-scale-codec",
  "pin-project",
  "polkadot-overseer",
@@ -2532,7 +2532,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-benchmarking-cli",
  "futures 0.3.31",
- "jsonrpsee 0.20.4",
+ "jsonrpsee",
  "koi-runtime",
  "log",
  "moonbeam-primitives-ext",
@@ -3789,7 +3789,7 @@ dependencies = [
  "fp-storage",
  "futures 0.3.31",
  "hex",
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "libsecp256k1",
  "log",
  "pallet-evm",
@@ -3833,7 +3833,7 @@ source = "git+https://github.com/polkadot-evm/frontier?branch=stable2407#2e219e1
 dependencies = [
  "ethereum",
  "ethereum-types",
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "rlp",
  "rustc-hex",
  "serde",
@@ -5650,26 +5650,14 @@ dependencies = [
 
 [[package]]
 name = "jsonrpsee"
-version = "0.20.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "138572befc78a9793240645926f30161f8b4143d2be18d09e44ed9814bd7ee2c"
-dependencies = [
- "jsonrpsee-core 0.20.4",
- "jsonrpsee-server 0.20.4",
- "jsonrpsee-types 0.20.4",
- "tokio",
-]
-
-[[package]]
-name = "jsonrpsee"
 version = "0.23.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "62b089779ad7f80768693755a031cc14a7766aba707cbe886674e3f79e9b7e47"
 dependencies = [
- "jsonrpsee-core 0.23.2",
+ "jsonrpsee-core",
  "jsonrpsee-proc-macros",
- "jsonrpsee-server 0.23.2",
- "jsonrpsee-types 0.23.2",
+ "jsonrpsee-server",
+ "jsonrpsee-types",
  "jsonrpsee-ws-client",
  "tokio",
  "tracing",
@@ -5684,7 +5672,7 @@ dependencies = [
  "base64 0.22.1",
  "futures-util",
  "http 1.2.0",
- "jsonrpsee-core 0.23.2",
+ "jsonrpsee-core",
  "pin-project",
  "rustls 0.23.20",
  "rustls-pki-types",
@@ -5696,29 +5684,6 @@ dependencies = [
  "tokio-util",
  "tracing",
  "url",
-]
-
-[[package]]
-name = "jsonrpsee-core"
-version = "0.20.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f24ea59b037b6b9b0e2ebe2c30a3e782b56bd7c76dcc5d6d70ba55d442af56e3"
-dependencies = [
- "anyhow",
- "async-trait",
- "beef",
- "futures-util",
- "hyper 0.14.32",
- "jsonrpsee-types 0.20.4",
- "parking_lot 0.12.3",
- "rand",
- "rustc-hash",
- "serde",
- "serde_json",
- "soketto 0.7.1",
- "thiserror 1.0.69",
- "tokio",
- "tracing",
 ]
 
 [[package]]
@@ -5736,7 +5701,7 @@ dependencies = [
  "http 1.2.0",
  "http-body 1.0.1",
  "http-body-util",
- "jsonrpsee-types 0.23.2",
+ "jsonrpsee-types",
  "parking_lot 0.12.3",
  "pin-project",
  "rand",
@@ -5764,29 +5729,6 @@ dependencies = [
 
 [[package]]
 name = "jsonrpsee-server"
-version = "0.20.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a482bc4e25eebd0adb61a3468c722763c381225bd3ec46e926f709df8a8eb548"
-dependencies = [
- "futures-util",
- "http 0.2.12",
- "hyper 0.14.32",
- "jsonrpsee-core 0.20.4",
- "jsonrpsee-types 0.20.4",
- "route-recognizer",
- "serde",
- "serde_json",
- "soketto 0.7.1",
- "thiserror 1.0.69",
- "tokio",
- "tokio-stream",
- "tokio-util",
- "tower",
- "tracing",
-]
-
-[[package]]
-name = "jsonrpsee-server"
 version = "0.23.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "654afab2e92e5d88ebd8a39d6074483f3f2bfdf91c5ac57fe285e7127cdd4f51"
@@ -5798,8 +5740,8 @@ dependencies = [
  "http-body-util",
  "hyper 1.5.2",
  "hyper-util",
- "jsonrpsee-core 0.23.2",
- "jsonrpsee-types 0.23.2",
+ "jsonrpsee-core",
+ "jsonrpsee-types",
  "pin-project",
  "route-recognizer",
  "serde",
@@ -5810,20 +5752,6 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tower",
- "tracing",
-]
-
-[[package]]
-name = "jsonrpsee-types"
-version = "0.20.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3264e339143fe37ed081953842ee67bfafa99e3b91559bdded6e4abd8fc8535e"
-dependencies = [
- "anyhow",
- "beef",
- "serde",
- "serde_json",
- "thiserror 1.0.69",
  "tracing",
 ]
 
@@ -5848,8 +5776,8 @@ checksum = "1c28759775f5cb2f1ea9667672d3fe2b0e701d1f4b7b67954e60afe7fd058b5e"
 dependencies = [
  "http 1.2.0",
  "jsonrpsee-client-transport",
- "jsonrpsee-core 0.23.2",
- "jsonrpsee-types 0.23.2",
+ "jsonrpsee-core",
+ "jsonrpsee-types",
  "url",
 ]
 
@@ -7026,7 +6954,7 @@ name = "mmr-rpc"
 version = "37.0.0"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2407#f2081f6657f011634a483e3a4c91e54150c974c7"
 dependencies = [
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "parity-scale-codec",
  "serde",
  "sp-api",
@@ -7148,7 +7076,7 @@ dependencies = [
  "ethereum-types",
  "fc-rpc-core",
  "futures 0.3.31",
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "moonbeam-client-evm-tracing",
  "moonbeam-rpc-core-types",
  "serde",
@@ -7163,7 +7091,7 @@ source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2407#a81
 dependencies = [
  "ethereum-types",
  "futures 0.3.31",
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "moonbeam-client-evm-tracing",
  "moonbeam-rpc-core-types",
  "serde",
@@ -7196,7 +7124,7 @@ dependencies = [
  "fp-rpc",
  "futures 0.3.31",
  "hex-literal",
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "moonbeam-client-evm-tracing",
  "moonbeam-rpc-core-debug",
  "moonbeam-rpc-core-types",
@@ -7244,7 +7172,7 @@ dependencies = [
  "fc-storage",
  "fp-rpc",
  "futures 0.3.31",
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "log",
  "moonbeam-client-evm-tracing",
  "moonbeam-rpc-core-trace",
@@ -9165,7 +9093,7 @@ name = "pallet-transaction-payment-rpc"
 version = "40.0.0"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2407#f2081f6657f011634a483e3a4c91e54150c974c7"
 dependencies = [
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "pallet-transaction-payment-rpc-runtime-api",
  "parity-scale-codec",
  "sp-api",
@@ -10383,7 +10311,7 @@ name = "polkadot-rpc"
 version = "17.0.0"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2407#f2081f6657f011634a483e3a4c91e54150c974c7"
 dependencies = [
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "mmr-rpc",
  "pallet-transaction-payment-rpc",
  "polkadot-primitives",
@@ -12514,7 +12442,7 @@ version = "0.44.0"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2407#f2081f6657f011634a483e3a4c91e54150c974c7"
 dependencies = [
  "futures 0.3.31",
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "sc-consensus-babe",
  "sc-consensus-epochs",
  "sc-rpc-api",
@@ -12572,7 +12500,7 @@ version = "23.0.0"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2407#f2081f6657f011634a483e3a4c91e54150c974c7"
 dependencies = [
  "futures 0.3.31",
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "log",
  "parity-scale-codec",
  "parking_lot 0.12.3",
@@ -12650,7 +12578,7 @@ source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2407#f2081
 dependencies = [
  "finality-grandpa",
  "futures 0.3.31",
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "log",
  "parity-scale-codec",
  "sc-client-api",
@@ -13042,7 +12970,7 @@ version = "39.0.0"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2407#f2081f6657f011634a483e3a4c91e54150c974c7"
 dependencies = [
  "futures 0.3.31",
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "log",
  "parity-scale-codec",
  "parking_lot 0.12.3",
@@ -13073,7 +13001,7 @@ name = "sc-rpc-api"
 version = "0.43.0"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2407#f2081f6657f011634a483e3a4c91e54150c974c7"
 dependencies = [
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "parity-scale-codec",
  "sc-chain-spec",
  "sc-mixnet",
@@ -13100,7 +13028,7 @@ dependencies = [
  "http-body-util",
  "hyper 1.5.2",
  "ip_network",
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "log",
  "serde",
  "serde_json",
@@ -13119,7 +13047,7 @@ dependencies = [
  "futures 0.3.31",
  "futures-util",
  "hex",
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "log",
  "parity-scale-codec",
  "parking_lot 0.12.3",
@@ -13152,7 +13080,7 @@ dependencies = [
  "exit-future",
  "futures 0.3.31",
  "futures-timer",
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "log",
  "parity-scale-codec",
  "parking_lot 0.12.3",
@@ -13235,7 +13163,7 @@ name = "sc-sync-state-rpc"
 version = "0.44.0"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2407#f2081f6657f011634a483e3a4c91e54150c974c7"
 dependencies = [
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "parity-scale-codec",
  "sc-chain-spec",
  "sc-client-api",
@@ -14051,7 +13979,6 @@ dependencies = [
  "base64 0.13.1",
  "bytes",
  "futures 0.3.31",
- "http 0.2.12",
  "httparse",
  "log",
  "rand",
@@ -15200,7 +15127,7 @@ dependencies = [
  "docify",
  "frame-system-rpc-runtime-api",
  "futures 0.3.31",
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "log",
  "parity-scale-codec",
  "sc-rpc-api",
@@ -15231,7 +15158,7 @@ name = "substrate-state-trie-migration-rpc"
 version = "37.0.0"
 source = "git+https://github.com/paritytech/polkadot-sdk?branch=stable2407#f2081f6657f011634a483e3a4c91e54150c974c7"
 dependencies = [
- "jsonrpsee 0.23.2",
+ "jsonrpsee",
  "parity-scale-codec",
  "sc-client-api",
  "sc-rpc-api",
