@@ -190,7 +190,7 @@ sp_api::impl_runtime_apis! {
 		}
 
 		fn authorities() -> Vec<sp_consensus_aura::sr25519::AuthorityId> {
-			Aura::authorities().into_inner()
+			<pallet_aura::Authorities<Runtime>>::get().into_inner()
 		}
 	}
 
