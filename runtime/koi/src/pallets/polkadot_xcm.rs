@@ -151,7 +151,7 @@ pub type XcmRouter = xcm_builder::WithUniqueTopic<(
 )>;
 
 frame_support::parameter_types! {
-	/// Location of Asset Hub
+	/// Location of Asset Hub.
    pub AssetHubLocation: Location = Location::new(1, [Parachain(1000)]);
    pub RelayLocationFilter: AssetFilter = Wild(AllOf {
 	   fun: WildFungible,
@@ -162,7 +162,7 @@ frame_support::parameter_types! {
 	   AssetHubLocation::get()
    );
    // We need this to be able to catch when someone is trying to execute a non-
-   // cross-chain transfer in xtokens through the absolute path way
+   // cross-chain transfer in xtokens through the absolute path way.
    pub SelfLocationAbsolute: Location = Location {
 		parents:1,
 		interior: [

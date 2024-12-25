@@ -82,10 +82,9 @@ mod message_queue;
 mod asset_manager;
 pub use asset_manager::*;
 
-mod orml_xtokens;
-pub use orml_xtokens::*;
-
 mod asset_limit;
+
+mod xcm_weight_trader;
 
 // EVM stuff.
 mod ethereum;

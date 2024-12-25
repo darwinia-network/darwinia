@@ -51,9 +51,6 @@ xcm-primitives                          = { workspace = true }
 # moonbeam optional
 moonbeam-evm-tracer = { workspace = true, optional = true }
 
-# open-web3-stack
-orml-xcm-support = { workspace = true }
-
 # polkadot-sdk
 cumulus-pallet-aura-ext                    = { workspace = true }
 cumulus-pallet-parachain-system            = { workspace = true }
@@ -164,9 +161,6 @@ std = [
 	"xcm-primitives/std",
 	# moonbeam optional
 	"moonbeam-evm-tracer?/std",
-
-	# open-web3-stack
-	"orml-xcm-support/std",
 
 	# polkadot-sdk
 	"cumulus-pallet-aura-ext/std",
@@ -291,6 +285,7 @@ try-runtime = [
 
 	# moonbeam
 	"pallet-asset-manager/try-runtime",
+	"pallet-xcm-weight-trader/try-runtime",
 
 	# frontier
 	"fp-self-contained/try-runtime",

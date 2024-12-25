@@ -81,10 +81,6 @@ pallet-evm-precompile-conviction-voting = { git = "https://github.com/darwinia-n
 pallet-xcm-weight-trader                = { git = "https://github.com/darwinia-network/moonbeam", branch = "stable2407", default-features = false }
 xcm-primitives                          = { git = "https://github.com/darwinia-network/moonbeam", branch = "stable2407", default-features = false }
 
-# open-web3-stack
-orml-xcm-support = { git = "https://github.com/darwinia-network/open-runtime-module-library", branch = "stable2407", default-features = false }
-orml-xtokens     = { git = "https://github.com/darwinia-network/open-runtime-module-library", branch = "stable2407", default-features = false }
-
 # polkadot-sdk
 cumulus-client-cli                         = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407" }
 cumulus-client-collator                    = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407" }

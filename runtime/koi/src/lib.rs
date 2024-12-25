@@ -191,7 +191,8 @@ mod runtime {
 	pub type MessageQueue = pallet_message_queue;
 	#[runtime::pallet_index(31)]
 	pub type AssetManager = pallet_asset_manager;
-	// Previously 32: XTokens
+	// #[runtime::pallet_index(32)]
+	// pub type XTokens = orml_xtokens;
 	#[runtime::pallet_index(33)]
 	pub type AssetLimit = darwinia_asset_limit;
 	#[runtime::pallet_index(38)]
