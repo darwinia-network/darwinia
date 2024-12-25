@@ -177,9 +177,6 @@ impl pallet_treasury::Config for Runtime {
 	type PalletId = TreasuryPalletId;
 	type Paymaster = frame_support::traits::tokens::PayFromAccount<Balances, TreasuryAccount>;
 	type PayoutPeriod = ();
-	type ProposalBond = ();
-	type ProposalBondMaximum = ();
-	type ProposalBondMinimum = ();
 	type RejectOrigin = frame_system::EnsureRoot<AccountId>;
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();

@@ -100,10 +100,6 @@ impl pallet_whitelist::Config for Runtime {
 	type WhitelistOrigin = RootOrAtLeastFourFifth<TechnicalCollective>;
 }
 
-frame_support::parameter_types! {
-	pub const ProposalBond: sp_runtime::Permill = sp_runtime::Permill::from_percent(5);
-}
-
 impl pallet_treasury::Config for Runtime {
 	type ApproveOrigin = RootOr<GeneralAdmin>;
 	type AssetKind = ();
@@ -121,9 +117,6 @@ impl pallet_treasury::Config for Runtime {
 	type Paymaster =
 		frame_support::traits::tokens::PayFromAccount<Balances, pallet_config::TreasuryAccount>;
 	type PayoutPeriod = ConstU32<{ 28 * DAYS }>;
-	type ProposalBond = ProposalBond;
-	type ProposalBondMaximum = ();
-	type ProposalBondMinimum = ConstU128<DARWINIA_PROPOSAL_REQUIREMENT>;
 	type RejectOrigin = RootOr<GeneralAdmin>;
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
