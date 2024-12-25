@@ -22,6 +22,7 @@ use crate::*;
 use xcm::latest::prelude::*;
 
 frame_support::parameter_types! {
+	pub const RelayLocation: Location = Location::parent();
 	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
 	pub const MaxAssetsIntoHolding: u32 = 64;
 	pub const MaxInstructions: u32 = 100;

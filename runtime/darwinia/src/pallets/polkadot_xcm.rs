@@ -22,6 +22,7 @@ use crate::{AssetId, Assets, *};
 use xcm::latest::prelude::*;
 
 frame_support::parameter_types! {
+	pub const RelayLocation: Location = Location::parent();
 	pub const RelayNetwork: NetworkId = NetworkId::Polkadot;
 	pub const MaxAssetsIntoHolding: u32 = 64;
 	pub const MaxInstructions: u32 = 100;

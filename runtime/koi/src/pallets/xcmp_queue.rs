@@ -21,7 +21,7 @@ use crate::*;
 
 impl cumulus_pallet_xcmp_queue::Config for Runtime {
 	type ChannelInfo = ParachainSystem;
-	type ControllerOrigin = RootOr<GeneralAdmin>;
+	type ControllerOrigin = Root;
 	type ControllerOriginConverter = XcmOriginToTransactDispatchOrigin;
 	type MaxActiveOutboundChannels = ConstU32<128>;
 	type MaxInboundSuspended = sp_core::ConstU32<1_000>;

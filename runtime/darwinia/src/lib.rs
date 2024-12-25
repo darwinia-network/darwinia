@@ -436,28 +436,17 @@ sp_api::impl_runtime_apis! {
 
 	impl xcm_runtime_apis::fees::XcmPaymentApi<Block> for Runtime {
 		fn query_acceptable_payment_assets(xcm_version: xcm::Version) -> Result<Vec<xcm::VersionedAssetId>, xcm_runtime_apis::fees::Error> {
-			// polkadot-sdk
-			use xcm::IntoVersion;
+			let acceptable_assets = vec![xcn::latest::AssetId(RelayLocation::get())];
 
-			let acceptable = vec![
-				// Native token.
-				xcm::VersionedAssetId::from(xcm::latest::AssetId(SelfReserve::get()))
-			];
-
-			Ok(acceptable
-				.into_iter()
-				.filter_map(|asset| asset.into_version(xcm_version).ok())
-				.collect())
+			PolkadotXcm::query_acceptable_payment_assets(xcm_version, acceptable_assets)
 		}
 
 		fn query_weight_to_asset_fee(weight: frame_support::weights::Weight, asset: xcm::VersionedAssetId) -> Result<u128, xcm_runtime_apis::fees::Error> {
 			// polkadot-sdk
 			use frame_support::weights::WeightToFee;
-			use xcm::IntoVersion;
 
 			match asset.try_as::<xcm::latest::AssetId>() {
-				Ok(asset_id) if asset_id.0 == SelfReserve::get() => {
-					// Native token.
+				Ok(asset_id) if asset_id.0 == RelayLocation::get() => {
 					Ok(WeightToFee::weight_to_fee(&weight))
 				},
 				Ok(asset_id) => {
@@ -479,6 +468,16 @@ sp_api::impl_runtime_apis! {
 
 		fn query_delivery_fees(destination: xcm::VersionedLocation, message: xcm::VersionedXcm<()>) -> Result<xcm::VersionedAssets, xcm_runtime_apis::fees::Error> {
 			XcmPallet::query_delivery_fees(destination, message)
+		}
+	}
+
+	impl xcm_runtime_apis::dry_run::DryRunApi<Block, RuntimeCall, RuntimeEvent, OriginCaller> for Runtime {
+		fn dry_run_call(origin: OriginCaller, call: RuntimeCall) -> Result<xcm_runtime_apis::dry_run::CallDryRunEffects<RuntimeEvent>, xcm_runtime_apis::dry_run::Error> {
+			PolkadotXcm::dry_run_call::<Runtime, xcm_config::XcmRouter, OriginCaller, RuntimeCall>(origin, call)
+		}
+
+		fn dry_run_xcm(origin_location: xcm::VersionedLocation, xcm: xcm::VersionedXcm<RuntimeCall>) -> Result<xcm_runtime_apis::dry_run::XcmDryRunEffects<RuntimeEvent>, xcm_runtime_apis::dry_run::Error> {
+			PolkadotXcm::dry_run_xcm::<Runtime, xcm_config::XcmRouter, RuntimeCall, xcm_config::XcmConfig>(origin_location, xcm)
 		}
 	}
 

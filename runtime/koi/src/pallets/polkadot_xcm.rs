@@ -22,6 +22,7 @@ use crate::{AssetId, Assets, *};
 use xcm::latest::prelude::*;
 
 frame_support::parameter_types! {
+	pub const RelayLocation: Location = Location::parent();
 	// TODO: Paseo.
 	pub const RelayNetwork: NetworkId = NetworkId::Rococo;
 	pub const MaxAssetsIntoHolding: u32 = 64;

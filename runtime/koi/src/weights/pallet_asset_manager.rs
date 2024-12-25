@@ -82,7 +82,7 @@ impl<T: frame_system::Config> pallet_asset_manager::WeightInfo for WeightInfo<T>
 	/// Storage: `AssetManager::AssetTypeId` (r:0 w:2)
 	/// Proof: `AssetManager::AssetTypeId` (`max_values`: None, `max_size`: None, mode: `Measured`)
 	/// The range of component `x` is `[5, 100]`.
-	fn change_existing_asset_type(x: u32, ) -> Weight {
+	fn change_existing_asset_type() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `968 + x * (13 ±0)`
 		//  Estimated: `4303 + x * (14 ±0)`
@@ -90,9 +90,9 @@ impl<T: frame_system::Config> pallet_asset_manager::WeightInfo for WeightInfo<T>
 		Weight::from_parts(23_199_447, 0)
 			.saturating_add(Weight::from_parts(0, 4303))
 			// Standard Error: 2_109
-			.saturating_add(Weight::from_parts(301_010, 0).saturating_mul(x.into()))
+			.saturating_add(Weight::from_parts(301_010, 0))
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(6))
-			.saturating_add(Weight::from_parts(0, 14).saturating_mul(x.into()))
+			.saturating_add(Weight::from_parts(0, 14))
 	}
 }
