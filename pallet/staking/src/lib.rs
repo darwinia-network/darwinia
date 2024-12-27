@@ -244,7 +244,6 @@ pub mod pallet {
 	#[pallet::storage]
 	pub type KtonStakingContract<T: Config> = StorageValue<_, T::AccountId>;
 
-	#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
 		/// Current timestamp.
@@ -256,7 +255,19 @@ pub mod pallet {
 		#[allow(missing_docs)]
 		pub _marker: PhantomData<T>,
 	}
-
+	impl<T> Default for GenesisConfig<T>
+	where
+		T: Config,
+	{
+		fn default() -> Self {
+			Self {
+				now: Default::default(),
+				elapsed_time: Default::default(),
+				collator_count: 1,
+				_marker: Default::default(),
+			}
+		}
+	}
 	#[pallet::genesis_build]
 	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
 		fn build(&self) {

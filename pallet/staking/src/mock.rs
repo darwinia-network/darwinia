@@ -283,7 +283,7 @@ frame_support::construct_runtime! {
 pub enum Efflux {}
 impl Efflux {
 	pub fn time(millis: Moment) {
-		Timestamp::set_timestamp(Timestamp::now() + millis);
+		Timestamp::set_timestamp(<pallet_timestamp::Now<Runtime>>::get() + millis);
 	}
 
 	pub fn block(number: BlockNumber) {

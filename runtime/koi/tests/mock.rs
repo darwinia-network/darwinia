@@ -52,6 +52,7 @@ impl ExtBuilder {
 			assets: vec![(KTON_ID, ROOT, true, 1)],
 			metadata: vec![(KTON_ID, b"Koi Commitment Token".to_vec(), b"PKTON".to_vec(), 18)],
 			accounts: self.assets_accounts.clone(),
+			next_asset_id: None,
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

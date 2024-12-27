@@ -436,7 +436,7 @@ pub fn run() -> Result<()> {
 		#[cfg(feature = "runtime-benchmarks")]
 		Some(Subcommand::Benchmark(cmd)) => {
 			// darwinia
-			use dc_primitives::{Block, Hashing};
+			use dc_primitives::Hashing;
 			// polkadot-sdk
 			use cumulus_client_service::storage_proof_size::HostFunctions as ReclaimHostFunctions;
 			use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
@@ -447,7 +447,7 @@ pub fn run() -> Result<()> {
 
 			match &**cmd {
 				BenchmarkCmd::Pallet(cmd) =>
-					runner.sync_run(|config| cmd.run::<Hashing, ReclaimHostFunctions>(config)),
+					runner.sync_run(|config| cmd.run_with_spec::<Hashing, ReclaimHostFunctions>(Some(config.chain_spec))),
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
 					construct_benchmark_partials!(config, cli, |partials| {
 						let db = partials.backend.expose_db();
