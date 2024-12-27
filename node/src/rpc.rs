@@ -45,7 +45,7 @@ pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi, CIDP> {
 	/// The Node authority flag
 	pub is_authority: bool,
 	/// Network service
-	pub network: Arc<sc_network::NetworkService<Block, Hash>>,
+	pub network: Arc<dyn sc_network::service::traits::NetworkService>,
 	/// Chain syncing service
 	pub sync: Arc<sc_network_sync::SyncingService<Block>>,
 	/// EthFilterApi pool.

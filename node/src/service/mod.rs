@@ -246,7 +246,7 @@ where
 /// This is the actual implementation that is abstract over the executor and the runtime api.
 #[allow(clippy::too_many_arguments)]
 #[sc_tracing::logging::prefix_logs_with("Parachain")]
-async fn start_node_impl<RuntimeApi, SC>(
+async fn start_node_impl<Net, RuntimeApi, SC>(
 	parachain_config: sc_service::Configuration,
 	polkadot_config: sc_service::Configuration,
 	collator_options: cumulus_client_cli::CollatorOptions,
@@ -258,6 +258,7 @@ async fn start_node_impl<RuntimeApi, SC>(
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> sc_service::error::Result<(sc_service::TaskManager, Arc<FullClient<RuntimeApi>>)>
 where
+	Net: sc_network::NetworkBackend<Block, Hash>,
 	RuntimeApi: 'static + Send + Sync + sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>>,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
 	SC: FnOnce(
@@ -321,7 +322,8 @@ where
 	let validator = parachain_config.role.is_authority();
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let import_queue_service = import_queue.service();
-	let net_config = sc_network::config::FullNetworkConfiguration::new(&parachain_config.network);
+	let net_config =
+		<sc_network::config::FullNetworkConfiguration<_, _, Net>>::new(&parachain_config.network);
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		cumulus_client_service::build_network(cumulus_client_service::BuildNetworkParams {
 			parachain_config: &parachain_config,
@@ -577,7 +579,7 @@ where
 }
 
 /// Build the import queue for the parachain runtime.
-pub fn build_import_queue<RuntimeApi>(
+fn build_import_queue<RuntimeApi>(
 	client: Arc<FullClient<RuntimeApi>>,
 	block_import: ParachainBlockImport<RuntimeApi>,
 	config: &sc_service::Configuration,
@@ -609,7 +611,7 @@ where
 }
 
 /// Start a parachain node.
-pub async fn start_parachain_node<RuntimeApi>(
+pub async fn start_parachain_node<Net, RuntimeApi>(
 	parachain_config: sc_service::Configuration,
 	polkadot_config: sc_service::Configuration,
 	collator_options: cumulus_client_cli::CollatorOptions,
@@ -619,12 +621,13 @@ pub async fn start_parachain_node<RuntimeApi>(
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> sc_service::error::Result<(sc_service::TaskManager, Arc<FullClient<RuntimeApi>>)>
 where
+	Net: sc_network::NetworkBackend<Block, Hash>,
 	RuntimeApi: sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>> + Send + Sync + 'static,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
 	RuntimeApi::RuntimeApi:
 		sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>,
 {
-	start_node_impl::<RuntimeApi, _>(
+	start_node_impl::<Net, RuntimeApi, _>(
 		parachain_config,
 		polkadot_config,
 		collator_options,
@@ -706,12 +709,13 @@ where
 
 /// Start a dev node which can seal instantly.
 /// !!! WARNING: DO NOT USE ELSEWHERE
-pub fn start_dev_node<RuntimeApi>(
+pub fn start_dev_node<Net, RuntimeApi>(
 	mut config: sc_service::Configuration,
 	para_id: cumulus_primitives_core::ParaId,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> Result<sc_service::TaskManager, sc_service::error::Error>
 where
+	Net: sc_network::NetworkBackend<Block, Hash>,
 	RuntimeApi: 'static + Send + Sync + sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>>,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
 	RuntimeApi::RuntimeApi:
@@ -737,7 +741,9 @@ where
 				_telemetry_worker_handle,
 			),
 	} = new_partial::<RuntimeApi>(&config, eth_rpc_config)?;
-	let net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
+	let net_config =
+		<sc_network::config::FullNetworkConfiguration<_, _, Net>>::new(&config.network);
+	let metrics = Net::register_notification_metrics(None);
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		sc_service::build_network(sc_service::BuildNetworkParams {
 			config: &config,
@@ -749,6 +755,7 @@ where
 			block_announce_validator_builder: None,
 			warp_sync_params: None,
 			block_relay: None,
+			metrics,
 		})?;
 
 	if config.offchain_worker.enabled {
@@ -764,7 +771,7 @@ where
 						transaction_pool.clone(),
 					),
 				),
-				network_provider: network.clone(),
+				network_provider: Arc::new(network.clone()),
 				is_validator: config.role.is_authority(),
 				enable_http_requests: false,
 				custom_extensions: move |_| Vec::new(),

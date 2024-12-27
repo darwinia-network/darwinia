@@ -219,6 +219,7 @@ pub(crate) fn db_config_dir(config: &Configuration) -> PathBuf {
 }
 
 /// Create a Frontier backend.
+#[allow(clippy::type_complexity)]
 pub(crate) fn backend<B, Be, C>(
 	client: Arc<C>,
 	config: &sc_service::Configuration,

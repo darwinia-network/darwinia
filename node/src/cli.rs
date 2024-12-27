@@ -126,15 +126,14 @@ impl RelayChainCli {
 		para_config: &sc_service::Configuration,
 		relay_chain_args: impl Iterator<Item = &'a String>,
 	) -> Self {
+		let polkadot_cmd = Self::polkadot_cmd();
+		let matches = polkadot_cmd.get_matches_from(relay_chain_args);
+		let base = clap::FromArgMatches::from_arg_matches(&matches).unwrap_or_else(|e| e.exit());
 		let extension = crate::chain_spec::Extensions::try_get(&*para_config.chain_spec);
 		let chain_id = extension.map(|e| e.relay_chain.clone());
 		let base_path = para_config.base_path.path().join("polkadot");
 
-		Self {
-			base_path: Some(base_path),
-			chain_id,
-			base: clap::Parser::parse_from(relay_chain_args),
-		}
+		Self { base, chain_id, base_path: Some(base_path) }
 	}
 }
 
