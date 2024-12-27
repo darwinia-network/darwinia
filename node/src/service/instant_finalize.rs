@@ -31,12 +31,12 @@ impl<I> InstantFinalizeBlockImport<I> {
 impl<Block, I> BlockImport<Block> for InstantFinalizeBlockImport<I>
 where
 	Block: BlockT,
-	I: BlockImport<Block> + Send,
+	I: Send + Sync + BlockImport<Block>,
 {
 	type Error = I::Error;
 
 	async fn check_block(
-		&mut self,
+		&self,
 		block: sc_consensus::BlockCheckParams<Block>,
 	) -> Result<sc_consensus::ImportResult, Self::Error> {
 		self.0.check_block(block).await

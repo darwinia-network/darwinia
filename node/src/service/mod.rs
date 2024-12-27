@@ -83,6 +83,7 @@ type Service<RuntimeApi> = sc_service::PartialComponents<
 	sc_consensus::DefaultImportQueue<Block>,
 	sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi>>,
 	(
+		Arc<dyn fc_storage::StorageOverride<Block>>,
 		fc_db::Backend<Block, FullClient<RuntimeApi>>,
 		Option<fc_rpc_core::types::FilterPool>,
 		fc_rpc_core::types::FeeHistoryCache,
@@ -213,7 +214,8 @@ where
 		&task_manager,
 	)?;
 	// Frontier stuffs.
-	let frontier_backend = frontier::backend(client.clone(), config, eth_rpc_config.clone())?;
+	let (storage_override, frontier_backend) =
+		frontier::backend(client.clone(), config, eth_rpc_config.clone())?;
 	let filter_pool = Some(Arc::new(Mutex::new(BTreeMap::new())));
 	let fee_history_cache = Arc::new(Mutex::new(BTreeMap::new()));
 	let fee_history_cache_limit = eth_rpc_config.fee_history_limit;
@@ -227,6 +229,7 @@ where
 		transaction_pool,
 		select_chain: sc_consensus::LongestChain::new(backend),
 		other: (
+			storage_override,
 			frontier_backend,
 			filter_pool,
 			fee_history_cache,
@@ -266,7 +269,6 @@ where
 		&sc_service::TaskManager,
 		Arc<dyn cumulus_relay_chain_interface::RelayChainInterface>,
 		Arc<sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi>>>,
-		Arc<sc_network_sync::SyncingService<Block>>,
 		sp_keystore::KeystorePtr,
 		Duration,
 		cumulus_primitives_core::ParaId,
@@ -286,6 +288,7 @@ where
 		select_chain: _,
 		other:
 			(
+				storage_override,
 				frontier_backend,
 				filter_pool,
 				fee_history_cache,
@@ -346,7 +349,7 @@ where
 						transaction_pool.clone(),
 					),
 				),
-				network_provider: network.clone(),
+				network_provider: Arc::new(network.clone()),
 				is_validator: parachain_config.role.is_authority(),
 				enable_http_requests: false,
 				custom_extensions: move |_| Vec::new(),
@@ -356,10 +359,9 @@ where
 		);
 	}
 
-	let overrides = fc_storage::overrides_handle(client.clone());
 	let block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
 		task_manager.spawn_handle(),
-		overrides.clone(),
+		storage_override.clone(),
 		eth_rpc_config.eth_log_block_cache,
 		eth_rpc_config.eth_statuses_cache,
 		prometheus_registry.clone(),
@@ -376,7 +378,7 @@ where
 		backend.clone(),
 		frontier_backend.clone(),
 		filter_pool.clone(),
-		overrides.clone(),
+		storage_override.clone(),
 		fee_history_cache.clone(),
 		fee_history_cache_limit,
 		sync_service.clone(),
@@ -389,7 +391,7 @@ where
 		let pool = transaction_pool.clone();
 		let network = network.clone();
 		let filter_pool = filter_pool.clone();
-		let overrides = overrides;
+		let storage_override = storage_override;
 		let fee_history_cache = fee_history_cache.clone();
 		let max_past_logs = eth_rpc_config.max_past_logs;
 		let collator = parachain_config.role.is_authority();
@@ -444,7 +446,7 @@ where
 				max_past_logs,
 				fee_history_cache: fee_history_cache.clone(),
 				fee_history_cache_limit,
-				overrides: overrides.clone(),
+				storage_override: storage_override.clone(),
 				block_data_cache: block_data_cache.clone(),
 				forced_parent_hashes: None,
 				pending_create_inherent_data_providers,
@@ -560,7 +562,6 @@ where
 			&task_manager,
 			relay_chain_interface.clone(),
 			transaction_pool,
-			sync_service,
 			keystore_container.keystore(),
 			relay_chain_slot_duration,
 			para_id,
@@ -637,7 +638,6 @@ where
 		 task_manager,
 		 relay_chain_interface,
 		 transaction_pool,
-		 sync_oracle,
 		 keystore,
 		 relay_chain_slot_duration,
 		 para_id,
@@ -669,7 +669,6 @@ where
 						cumulus_primitives_core::relay_chain::ValidationCode::from(c).hash()
 					})
 				},
-				sync_oracle,
 				keystore,
 				collator_key,
 				para_id,
@@ -684,7 +683,6 @@ where
 			let fut = cumulus_client_consensus_aura::collators::lookahead::run::<
 				Block,
 				sp_consensus_aura::sr25519::AuthorityPair,
-				_,
 				_,
 				_,
 				_,
@@ -729,6 +727,7 @@ where
 		transaction_pool,
 		other:
 			(
+				storage_override,
 				frontier_backend,
 				filter_pool,
 				fee_history_cache,
@@ -778,6 +777,7 @@ where
 	let frontier_backend = Arc::new(frontier_backend);
 	let force_authoring = config.force_authoring;
 	let backoff_authoring_blocks = None::<()>;
+	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 	let proposer_factory = sc_basic_authorship::ProposerFactory::new(
 		task_manager.spawn_handle(),
 		client.clone(),
@@ -800,6 +800,7 @@ where
 			_,
 			_,
 		>(sc_consensus_aura::StartAuraParams {
+			slot_duration,
 			client: client.clone(),
 			select_chain,
 			block_import: instant_finalize::InstantFinalizeBlockImport::new(client.clone()),
@@ -876,10 +877,9 @@ where
 	}
 
 	let prometheus_registry = config.prometheus_registry().cloned();
-	let overrides = fc_storage::overrides_handle(client.clone());
 	let block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
 		task_manager.spawn_handle(),
-		overrides.clone(),
+		storage_override.clone(),
 		eth_rpc_config.eth_log_block_cache,
 		eth_rpc_config.eth_statuses_cache,
 		prometheus_registry.clone(),
@@ -896,7 +896,7 @@ where
 		backend.clone(),
 		frontier_backend.clone(),
 		filter_pool.clone(),
-		overrides.clone(),
+		storage_override.clone(),
 		fee_history_cache.clone(),
 		fee_history_cache_limit,
 		sync_service.clone(),
@@ -910,7 +910,7 @@ where
 		let network = network.clone();
 		let filter_pool = filter_pool;
 		let frontier_backend = frontier_backend;
-		let overrides = overrides;
+		let storage_override = storage_override;
 		let fee_history_cache = fee_history_cache;
 		let max_past_logs = eth_rpc_config.max_past_logs;
 		let collator = config.role.is_authority();
@@ -965,7 +965,7 @@ where
 				max_past_logs,
 				fee_history_cache: fee_history_cache.clone(),
 				fee_history_cache_limit,
-				overrides: overrides.clone(),
+				storage_override: storage_override.clone(),
 				block_data_cache: block_data_cache.clone(),
 				forced_parent_hashes: None,
 				pending_create_inherent_data_providers,

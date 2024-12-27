@@ -20,20 +20,27 @@
 
 // std
 use std::{
+	fs,
+	num::NonZeroU32,
 	path::{Path, PathBuf},
 	sync::Arc,
 	time::Duration,
 };
 // crates.io
-use futures::{future, StreamExt};
+use futures::{executor, future, StreamExt};
 use tokio::sync::Semaphore;
 // darwinia
 use crate::cli::{EthRpcConfig, FrontierBackendType, TracingApi};
 use dc_primitives::{BlockNumber, Hash, Hashing};
 // frontier
+use fc_db::{
+	kv::Backend as KvBackend,
+	sql::{Backend as SqlBackend, BackendConfig as SqlBackConfig, SqliteBackendConfig},
+};
 use fc_mapping_sync::{EthereumBlockNotification, EthereumBlockNotificationSinks};
-use fc_rpc::{EthTask, OverrideHandle};
+use fc_rpc::EthTask;
 use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
+use fc_storage::{StorageOverride, StorageOverrideHandler};
 //  moonbeam
 use moonbeam_rpc_debug::{DebugHandler, DebugRequester};
 use moonbeam_rpc_trace::{CacheRequester as TraceFilterCacheRequester, CacheTask};
@@ -49,13 +56,13 @@ pub struct RpcRequesters {
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn spawn_tasks<B, BE, C>(
+pub fn spawn_tasks<B, Be, C>(
 	task_manager: &TaskManager,
 	client: Arc<C>,
-	backend: Arc<BE>,
+	backend: Arc<Be>,
 	frontier_backend: Arc<fc_db::Backend<B, C>>,
 	filter_pool: Option<FilterPool>,
-	overrides: Arc<OverrideHandle<B>>,
+	storage_override: Arc<dyn StorageOverride<B>>,
 	fee_history_cache: FeeHistoryCache,
 	fee_history_cache_limit: FeeHistoryCacheLimit,
 	sync: Arc<SyncingService<B>>,
@@ -70,14 +77,14 @@ where
 		+ sp_blockchain::HeaderMetadata<B, Error = sp_blockchain::Error>
 		+ sc_client_api::BlockOf
 		+ sc_client_api::BlockchainEvents<B>
-		+ sc_client_api::backend::StorageProvider<B, BE>,
+		+ sc_client_api::backend::StorageProvider<B, Be>,
 	C::Api: sp_block_builder::BlockBuilder<B>
 		+ fp_rpc::EthereumRuntimeRPCApi<B>
 		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<B>,
 	B: 'static + Send + Sync + sp_runtime::traits::Block<Hash = Hash>,
 	B::Header: sp_runtime::traits::Header<Number = BlockNumber>,
-	BE: 'static + sc_client_api::backend::Backend<B>,
-	BE::State: sc_client_api::backend::StateBackend<Hashing>,
+	Be: 'static + sc_client_api::backend::Backend<B>,
+	Be::State: sc_client_api::backend::StateBackend<Hashing>,
 {
 	match &*frontier_backend {
 		fc_db::Backend::KeyValue(bd) => {
@@ -89,7 +96,7 @@ where
 					Duration::new(6, 0),
 					client.clone(),
 					backend.clone(),
-					overrides.clone(),
+					storage_override.clone(),
 					bd.clone(),
 					3,
 					0,
@@ -138,7 +145,7 @@ where
 		Some("frontier"),
 		EthTask::fee_history_task(
 			client.clone(),
-			overrides.clone(),
+			storage_override.clone(),
 			fee_history_cache,
 			fee_history_cache_limit,
 		),
@@ -155,7 +162,7 @@ where
 					Arc::clone(&backend),
 					Duration::from_secs(eth_rpc_config.tracing_cache_duration),
 					Arc::clone(&permit_pool),
-					Arc::clone(&overrides),
+					Arc::clone(&storage_override),
 					prometheus,
 				);
 				(Some(trace_filter_task), Some(trace_filter_requester))
@@ -173,7 +180,7 @@ where
 						fc_db::Backend::Sql(bd) => bd.clone(),
 					},
 					Arc::clone(&permit_pool),
-					Arc::clone(&overrides),
+					Arc::clone(&storage_override),
 					eth_rpc_config.tracing_raw_max_memory_usage,
 				);
 				(Some(debug_task), Some(debug_requester))
@@ -212,31 +219,33 @@ pub(crate) fn db_config_dir(config: &Configuration) -> PathBuf {
 }
 
 /// Create a Frontier backend.
-pub(crate) fn backend<B, BE, C>(
+pub(crate) fn backend<B, Be, C>(
 	client: Arc<C>,
 	config: &sc_service::Configuration,
 	eth_rpc_config: EthRpcConfig,
-) -> Result<fc_db::Backend<B, C>, String>
+) -> Result<(Arc<dyn fc_storage::StorageOverride<B>>, fc_db::Backend<B, C>), String>
 where
 	B: 'static + sp_runtime::traits::Block<Hash = Hash>,
-	BE: 'static + sc_client_api::backend::Backend<B>,
+	Be: 'static + sc_client_api::backend::Backend<B>,
 	C: 'static
 		+ sp_api::ProvideRuntimeApi<B>
 		+ sp_blockchain::HeaderBackend<B>
-		+ sc_client_api::backend::StorageProvider<B, BE>,
+		+ sc_client_api::backend::StorageProvider<B, Be>,
 	C::Api: fp_rpc::EthereumRuntimeRPCApi<B>,
 {
+	let storage_override = Arc::new(StorageOverrideHandler::new(client.clone()));
 	let db_config_dir = db_config_dir(config);
-	let overrides = fc_storage::overrides_handle(client.clone());
-	match eth_rpc_config.frontier_backend_type {
-		FrontierBackendType::KeyValue => Ok(fc_db::Backend::<B, C>::KeyValue(Arc::new(
-			fc_db::kv::Backend::open(Arc::clone(&client), &config.database, &db_config_dir)?,
-		))),
+	let backend = match eth_rpc_config.frontier_backend_type {
+		FrontierBackendType::KeyValue => fc_db::Backend::<B, C>::KeyValue(Arc::new(
+			KvBackend::open(Arc::clone(&client), &config.database, &db_config_dir)?,
+		)),
 		FrontierBackendType::Sql => {
 			let db_path = db_config_dir.join("sql");
-			std::fs::create_dir_all(&db_path).expect("failed creating sql db directory");
-			let backend = futures::executor::block_on(fc_db::sql::Backend::new(
-				fc_db::sql::BackendConfig::Sqlite(fc_db::sql::SqliteBackendConfig {
+
+			fs::create_dir_all(&db_path).expect("failed creating sql db directory");
+
+			let backend = executor::block_on(SqlBackend::new(
+				SqlBackConfig::Sqlite(SqliteBackendConfig {
 					path: Path::new("sqlite:///")
 						.join(db_path)
 						.join("frontier.db3")
@@ -247,11 +256,14 @@ where
 					cache_size: eth_rpc_config.frontier_sql_backend_cache_size,
 				}),
 				eth_rpc_config.frontier_sql_backend_pool_size,
-				std::num::NonZeroU32::new(eth_rpc_config.frontier_sql_backend_num_ops_timeout),
-				overrides,
+				NonZeroU32::new(eth_rpc_config.frontier_sql_backend_num_ops_timeout),
+				storage_override.clone(),
 			))
 			.unwrap_or_else(|err| panic!("failed creating sql backend: {:?}", err));
-			Ok(fc_db::Backend::<B, C>::Sql(Arc::new(backend)))
+
+			fc_db::Backend::<B, C>::Sql(Arc::new(backend))
 		},
-	}
+	};
+
+	Ok((storage_override, backend))
 }

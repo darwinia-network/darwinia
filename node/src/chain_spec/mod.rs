@@ -132,7 +132,7 @@ where
 	)
 }
 
-fn load_config<E>(name: &'static str, mut retries: u8) -> GenericChainSpec<(), E>
+fn load_config<E>(name: &'static str, mut retries: u8) -> GenericChainSpec<E>
 where
 	E: DeserializeOwned,
 {
