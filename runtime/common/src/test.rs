@@ -112,8 +112,11 @@ macro_rules! impl_account_migration_tests {
 					extra: (),
 				};
 
-				assert!(<darwinia_account_migration::Accounts<Runtime>>::get(&account_id_32).is_none());
-				assert!(<darwinia_account_migration::KtonAccounts<Runtime>>::get(&account_id_32).is_none());
+				assert!(
+					<darwinia_account_migration::Accounts<Runtime>>::get(&account_id_32).is_none()
+				);
+				assert!(<darwinia_account_migration::KtonAccounts<Runtime>>::get(&account_id_32)
+					.is_none());
 
 				<pallet_balances::TotalIssuance<Runtime, _>>::put(RING_AMOUNT);
 				<darwinia_account_migration::Accounts<Runtime>>::insert(
@@ -132,8 +135,11 @@ macro_rules! impl_account_migration_tests {
 					&Blake2_128Concat::hash(account_id_32.as_ref()),
 					asset_account,
 				);
-				assert!(<darwinia_account_migration::Accounts<Runtime>>::get(&account_id_32).is_some());
-				assert!(<darwinia_account_migration::KtonAccounts<Runtime>>::get(&account_id_32).is_some());
+				assert!(
+					<darwinia_account_migration::Accounts<Runtime>>::get(&account_id_32).is_some()
+				);
+				assert!(<darwinia_account_migration::KtonAccounts<Runtime>>::get(&account_id_32)
+					.is_some());
 			}
 
 			fn migrate(from: Pair, to: AccountId) -> Result<(), E> {
@@ -249,7 +255,10 @@ macro_rules! impl_account_migration_tests {
 
 					assert_ok!(migrate(from, to));
 					let asset_details = asset_details();
-					assert_eq!(<darwinia_account_migration::KtonAccounts<Runtime>>::get(from_pk), None);
+					assert_eq!(
+						<darwinia_account_migration::KtonAccounts<Runtime>>::get(from_pk),
+						None
+					);
 					assert_eq!(Assets::maybe_balance(KTON_ID, to).unwrap(), KTON_AMOUNT);
 					assert_eq!(pre_asset_details.accounts + 1, asset_details.accounts);
 					assert_eq!(pre_asset_details.sufficients + 1, asset_details.sufficients);
@@ -305,7 +314,10 @@ macro_rules! impl_account_migration_tests {
 						assert_ok!(migrate(from, to));
 						assert_eq!(Balances::free_balance(to), 80);
 						assert_eq!(Balances::free_balance(&Treasury::account_id()), 20);
-						assert_eq!(<darwinia_deposit::Deposits<Runtime>>::get(to).unwrap().len(), 2);
+						assert_eq!(
+							<darwinia_deposit::Deposits<Runtime>>::get(to).unwrap().len(),
+							2
+						);
 						assert_eq!(Assets::maybe_balance(KTON_ID, to).unwrap(), 100);
 					});
 			}
