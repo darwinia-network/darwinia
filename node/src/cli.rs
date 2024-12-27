@@ -16,6 +16,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+// polkadot-sdk
+use sc_cli::SubstrateCli;
+
 /// Sub-commands supported by the collator.
 #[derive(Debug, clap::Subcommand)]
 pub enum Subcommand {
@@ -104,7 +107,10 @@ pub struct RelayChainCli {
 	pub base_path: Option<std::path::PathBuf>,
 }
 impl RelayChainCli {
-	fn polkadot_cmd() -> Command {
+	fn polkadot_cmd() -> clap::Command {
+		// crates.io
+		use clap::CommandFactory;
+
 		let help_template = color_print::cformat!(
 			"The arguments that are passed to the relay chain node. \n\
 			\n\

@@ -21,7 +21,7 @@ use std::{env, fs, io::ErrorKind, net::SocketAddr, path::PathBuf, result::Result
 // darwinia
 use crate::{
 	chain_spec::*,
-	cli::{Cli, FrontierBackendType, RelayChainCli, Subcommand, NODE_VERSION},
+	cli::{Cli, FrontierBackendType, RelayChainCli, Subcommand},
 	service::{self, *},
 };
 // polkadot-sdk
