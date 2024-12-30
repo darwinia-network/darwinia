@@ -66,7 +66,6 @@ describe("Test EVM tracing", () => {
 			block_hash,
 			{ tracer: "callTracer" },
 		]);
-		console.log(trace_result);
 
 		expect(trace_result.result[0].result.from).to.be.equal(FAITH.toLowerCase());
 		expect(trace_result.result[0].result.to).to.be.equal(inc.options.address.toLowerCase());
