@@ -94,14 +94,8 @@ pub const MAXIMUM_BLOCK_WEIGHT: frame_support::weights::Weight =
 
 const BLOCK_GAS_LIMIT: u64 = 20_000_000;
 
-#[cfg(not(feature = "runtime-benchmarks"))]
-const EXISTENTIAL_DEPOSIT: Balance = 0;
-#[cfg(feature = "runtime-benchmarks")]
-const EXISTENTIAL_DEPOSIT: Balance = 1;
-
 frame_support::parameter_types! {
-	pub const ExistentialDeposit: Balance = EXISTENTIAL_DEPOSIT;
-	pub const MaxBalance: Balance = Balance::max_value();
+	pub const MaxBalance: Balance = Balance::MAX;
 
 	// Retry a scheduled item every 10 blocks (1 minute) until the preimage exists.
 	pub const NoPreimagePostponement: Option<u32> = Some(10);

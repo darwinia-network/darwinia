@@ -22,6 +22,7 @@ use crate::*;
 use xcm::latest::prelude::*;
 
 frame_support::parameter_types! {
+	pub const RelayLocation: Location = Location::parent();
 	pub const RelayNetwork: NetworkId = NetworkId::Kusama;
 	pub const MaxAssetsIntoHolding: u32 = 64;
 	pub const MaxInstructions: u32 = 100;
@@ -32,7 +33,8 @@ frame_support::parameter_types! {
 		0,
 		[PalletInstance(<Balances as frame_support::traits::PalletInfoAccess>::index() as u8)]
 	);
-	pub UniversalLocation: InteriorLocation = Parachain(ParachainInfo::parachain_id().into()).into();
+	pub UniversalLocation: InteriorLocation =
+		[GlobalConsensus(RelayNetwork::get()), Parachain(ParachainInfo::parachain_id().into())].into();
 	/// The amount of weight an XCM operation takes. This is a safe overestimate.
 	pub BaseXcmWeight: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1_000_000_000, 1024);
 	pub RelayChainOrigin: RuntimeOrigin = cumulus_pallet_xcm::Origin::Relay.into();
@@ -85,32 +87,27 @@ pub type XcmOriginToTransactDispatchOrigin = (
 	// Xcm origins can be represented natively under the Xcm pallet's Xcm origin.
 	pallet_xcm::XcmPassthrough<RuntimeOrigin>,
 );
-pub type Barrier = xcm_builder::TrailingSetTopicAsId<
-	xcm_builder::DenyThenTry<
-		xcm_builder::DenyReserveTransferToRelayChain,
+pub type Barrier = xcm_builder::TrailingSetTopicAsId<(
+	xcm_builder::TakeWeightCredit,
+	xcm_builder::WithComputedOrigin<
 		(
-			xcm_builder::TakeWeightCredit,
-			xcm_builder::WithComputedOrigin<
-				(
-					// If the message is one that immediately attemps to pay for execution, then
-					// allow it.
-					xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
-					// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality
-					// get free execution.
-					xcm_builder::AllowExplicitUnpaidExecutionFrom<
-						xcm_config::ParentOrParentsPlurality,
-					>,
-					// Subscriptions for version tracking are OK.
-					xcm_builder::AllowSubscriptionsFrom<xcm_config::ParentRelayOrSiblingParachains>,
-				),
-				UniversalLocation,
-				ConstU32<8>,
-			>,
-			// Expected responses are OK.
-			xcm_builder::AllowKnownQueryResponses<PolkadotXcm>,
+			// If the message is one that immediately attempts to pay for execution, then
+			// allow it.
+			xcm_builder::AllowTopLevelPaidExecutionFrom<frame_support::traits::Everything>,
+			// Parent, its pluralities (i.e. governance bodies), and the Fellows plurality
+			// get free execution.
+			xcm_builder::AllowExplicitUnpaidExecutionFrom<xcm_config::ParentOrParentsPlurality>,
+			// Subscriptions for version tracking are OK.
+			xcm_builder::AllowSubscriptionsFrom<xcm_config::ParentRelayOrSiblingParachains>,
+			// HRMP notifications from the relay chain are OK.
+			xcm_builder::AllowHrmpNotificationsFromRelayChain,
 		),
+		UniversalLocation,
+		ConstU32<8>,
 	>,
->;
+	// Expected responses are OK.
+	xcm_builder::AllowKnownQueryResponses<PolkadotXcm>,
+)>;
 /// No local origins on this chain are allowed to dispatch XCM sends/executions.
 pub type LocalOriginToLocation =
 	xcm_primitives::SignedToAccountId20<RuntimeOrigin, AccountId, RelayNetwork>;
@@ -135,6 +132,9 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	type Barrier = Barrier;
 	type CallDispatcher = RuntimeCall;
 	type FeeManager = ();
+	type HrmpChannelAcceptedHandler = ();
+	type HrmpChannelClosingHandler = ();
+	type HrmpNewChannelOpenRequestHandler = ();
 	type IsReserve = xcm_builder::NativeAsset;
 	type IsTeleporter = ();
 	type MaxAssetsIntoHolding = MaxAssetsIntoHolding;
@@ -157,6 +157,7 @@ impl xcm_executor::Config for XcmExecutorConfig {
 	// Teleporting is disabled.
 	type UniversalLocation = UniversalLocation;
 	type Weigher = xcm_builder::FixedWeightBounds<TempFixedXcmWeight, RuntimeCall, MaxInstructions>;
+	type XcmRecorder = PolkadotXcm;
 	type XcmSender = XcmRouter;
 }
 

@@ -137,7 +137,7 @@ args    = [
 	"--rpc-methods",
 	"unsafe",
 	"--alice",
-	"--collator",
+	"--unsafe-force-node-key-generation",
 	"--chain",
 	"${CHAIN}-dev"
 ]

@@ -45,7 +45,7 @@ pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi, CIDP> {
 	/// The Node authority flag
 	pub is_authority: bool,
 	/// Network service
-	pub network: Arc<sc_network::NetworkService<Block, Hash>>,
+	pub network: Arc<dyn sc_network::service::traits::NetworkService>,
 	/// Chain syncing service
 	pub sync: Arc<sc_network_sync::SyncingService<Block>>,
 	/// EthFilterApi pool.
@@ -58,8 +58,8 @@ pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi, CIDP> {
 	pub fee_history_cache: fc_rpc_core::types::FeeHistoryCache,
 	/// Maximum fee history cache size.
 	pub fee_history_cache_limit: fc_rpc_core::types::FeeHistoryCacheLimit,
-	/// Ethereum data access overrides.
-	pub overrides: Arc<fc_rpc::OverrideHandle<Block>>,
+	/// Ethereum data access storage_override.
+	pub storage_override: Arc<dyn fc_rpc::StorageOverride<Block>>,
 	/// Cache for Ethereum block data.
 	pub block_data_cache: Arc<fc_rpc::EthBlockDataCacheTask<Block>>,
 	/// Mandated parent hashes for a given block hash.
@@ -75,19 +75,19 @@ pub struct TracingConfig {
 }
 
 /// Default Ethereum RPC config
-pub struct DefaultEthConfig<C, BE>(std::marker::PhantomData<(C, BE)>);
-impl<C, BE> fc_rpc::EthConfig<Block, C> for DefaultEthConfig<C, BE>
+pub struct DefaultEthConfig<C, Be>(std::marker::PhantomData<(C, Be)>);
+impl<C, Be> fc_rpc::EthConfig<Block, C> for DefaultEthConfig<C, Be>
 where
-	C: 'static + Sync + Send + sc_client_api::StorageProvider<Block, BE>,
-	BE: 'static + sc_client_api::Backend<Block>,
+	C: 'static + Sync + Send + sc_client_api::StorageProvider<Block, Be>,
+	Be: 'static + sc_client_api::Backend<Block>,
 {
 	type EstimateGasAdapter = ();
 	type RuntimeStorageOverride =
-		fc_rpc::frontier_backend_client::SystemAccountId20StorageOverride<Block, C, BE>;
+		fc_rpc::frontier_backend_client::SystemAccountId20StorageOverride<Block, C, Be>;
 }
 
 /// Instantiate all RPC extensions.
-pub fn create_full<C, P, BE, A, EC, CIDP>(
+pub fn create_full<C, P, Be, A, EC, CIDP>(
 	deps: FullDeps<C, P, A, CIDP>,
 	subscription_task_executor: sc_rpc::SubscriptionTaskExecutor,
 	pubsub_notification_sinks: Arc<
@@ -98,13 +98,13 @@ pub fn create_full<C, P, BE, A, EC, CIDP>(
 	maybe_tracing_config: Option<TracingConfig>,
 ) -> Result<RpcExtension, Box<dyn std::error::Error + Send + Sync>>
 where
-	BE: 'static + sc_client_api::backend::Backend<Block>,
-	BE::State: sc_client_api::backend::StateBackend<Hashing>,
+	Be: 'static + sc_client_api::backend::Backend<Block>,
+	Be::State: sc_client_api::backend::StateBackend<Hashing>,
 	C: 'static
 		+ Send
 		+ Sync
 		+ sc_client_api::AuxStore
-		+ sc_client_api::backend::StorageProvider<Block, BE>
+		+ sc_client_api::backend::StorageProvider<Block, Be>
 		+ sc_client_api::BlockchainEvents<Block>
 		+ sc_client_api::UsageProvider<Block>
 		+ sp_api::CallApiAt<Block>
@@ -146,7 +146,7 @@ where
 		max_past_logs,
 		fee_history_cache,
 		fee_history_cache_limit,
-		overrides,
+		storage_override,
 		block_data_cache,
 		forced_parent_hashes,
 		pending_create_inherent_data_providers,
@@ -155,14 +155,14 @@ where
 	module.merge(System::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
 	module.merge(TransactionPayment::new(client.clone()).into_rpc())?;
 	module.merge(
-		Eth::<Block, C, P, _, BE, A, CIDP, EC>::new(
+		Eth::<Block, C, P, _, Be, A, CIDP, EC>::new(
 			client.clone(),
 			pool.clone(),
 			graph.clone(),
 			<Option<NoTransactionConverter>>::None,
 			sync.clone(),
 			Vec::new(),
-			overrides.clone(),
+			storage_override.clone(),
 			frontier_backend.clone(),
 			is_authority,
 			block_data_cache.clone(),
@@ -199,7 +199,7 @@ where
 			client.clone(),
 			sync,
 			subscription_task_executor,
-			overrides,
+			storage_override,
 			pubsub_notification_sinks,
 		)
 		.into_rpc(),

@@ -53,7 +53,7 @@ use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup, GenericChainSpec, Proper
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{Pair, Public};
 
-pub type ChainSpec = sc_service::GenericChainSpec<(), Extensions>;
+pub type ChainSpec = sc_service::GenericChainSpec<Extensions>;
 
 const PROTOCOL_ID: &str = "dar";
 
@@ -132,7 +132,7 @@ where
 	)
 }
 
-fn load_config<E>(name: &'static str, mut retries: u8) -> GenericChainSpec<(), E>
+fn load_config<E>(name: &'static str, mut retries: u8) -> GenericChainSpec<E>
 where
 	E: DeserializeOwned,
 {

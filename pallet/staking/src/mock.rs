@@ -72,7 +72,7 @@ impl Display for AccountId {
 		write!(f, "{}", self.0)
 	}
 }
-#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
+#[derive_impl(frame_system::config_preludes::TestDefaultConfig)]
 impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
@@ -162,7 +162,6 @@ where
 	}
 }
 impl pallet_treasury::Config for Runtime {
-	type ApproveOrigin = frame_system::EnsureRoot<AccountId>;
 	type AssetKind = ();
 	type BalanceConverter = frame_support::traits::tokens::UnityAssetBalanceConversion;
 	#[cfg(feature = "runtime-benchmarks")]
@@ -173,13 +172,9 @@ impl pallet_treasury::Config for Runtime {
 	type BurnDestination = ();
 	type Currency = Balances;
 	type MaxApprovals = ();
-	type OnSlash = ();
 	type PalletId = TreasuryPalletId;
 	type Paymaster = frame_support::traits::tokens::PayFromAccount<Balances, TreasuryAccount>;
 	type PayoutPeriod = ();
-	type ProposalBond = ();
-	type ProposalBondMaximum = ();
-	type ProposalBondMinimum = ();
 	type RejectOrigin = frame_system::EnsureRoot<AccountId>;
 	type RuntimeEvent = RuntimeEvent;
 	type SpendFunds = ();
@@ -288,7 +283,7 @@ frame_support::construct_runtime! {
 pub enum Efflux {}
 impl Efflux {
 	pub fn time(millis: Moment) {
-		Timestamp::set_timestamp(Timestamp::now() + millis);
+		Timestamp::set_timestamp(<pallet_timestamp::Now<Runtime>>::get() + millis);
 	}
 
 	pub fn block(number: BlockNumber) {

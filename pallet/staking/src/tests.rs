@@ -292,7 +292,7 @@ fn set_collator_count_should_work() {
 		);
 
 		assert_ok!(Staking::set_collator_count(RuntimeOrigin::root(), 1));
-		assert_eq!(Staking::collator_count(), 1);
+		assert_eq!(<CollatorCount<Runtime>>::get(), 1);
 	});
 }
 
@@ -305,7 +305,7 @@ fn set_ring_staking_contract_should_work() {
 		);
 
 		assert_ok!(Staking::set_ring_staking_contract(RuntimeOrigin::root(), AccountId(1)));
-		assert_eq!(Staking::ring_staking_contract(), Some(AccountId(1)));
+		assert_eq!(<RingStakingContract<Runtime>>::get(), Some(AccountId(1)));
 	});
 }
 
@@ -318,6 +318,6 @@ fn set_kton_staking_contract_should_work() {
 		);
 
 		assert_ok!(Staking::set_kton_staking_contract(RuntimeOrigin::root(), AccountId(1)));
-		assert_eq!(Staking::kton_staking_contract(), Some(AccountId(1)));
+		assert_eq!(<KtonStakingContract<Runtime>>::get(), Some(AccountId(1)));
 	});
 }

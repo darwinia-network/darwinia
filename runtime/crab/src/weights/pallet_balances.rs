@@ -166,4 +166,10 @@ impl<T: frame_system::Config> pallet_balances::WeightInfo for WeightInfo<T> {
 			.saturating_add(Weight::from_parts(0, 1501))
 			.saturating_add(T::DbWeight::get().reads(1))
 	}
+	fn burn_allow_death() -> Weight {
+		Default::default()
+	}
+	fn burn_keep_alive() -> Weight {
+		Default::default()
+	}
 }

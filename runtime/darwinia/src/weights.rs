@@ -41,3 +41,4 @@ pub mod pallet_timestamp;
 pub mod pallet_treasury;
 pub mod pallet_utility;
 pub mod pallet_whitelist;
+pub mod pallet_xcm_weight_trader;

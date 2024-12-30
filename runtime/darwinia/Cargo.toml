@@ -48,23 +48,20 @@ pallet-evm-precompile-simple   = { workspace = true }
 moonbeam-rpc-primitives-debug           = { workspace = true }
 pallet-asset-manager                    = { workspace = true }
 pallet-evm-precompile-conviction-voting = { workspace = true }
+pallet-xcm-weight-trader                = { workspace = true }
 precompile-utils                        = { workspace = true }
 xcm-primitives                          = { workspace = true }
 # moonbeam optional
 moonbeam-evm-tracer = { workspace = true, optional = true }
 
-# open-web3-stack
-orml-xcm-support = { workspace = true }
-orml-xtokens     = { workspace = true }
-
 # polkadot-sdk
 cumulus-pallet-aura-ext                    = { workspace = true }
-cumulus-pallet-dmp-queue                   = { workspace = true }
 cumulus-pallet-parachain-system            = { workspace = true }
 cumulus-pallet-xcm                         = { workspace = true }
 cumulus-pallet-xcmp-queue                  = { workspace = true }
 cumulus-primitives-aura                    = { workspace = true }
 cumulus-primitives-core                    = { workspace = true }
+cumulus-primitives-storage-weight-reclaim  = { workspace = true }
 cumulus-primitives-utility                 = { workspace = true }
 frame-executive                            = { workspace = true }
 frame-support                              = { workspace = true }
@@ -93,6 +90,7 @@ polkadot-runtime-common                    = { workspace = true }
 xcm                                        = { workspace = true }
 xcm-builder                                = { workspace = true }
 xcm-executor                               = { workspace = true }
+xcm-runtime-apis                           = { workspace = true }
 # pallet-tx-pause                            = { workspace = true }
 pallet-utility      = { workspace = true }
 pallet-whitelist    = { workspace = true }
@@ -162,23 +160,20 @@ std = [
 	"moonbeam-rpc-primitives-debug/std",
 	"pallet-asset-manager/std",
 	"pallet-evm-precompile-conviction-voting/std",
+	"pallet-xcm-weight-trader/std",
 	"precompile-utils/std",
 	"xcm-primitives/std",
 	# moonbeam optional
 	"moonbeam-evm-tracer?/std",
 
-	# open-web3-stack
-	"orml-xcm-support/std",
-	"orml-xtokens/std",
-
 	# polkadot-sdk
 	"cumulus-pallet-aura-ext/std",
-	"cumulus-pallet-dmp-queue/std",
 	"cumulus-pallet-parachain-system/std",
 	"cumulus-pallet-xcm/std",
 	"cumulus-pallet-xcmp-queue/std",
 	"cumulus-primitives-aura/std",
 	"cumulus-primitives-core/std",
+	"cumulus-primitives-storage-weight-reclaim/std",
 	"cumulus-primitives-utility/std",
 	"frame-executive/std",
 	"frame-support/std",
@@ -206,6 +201,7 @@ std = [
 	"polkadot-runtime-common/std",
 	"xcm-builder/std",
 	"xcm-executor/std",
+	"xcm-runtime-apis/std",
 	"xcm/std",
 	# "pallet-tx-pause/std",
 	"pallet-utility/std",
@@ -252,10 +248,8 @@ runtime-benchmarks = [
 
 	# moonbeam
 	"pallet-asset-manager/runtime-benchmarks",
+	"pallet-xcm-weight-trader/runtime-benchmarks",
 	"xcm-primitives/runtime-benchmarks",
-
-	# open-web3-stack
-	"orml-xtokens/runtime-benchmarks",
 
 	# polkadot-sdk
 	"cumulus-pallet-parachain-system/runtime-benchmarks",
@@ -274,15 +268,16 @@ runtime-benchmarks = [
 	"pallet-scheduler/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-treasury/runtime-benchmarks",
+	"pallet-utility/runtime-benchmarks",
+	"pallet-whitelist/runtime-benchmarks",
 	"pallet-xcm/runtime-benchmarks",
 	"polkadot-parachain/runtime-benchmarks",
 	"polkadot-runtime-common/runtime-benchmarks",
+	"sp-runtime/runtime-benchmarks",
 	"xcm-builder/runtime-benchmarks",
 	"xcm-executor/runtime-benchmarks",
+	"xcm-runtime-apis/runtime-benchmarks",
 	# "pallet-tx-pause/runtime-benchmarks",
-	"pallet-utility/runtime-benchmarks",
-	"pallet-whitelist/runtime-benchmarks",
-	"sp-runtime/runtime-benchmarks",
 	# polkadot-sdk optional
 	"cumulus-pallet-session-benchmarking/runtime-benchmarks",
 	"frame-benchmarking/runtime-benchmarks",
@@ -306,13 +301,10 @@ try-runtime = [
 
 	# moonbeam
 	"pallet-asset-manager/try-runtime",
-
-	# open-web3-stack
-	"orml-xtokens/try-runtime",
+	"pallet-xcm-weight-trader/try-runtime",
 
 	# polkadot-sdk
 	"cumulus-pallet-aura-ext/try-runtime",
-	"cumulus-pallet-dmp-queue/try-runtime",
 	"cumulus-pallet-parachain-system/try-runtime",
 	"cumulus-pallet-xcm/try-runtime",
 	"cumulus-pallet-xcmp-queue/try-runtime",

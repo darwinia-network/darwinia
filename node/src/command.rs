@@ -21,39 +21,45 @@ use std::{env, fs, io::ErrorKind, net::SocketAddr, path::PathBuf, result::Result
 // darwinia
 use crate::{
 	chain_spec::*,
-	cli::{Cli, FrontierBackendType, RelayChainCli, Subcommand, NODE_VERSION},
+	cli::{Cli, EthRpcConfig, FrontierBackendType, RelayChainCli, Subcommand},
 	service::{self, *},
 };
+use dc_primitives::{Block, Hash};
 // polkadot-sdk
+use cumulus_client_cli::CollatorOptions;
 use cumulus_primitives_core::ParaId;
 use sc_cli::{
 	CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams, NetworkParams,
 	Result, SharedParams, SubstrateCli,
 };
+use sc_network::{
+	config::NetworkBackendType, Litep2pNetworkBackend, NetworkBackend, NetworkWorker,
+};
 use sc_service::{
 	config::{BasePath, PrometheusConfig},
-	ChainSpec as ChainSpecT, DatabaseSource,
+	ChainSpec as ChainSpecT, Configuration, DatabaseSource, TaskManager,
 };
+use sc_storage_monitor::StorageMonitorParams;
 use sp_core::crypto::{self, Ss58AddressFormatRegistry};
 use sp_runtime::traits::AccountIdConversion;
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {
-		"Darwinia".into()
+		Self::executable_name()
 	}
 
 	fn impl_version() -> String {
-		let commit_hash = env!("SUBSTRATE_CLI_COMMIT_HASH");
-
-		format!("{NODE_VERSION}-{commit_hash}")
+		env!("SUBSTRATE_CLI_IMPL_VERSION").into()
 	}
 
 	fn description() -> String {
 		format!(
-			"Darwinia\n\nThe command-line arguments provided first will be \
-			passed to the parachain node, while the arguments provided after -- will be passed \
-			to the relay chain node.\n\n\
-			{} <parachain-args> -- <relay-chain-args>",
+			"The command-line arguments provided first will be passed to the parachain node, \n\
+			and the arguments provided after -- will be passed to the relay chain node. \n\
+			\n\
+			Example: \n\
+			\n\
+			{} [parachain-args] -- [relay-chain-args]",
 			Self::executable_name()
 		)
 	}
@@ -77,33 +83,27 @@ impl SubstrateCli for Cli {
 
 impl SubstrateCli for RelayChainCli {
 	fn impl_name() -> String {
-		"Darwinia".into()
+		Cli::impl_name()
 	}
 
 	fn impl_version() -> String {
-		env!("SUBSTRATE_CLI_IMPL_VERSION").into()
+		Cli::impl_version()
 	}
 
 	fn description() -> String {
-		format!(
-			"Darwinia\n\nThe command-line arguments provided first will be \
-			passed to the parachain node, while the arguments provided after -- will be passed \
-			to the relay chain node.\n\n\
-			{} <parachain-args> -- <relay-chain-args>",
-			Self::executable_name()
-		)
+		Cli::description()
 	}
 
 	fn author() -> String {
-		env!("CARGO_PKG_AUTHORS").into()
+		Cli::author()
 	}
 
 	fn support_url() -> String {
-		"https://github.com/darwinia-network/darwinia/issues/new".into()
+		Cli::support_url()
 	}
 
 	fn copyright_start_year() -> i32 {
-		2018
+		Cli::copyright_start_year()
 	}
 
 	fn load_spec(&self, id: &str) -> StdResult<Box<dyn ChainSpecT>, String> {
@@ -359,6 +359,7 @@ pub fn run() -> Result<()> {
 		Some(Subcommand::PurgeChain(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			let chain_spec = &runner.config().chain_spec;
+			let polkadot_cli = RelayChainCli::new(runner.config(), cli.relay_chain_args.iter());
 
 			set_default_ss58_version(chain_spec);
 			runner.sync_run(|config| {
@@ -407,10 +408,6 @@ pub fn run() -> Result<()> {
 					}
 				};
 
-				let polkadot_cli = RelayChainCli::new(
-					&config,
-					[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
-				);
 				let polkadot_config = SubstrateCli::create_configuration(
 					&polkadot_cli,
 					&polkadot_cli,
@@ -439,8 +436,9 @@ pub fn run() -> Result<()> {
 		#[cfg(feature = "runtime-benchmarks")]
 		Some(Subcommand::Benchmark(cmd)) => {
 			// darwinia
-			use dc_primitives::Block;
+			use dc_primitives::Hashing;
 			// polkadot-sdk
+			use cumulus_client_service::storage_proof_size::HostFunctions as ReclaimHostFunctions;
 			use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 
 			let runner = cli.create_runner(&**cmd)?;
@@ -449,7 +447,7 @@ pub fn run() -> Result<()> {
 
 			match &**cmd {
 				BenchmarkCmd::Pallet(cmd) =>
-					runner.sync_run(|config| cmd.run::<Block, ()>(config)),
+					runner.sync_run(|config| cmd.run_with_spec::<Hashing, ReclaimHostFunctions>(Some(config.chain_spec))),
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
 					construct_benchmark_partials!(config, cli, |partials| {
 						let db = partials.backend.expose_db();
@@ -474,17 +472,15 @@ pub fn run() -> Result<()> {
 		None => {
 			let runner = cli.create_runner(&cli.run.normalize())?;
 			let collator_options = cli.run.collator_options();
+			let polkadot_cli = RelayChainCli::new(runner.config(), cli.relay_chain_args.iter());
 
 			runner.run_node_until_exit(|config| async move {
-				let chain_spec = &config.chain_spec;
+				set_default_ss58_version(&config.chain_spec);
 
-				set_default_ss58_version(chain_spec);
-
-				let polkadot_cli = RelayChainCli::new(
-					&config,
-					[RelayChainCli::executable_name()].iter().chain(cli.relay_chain_args.iter()),
-				);
 				let tokio_handle = config.tokio_handle.clone();
+				let polkadot_config =
+				SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
+					.map_err(|err| format!("Relay chain argument error: {err}"))?;
 				let para_id = Extensions::try_get(&*config.chain_spec)
 					.map(|e| e.para_id)
 					.ok_or("Could not find parachain ID in chain-spec.")?;
@@ -495,101 +491,117 @@ pub fn run() -> Result<()> {
 				let storage_monitor = cli.storage_monitor;
 				let eth_rpc_config = cli.eth_args.build_eth_rpc_config();
 
-				log::info!("Parachain id: {id:?}");
-				log::info!("Parachain Account: {parachain_account}");
-				log::info!(
-					"Is collating: {}",
-					if config.role.is_authority() { "yes" } else { "no" }
-				);
+				log::info!("🪪 Parachain id: {:?}", id);
+				log::info!("🧾 Parachain Account: {}", parachain_account);
+				log::info!("✍️ Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
-				if chain_spec.is_dev() {
-					#[cfg(feature = "crab-runtime")]
-					if chain_spec.is_crab() {
-						return service::start_dev_node::<CrabRuntimeApi>(
-							config,
-							id,
-							&eth_rpc_config,
-						)
-						.map_err(Into::into);
-					}
-
-					#[cfg(feature = "darwinia-runtime")]
-					if chain_spec.is_darwinia() {
-						return service::start_dev_node::<DarwiniaRuntimeApi>(
-							config,
-							id,
-							&eth_rpc_config,
-						)
-						.map_err(Into::into)
-					}
-
-					#[cfg(feature = "koi-runtime")]
-					if chain_spec.is_koi() {
-						return service::start_dev_node::<KoiRuntimeApi>(
-							config,
-							id,
-							&eth_rpc_config,
-						)
-						.map_err(Into::into)
-					}
-				}
-
-				let polkadot_config =
-					SubstrateCli::create_configuration(&polkadot_cli, &polkadot_cli, tokio_handle)
-						.map_err(|err| format!("Relay chain argument error: {}", err))?;
-
-				#[cfg(feature = "crab-runtime")]
-				if chain_spec.is_crab() {
-					return service::start_parachain_node::<CrabRuntimeApi>(
+				match polkadot_config.network.network_backend {
+					NetworkBackendType::Libp2p => start_node::<NetworkWorker<_, _>>(
+						collator_options,
 						config,
 						polkadot_config,
-						collator_options,
 						id,
 						no_hardware_benchmarks,
 						storage_monitor,
-						&eth_rpc_config,
-					)
-					.await
-					.map(|r| r.0)
-					.map_err(Into::into);
-				}
-
-				#[cfg(feature = "darwinia-runtime")]
-				if chain_spec.is_darwinia() {
-					return service::start_parachain_node::<DarwiniaRuntimeApi>(
+						eth_rpc_config
+					).await,
+					NetworkBackendType::Litep2p => start_node::<Litep2pNetworkBackend>(
+						collator_options,
 						config,
 						polkadot_config,
-						collator_options,
 						id,
 						no_hardware_benchmarks,
 						storage_monitor,
-						&eth_rpc_config,
-					)
-					.await
-					.map(|r| r.0)
-					.map_err(Into::into);
+						eth_rpc_config,
+					).await
 				}
-
-				#[cfg(feature = "koi-runtime")]
-				if chain_spec.is_koi() {
-					return service::start_parachain_node::<KoiRuntimeApi>(
-						config,
-						polkadot_config,
-						collator_options,
-						id,
-						no_hardware_benchmarks,
-						storage_monitor,
-						&eth_rpc_config,
-					)
-					.await
-					.map(|r| r.0)
-					.map_err(Into::into);
-				}
-
-				panic!("No feature(crab-runtime, darwinia-runtime, koi-runtime) is enabled!");
 			})
 		},
 	}
+}
+
+async fn start_node<Net>(
+	collator_options: CollatorOptions,
+	config: Configuration,
+	polkadot_config: Configuration,
+	id: ParaId,
+	no_hardware_benchmarks: bool,
+	storage_monitor: StorageMonitorParams,
+	eth_rpc_config: EthRpcConfig,
+) -> Result<TaskManager>
+where
+	Net: NetworkBackend<Block, Hash>,
+{
+	let chain_spec = &config.chain_spec;
+
+	if chain_spec.is_dev() {
+		#[cfg(feature = "crab-runtime")]
+		if chain_spec.is_crab() {
+			return service::start_dev_node::<Net, CrabRuntimeApi>(config, id, &eth_rpc_config)
+				.map_err(Into::into);
+		}
+
+		#[cfg(feature = "darwinia-runtime")]
+		if chain_spec.is_darwinia() {
+			return service::start_dev_node::<Net, DarwiniaRuntimeApi>(config, id, &eth_rpc_config)
+				.map_err(Into::into);
+		}
+
+		#[cfg(feature = "koi-runtime")]
+		if chain_spec.is_koi() {
+			return service::start_dev_node::<Net, KoiRuntimeApi>(config, id, &eth_rpc_config)
+				.map_err(Into::into);
+		}
+	}
+	#[cfg(feature = "crab-runtime")]
+	if chain_spec.is_crab() {
+		return service::start_parachain_node::<Net, CrabRuntimeApi>(
+			config,
+			polkadot_config,
+			collator_options,
+			id,
+			no_hardware_benchmarks,
+			storage_monitor,
+			&eth_rpc_config,
+		)
+		.await
+		.map(|r| r.0)
+		.map_err(Into::into);
+	}
+
+	#[cfg(feature = "darwinia-runtime")]
+	if chain_spec.is_darwinia() {
+		return service::start_parachain_node::<Net, DarwiniaRuntimeApi>(
+			config,
+			polkadot_config,
+			collator_options,
+			id,
+			no_hardware_benchmarks,
+			storage_monitor,
+			&eth_rpc_config,
+		)
+		.await
+		.map(|r| r.0)
+		.map_err(Into::into);
+	}
+
+	#[cfg(feature = "koi-runtime")]
+	if chain_spec.is_koi() {
+		return service::start_parachain_node::<Net, KoiRuntimeApi>(
+			config,
+			polkadot_config,
+			collator_options,
+			id,
+			no_hardware_benchmarks,
+			storage_monitor,
+			&eth_rpc_config,
+		)
+		.await
+		.map(|r| r.0)
+		.map_err(Into::into);
+	}
+
+	panic!("No feature(crab-runtime, darwinia-runtime, koi-runtime) is enabled!");
 }
 
 fn load_spec(id: &str) -> StdResult<Box<dyn ChainSpecT>, String> {

@@ -136,7 +136,6 @@ pub mod pallet {
 	///
 	/// <https://github.dev/paritytech/substrate/blob/19162e43be45817b44c7d48e50d03f074f60fbf4/frame/system/src/lib.rs#L545>
 	#[pallet::storage]
-	#[pallet::getter(fn account_of)]
 	pub type Accounts<T: Config> =
 		StorageMap<_, Blake2_128Concat, AccountId32, AccountInfo<Nonce, AccountData<Balance>>>;
 
@@ -144,24 +143,20 @@ pub mod pallet {
 	///
 	/// https://github.dev/paritytech/substrate/blob/polkadot-v0.9.30/frame/assets/src/types.rs#L115
 	#[pallet::storage]
-	#[pallet::getter(fn kton_account_of)]
 	pub type KtonAccounts<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, AssetAccount>;
 
 	/// [`darwinia_deposit::Deposits`] data.
 	#[pallet::storage]
 	#[pallet::unbounded]
-	#[pallet::getter(fn deposit_of)]
 	pub type Deposits<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, Vec<Deposit>>;
 
 	/// Old ledger data.
 	#[pallet::storage]
-	#[pallet::getter(fn ledger_of)]
 	pub type Ledgers<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, OldLedger>;
 
 	/// Multisig migration caches.
 	#[pallet::storage]
 	#[pallet::unbounded]
-	#[pallet::getter(fn multisig_of)]
 	pub type Multisigs<T: Config> = StorageMap<_, Identity, AccountId32, MultisigMigrationDetail>;
 
 	#[pallet::pallet]
@@ -396,7 +391,7 @@ pub mod pallet {
 				ValidTransaction::with_tag_prefix("account-migration")
 					.and_provides(from)
 					.priority(100)
-					.longevity(TransactionLongevity::max_value())
+					.longevity(TransactionLongevity::MAX)
 					.propagate(true)
 					.build()
 			} else {
@@ -563,8 +558,12 @@ pub(crate) fn verify_curve_25519_signature(
 	message: &[u8],
 	signature: &Signature,
 ) -> bool {
-	Ss(signature.to_owned()).verify(message, &Sp(public_key.to_owned().into()))
-		|| Es(signature.to_owned()).verify(message, &Ep(public_key.to_owned().into()))
+	Ss::from(signature.to_owned())
+		.verify(message, &Sp::from(<AccountId32 as AsRef<[u8; 32]>>::as_ref(public_key).to_owned()))
+		|| Es::from(signature.to_owned()).verify(
+			message,
+			&Ep::from(<AccountId32 as AsRef<[u8; 32]>>::as_ref(public_key).to_owned()),
+		)
 }
 
 /// Calculate the multisig account.

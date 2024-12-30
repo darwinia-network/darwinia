@@ -19,7 +19,7 @@
 // darwinia
 use crate::*;
 // polkadot-sdk
-use frame_benchmarking::v2;
+use frame_benchmarking::v2::*;
 use frame_system::RawOrigin;
 use sp_std::prelude::*;
 

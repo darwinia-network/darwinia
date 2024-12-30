@@ -19,9 +19,21 @@
 // darwinia
 use crate::*;
 
-impl cumulus_pallet_dmp_queue::Config for Runtime {
-	type DmpSink =
-		frame_support::traits::EnqueueWithOrigin<MessageQueue, pallet_config::RelayOrigin>;
+impl pallet_xcm_weight_trader::Config for Runtime {
+	type AccountIdToLocation = xcm_primitives::AccountIdToLocation<AccountId>;
+	type AddSupportedAssetOrigin = Root;
+	type AssetLocationFilter = frame_support::traits::Everything;
+	type AssetTransactor = AssetTransactors;
+	type Balance = Balance;
+	type EditSupportedAssetOrigin = Root;
+	type NativeLocation = SelfReserve;
+	#[cfg(feature = "runtime-benchmarks")]
+	type NotFilteredLocation = RelayLocation;
+	type PauseSupportedAssetOrigin = Root;
+	type RemoveSupportedAssetOrigin = Root;
+	type ResumeSupportedAssetOrigin = Root;
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
+	type WeightInfo = weights::pallet_xcm_weight_trader::WeightInfo<Runtime>;
+	type WeightToFee = <Runtime as pallet_transaction_payment::Config>::WeightToFee;
+	type XcmFeesAccount = XcmFeesAccount;
 }

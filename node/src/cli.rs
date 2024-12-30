@@ -16,15 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
-/// The version of the node.
-///
-/// This is the version that is used for versioning this node binary.
-/// By default the `minor` version is bumped in every release. `Major` or `patch` releases are only
-/// expected in very rare cases.
-///
-/// The worker binaries associated to the node binary should ensure that they are using the same
-/// version as the main node that started them.
-pub const NODE_VERSION: &str = "6.8.1";
+// polkadot-sdk
+use sc_cli::SubstrateCli;
 
 /// Sub-commands supported by the collator.
 #[derive(Debug, clap::Subcommand)]
@@ -71,7 +64,8 @@ pub enum Subcommand {
 #[command(
 	propagate_version = true,
 	args_conflicts_with_subcommands = true,
-	subcommand_negates_reqs = true
+	subcommand_negates_reqs = true,
+	after_help = examples(Self::executable_name())
 )]
 pub struct Cli {
 	#[command(subcommand)]
@@ -113,20 +107,33 @@ pub struct RelayChainCli {
 	pub base_path: Option<std::path::PathBuf>,
 }
 impl RelayChainCli {
+	fn polkadot_cmd() -> clap::Command {
+		// crates.io
+		use clap::CommandFactory;
+
+		let help_template = color_print::cformat!(
+			"The arguments that are passed to the relay chain node. \n\
+			\n\
+			<bold><underline>RELAY_CHAIN_ARGS:</></> \n\
+			{{options}}",
+		);
+
+		polkadot_cli::RunCmd::command().no_binary_name(true).help_template(help_template)
+	}
+
 	/// Parse the relay chain CLI parameters using the para chain `Configuration`.
 	pub fn new<'a>(
 		para_config: &sc_service::Configuration,
 		relay_chain_args: impl Iterator<Item = &'a String>,
 	) -> Self {
+		let polkadot_cmd = Self::polkadot_cmd();
+		let matches = polkadot_cmd.get_matches_from(relay_chain_args);
+		let base = clap::FromArgMatches::from_arg_matches(&matches).unwrap_or_else(|e| e.exit());
 		let extension = crate::chain_spec::Extensions::try_get(&*para_config.chain_spec);
 		let chain_id = extension.map(|e| e.relay_chain.clone());
 		let base_path = para_config.base_path.path().join("polkadot");
 
-		Self {
-			base_path: Some(base_path),
-			chain_id,
-			base: clap::Parser::parse_from(relay_chain_args),
-		}
+		Self { base, chain_id, base_path: Some(base_path) }
 	}
 }
 
@@ -257,4 +264,24 @@ pub struct EthRpcConfig {
 	pub frontier_sql_backend_num_ops_timeout: u32,
 	pub frontier_sql_backend_thread_count: u32,
 	pub frontier_sql_backend_cache_size: u64,
+}
+
+fn examples(executable_name: String) -> String {
+	color_print::cformat!(
+		r#"<bold><underline>Examples:</></>
+
+   <bold>{0} --chain para.json --sync warp -- --chain relay.json --sync warp</>
+        Launch a warp-syncing full node of a given para's chain-spec, and a given relay's chain-spec.
+
+	<green><italic>The above approach is the most flexible, and the most forward-compatible way to spawn an omni-node.</></>
+
+   <bold>{0} --chain darwinia --sync warp -- --chain polkadot --sync warp</>
+        Launch a warp-syncing full node of the <italic>Darwinia</> parachain on the <italic>Polkadot</> Relay Chain.
+
+   <bold>{0} --chain crab --sync warp --relay-chain-rpc-url ws://rpc.example.com -- --chain kusama</>
+        Launch a warp-syncing full node of the <italic>Crab</> parachain on the <italic>Kusama</> Relay Chain.
+        Uses <italic>ws://rpc.example.com</> as remote relay chain node.
+ "#,
+		executable_name,
+	)
 }

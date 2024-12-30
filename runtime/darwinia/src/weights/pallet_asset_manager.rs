@@ -67,31 +67,11 @@ impl<T: frame_system::Config> pallet_asset_manager::WeightInfo for WeightInfo<T>
 		// Proof Size summary in bytes:
 		//  Measured:  `276`
 		//  Estimated: `3741`
-		// Minimum execution time: 27_000_000 picoseconds.
-		Weight::from_parts(28_000_000, 0)
+		// Minimum execution time: 26_000_000 picoseconds.
+		Weight::from_parts(27_000_000, 0)
 			.saturating_add(Weight::from_parts(0, 3741))
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(4))
-	}
-	/// Storage: `AssetManager::AssetTypeId` (r:1 w:0)
-	/// Proof: `AssetManager::AssetTypeId` (`max_values`: None, `max_size`: None, mode: `Measured`)
-	/// Storage: `AssetManager::SupportedFeePaymentAssets` (r:1 w:1)
-	/// Proof: `AssetManager::SupportedFeePaymentAssets` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
-	/// Storage: `AssetManager::AssetTypeUnitsPerSecond` (r:0 w:1)
-	/// Proof: `AssetManager::AssetTypeUnitsPerSecond` (`max_values`: None, `max_size`: None, mode: `Measured`)
-	/// The range of component `x` is `[5, 100]`.
-	fn set_asset_units_per_second(x: u32, ) -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `595 + x * (9 ±0)`
-		//  Estimated: `3983 + x * (10 ±0)`
-		// Minimum execution time: 14_000_000 picoseconds.
-		Weight::from_parts(15_745_769, 0)
-			.saturating_add(Weight::from_parts(0, 3983))
-			// Standard Error: 1_882
-			.saturating_add(Weight::from_parts(311_730, 0).saturating_mul(x.into()))
-			.saturating_add(T::DbWeight::get().reads(2))
-			.saturating_add(T::DbWeight::get().writes(2))
-			.saturating_add(Weight::from_parts(0, 10).saturating_mul(x.into()))
 	}
 	/// Storage: `AssetManager::SupportedFeePaymentAssets` (r:1 w:1)
 	/// Proof: `AssetManager::SupportedFeePaymentAssets` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
@@ -102,57 +82,34 @@ impl<T: frame_system::Config> pallet_asset_manager::WeightInfo for WeightInfo<T>
 	/// Storage: `AssetManager::AssetTypeId` (r:0 w:2)
 	/// Proof: `AssetManager::AssetTypeId` (`max_values`: None, `max_size`: None, mode: `Measured`)
 	/// The range of component `x` is `[5, 100]`.
-	fn change_existing_asset_type(x: u32, ) -> Weight {
+	fn change_existing_asset_type() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `968 + x * (13 ±0)`
 		//  Estimated: `4303 + x * (14 ±0)`
-		// Minimum execution time: 23_000_000 picoseconds.
-		Weight::from_parts(23_950_644, 0)
+		// Minimum execution time: 20_000_000 picoseconds.
+		Weight::from_parts(23_199_447, 0)
 			.saturating_add(Weight::from_parts(0, 4303))
-			// Standard Error: 2_239
-			.saturating_add(Weight::from_parts(313_174, 0).saturating_mul(x.into()))
+			// Standard Error: 2_109
+			.saturating_add(Weight::from_parts(301_010, 0))
 			.saturating_add(T::DbWeight::get().reads(3))
 			.saturating_add(T::DbWeight::get().writes(6))
-			.saturating_add(Weight::from_parts(0, 14).saturating_mul(x.into()))
+			.saturating_add(Weight::from_parts(0, 14))
 	}
-	/// Storage: `AssetManager::SupportedFeePaymentAssets` (r:1 w:1)
-	/// Proof: `AssetManager::SupportedFeePaymentAssets` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
-	/// Storage: `AssetManager::AssetTypeUnitsPerSecond` (r:0 w:1)
-	/// Proof: `AssetManager::AssetTypeUnitsPerSecond` (`max_values`: None, `max_size`: None, mode: `Measured`)
-	/// The range of component `x` is `[5, 100]`.
-	fn remove_supported_asset(x: u32, ) -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `196 + x * (5 ±0)`
-		//  Estimated: `1678 + x * (5 ±0)`
-		// Minimum execution time: 11_000_000 picoseconds.
-		Weight::from_parts(9_848_583, 0)
-			.saturating_add(Weight::from_parts(0, 1678))
-			// Standard Error: 1_357
-			.saturating_add(Weight::from_parts(271_961, 0).saturating_mul(x.into()))
-			.saturating_add(T::DbWeight::get().reads(1))
-			.saturating_add(T::DbWeight::get().writes(2))
-			.saturating_add(Weight::from_parts(0, 5).saturating_mul(x.into()))
-	}
-	/// Storage: `AssetManager::SupportedFeePaymentAssets` (r:1 w:1)
-	/// Proof: `AssetManager::SupportedFeePaymentAssets` (`max_values`: Some(1), `max_size`: None, mode: `Measured`)
 	/// Storage: `AssetManager::AssetIdType` (r:1 w:1)
 	/// Proof: `AssetManager::AssetIdType` (`max_values`: None, `max_size`: None, mode: `Measured`)
-	/// Storage: `AssetManager::AssetTypeUnitsPerSecond` (r:0 w:1)
-	/// Proof: `AssetManager::AssetTypeUnitsPerSecond` (`max_values`: None, `max_size`: None, mode: `Measured`)
 	/// Storage: `AssetManager::AssetTypeId` (r:0 w:1)
 	/// Proof: `AssetManager::AssetTypeId` (`max_values`: None, `max_size`: None, mode: `Measured`)
 	/// The range of component `x` is `[5, 100]`.
-	fn remove_existing_asset_type(x: u32, ) -> Weight {
+	fn remove_existing_asset_type() -> Weight {
 		// Proof Size summary in bytes:
-		//  Measured:  `486 + x * (10 ±0)`
-		//  Estimated: `3949 + x * (10 ±0)`
-		// Minimum execution time: 16_000_000 picoseconds.
-		Weight::from_parts(17_547_073, 0)
-			.saturating_add(Weight::from_parts(0, 3949))
-			// Standard Error: 2_092
-			.saturating_add(Weight::from_parts(267_953, 0).saturating_mul(x.into()))
-			.saturating_add(T::DbWeight::get().reads(2))
-			.saturating_add(T::DbWeight::get().writes(4))
-			.saturating_add(Weight::from_parts(0, 10).saturating_mul(x.into()))
+		//  Measured:  `447 + x * (4 ±0)`
+		//  Estimated: `3909 + x * (5 ±0)`
+		// Minimum execution time: 14_047_000 picoseconds.
+		Weight::from_parts(15_828_607, 3909)
+			// Standard Error: 1_451
+			.saturating_add(Weight::from_parts(74_700, 0))
+			.saturating_add(T::DbWeight::get().reads(1_u64))
+			.saturating_add(T::DbWeight::get().writes(2_u64))
+			.saturating_add(Weight::from_parts(0, 5))
 	}
 }

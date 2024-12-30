@@ -115,7 +115,7 @@ pub fn development_config() -> ChainSpec {
 
 	ChainSpec::builder(
 		WASM_BINARY.unwrap(),
-		Extensions { relay_chain: "rococo-local".into(), para_id: PARA_ID },
+		Extensions { relay_chain: "paseo".into(), para_id: PARA_ID },
 	)
 	.with_name("Darwinia Koi D")
 	.with_id("darwinia-koi-d")

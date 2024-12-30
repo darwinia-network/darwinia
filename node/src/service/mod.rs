@@ -48,18 +48,22 @@ use sp_core::Encode;
 
 #[cfg(all(feature = "runtime-benchmarks", feature = "evm-tracing"))]
 type HostFunctions = (
+	cumulus_client_service::ParachainHostFunctions,
 	frame_benchmarking::benchmarking::HostFunctions,
 	moonbeam_primitives_ext::moonbeam_ext::HostFunctions,
-	sp_io::SubstrateHostFunctions,
 );
 #[cfg(all(feature = "runtime-benchmarks", not(feature = "evm-tracing")))]
-type HostFunctions =
-	(frame_benchmarking::benchmarking::HostFunctions, sp_io::SubstrateHostFunctions);
+type HostFunctions = (
+	cumulus_client_service::ParachainHostFunctions,
+	frame_benchmarking::benchmarking::HostFunctions,
+);
 #[cfg(all(not(feature = "runtime-benchmarks"), feature = "evm-tracing"))]
-type HostFunctions =
-	(moonbeam_primitives_ext::moonbeam_ext::HostFunctions, sp_io::SubstrateHostFunctions);
+type HostFunctions = (
+	cumulus_client_service::ParachainHostFunctions,
+	moonbeam_primitives_ext::moonbeam_ext::HostFunctions,
+);
 #[cfg(not(any(feature = "evm-tracing", feature = "runtime-benchmarks")))]
-type HostFunctions = sp_io::SubstrateHostFunctions;
+type HostFunctions = cumulus_client_service::ParachainHostFunctions;
 
 /// Full client backend type.
 type FullBackend = sc_service::TFullBackend<Block>;
@@ -79,6 +83,7 @@ type Service<RuntimeApi> = sc_service::PartialComponents<
 	sc_consensus::DefaultImportQueue<Block>,
 	sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi>>,
 	(
+		Arc<dyn fc_storage::StorageOverride<Block>>,
 		fc_db::Backend<Block, FullClient<RuntimeApi>>,
 		Option<fc_rpc_core::types::FilterPool>,
 		fc_rpc_core::types::FeeHistoryCache,
@@ -181,10 +186,11 @@ where
 		.transpose()?;
 	let executor = sc_service::new_wasm_executor::<HostFunctions>(config);
 	let (client, backend, keystore_container, task_manager) =
-		sc_service::new_full_parts::<Block, RuntimeApi, _>(
+		sc_service::new_full_parts_record_import::<Block, RuntimeApi, _>(
 			config,
 			telemetry.as_ref().map(|(_, telemetry)| telemetry.handle()),
 			executor,
+			true,
 		)?;
 	let client = Arc::new(client);
 	let telemetry_worker_handle = telemetry.as_ref().map(|(worker, _)| worker.handle());
@@ -208,7 +214,8 @@ where
 		&task_manager,
 	)?;
 	// Frontier stuffs.
-	let frontier_backend = frontier::backend(client.clone(), config, eth_rpc_config.clone())?;
+	let (storage_override, frontier_backend) =
+		frontier::backend(client.clone(), config, eth_rpc_config.clone())?;
 	let filter_pool = Some(Arc::new(Mutex::new(BTreeMap::new())));
 	let fee_history_cache = Arc::new(Mutex::new(BTreeMap::new()));
 	let fee_history_cache_limit = eth_rpc_config.fee_history_limit;
@@ -222,6 +229,7 @@ where
 		transaction_pool,
 		select_chain: sc_consensus::LongestChain::new(backend),
 		other: (
+			storage_override,
 			frontier_backend,
 			filter_pool,
 			fee_history_cache,
@@ -238,7 +246,7 @@ where
 /// This is the actual implementation that is abstract over the executor and the runtime api.
 #[allow(clippy::too_many_arguments)]
 #[sc_tracing::logging::prefix_logs_with("Parachain")]
-async fn start_node_impl<RuntimeApi, SC>(
+async fn start_node_impl<Net, RuntimeApi, SC>(
 	parachain_config: sc_service::Configuration,
 	polkadot_config: sc_service::Configuration,
 	collator_options: cumulus_client_cli::CollatorOptions,
@@ -250,6 +258,7 @@ async fn start_node_impl<RuntimeApi, SC>(
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> sc_service::error::Result<(sc_service::TaskManager, Arc<FullClient<RuntimeApi>>)>
 where
+	Net: sc_network::NetworkBackend<Block, Hash>,
 	RuntimeApi: 'static + Send + Sync + sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>>,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
 	SC: FnOnce(
@@ -261,7 +270,6 @@ where
 		&sc_service::TaskManager,
 		Arc<dyn cumulus_relay_chain_interface::RelayChainInterface>,
 		Arc<sc_transaction_pool::FullPool<Block, FullClient<RuntimeApi>>>,
-		Arc<sc_network_sync::SyncingService<Block>>,
 		sp_keystore::KeystorePtr,
 		Duration,
 		cumulus_primitives_core::ParaId,
@@ -281,6 +289,7 @@ where
 		select_chain: _,
 		other:
 			(
+				storage_override,
 				frontier_backend,
 				filter_pool,
 				fee_history_cache,
@@ -310,10 +319,11 @@ where
 		.await
 		.map_err(|e| sc_service::Error::Application(Box::new(e) as Box<_>))?;
 	let frontier_backend = Arc::new(frontier_backend);
-	let validator = parachain_config.role.is_authority();
+	let collator = parachain_config.role.is_authority();
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let import_queue_service = import_queue.service();
-	let net_config = sc_network::config::FullNetworkConfiguration::new(&parachain_config.network);
+	let net_config =
+		<sc_network::config::FullNetworkConfiguration<_, _, Net>>::new(&parachain_config.network);
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		cumulus_client_service::build_network(cumulus_client_service::BuildNetworkParams {
 			parachain_config: &parachain_config,
@@ -341,7 +351,7 @@ where
 						transaction_pool.clone(),
 					),
 				),
-				network_provider: network.clone(),
+				network_provider: Arc::new(network.clone()),
 				is_validator: parachain_config.role.is_authority(),
 				enable_http_requests: false,
 				custom_extensions: move |_| Vec::new(),
@@ -351,10 +361,9 @@ where
 		);
 	}
 
-	let overrides = fc_storage::overrides_handle(client.clone());
 	let block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
 		task_manager.spawn_handle(),
-		overrides.clone(),
+		storage_override.clone(),
 		eth_rpc_config.eth_log_block_cache,
 		eth_rpc_config.eth_statuses_cache,
 		prometheus_registry.clone(),
@@ -371,7 +380,7 @@ where
 		backend.clone(),
 		frontier_backend.clone(),
 		filter_pool.clone(),
-		overrides.clone(),
+		storage_override.clone(),
 		fee_history_cache.clone(),
 		fee_history_cache_limit,
 		sync_service.clone(),
@@ -384,7 +393,7 @@ where
 		let pool = transaction_pool.clone();
 		let network = network.clone();
 		let filter_pool = filter_pool.clone();
-		let overrides = overrides;
+		let storage_override = storage_override;
 		let fee_history_cache = fee_history_cache.clone();
 		let max_past_logs = eth_rpc_config.max_past_logs;
 		let collator = parachain_config.role.is_authority();
@@ -396,7 +405,6 @@ where
 				timestamp.timestamp(),
 				SlotDuration::from_millis(RELAY_CHAIN_SLOT_DURATION_MILLIS as u64),
 			);
-
 			// Create a mocked parachain inherent data provider to pass all validations in the
 			// parachain system.
 			// Without this, the pending functionality will fail.
@@ -419,6 +427,7 @@ where
 					downward_messages: Default::default(),
 					horizontal_messages: Default::default(),
 				};
+
 			Ok((timestamp, parachain_inherent_data))
 		};
 
@@ -439,7 +448,7 @@ where
 				max_past_logs,
 				fee_history_cache: fee_history_cache.clone(),
 				fee_history_cache_limit,
-				overrides: overrides.clone(),
+				storage_override: storage_override.clone(),
 				block_data_cache: block_data_cache.clone(),
 				forced_parent_hashes: None,
 				pending_create_inherent_data_providers,
@@ -533,7 +542,7 @@ where
 			para_id,
 			relay_chain_interface: relay_chain_interface.clone(),
 			task_manager: &mut task_manager,
-			da_recovery_profile: if validator {
+			da_recovery_profile: if collator {
 				cumulus_client_service::DARecoveryProfile::Collator
 			} else {
 				cumulus_client_service::DARecoveryProfile::FullNode
@@ -545,7 +554,7 @@ where
 		},
 	)?;
 
-	if validator {
+	if collator {
 		start_consensus(
 			client.clone(),
 			backend.clone(),
@@ -555,7 +564,6 @@ where
 			&task_manager,
 			relay_chain_interface.clone(),
 			transaction_pool,
-			sync_service,
 			keystore_container.keystore(),
 			relay_chain_slot_duration,
 			para_id,
@@ -571,7 +579,7 @@ where
 }
 
 /// Build the import queue for the parachain runtime.
-pub fn build_import_queue<RuntimeApi>(
+fn build_import_queue<RuntimeApi>(
 	client: Arc<FullClient<RuntimeApi>>,
 	block_import: ParachainBlockImport<RuntimeApi>,
 	config: &sc_service::Configuration,
@@ -582,8 +590,6 @@ where
 	RuntimeApi: 'static + Send + Sync + sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>>,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
 {
-	let slot_duration = cumulus_client_consensus_aura::slot_duration(&*client)?;
-
 	Ok(cumulus_client_consensus_aura::equivocation_import_queue::fully_verifying_import_queue::<
 		sp_consensus_aura::sr25519::AuthorityPair,
 		_,
@@ -598,7 +604,6 @@ where
 
 			Ok(timestamp)
 		},
-		slot_duration,
 		&task_manager.spawn_essential_handle(),
 		config.prometheus_registry(),
 		telemetry,
@@ -606,7 +611,7 @@ where
 }
 
 /// Start a parachain node.
-pub async fn start_parachain_node<RuntimeApi>(
+pub async fn start_parachain_node<Net, RuntimeApi>(
 	parachain_config: sc_service::Configuration,
 	polkadot_config: sc_service::Configuration,
 	collator_options: cumulus_client_cli::CollatorOptions,
@@ -616,12 +621,13 @@ pub async fn start_parachain_node<RuntimeApi>(
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> sc_service::error::Result<(sc_service::TaskManager, Arc<FullClient<RuntimeApi>>)>
 where
+	Net: sc_network::NetworkBackend<Block, Hash>,
 	RuntimeApi: sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>> + Send + Sync + 'static,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
 	RuntimeApi::RuntimeApi:
 		sp_consensus_aura::AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>,
 {
-	start_node_impl::<RuntimeApi, _>(
+	start_node_impl::<Net, RuntimeApi, _>(
 		parachain_config,
 		polkadot_config,
 		collator_options,
@@ -635,14 +641,12 @@ where
 		 task_manager,
 		 relay_chain_interface,
 		 transaction_pool,
-		 sync_oracle,
 		 keystore,
 		 relay_chain_slot_duration,
 		 para_id,
 		 collator_key,
 		 overseer_handle,
 		 announce_block| {
-			let slot_duration = cumulus_client_consensus_aura::slot_duration(&*client)?;
 			let proposer_factory = sc_basic_authorship::ProposerFactory::with_proof_recording(
 				task_manager.spawn_handle(),
 				client.clone(),
@@ -668,12 +672,10 @@ where
 						cumulus_primitives_core::relay_chain::ValidationCode::from(c).hash()
 					})
 				},
-				sync_oracle,
 				keystore,
 				collator_key,
 				para_id,
 				overseer_handle,
-				slot_duration,
 				relay_chain_slot_duration,
 				proposer,
 				collator_service,
@@ -684,7 +686,6 @@ where
 			let fut = cumulus_client_consensus_aura::collators::lookahead::run::<
 				Block,
 				sp_consensus_aura::sr25519::AuthorityPair,
-				_,
 				_,
 				_,
 				_,
@@ -708,12 +709,13 @@ where
 
 /// Start a dev node which can seal instantly.
 /// !!! WARNING: DO NOT USE ELSEWHERE
-pub fn start_dev_node<RuntimeApi>(
+pub fn start_dev_node<Net, RuntimeApi>(
 	mut config: sc_service::Configuration,
 	para_id: cumulus_primitives_core::ParaId,
 	eth_rpc_config: &crate::cli::EthRpcConfig,
 ) -> Result<sc_service::TaskManager, sc_service::error::Error>
 where
+	Net: sc_network::NetworkBackend<Block, Hash>,
 	RuntimeApi: 'static + Send + Sync + sp_api::ConstructRuntimeApi<Block, FullClient<RuntimeApi>>,
 	RuntimeApi::RuntimeApi: RuntimeApiCollection,
 	RuntimeApi::RuntimeApi:
@@ -729,6 +731,7 @@ where
 		transaction_pool,
 		other:
 			(
+				storage_override,
 				frontier_backend,
 				filter_pool,
 				fee_history_cache,
@@ -738,7 +741,9 @@ where
 				_telemetry_worker_handle,
 			),
 	} = new_partial::<RuntimeApi>(&config, eth_rpc_config)?;
-	let net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
+	let net_config =
+		<sc_network::config::FullNetworkConfiguration<_, _, Net>>::new(&config.network);
+	let metrics = Net::register_notification_metrics(None);
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		sc_service::build_network(sc_service::BuildNetworkParams {
 			config: &config,
@@ -750,6 +755,7 @@ where
 			block_announce_validator_builder: None,
 			warp_sync_params: None,
 			block_relay: None,
+			metrics,
 		})?;
 
 	if config.offchain_worker.enabled {
@@ -765,7 +771,7 @@ where
 						transaction_pool.clone(),
 					),
 				),
-				network_provider: network.clone(),
+				network_provider: Arc::new(network.clone()),
 				is_validator: config.role.is_authority(),
 				enable_http_requests: false,
 				custom_extensions: move |_| Vec::new(),
@@ -878,10 +884,9 @@ where
 	}
 
 	let prometheus_registry = config.prometheus_registry().cloned();
-	let overrides = fc_storage::overrides_handle(client.clone());
 	let block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
 		task_manager.spawn_handle(),
-		overrides.clone(),
+		storage_override.clone(),
 		eth_rpc_config.eth_log_block_cache,
 		eth_rpc_config.eth_statuses_cache,
 		prometheus_registry.clone(),
@@ -898,7 +903,7 @@ where
 		backend.clone(),
 		frontier_backend.clone(),
 		filter_pool.clone(),
-		overrides.clone(),
+		storage_override.clone(),
 		fee_history_cache.clone(),
 		fee_history_cache_limit,
 		sync_service.clone(),
@@ -912,7 +917,7 @@ where
 		let network = network.clone();
 		let filter_pool = filter_pool;
 		let frontier_backend = frontier_backend;
-		let overrides = overrides;
+		let storage_override = storage_override;
 		let fee_history_cache = fee_history_cache;
 		let max_past_logs = eth_rpc_config.max_past_logs;
 		let collator = config.role.is_authority();
@@ -967,7 +972,7 @@ where
 				max_past_logs,
 				fee_history_cache: fee_history_cache.clone(),
 				fee_history_cache_limit,
-				overrides: overrides.clone(),
+				storage_override: storage_override.clone(),
 				block_data_cache: block_data_cache.clone(),
 				forced_parent_hashes: None,
 				pending_create_inherent_data_providers,

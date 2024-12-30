@@ -37,9 +37,9 @@ fn migrate_should_work() {
 			]),
 		);
 
-		assert!(Deposit::deposit_of(1).is_some());
+		assert!(<Deposits<Runtime>>::get(1).is_some());
 		assert_ok!(Deposit::migrate_for(RuntimeOrigin::signed(1), 1));
-		assert!(Deposit::deposit_of(1).is_none());
+		assert!(<Deposits<Runtime>>::get(1).is_none());
 	});
 }
 
@@ -68,45 +68,45 @@ fn on_idle_should_work() {
 		<Deposits<Runtime>>::insert(1, mock_deposits(512));
 		<Deposits<Runtime>>::insert(2, mock_deposits(512));
 		<Deposits<Runtime>>::insert(3, mock_deposits(512));
-		assert_eq!(Deposit::deposit_of(1).unwrap().len(), 512);
-		assert_eq!(Deposit::deposit_of(2).unwrap().len(), 512);
-		assert_eq!(Deposit::deposit_of(3).unwrap().len(), 512);
+		assert_eq!(<Deposits<Runtime>>::get(1).unwrap().len(), 512);
+		assert_eq!(<Deposits<Runtime>>::get(2).unwrap().len(), 512);
+		assert_eq!(<Deposits<Runtime>>::get(3).unwrap().len(), 512);
 
 		<Deposit as OnIdle<_>>::on_idle(0, Weight::zero());
-		assert_eq!(Deposit::deposit_of(1).unwrap().len(), 512);
-		assert_eq!(Deposit::deposit_of(2).unwrap().len(), 512);
-		assert_eq!(Deposit::deposit_of(3).unwrap().len(), 512);
+		assert_eq!(<Deposits<Runtime>>::get(1).unwrap().len(), 512);
+		assert_eq!(<Deposits<Runtime>>::get(2).unwrap().len(), 512);
+		assert_eq!(<Deposits<Runtime>>::get(3).unwrap().len(), 512);
 		<Deposit as OnIdle<_>>::on_idle(0, Weight::zero().add_ref_time(10));
-		assert_eq!(Deposit::deposit_of(1).unwrap().len(), 512);
-		assert_eq!(Deposit::deposit_of(2).unwrap().len(), 512);
-		assert_eq!(Deposit::deposit_of(3).unwrap().len(), 502);
+		assert_eq!(<Deposits<Runtime>>::get(1).unwrap().len(), 512);
+		assert_eq!(<Deposits<Runtime>>::get(2).unwrap().len(), 512);
+		assert_eq!(<Deposits<Runtime>>::get(3).unwrap().len(), 502);
 		<Deposit as OnIdle<_>>::on_idle(0, Weight::MAX);
-		assert_eq!(Deposit::deposit_of(1).unwrap().len(), 512);
-		assert_eq!(Deposit::deposit_of(2).unwrap().len(), 512);
-		assert_eq!(Deposit::deposit_of(3).unwrap().len(), 492);
+		assert_eq!(<Deposits<Runtime>>::get(1).unwrap().len(), 512);
+		assert_eq!(<Deposits<Runtime>>::get(2).unwrap().len(), 512);
+		assert_eq!(<Deposits<Runtime>>::get(3).unwrap().len(), 492);
 
 		(0..50).for_each(|_| {
 			<Deposit as OnIdle<_>>::on_idle(0, Weight::MAX);
 		});
-		assert_eq!(Deposit::deposit_of(1).unwrap().len(), 512);
-		assert_eq!(Deposit::deposit_of(2).unwrap().len(), 512);
-		assert!(Deposit::deposit_of(3).is_none());
+		assert_eq!(<Deposits<Runtime>>::get(1).unwrap().len(), 512);
+		assert_eq!(<Deposits<Runtime>>::get(2).unwrap().len(), 512);
+		assert!(<Deposits<Runtime>>::get(3).is_none());
 
 		(0..50).for_each(|_| {
 			<Deposit as OnIdle<_>>::on_idle(0, Weight::MAX);
 		});
-		assert_eq!(Deposit::deposit_of(1).unwrap().len(), 12);
-		assert_eq!(Deposit::deposit_of(2).unwrap().len(), 512);
-		assert!(Deposit::deposit_of(3).is_none());
+		assert_eq!(<Deposits<Runtime>>::get(1).unwrap().len(), 12);
+		assert_eq!(<Deposits<Runtime>>::get(2).unwrap().len(), 512);
+		assert!(<Deposits<Runtime>>::get(3).is_none());
 
 		System::reset_events();
 		(0..54).for_each(|_| {
 			<Deposit as OnIdle<_>>::on_idle(0, Weight::MAX);
 		});
 		assert_eq!(events().into_iter().count(), 54);
-		assert!(Deposit::deposit_of(1).is_none());
-		assert!(Deposit::deposit_of(2).is_none());
-		assert!(Deposit::deposit_of(3).is_none());
+		assert!(<Deposits<Runtime>>::get(1).is_none());
+		assert!(<Deposits<Runtime>>::get(2).is_none());
+		assert!(<Deposits<Runtime>>::get(3).is_none());
 	});
 	new_test_ext().execute_with(|| {
 		System::set_block_number(1);
@@ -114,21 +114,21 @@ fn on_idle_should_work() {
 		let _ = Balances::deposit_creating(&0, 10_000);
 
 		<Deposits<Runtime>>::insert(1, mock_zero_deposits(512));
-		assert_eq!(Deposit::deposit_of(1).unwrap().len(), 512);
+		assert_eq!(<Deposits<Runtime>>::get(1).unwrap().len(), 512);
 
 		System::reset_events();
 		(0..52).for_each(|_| {
 			<Deposit as OnIdle<_>>::on_idle(0, Weight::MAX);
 		});
 		assert_eq!(events().into_iter().count(), 0);
-		assert!(Deposit::deposit_of(1).is_none());
+		assert!(<Deposits<Runtime>>::get(1).is_none());
 	});
 	new_test_ext().execute_with(|| {
 		<Deposits<Runtime>>::insert(1, mock_deposits(512));
-		assert_eq!(Deposit::deposit_of(1).unwrap().len(), 512);
+		assert_eq!(<Deposits<Runtime>>::get(1).unwrap().len(), 512);
 
 		<Deposit as OnIdle<_>>::on_idle(0, Weight::MAX);
-		assert!(Deposit::deposit_of(1).is_none());
-		assert_eq!(Deposit::migration_failure_of(1).unwrap().0.into_iter().count(), 512);
+		assert!(<Deposits<Runtime>>::get(1).is_none());
+		assert_eq!(<MigrationFailures<Runtime>>::get(1).unwrap().0.into_iter().count(), 512);
 	});
 }

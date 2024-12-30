@@ -140,7 +140,7 @@ use dc_types::{Balance, Moment};
 use frame_support::{
 	pallet_prelude::*,
 	traits::{Currency, ExistenceRequirement, UnixTime},
-	DefaultNoBound, PalletId,
+	PalletId,
 };
 use frame_system::pallet_prelude::*;
 use sp_core::H160;
@@ -208,52 +208,42 @@ pub mod pallet {
 
 	/// All staking ledgers.
 	#[pallet::storage]
-	#[pallet::getter(fn ledger_of)]
 	pub type Ledgers<T: Config> = StorageMap<_, Blake2_128Concat, T::AccountId, Ledger>;
 
 	/// The ideal number of active collators.
 	#[pallet::storage]
-	#[pallet::getter(fn collator_count)]
 	pub type CollatorCount<T> = StorageValue<_, u32, ValueQuery>;
 
 	/// Number of blocks authored by the collator within current session.
 	#[pallet::storage]
 	#[pallet::unbounded]
-	#[pallet::getter(fn authored_block_count)]
 	pub type AuthoredBlockCount<T: Config> =
 		StorageValue<_, (BlockNumberFor<T>, BTreeMap<T::AccountId, BlockNumberFor<T>>), ValueQuery>;
 
 	/// Unissued reward to Treasury.
 	#[pallet::storage]
-	#[pallet::getter(fn unissued_reward)]
 	pub type UnissuedReward<T: Config> = StorageValue<_, Balance, ValueQuery>;
 
 	/// All outstanding rewards since the last payment.
 	#[pallet::storage]
 	#[pallet::unbounded]
-	#[pallet::getter(fn pending_reward_of)]
 	pub type PendingRewards<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, Balance>;
 
 	/// Active session's start-time.
 	#[pallet::storage]
-	#[pallet::getter(fn session_start_time)]
 	pub type SessionStartTime<T: Config> = StorageValue<_, Moment, ValueQuery>;
 
 	/// Elapsed time.
 	#[pallet::storage]
-	#[pallet::getter(fn elapsed_time)]
 	pub type ElapsedTime<T: Config> = StorageValue<_, Moment, ValueQuery>;
 
 	/// RING staking contract address.
 	#[pallet::storage]
-	#[pallet::getter(fn ring_staking_contract)]
 	pub type RingStakingContract<T: Config> = StorageValue<_, T::AccountId>;
 	/// KTON staking contract address.
 	#[pallet::storage]
-	#[pallet::getter(fn kton_staking_contract)]
 	pub type KtonStakingContract<T: Config> = StorageValue<_, T::AccountId>;
 
-	#[derive(DefaultNoBound)]
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
 		/// Current timestamp.
@@ -265,7 +255,19 @@ pub mod pallet {
 		#[allow(missing_docs)]
 		pub _marker: PhantomData<T>,
 	}
-
+	impl<T> Default for GenesisConfig<T>
+	where
+		T: Config,
+	{
+		fn default() -> Self {
+			Self {
+				now: Default::default(),
+				elapsed_time: Default::default(),
+				collator_count: 1,
+				_marker: Default::default(),
+			}
+		}
+	}
 	#[pallet::genesis_build]
 	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
 		fn build(&self) {

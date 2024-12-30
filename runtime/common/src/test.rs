@@ -112,8 +112,11 @@ macro_rules! impl_account_migration_tests {
 					extra: (),
 				};
 
-				assert!(AccountMigration::account_of(&account_id_32).is_none());
-				assert!(AccountMigration::kton_account_of(&account_id_32).is_none());
+				assert!(
+					<darwinia_account_migration::Accounts<Runtime>>::get(&account_id_32).is_none()
+				);
+				assert!(<darwinia_account_migration::KtonAccounts<Runtime>>::get(&account_id_32)
+					.is_none());
 
 				<pallet_balances::TotalIssuance<Runtime, _>>::put(RING_AMOUNT);
 				<darwinia_account_migration::Accounts<Runtime>>::insert(
@@ -132,8 +135,11 @@ macro_rules! impl_account_migration_tests {
 					&Blake2_128Concat::hash(account_id_32.as_ref()),
 					asset_account,
 				);
-				assert!(AccountMigration::account_of(&account_id_32).is_some());
-				assert!(AccountMigration::kton_account_of(&account_id_32).is_some());
+				assert!(
+					<darwinia_account_migration::Accounts<Runtime>>::get(&account_id_32).is_some()
+				);
+				assert!(<darwinia_account_migration::KtonAccounts<Runtime>>::get(&account_id_32)
+					.is_some());
 			}
 
 			fn migrate(from: Pair, to: AccountId) -> Result<(), E> {
@@ -215,7 +221,7 @@ macro_rules! impl_account_migration_tests {
 					preset_state_of(&from);
 
 					assert_ok!(migrate(from, to));
-					assert_eq!(AccountMigration::account_of(from_pk), None);
+					assert_eq!(<darwinia_account_migration::Accounts<Runtime>>::get(from_pk), None);
 					assert_eq!(
 						System::account(to),
 						AccountInfo {
@@ -249,7 +255,10 @@ macro_rules! impl_account_migration_tests {
 
 					assert_ok!(migrate(from, to));
 					let asset_details = asset_details();
-					assert_eq!(AccountMigration::kton_account_of(from_pk), None);
+					assert_eq!(
+						<darwinia_account_migration::KtonAccounts<Runtime>>::get(from_pk),
+						None
+					);
 					assert_eq!(Assets::maybe_balance(KTON_ID, to).unwrap(), KTON_AMOUNT);
 					assert_eq!(pre_asset_details.accounts + 1, asset_details.accounts);
 					assert_eq!(pre_asset_details.sufficients + 1, asset_details.sufficients);
@@ -305,7 +314,10 @@ macro_rules! impl_account_migration_tests {
 						assert_ok!(migrate(from, to));
 						assert_eq!(Balances::free_balance(to), 80);
 						assert_eq!(Balances::free_balance(&Treasury::account_id()), 20);
-						assert_eq!(Deposit::deposit_of(to).unwrap().len(), 2);
+						assert_eq!(
+							<darwinia_deposit::Deposits<Runtime>>::get(to).unwrap().len(),
+							2
+						);
 						assert_eq!(Assets::maybe_balance(KTON_ID, to).unwrap(), 100);
 					});
 			}
@@ -605,7 +617,7 @@ macro_rules! impl_fee_tests {
 					assert_eq!(TransactionPayment::next_fee_multiplier(), Multiplier::from(1u128));
 					assert_eq!(
 						TransactionPaymentGasPrice::min_gas_price().0,
-						U256::from(753_532_560_644_u128)
+						U256::from(875_562_694_959_u128)
 					);
 				})
 			}
@@ -625,76 +637,76 @@ macro_rules! impl_fee_tests {
 						TransactionPaymentGasPrice::min_gas_price().0
 					};
 
-					assert_eq!(sim(Perbill::from_percent(0), 1), U256::from(753_518_432_040_u128));
-					assert_eq!(sim(Perbill::from_percent(25), 1), U256::from(753_518_432_040_u128));
-					assert_eq!(sim(Perbill::from_percent(50), 1), U256::from(753_532_560_644_u128));
+					assert_eq!(sim(Perbill::from_percent(0), 1), U256::from(875_546_278_312_u128));
+					assert_eq!(sim(Perbill::from_percent(25), 1), U256::from(875_546_278_312_u128));
+					assert_eq!(sim(Perbill::from_percent(50), 1), U256::from(875_562_694_959_u128));
 					assert_eq!(
 						sim(Perbill::from_percent(100), 1),
-						U256::from(753_574_948_042_u128)
+						U256::from(875_611_946_745_u128)
 					);
 
 					// 1 "real" hour (at 12-second blocks)
 					assert_eq!(
 						sim(Perbill::from_percent(0), 300),
-						U256::from(749_347_988_429_u128)
+						U256::from(870_700_456_063_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(25), 300),
-						U256::from(749_347_988_429_u128)
+						U256::from(870_700_456_063_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(50), 300),
-						U256::from(753_574_948_042_u128)
+						U256::from(875_611_946_745_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(100), 300),
-						U256::from(766_399_427_500_u128)
+						U256::from(890_513_274_679_u128)
 					);
 
 					// 1 "real" day (at 12-second blocks)
 					assert_eq!(
 						sim(Perbill::from_percent(0), 7200),
-						U256::from(669_615_374_520_u128)
+						U256::from(778_055_617_663_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(25), 7200),
-						U256::from(669_615_374_520_u128)
+						U256::from(778_055_617_663_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(50), 7200),
-						U256::from(766_399_427_500_u128)
+						U256::from(890_513_274_679_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(100), 7200),
-						U256::from(1_149_064_577_447_u128)
+						U256::from(1_335_148_778_776_u128)
 					);
 
 					// 7 "real" day (at 12-second blocks)
 					assert_eq!(
 						sim(Perbill::from_percent(0), 50400),
-						U256::from(446_617_926_925_u128)
+						U256::from(518_945_054_453_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(25), 50400),
-						U256::from(446_617_926_925_u128)
+						U256::from(518_945_054_453_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(50), 50400),
-						U256::from(1_149_064_577_447_u128)
+						U256::from(1_335_148_778_776_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(100), 50400),
-						U256::from(19_569_029_695_681_u128)
+						U256::from(22_738_118_129_149_u128)
 					);
 
 					// 30 "real" day (at 12-second blocks)
 					assert_eq!(
 						sim(Perbill::from_percent(0), 259200),
-						U256::from(151_669_449_464_u128)
+						U256::from(176_231_418_324_u128)
 					);
 					assert_eq!(
 						sim(Perbill::from_percent(25), 259200),
-						U256::from(151_669_449_464_u128)
+						U256::from(176_231_418_324_u128)
 					);
 				});
 			}
