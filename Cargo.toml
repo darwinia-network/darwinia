@@ -186,6 +186,16 @@ xcm-builder                                = { package = "staging-xcm-builder", 
 xcm-executor                               = { package = "staging-xcm-executor", git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407", default-features = false }
 xcm-runtime-apis                           = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407", default-features = false }
 
+[patch.crates-io]
+evm           = { git = "https://github.com/darwinia-network/evm.git", branch = "stable2407" }
+evm-gasometer = { git = "https://github.com/darwinia-network/evm.git", branch = "stable2407" }
+evm-runtime   = { git = "https://github.com/darwinia-network/evm.git", branch = "stable2407" }
+
+[patch."https://github.com/moonbeam-foundation/evm.git"]
+evm           = { git = "https://github.com/darwinia-network/evm.git", branch = "stable2407" }
+evm-gasometer = { git = "https://github.com/darwinia-network/evm.git", branch = "stable2407" }
+evm-runtime   = { git = "https://github.com/darwinia-network/evm.git", branch = "stable2407" }
+
 [profile.release]
 panic = "unwind"
 

@@ -55,9 +55,9 @@ describe("Test EVM tracing", () => {
 			{ tracer: "callTracer" },
 		]);
 
-		expect(trace_result.result[0].from).to.be.equal(FAITH.toLowerCase());
-		expect(trace_result.result[0].to).to.be.equal(inc.options.address.toLowerCase());
-		expect(trace_result.result[0].type).to.be.equal("CALL");
+		expect(trace_result.result[0].result.from).to.be.equal(FAITH.toLowerCase());
+		expect(trace_result.result[0].result.to).to.be.equal(inc.options.address.toLowerCase());
+		expect(trace_result.result[0].result.type).to.be.equal("CALL");
 	}).timeout(60000);
 
 	step("RPC debug_traceBlockByHash should work", async function () {
@@ -66,10 +66,11 @@ describe("Test EVM tracing", () => {
 			block_hash,
 			{ tracer: "callTracer" },
 		]);
+		console.log(trace_result);
 
-		expect(trace_result.result[0].from).to.be.equal(FAITH.toLowerCase());
-		expect(trace_result.result[0].to).to.be.equal(inc.options.address.toLowerCase());
-		expect(trace_result.result[0].type).to.be.equal("CALL");
+		expect(trace_result.result[0].result.from).to.be.equal(FAITH.toLowerCase());
+		expect(trace_result.result[0].result.to).to.be.equal(inc.options.address.toLowerCase());
+		expect(trace_result.result[0].result.type).to.be.equal("CALL");
 	}).timeout(60000);
 
 	step("RPC trace_filter should work", async function () {
