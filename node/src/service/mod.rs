@@ -319,7 +319,7 @@ where
 		.await
 		.map_err(|e| sc_service::Error::Application(Box::new(e) as Box<_>))?;
 	let frontier_backend = Arc::new(frontier_backend);
-	let validator = parachain_config.role.is_authority();
+	let collator = parachain_config.role.is_authority();
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let import_queue_service = import_queue.service();
 	let net_config =
@@ -542,7 +542,7 @@ where
 			para_id,
 			relay_chain_interface: relay_chain_interface.clone(),
 			task_manager: &mut task_manager,
-			da_recovery_profile: if validator {
+			da_recovery_profile: if collator {
 				cumulus_client_service::DARecoveryProfile::Collator
 			} else {
 				cumulus_client_service::DARecoveryProfile::FullNode
@@ -554,7 +554,7 @@ where
 		},
 	)?;
 
-	if validator {
+	if collator {
 		start_consensus(
 			client.clone(),
 			backend.clone(),

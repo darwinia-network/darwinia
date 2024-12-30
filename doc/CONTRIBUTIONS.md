@@ -149,7 +149,7 @@ cargo make run-dev-koi
 ### Short version.
 cargo make rdk
 ## Without cargo-make.
-cargo run --locked -p darwinia --features koi-runtime -- --unsafe-rpc-external --tmp --rpc-cors all --rpc-methods unsafe --alice --collator --chain koi-dev
+cargo run --locked -p darwinia --features koi-runtime -- --unsafe-rpc-external --tmp --rpc-cors all --rpc-methods unsafe --alice --unsafe-force-node-key-generation --chain koi-dev
 
 # Run release dev Koi node. (for Darwinia and Crab, replace the `koi` with the lowercase chain name)
 ## With cargo-make.
@@ -158,7 +158,7 @@ cargo make run-release-dev-koi
 ### Short version.
 cargo make rrdk
 ## Without cargo-make.
-cargo run --locked -p darwinia --features koi-runtime -r -- --unsafe-rpc-external --tmp --rpc-cors all --rpc-methods unsafe --alice --collator --chain koi-dev
+cargo run --locked -p darwinia --features koi-runtime -r -- --unsafe-rpc-external --tmp --rpc-cors all --rpc-methods unsafe --alice --unsafe-force-node-key-generation --chain koi-dev
 
 # Run benchmark Koi node. (for Darwinia and Crab, replace the `koi` with the lowercase chain name)
 ## With cargo-make.

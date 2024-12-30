@@ -2,7 +2,7 @@
 provider = "native"
 
 [relaychain]
-chain           = "rococo-local"
+chain           = "paseo"
 default_args    = ["--database=paritydb", "-lparachain=debug"]
 default_command = "tmp/polkadot"
 
