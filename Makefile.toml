@@ -244,3 +244,54 @@ env    = { "CHAIN" = "darwinia" }
 
 [tasks.rbd]
 alias = "run-benchmark-darwinia"
+
+[tasks.run-benchmark-check]
+command = "cargo"
+args    = [
+	"run",
+	"@@split(NODE_COMPILE_ARGS, )",
+	"${CHAIN}-runtime",
+	"--features",
+	"runtime-benchmarks",
+	"-r",
+	"--",
+	"benchmark",
+	"pallet",
+	"--header",
+	".maintain/license-header",
+	"--heap-pages",
+	"4096",
+	"--chain",
+	"${CHAIN}-dev",
+	"--output",
+	"runtime/${CHAIN}/src/weights",
+	"--pallet",
+	"*",
+	"--extrinsic",
+	"*",
+	"--steps",
+	"2",
+	"--repeat",
+	"1"
+]
+
+[tasks.run-benchmark-koi-check]
+extend = "run-benchmark-check"
+env    = { "CHAIN" = "koi" }
+
+[tasks.rbkc]
+alias = "run-benchmark-koi-check"
+
+[tasks.run-benchmark-crab-check]
+extend = "run-benchmark-check"
+env    = { "CHAIN" = "crab" }
+
+[tasks.rbcc]
+alias = "run-benchmark-crab-check"
+
+[tasks.run-benchmark-darwinia-check]
+extend = "run-benchmark-check"
+env    = { "CHAIN" = "darwinia" }
+
+[tasks.rbdc]
+alias = "run-benchmark-darwinia-check"
