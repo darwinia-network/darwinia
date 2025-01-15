@@ -94,6 +94,15 @@ pub const MAXIMUM_BLOCK_WEIGHT: frame_support::weights::Weight =
 
 const BLOCK_GAS_LIMIT: u64 = 20_000_000;
 
+// TODO: remove in stable2409.
+#[cfg(not(feature = "runtime-benchmarks"))]
+const EXISTENTIAL_DEPOSIT: Balance = 0;
+#[cfg(feature = "runtime-benchmarks")]
+const EXISTENTIAL_DEPOSIT: Balance = 1;
+frame_support::parameter_types! {
+	pub const ExistentialDeposit: Balance = EXISTENTIAL_DEPOSIT;
+}
+
 frame_support::parameter_types! {
 	pub const MaxBalance: Balance = Balance::MAX;
 
