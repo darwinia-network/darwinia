@@ -21,7 +21,7 @@
 use crate::*;
 // polkadot-sdk
 #[allow(unused_imports)]
-use frame_support::{migration, storage::unhashed};
+use frame_support::migration;
 
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
@@ -29,39 +29,12 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::DispatchError> {
 		log::info!("pre");
 
-		assert!(migration::storage_iter::<()>(b"Vesting", b"Vesting").count() == 1);
-		assert_eq!(
-			Balances::locks(
-				// 0x081cbab52e2dbcd52f441c7ae9ad2a3be42e2284.
-				AccountId::from([
-					8, 28, 186, 181, 46, 45, 188, 213, 47, 68, 28, 122, 233, 173, 42, 59, 228, 46,
-					34, 132,
-				]),
-			)
-			.into_iter()
-			.map(|l| l.id)
-			.collect::<Vec<_>>(),
-			[*b"vesting "],
-		);
-
 		Ok(Vec::new())
 	}
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
 		log::info!("post");
-
-		darwinia_staking::migration::post_check::<Runtime>();
-
-		assert!(migration::storage_iter::<()>(b"Vesting", b"Vesting").count() == 0);
-		assert!(Balances::locks(
-			// 0x081cbab52e2dbcd52f441c7ae9ad2a3be42e2284.
-			AccountId::from([
-				8, 28, 186, 181, 46, 45, 188, 213, 47, 68, 28, 122, 233, 173, 42, 59, 228, 46, 34,
-				132,
-			]),
-		)
-		.is_empty());
 
 		Ok(())
 	}
@@ -72,26 +45,77 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	// polkadot-sdk
-	use frame_support::{traits::LockableCurrency, PalletId};
-	use sp_runtime::traits::AccountIdConversion;
+	use codec::Decode;
+	use frame_support::weights::Weight;
 
-	let (r, w) = darwinia_staking::migration::migrate::<Runtime>();
-	let _ = migration::clear_storage_prefix(b"Vesting", b"Vesting", &[], None, None);
+	#[derive(Decode, Eq, Ord, PartialEq, PartialOrd)]
+	enum OldAssetType {
+		Xcm(xcm::v3::Location),
+	}
 
-	Balances::remove_lock(
-		*b"vesting ",
-		// 0x081cbab52e2dbcd52f441c7ae9ad2a3be42e2284.
-		&AccountId::from([
-			8, 28, 186, 181, 46, 45, 188, 213, 47, 68, 28, 122, 233, 173, 42, 59, 228, 46, 34, 132,
-		]),
+	let supported_assets =
+		if let Some(supported_assets) = frame_support::storage::migration::get_storage_value::<
+			Vec<OldAssetType>,
+		>(b"AssetManager", b"SupportedFeePaymentAssets", &[])
+		{
+			sp_std::collections::btree_set::BTreeSet::from_iter(
+				supported_assets.into_iter().map(|OldAssetType::Xcm(location_v3)| location_v3),
+			)
+		} else {
+			return Weight::default();
+		};
+
+	let mut assets: Vec<(xcm::v4::Location, (bool, u128))> = Vec::new();
+
+	for (OldAssetType::Xcm(location_v3), units_per_seconds) in
+		frame_support::storage::migration::storage_key_iter::<
+			OldAssetType,
+			u128,
+			frame_support::Blake2_128Concat,
+		>(b"AssetManager", b"AssetTypeUnitsPerSecond")
+	{
+		let enabled = supported_assets.contains(&location_v3);
+
+		if let Ok(location_v4) = location_v3.try_into() {
+			assets.push((location_v4, (enabled, units_per_seconds)));
+		}
+	}
+
+	//***** Start mutate storage *****//
+
+	// Write asset metadata in new pallet_xcm_weight_trader
+	use frame_support::weights::WeightToFee as _;
+	for (asset_location, (enabled, units_per_second)) in assets {
+		let native_amount_per_second: u128 =
+			<Runtime as pallet_transaction_payment::Config>::WeightToFee::weight_to_fee(
+				&Weight::from_parts(
+					frame_support::weights::constants::WEIGHT_REF_TIME_PER_SECOND,
+					0,
+				),
+			);
+		let relative_price: u128 = native_amount_per_second
+			.saturating_mul(10u128.pow(pallet_xcm_weight_trader::RELATIVE_PRICE_DECIMALS))
+			.saturating_div(units_per_second);
+		pallet_xcm_weight_trader::SupportedAssets::<Runtime>::insert(
+			asset_location,
+			(enabled, relative_price),
+		);
+	}
+
+	// Remove storage value AssetManager::SupportedFeePaymentAssets
+	frame_support::storage::unhashed::kill(&frame_support::storage::storage_prefix(
+		b"AssetManager",
+		b"SupportedFeePaymentAssets",
+	));
+
+	// Remove storage map AssetManager::AssetTypeUnitsPerSecond
+	let _ = frame_support::storage::migration::clear_storage_prefix(
+		b"AssetManager",
+		b"AssetTypeUnitsPerSecond",
+		&[],
+		None,
+		None,
 	);
 
-	let _ = Balances::transfer_all(
-		RuntimeOrigin::signed(PalletId(*b"dar/depo").into_account_truncating()),
-		Treasury::account_id(),
-		false,
-	);
-
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(r, w + 10)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(30, 30)
 }

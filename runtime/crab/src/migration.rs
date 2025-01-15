@@ -45,15 +45,5 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	/// polkadot-sdk
-	use frame_support::PalletId;
-	use sp_runtime::traits::AccountIdConversion;
-
-	let _ = Balances::transfer_all(
-		RuntimeOrigin::signed(PalletId(*b"dar/depo").into_account_truncating()),
-		Treasury::account_id(),
-		false,
-	);
-
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 6)
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 0)
 }
