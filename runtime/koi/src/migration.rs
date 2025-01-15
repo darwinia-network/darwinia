@@ -118,4 +118,6 @@ fn migrate() -> frame_support::weights::Weight {
 		None,
 		None,
 	);
+
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(15, 15)
 }
