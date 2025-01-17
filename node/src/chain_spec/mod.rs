@@ -138,8 +138,7 @@ where
 {
 	let d = env::current_exe().unwrap().parent().unwrap().to_path_buf();
 	let p = d.join(name);
-
-	if !p.is_file() {
+	let download = || {
 		println!("Downloading `{name}` to `{}`", d.display());
 
 		thread::spawn(move || {
@@ -156,6 +155,21 @@ where
 		})
 		.join()
 		.unwrap();
+	};
+
+	if !p.is_file() {
+		download();
+	} else if let Ok(metadata) = p.metadata() {
+		// Fetch the latest spec every 14 days.
+		if let Ok(date) = metadata.modified() {
+			if let Ok(elapsed) = date.elapsed() {
+				if elapsed.as_secs() > 60 * 60 * 24 * 14 {
+					if fs::remove_file(p.clone()).is_ok() {
+						download();
+					}
+				}
+			}
+		}
 	}
 
 	println!("Loading genesis from `{}`", p.display());
