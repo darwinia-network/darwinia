@@ -24,6 +24,8 @@ use std::{
 	str::FromStr,
 	time::{SystemTime, UNIX_EPOCH},
 };
+// crates.io
+use array_bytes::Dehexify;
 // darwinia
 use super::*;
 use koi_runtime::*;
@@ -70,13 +72,13 @@ pub fn development_config() -> ChainSpec {
 		// Governance stuff.
 		"technicalCommittee": {
 			"members": [
-				array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(ALITH),
-				array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(BALTATHAR)
+				array_bytes::dehexify_array_then_into::<_, AccountId, 20>(ALITH).unwrap(),
+				array_bytes::dehexify_array_then_into::<_, AccountId, 20>(BALTATHAR).unwrap()
 			]
 		},
 
 		// Utility stuff.
-		"sudo": { "key": Some(array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(ALITH)) },
+		"sudo": { "key": Some(array_bytes::dehexify_array_then_into::<_, AccountId, 20>(ALITH).unwrap()) },
 
 		// XCM stuff.
 		"polkadotXcm": { "safeXcmVersion": Some(SAFE_XCM_VERSION) },
@@ -129,16 +131,16 @@ pub fn development_config() -> ChainSpec {
 pub fn genesis_config() -> ChainSpec {
 	let collators = [
 		(
-			array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(C1),
-			session_keys(array_bytes::hex2array_unchecked(C1_AURA).unchecked_into()),
+			array_bytes::dehexify_array_then_into::<_, AccountId, 20>(C1).unwrap(),
+			session_keys(<[u8; 32]>::dehexify(C1_AURA).unwrap().unchecked_into()),
 		),
 		(
-			array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(C2),
-			session_keys(array_bytes::hex2array_unchecked(C2_AURA).unchecked_into()),
+			array_bytes::dehexify_array_then_into::<_, AccountId, 20>(C2).unwrap(),
+			session_keys(<[u8; 32]>::dehexify(C2_AURA).unwrap().unchecked_into()),
 		),
 		(
-			array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(C3),
-			session_keys(array_bytes::hex2array_unchecked(C3_AURA).unchecked_into()),
+			array_bytes::dehexify_array_then_into::<_, AccountId, 20>(C3).unwrap(),
+			session_keys(<[u8; 32]>::dehexify(C3_AURA).unwrap().unchecked_into()),
 		),
 	];
 	let genesis_config_patch = serde_json::json!({
@@ -171,7 +173,7 @@ pub fn genesis_config() -> ChainSpec {
 		},
 
 		// Utility stuff.
-		"sudo": { "key": Some(array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(SUDO)) },
+		"sudo": { "key": Some(array_bytes::dehexify_array_then_into::<_, AccountId, 20>(SUDO).unwrap()) },
 
 		// XCM stuff.
 		"polkadotXcm": { "safeXcmVersion": Some(SAFE_XCM_VERSION) },

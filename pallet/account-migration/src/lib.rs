@@ -54,6 +54,8 @@ mod benchmarking;
 mod weights;
 pub use weights::WeightInfo;
 
+// crates.io
+use array_bytes::Hexify;
 // darwinia
 use darwinia_deposit::{Deposit, DepositId};
 use dc_primitives::{AccountId as AccountId20, AssetId, Balance, BlockNumber, Nonce};
@@ -542,7 +544,7 @@ pub fn signable_message(spec_name: &[u8], account_id_20: &AccountId20) -> Vec<u8
 		// Ignore the EIP-55 here.
 		//
 		// Must call the `to_lowercase` on front end.
-		array_bytes::bytes2hex("0x", account_id_20.0).as_bytes(),
+		account_id_20.0.hexify_prefixed().as_bytes(),
 		b", an unused address on ",
 		spec_name,
 		b". Sign this message to authorize using the Substrate key associated with the account on ",

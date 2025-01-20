@@ -66,18 +66,21 @@ fn verify_curve_25519_signature_should_work() {
 fn multisig_of_should_work() {
 	let (_, multisig) = multisig_of(
 		// Xavier
-		array_bytes::hex_n_into_unchecked(
+		array_bytes::dehexify_array_then_into(
 			"0xe66972adc51faaf978614e8eb4015e5536e236a05875cf9253dc421ed6c2ec4b",
-		),
+		)
+		.unwrap(),
 		vec![
 			// Alex
-			array_bytes::hex_n_into_unchecked(
+			array_bytes::dehexify_array_then_into(
 				"0x26fe37ba5d35ac650ba37c5cc84525ed135e772063941ae221a1caca192fff49",
-			),
+			)
+			.unwrap(),
 			// Denny
-			array_bytes::hex_n_into_unchecked(
+			array_bytes::dehexify_array_then_into(
 				"0x0a66532a23c418cca12183fee5f6afece770a0bb8725f459d7d1b1b598f91c49",
-			),
+			)
+			.unwrap(),
 		],
 		2,
 	);
@@ -85,9 +88,10 @@ fn multisig_of_should_work() {
 	assert_eq!(
 		multisig,
 		// Sudo
-		array_bytes::hex_n_into_unchecked(
+		array_bytes::dehexify_array_then_into(
 			"0xc778fc2665f3f6ee9623594e5d1fab9dbd557149542c5edacbcc543a82c9d780"
 		)
+		.unwrap()
 	);
 }
 
