@@ -117,5 +117,31 @@ fn migrate() -> frame_support::weights::Weight {
 		None,
 	);
 
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(30, 30)
+	use array_bytes::Dehexify;
+
+	for (who, count) in [
+		("0x43269b2cf781E9a64Df38A2Fd849eEAd690852F0", 1),
+		("0x6dDf9E3168Ff67F1C0416879390D7e6557b87b66", 2),
+		("0x3e25247CfF03F99a7D83b28F207112234feE73a6", 1),
+		("0xB2960E11B253c107f973CD778bBe1520E35E8602", 1),
+		("0xe59261f6D4088BcD69985A3D369Ff14cC54EF1E5", 1),
+		("0x1a469e3E616CBe7A7C40eC6b3E097aaDc2905A0A", 1),
+	] {
+		let Ok(who) = <[u8; 20]>::dehexify(who) else {
+			continue;
+		};
+		let who = AccountId::from(who);
+
+		<frame_system::Account<Runtime>>::mutate(
+			&who,
+			|account: &mut frame_system::AccountInfo<
+				Nonce,
+				pallet_balances::AccountData<Balance>,
+			>| {
+				account.data.reserved = account.data.reserved.saturating_sub(5_000 * UNIT * count);
+			},
+		);
+	}
+
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(30, 40)
 }
