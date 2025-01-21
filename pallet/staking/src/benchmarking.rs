@@ -29,18 +29,6 @@ mod benchmarks {
 	use super::*;
 
 	#[benchmark]
-	fn unstake_all_for() {
-		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
-		let a_cloned = a.clone();
-
-		T::Currency::make_free_balance_be(&account_id(), 1);
-		<Ledgers<T>>::insert(&a, Ledger { ring: 1, deposits: BoundedVec::new() });
-
-		#[extrinsic_call]
-		_(RawOrigin::Signed(a), a_cloned);
-	}
-
-	#[benchmark]
 	fn allocate_ring_staking_reward_of() {
 		let a = frame_benchmarking::whitelisted_caller::<T::AccountId>();
 		let a_cloned = a.clone();

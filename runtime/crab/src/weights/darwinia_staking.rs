@@ -55,20 +55,6 @@ use core::marker::PhantomData;
 /// Weight functions for `darwinia_staking`.
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> darwinia_staking::WeightInfo for WeightInfo<T> {
-	/// Storage: `DarwiniaStaking::Ledgers` (r:1 w:1)
-	/// Proof: `DarwiniaStaking::Ledgers` (`max_values`: None, `max_size`: Some(1078), added: 3553, mode: `MaxEncodedLen`)
-	/// Storage: `System::Account` (r:1 w:1)
-	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
-	fn unstake_all_for() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `406`
-		//  Estimated: `4543`
-		// Minimum execution time: 46_000_000 picoseconds.
-		Weight::from_parts(47_000_000, 0)
-			.saturating_add(Weight::from_parts(0, 4543))
-			.saturating_add(T::DbWeight::get().reads(2))
-			.saturating_add(T::DbWeight::get().writes(2))
-	}
 	/// Storage: `DarwiniaStaking::PendingRewards` (r:1 w:1)
 	/// Proof: `DarwiniaStaking::PendingRewards` (`max_values`: None, `max_size`: None, mode: `Measured`)
 	/// Storage: `DarwiniaStaking::RingStakingContract` (r:1 w:0)

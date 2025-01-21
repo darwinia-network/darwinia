@@ -52,7 +52,6 @@ use core::marker::PhantomData;
 
 /// Weight functions needed for darwinia_staking.
 pub trait WeightInfo {
-	fn unstake_all_for() -> Weight;
 	fn allocate_ring_staking_reward_of() -> Weight;
 	fn set_ring_staking_contract() -> Weight;
 	fn set_kton_staking_contract() -> Weight;
@@ -62,20 +61,6 @@ pub trait WeightInfo {
 /// Weights for darwinia_staking using the Substrate node and recommended hardware.
 pub struct SubstrateWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
-	/// Storage: `DarwiniaStaking::Ledgers` (r:1 w:1)
-	/// Proof: `DarwiniaStaking::Ledgers` (`max_values`: None, `max_size`: Some(1078), added: 3553, mode: `MaxEncodedLen`)
-	/// Storage: `System::Account` (r:1 w:1)
-	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
-	fn unstake_all_for() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `406`
-		//  Estimated: `4543`
-		// Minimum execution time: 51_000 nanoseconds.
-		Weight::from_parts(52_000_000, 0)
-			.saturating_add(Weight::from_parts(4543, 0))
-			.saturating_add(T::DbWeight::get().reads(2_u64))
-			.saturating_add(T::DbWeight::get().writes(2_u64))
-	}
 	/// Storage: `DarwiniaStaking::PendingRewards` (r:1 w:1)
 	/// Proof: `DarwiniaStaking::PendingRewards` (`max_values`: None, `max_size`: None, mode: `Measured`)
 	/// Storage: `DarwiniaStaking::RingStakingContract` (r:1 w:0)
@@ -127,20 +112,6 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 
 // For backwards compatibility and tests
 impl WeightInfo for () {
-	/// Storage: `DarwiniaStaking::Ledgers` (r:1 w:1)
-	/// Proof: `DarwiniaStaking::Ledgers` (`max_values`: None, `max_size`: Some(1078), added: 3553, mode: `MaxEncodedLen`)
-	/// Storage: `System::Account` (r:1 w:1)
-	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(116), added: 2591, mode: `MaxEncodedLen`)
-	fn unstake_all_for() -> Weight {
-		// Proof Size summary in bytes:
-		//  Measured:  `406`
-		//  Estimated: `4543`
-		// Minimum execution time: 51_000 nanoseconds.
-		Weight::from_parts(52_000_000, 0)
-			.saturating_add(Weight::from_parts(4543, 0))
-			.saturating_add(RocksDbWeight::get().reads(2_u64))
-			.saturating_add(RocksDbWeight::get().writes(2_u64))
-	}
 	/// Storage: `DarwiniaStaking::PendingRewards` (r:1 w:1)
 	/// Proof: `DarwiniaStaking::PendingRewards` (`max_values`: None, `max_size`: None, mode: `Measured`)
 	/// Storage: `DarwiniaStaking::RingStakingContract` (r:1 w:0)

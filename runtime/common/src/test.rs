@@ -22,7 +22,6 @@ macro_rules! impl_account_migration_tests {
 		mod account_migration {
 			// darwinia
 			use super::mock::*;
-			use darwinia_account_migration::OldLedger;
 			use darwinia_deposit::Deposit as DepositS;
 			// polkadot-sdk
 			use frame_support::{

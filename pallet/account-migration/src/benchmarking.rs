@@ -82,21 +82,6 @@ mod benchmarks {
 				512
 			],
 		);
-		<Ledgers<T>>::insert(
-			from,
-			OldLedger {
-				staked_ring: 1,
-				staked_deposits: BoundedVec::truncate_from(vec![Default::default(); 512]),
-				unstaking_ring: BoundedVec::truncate_from(vec![
-					(
-						Default::default(),
-						Default::default()
-					);
-					16
-				]),
-				..Default::default()
-			},
-		);
 	}
 
 	#[benchmark]
@@ -111,63 +96,6 @@ mod benchmarks {
 
 		#[extrinsic_call]
 		_(RawOrigin::None, from, to, [0; 64]);
-	}
-
-	fn other_multisig_members<const N: usize, A>(count: u32) -> Vec<A>
-	where
-		A: From<[u8; N]>,
-	{
-		(0..count).map(|i| [i as u8; N].into()).collect()
-	}
-
-	#[benchmark]
-	fn migrate_multisig(x: Linear<0, 99>, y: Linear<0, 99>, z: Linear<0, 99>) {
-		let from = AccountId32::from([0; 32]);
-		// Worst-case scenario:
-		//
-		// 100 size multisig.
-		let other_members = other_multisig_members(x);
-		let (_, multisig) = multisig_of(from.clone(), other_members.clone(), y as _);
-		let to = [0; 20].into();
-		let new_multisig_params = if z == 0 {
-			None
-		} else {
-			Some(MultisigParams {
-				address: [0; 20].into(),
-				members: other_multisig_members::<20, _>(z),
-				threshold: Default::default(),
-			})
-		};
-
-		preset_data::<T>(&multisig);
-
-		#[extrinsic_call]
-		_(RawOrigin::None, from, other_members, y as _, to, [0; 64], new_multisig_params);
-	}
-
-	#[benchmark]
-	fn complete_multisig_migration() {
-		let from = AccountId32::from([0; 32]);
-		// Worst-case scenario:
-		//
-		// 100 size multisig.
-		let other_members = other_multisig_members(99);
-		let (_, multisig) = multisig_of(from.clone(), other_members.clone(), 100);
-		let to = [0; 20].into();
-
-		<Pallet<T>>::migrate_multisig(
-			RawOrigin::None.into(),
-			from.clone(),
-			other_members,
-			100,
-			to,
-			[0; 64],
-			None,
-		)
-		.unwrap();
-
-		#[extrinsic_call]
-		_(RawOrigin::None, multisig, from, [0; 64]);
 	}
 
 	frame_benchmarking::impl_benchmark_test_suite!(
