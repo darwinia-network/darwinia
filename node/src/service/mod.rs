@@ -813,14 +813,18 @@ where
 			block_import: instant_finalize::InstantFinalizeBlockImport::new(client.clone()),
 			proposer_factory,
 			create_inherent_data_providers: move |block, ()| {
+				// crates.io
+				use array_bytes::Dehexify;
+
 				let maybe_current_para_block = client_for_cidp.number(block);
 				let maybe_current_block_head = client_for_cidp.expect_header(block);
 				let client_for_xcm = client_for_cidp.clone();
 				// TODO: hack for now.
 				let additional_key_values = Some(vec![(
-					array_bytes::hex2bytes_unchecked(
+					<Vec<u8>>::dehexify(
 						"1cb6f36e027abb2091cfb5110ab5087f06155b3cd9a8c9e5e9a23fd5dc13a5ed",
-					),
+					)
+					.unwrap(),
 					cumulus_primitives_aura::Slot::from_timestamp(
 						sp_timestamp::Timestamp::current(),
 						slot_duration,

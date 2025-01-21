@@ -54,9 +54,11 @@ mod benchmarking;
 mod weights;
 pub use weights::WeightInfo;
 
+// crates.io
+use array_bytes::Hexify;
 // darwinia
-use darwinia_deposit::{Deposit, DepositId};
-use dc_primitives::{AccountId as AccountId20, AssetId, Balance, BlockNumber, Nonce};
+use darwinia_deposit::Deposit;
+use dc_primitives::{AccountId as AccountId20, AssetId, Balance, Nonce};
 // polkadot-sdk
 use frame_support::{
 	migration,
@@ -70,9 +72,8 @@ use sp_core::{
 	ed25519::{Public as Ep, Signature as Es},
 	sr25519::{Public as Sp, Signature as Ss},
 };
-use sp_io::hashing;
 use sp_runtime::{
-	traits::{IdentityLookup, TrailingZeroInput, Verify},
+	traits::{IdentityLookup, Verify},
 	AccountId32,
 };
 use sp_std::prelude::*;
@@ -89,10 +90,6 @@ pub mod pallet {
 	pub(crate) const E_ACCOUNT_NOT_FOUND: u8 = 1;
 	/// Invalid signature.
 	pub(crate) const E_INVALID_SIGNATURE: u8 = 2;
-	/// Duplicated submission.
-	pub(crate) const E_DUPLICATED_SUBMISSION: u8 = 3;
-	/// The account is not a member of the multisig.
-	pub(crate) const E_NOT_MULTISIG_MEMBER: u8 = 4;
 
 	#[pallet::config]
 	pub trait Config:
@@ -118,18 +115,12 @@ pub mod pallet {
 	pub enum Event {
 		/// An account has been migrated.
 		Migrated { from: AccountId32, to: AccountId20 },
-		/// A new multisig account params was noted/recorded on-chain.
-		NewMultisigParamsNoted { from: AccountId32, to: MultisigParams },
-		/// A multisig account has been migrated.
-		MultisigMigrated { from: AccountId32, detail: MultisigMigrationDetail },
 	}
 
 	#[pallet::error]
 	pub enum Error<T> {
 		/// Exceed maximum deposit count.
 		ExceedMaxDeposits,
-		/// The migration destination was already taken by someone.
-		AccountAlreadyExisted,
 	}
 
 	/// [`frame_system::Account`] data.
@@ -150,46 +141,8 @@ pub mod pallet {
 	#[pallet::unbounded]
 	pub type Deposits<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, Vec<Deposit>>;
 
-	/// Old ledger data.
-	#[pallet::storage]
-	pub type Ledgers<T: Config> = StorageMap<_, Blake2_128Concat, AccountId32, OldLedger>;
-
-	/// Multisig migration caches.
-	#[pallet::storage]
-	#[pallet::unbounded]
-	pub type Multisigs<T: Config> = StorageMap<_, Identity, AccountId32, MultisigMigrationDetail>;
-
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
-	#[pallet::hooks]
-	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-		fn on_idle(_: BlockNumberFor<T>, mut remaining_weight: Weight) -> Weight {
-			const MAX_TASKS: usize = 10;
-
-			#[cfg(test)]
-			let wt = Weight::zero().add_ref_time(1);
-			#[cfg(not(test))]
-			let wt = T::DbWeight::get().writes(1);
-			let mut consumer = <Ledgers<T>>::iter().drain();
-
-			for _ in 0..MAX_TASKS {
-				if let Some(rw) = remaining_weight.checked_sub(&wt) {
-					remaining_weight = rw;
-				} else {
-					break;
-				}
-
-				if consumer.next().is_none() {
-					// There is nothing to do; add the weight back.
-					remaining_weight += wt;
-
-					break;
-				}
-			}
-
-			remaining_weight
-		}
-	}
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		/// Migrate all the account data under the `from` to `to`.
@@ -208,102 +161,6 @@ pub mod pallet {
 
 			Ok(())
 		}
-
-		/// Similar to `migrate` but for multisig accounts.
-		///
-		/// The `_signature` should be provided by `who`.
-		#[pallet::call_index(1)]
-		#[pallet::weight(<T as Config>::WeightInfo::migrate_multisig(
-			others.len() as _,
-			*threshold as _,
-			new_multisig_params.as_ref().map(|p| p.members.len()).unwrap_or_default() as _
-		))]
-		pub fn migrate_multisig(
-			origin: OriginFor<T>,
-			submitter: AccountId32,
-			others: Vec<AccountId32>,
-			threshold: u16,
-			to: AccountId20,
-			_signature: Signature,
-			new_multisig_params: Option<MultisigParams>,
-		) -> DispatchResult {
-			ensure_none(origin)?;
-
-			let (members, from) = multisig_of(submitter.clone(), others, threshold);
-			let mut members = members.into_iter().map(|m| (m, false)).collect::<Vec<_>>();
-
-			// Set the status to `true`.
-			//
-			// Because the `_signature` was already been verified in `pre_dispatch`.
-			members
-				.iter_mut()
-				.find(|(who, _)| who == &submitter)
-				.expect("[pallet::account-migration] `who` must be existed; qed")
-				.1 = true;
-
-			let detail = MultisigMigrationDetail { to, members, threshold };
-
-			if threshold < 2 {
-				Self::migrate_inner(&from, &to)?;
-
-				Self::deposit_event(Event::MultisigMigrated { from: from.clone(), detail });
-			} else {
-				<Multisigs<T>>::insert(&from, detail);
-			}
-
-			if let Some(to) = new_multisig_params {
-				Self::deposit_event(Event::NewMultisigParamsNoted { from, to });
-			}
-
-			Ok(())
-		}
-
-		/// To complete the pending multisig migration.
-		///
-		/// The `_signature` should be provided by `submitter`.
-		#[pallet::call_index(2)]
-		#[pallet::weight(<T as Config>::WeightInfo::complete_multisig_migration().saturating_add(<T as Config>::WeightInfo::migrate()))]
-		pub fn complete_multisig_migration(
-			origin: OriginFor<T>,
-			multisig: AccountId32,
-			submitter: AccountId32,
-			_signature: Signature,
-		) -> DispatchResult {
-			ensure_none(origin)?;
-
-			let from = multisig;
-			let mut detail = <Multisigs<T>>::take(&from)
-				.expect("[pallet::account-migration] already checked in `pre_dispatch`; qed");
-
-			// Kill the storage, if the `to` was created during the migration.
-			//
-			// Require to redo the `migrate_multisig` operation.
-			if <frame_system::Account<T>>::contains_key(detail.to) {
-				Err(<Error<T>>::AccountAlreadyExisted)?;
-			}
-
-			// Set the status to `true`.
-			//
-			// Because the `_signature` was already been verified in `pre_dispatch`.
-			detail
-				.members
-				.iter_mut()
-				.find(|(who, _)| who == &submitter)
-				.expect("[pallet::account-migration] already checked in `pre_dispatch`; qed")
-				.1 = true;
-
-			if detail.members.iter().fold(0, |acc, (_, ok)| if *ok { acc + 1 } else { acc })
-				>= detail.threshold
-			{
-				Self::migrate_inner(&from, &detail.to)?;
-
-				Self::deposit_event(Event::MultisigMigrated { from, detail });
-			} else {
-				<Multisigs<T>>::insert(from, detail);
-			}
-
-			Ok(())
-		}
 	}
 	#[pallet::validate_unsigned]
 	impl<T: Config> ValidateUnsigned for Pallet<T> {
@@ -315,40 +172,6 @@ pub mod pallet {
 					Self::pre_check_existing(from, to)?;
 
 					Self::pre_check_signature(from, to, signature)
-				},
-				Call::migrate_multisig { submitter, others, threshold, to, signature, .. } => {
-					let (_, multisig) =
-						multisig_of(submitter.to_owned(), others.to_owned(), *threshold);
-
-					Self::pre_check_existing(&multisig, to)?;
-					Self::pre_check_duplicative(&multisig)?;
-
-					Self::pre_check_signature(submitter, to, signature)
-				},
-				Call::complete_multisig_migration { multisig, submitter, signature } => {
-					let Some(multisig_info) = <Multisigs<T>>::get(multisig) else {
-						return InvalidTransaction::Custom(E_ACCOUNT_NOT_FOUND).into();
-					};
-					let mut is_member = false;
-
-					for (who, ok) in multisig_info.members.iter() {
-						if who == submitter {
-							// Reject duplicative submission.
-							if *ok {
-								return InvalidTransaction::Custom(E_DUPLICATED_SUBMISSION).into();
-							}
-
-							is_member = true;
-
-							break;
-						}
-					}
-
-					if !is_member {
-						return InvalidTransaction::Custom(E_NOT_MULTISIG_MEMBER).into();
-					}
-
-					Self::pre_check_signature(submitter, &multisig_info.to, signature)
 				},
 				_ => InvalidTransaction::Call.into(),
 			}
@@ -370,14 +193,6 @@ pub mod pallet {
 			}
 
 			Ok(())
-		}
-
-		fn pre_check_duplicative(multisig: &AccountId32) -> Result<(), TransactionValidityError> {
-			if <Multisigs<T>>::contains_key(multisig) {
-				Err(InvalidTransaction::Custom(E_DUPLICATED_SUBMISSION))?
-			} else {
-				Ok(())
-			}
 		}
 
 		fn pre_check_signature(
@@ -507,33 +322,6 @@ pub(crate) enum AssetStatus {
 	Destroying,
 }
 
-#[allow(missing_docs)]
-#[derive(Default, PartialEq, Eq, Encode, Decode, MaxEncodedLen, RuntimeDebug, TypeInfo)]
-pub struct OldLedger {
-	pub staked_ring: Balance,
-	pub staked_kton: Balance,
-	pub staked_deposits: BoundedVec<DepositId, ConstU32<512>>,
-	pub unstaking_ring: BoundedVec<(Balance, BlockNumber), ConstU32<512>>,
-	pub unstaking_kton: BoundedVec<(Balance, BlockNumber), ConstU32<512>>,
-	pub unstaking_deposits: BoundedVec<(DepositId, BlockNumber), ConstU32<512>>,
-}
-
-#[allow(missing_docs)]
-#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct MultisigParams {
-	address: AccountId20,
-	members: Vec<AccountId20>,
-	threshold: u16,
-}
-
-#[allow(missing_docs)]
-#[derive(Clone, PartialEq, Eq, Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct MultisigMigrationDetail {
-	to: AccountId20,
-	members: Vec<(AccountId32, bool)>,
-	threshold: u16,
-}
-
 /// Build a Darwinia account migration message.
 pub fn signable_message(spec_name: &[u8], account_id_20: &AccountId20) -> Vec<u8> {
 	[
@@ -542,7 +330,7 @@ pub fn signable_message(spec_name: &[u8], account_id_20: &AccountId20) -> Vec<u8
 		// Ignore the EIP-55 here.
 		//
 		// Must call the `to_lowercase` on front end.
-		array_bytes::bytes2hex("0x", account_id_20.0).as_bytes(),
+		account_id_20.0.hexify_prefixed().as_bytes(),
 		b", an unused address on ",
 		spec_name,
 		b". Sign this message to authorize using the Substrate key associated with the account on ",
@@ -564,29 +352,4 @@ pub(crate) fn verify_curve_25519_signature(
 			message,
 			&Ep::from(<AccountId32 as AsRef<[u8; 32]>>::as_ref(public_key).to_owned()),
 		)
-}
-
-/// Calculate the multisig account.
-pub(crate) fn multisig_of(
-	who: AccountId32,
-	others: Vec<AccountId32>,
-	threshold: u16,
-) -> (Vec<AccountId32>, AccountId32) {
-	// https://github.com/paritytech/substrate/blob/3bc3742d5c0c5269353d7809d9f8f91104a93273/frame/multisig/src/lib.rs#L525
-	fn multisig_of_inner(members: &[AccountId32], threshold: u16) -> AccountId32 {
-		let entropy = (b"modlpy/utilisuba", members, threshold).using_encoded(hashing::blake2_256);
-
-		Decode::decode(&mut TrailingZeroInput::new(entropy.as_ref())).expect(
-			"[pallet::account-migration] infinite length input; no invalid inputs for type; qed",
-		)
-	}
-
-	let mut members = others;
-
-	members.push(who);
-	members.sort();
-
-	let multisig = multisig_of_inner(&members, threshold);
-
-	(members, multisig)
 }

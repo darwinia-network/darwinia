@@ -119,36 +119,6 @@ fn on_idle_allocate_ring_staking_reward_should_work() {
 }
 
 #[test]
-fn on_idle_unstake_should_work() {
-	ExtBuilder.build().execute_with(|| {
-		// Skip 1 to 3 collators.
-		// Since they have session rewards which make calculation more complex.
-		(4..=515).for_each(|i| {
-			<Ledgers<Runtime>>::insert(
-				AccountId(i),
-				Ledger { ring: i as _, deposits: BoundedVec::new() },
-			)
-		});
-
-		System::reset_events();
-		<Staking as OnIdle<_>>::on_idle(0, Weight::zero().add_ref_time(5));
-		assert_eq!(<Ledgers<Runtime>>::iter().count(), 507);
-
-		System::reset_events();
-		<Staking as OnIdle<_>>::on_idle(0, Weight::MAX);
-		assert_eq!(<Ledgers<Runtime>>::iter().count(), 497);
-
-		while <Ledgers<Runtime>>::iter().count() != 0 {
-			<Staking as OnIdle<_>>::on_idle(0, Weight::MAX);
-		}
-
-		(4..515).for_each(|who| {
-			assert_eq!(Balances::free_balance(AccountId(who)), 100 + who as Balance);
-		});
-	});
-}
-
-#[test]
 fn on_new_session_should_work() {
 	ExtBuilder.inflation_type(0).build().execute_with(|| {
 		new_session();
@@ -245,19 +215,6 @@ fn on_new_session_should_work() {
 			(1..=3).map(|who| { Balances::free_balance(AccountId(who)) }).collect::<Vec<_>>(),
 			vec![20000000000000000000100, 20000000000000000000100, 10000000000000000000100]
 		);
-	});
-}
-
-#[test]
-fn unstake_all_for_should_work() {
-	ExtBuilder.build().execute_with(|| {
-		assert_noop!(
-			Staking::unstake_all_for(RuntimeOrigin::signed(AccountId(1)), AccountId(1)),
-			<Error<Runtime>>::NoRecord
-		);
-
-		<Ledgers<Runtime>>::insert(AccountId(1), Ledger { ring: 1, deposits: BoundedVec::new() });
-		assert_ok!(Staking::unstake_all_for(RuntimeOrigin::signed(AccountId(1)), AccountId(1)));
 	});
 }
 

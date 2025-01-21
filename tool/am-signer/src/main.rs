@@ -5,6 +5,7 @@ use std::{
 	path::PathBuf,
 };
 // crates.io
+use array_bytes::{Dehexify, Hexify};
 use clap::{Parser, ValueEnum};
 use serde::Serialize;
 // polkadot-sdk
@@ -102,7 +103,6 @@ fn main() {
 
 		let output = s
 			.lines()
-			.into_iter()
 			.filter_map(|l| {
 				let l = l.trim();
 
@@ -144,12 +144,12 @@ fn message_of(to: &str, network: &Network) -> Vec<u8> {
 }
 
 fn sign_message(from: &str, scheme: &Scheme, message: &[u8]) -> (String, String) {
-	let from = array_bytes::hex2array(from).expect("invalid private key");
+	let from = <[u8; 32]>::dehexify(from).expect("invalid private key");
 	let from = match scheme {
 		Scheme::sr25519 => Pair::S(Box::new(Sp::from_seed(&from))),
 		Scheme::ed25519 => Pair::E(Box::new(Ep::from_seed(&from))),
 	};
 	let signature = from.sign(message);
 
-	(array_bytes::bytes2hex("0x", from.public_key()), array_bytes::bytes2hex("0x", signature))
+	(from.public_key().hexify_prefixed(), signature.hexify_prefixed())
 }

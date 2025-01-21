@@ -117,17 +117,17 @@ where
 		[
 			// Bind the `Alice` to `Alith` to make `--alice` work for development.
 			(
-				array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
+				array_bytes::dehexify_array_then_into::<_, _, 20>(ALITH).unwrap(),
 				f(get_collator_keys_from_seed("Alice")),
 			),
 		],
 		[
-			array_bytes::hex_n_into_unchecked::<_, _, 20>(ALITH),
-			array_bytes::hex_n_into_unchecked::<_, _, 20>(BALTATHAR),
-			array_bytes::hex_n_into_unchecked::<_, _, 20>(CHARLETH),
-			array_bytes::hex_n_into_unchecked::<_, _, 20>(DOROTHY),
-			array_bytes::hex_n_into_unchecked::<_, _, 20>(ETHAN),
-			array_bytes::hex_n_into_unchecked::<_, _, 20>(FAITH),
+			array_bytes::dehexify_array_then_into::<_, _, 20>(ALITH).unwrap(),
+			array_bytes::dehexify_array_then_into::<_, _, 20>(BALTATHAR).unwrap(),
+			array_bytes::dehexify_array_then_into::<_, _, 20>(CHARLETH).unwrap(),
+			array_bytes::dehexify_array_then_into::<_, _, 20>(DOROTHY).unwrap(),
+			array_bytes::dehexify_array_then_into::<_, _, 20>(ETHAN).unwrap(),
+			array_bytes::dehexify_array_then_into::<_, _, 20>(FAITH).unwrap(),
 		],
 	)
 }
@@ -163,10 +163,8 @@ where
 		// Fetch the latest spec every 14 days.
 		if let Ok(date) = metadata.modified() {
 			if let Ok(elapsed) = date.elapsed() {
-				if elapsed.as_secs() > 60 * 60 * 24 * 14 {
-					if fs::remove_file(p.clone()).is_ok() {
-						download();
-					}
+				if elapsed.as_secs() > 60 * 60 * 24 * 14 && fs::remove_file(p.clone()).is_ok() {
+					download();
 				}
 			}
 		}

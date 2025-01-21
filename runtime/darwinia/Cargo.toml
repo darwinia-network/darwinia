@@ -12,13 +12,11 @@ substrate-wasm-builder = { workspace = true, optional = true }
 
 [dependencies]
 # crates.io
-codec      = { workspace = true }
-log        = { workspace = true }
-scale-info = { workspace = true }
-strum      = { workspace = true, features = ["derive"] }
-# crates.io optional
-# TODO: optional
 array-bytes = { workspace = true }
+codec       = { workspace = true }
+log         = { workspace = true }
+scale-info  = { workspace = true }
+strum       = { workspace = true, features = ["derive"] }
 
 # darwinia
 darwinia-account-migration        = { workspace = true }
@@ -230,10 +228,6 @@ std = [
 ]
 
 runtime-benchmarks = [
-	# crates.io
-	# TODO: optional
-	# "array-bytes",
-
 	# darwinia
 	"darwinia-account-migration/runtime-benchmarks",
 	"darwinia-common-runtime/runtime-benchmarks",

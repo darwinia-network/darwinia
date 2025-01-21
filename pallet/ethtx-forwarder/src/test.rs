@@ -16,14 +16,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+// crates.io
+use array_bytes::Dehexify;
+use ethereum::TransactionSignature;
+use fp_evm::ExecutionInfoV2;
 // darwinia
 use crate::{
 	mock::{self, *},
 	ForwardEthOrigin, ForwardRequest, TxType,
 };
-// crates.io
-use ethereum::TransactionSignature;
-use fp_evm::ExecutionInfoV2;
 // polkadot-sdk
 use frame_support::{assert_err, assert_ok, traits::Currency};
 use sp_core::{H256, U256};
@@ -43,7 +44,7 @@ fn mocked_request() -> ForwardRequest {
 		gas_limit: U256::from(1_000_000),
 		action: ethereum::TransactionAction::Create,
 		value: U256::zero(),
-		input: array_bytes::hex2bytes_unchecked(ERC20_CONTRACT_BYTECODE),
+		input: <Vec<u8>>::dehexify(ERC20_CONTRACT_BYTECODE).unwrap(),
 	}
 }
 

@@ -139,7 +139,7 @@ use dc_types::{Balance, Moment};
 // polkadot-sdk
 use frame_support::{
 	pallet_prelude::*,
-	traits::{Currency, ExistenceRequirement, UnixTime},
+	traits::{Currency, UnixTime},
 	PalletId,
 };
 use frame_system::pallet_prelude::*;
@@ -192,23 +192,15 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Reward allocated to the account.
 		RewardAllocated { who: T::AccountId, amount: Balance },
-		/// Unstake all stakes for the account.
-		UnstakeAllFor { who: T::AccountId },
 	}
 
 	#[pallet::error]
 	pub enum Error<T> {
 		/// Collator count mustn't be zero.
 		ZeroCollatorCount,
-		/// No record for the account.
-		NoRecord,
 		/// No reward to pay for this collator.
 		NoReward,
 	}
-
-	/// All staking ledgers.
-	#[pallet::storage]
-	pub type Ledgers<T: Config> = StorageMap<_, Blake2_128Concat, T::AccountId, Ledger>;
 
 	/// The ideal number of active collators.
 	#[pallet::storage]
@@ -288,26 +280,12 @@ pub mod pallet {
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
 		fn on_idle(_: BlockNumberFor<T>, mut remaining_weight: Weight) -> Weight {
 			Self::idle_allocate_ring_staking_reward(&mut remaining_weight);
-			Self::idle_unstake(&mut remaining_weight);
 
 			remaining_weight
 		}
 	}
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Withdraw all stakes.
-		#[pallet::call_index(0)]
-		#[pallet::weight(<T as Config>::WeightInfo::unstake_all_for())]
-		pub fn unstake_all_for(origin: OriginFor<T>, who: T::AccountId) -> DispatchResult {
-			ensure_signed(origin)?;
-
-			let leger = <Ledgers<T>>::take(&who).ok_or(<Error<T>>::NoRecord)?;
-
-			Self::unstake_all_for_inner(who, leger)?;
-
-			Ok(())
-		}
-
 		/// Allocate the RING staking rewards to the designated RING staking contract of a
 		/// particular collator.
 		#[pallet::call_index(1)]
@@ -471,45 +449,6 @@ pub mod pallet {
 					break;
 				}
 			}
-		}
-
-		fn idle_unstake(remaining_weight: &mut Weight) {
-			const MAX_TASKS: usize = 10;
-
-			#[cfg(test)]
-			let wt = Weight::zero().add_ref_time(1);
-			#[cfg(not(test))]
-			let wt = T::WeightInfo::unstake_all_for();
-			let mut consumer = <Ledgers<T>>::iter().drain();
-
-			for _ in 0..MAX_TASKS {
-				if let Some(rw) = remaining_weight.checked_sub(&wt) {
-					*remaining_weight = rw;
-				} else {
-					break;
-				}
-				if let Some((k, v)) = consumer.next() {
-					let _ = Self::unstake_all_for_inner(k, v);
-				} else {
-					// There is nothing to do; add the weight back.
-					*remaining_weight += wt;
-
-					break;
-				}
-			}
-		}
-
-		fn unstake_all_for_inner(who: T::AccountId, ledger: Ledger) -> DispatchResult {
-			T::Currency::transfer(
-				&account_id(),
-				&who,
-				ledger.ring,
-				ExistenceRequirement::AllowDeath,
-			)?;
-
-			Self::deposit_event(Event::UnstakeAllFor { who });
-
-			Ok(())
 		}
 	}
 	impl<T> pallet_authorship::EventHandler<T::AccountId, BlockNumberFor<T>> for Pallet<T>

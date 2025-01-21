@@ -17,11 +17,11 @@ edition    = "2021"
 homepage   = "https://darwinia.network"
 license    = "GPL-3.0"
 repository = "https://github.com/darwinia-network/darwinia"
-version    = "6.9.0"
+version    = "6.9.1"
 
 [workspace.dependencies]
 # crates.io
-array-bytes  = { version = "7.1" }
+array-bytes  = { version = "9.1" }
 codec        = { package = "parity-scale-codec", version = "3.6", default-features = false }
 ethabi       = { version = "18.0", default-features = false }
 ethereum     = { version = "0.15", default-features = false, features = ["with-codec"] }

@@ -25,6 +25,7 @@ use std::{
 	time::{SystemTime, UNIX_EPOCH},
 };
 // crates.io
+use array_bytes::Dehexify;
 #[cfg(feature = "dev")]
 use serde_json::Value;
 // darwinia
@@ -108,7 +109,7 @@ pub fn development_config() -> ChainSpec {
 	let genesis_config_patch = if let Value::Object(mut m) = genesis_config_patch {
 		m.insert(
 			"sudo".into(),
-			serde_json::json!({ "key": Some(array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(ALITH)) }),
+			serde_json::json!({ "key": Some(array_bytes::dehexify_array_then_into::<_, AccountId, 20>(ALITH).unwrap()) }),
 		);
 
 		Value::Object(m)
@@ -132,57 +133,67 @@ pub fn development_config() -> ChainSpec {
 pub fn genesis_config() -> ChainSpec {
 	let collators = [
 		(
-			array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(
+			array_bytes::dehexify_array_then_into::<_, AccountId, 20>(
 				"0x196f03b77a1acd0db080006b04d2f3a991ebbe68",
-			),
+			)
+			.unwrap(),
 			session_keys(
-				array_bytes::hex2array_unchecked(
+				<[u8; 32]>::dehexify(
 					"0xa05255010ee986b9684a444d10a74aa0ecbe781f5002e871665add894752cc7e",
 				)
+				.unwrap()
 				.unchecked_into(),
 			),
 		),
 		(
-			array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(
+			array_bytes::dehexify_array_then_into::<_, AccountId, 20>(
 				"0x7aE2a0914db8bFBdad538b0eAc3Fa473A0e07843",
-			),
+			)
+			.unwrap(),
 			session_keys(
-				array_bytes::hex2array_unchecked(
+				<[u8; 32]>::dehexify(
 					"0xdaf5c4506b82f617245150216a73c0eb4f2603848c02413db66f991846777845",
 				)
+				.unwrap()
 				.unchecked_into(),
 			),
 		),
 		(
-			array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(
+			array_bytes::dehexify_array_then_into::<_, AccountId, 20>(
 				"0x9F33a4809aA708d7a399fedBa514e0A0d15EfA85",
-			),
+			)
+			.unwrap(),
 			session_keys(
-				array_bytes::hex2array_unchecked(
+				<[u8; 32]>::dehexify(
 					"0xdcff1219121687391353b17e798b10e87f6e578b2a01e032375f2f14a0712b57",
 				)
+				.unwrap()
 				.unchecked_into(),
 			),
 		),
 		(
-			array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(
+			array_bytes::dehexify_array_then_into::<_, AccountId, 20>(
 				"0x0a1287977578F888bdc1c7627781AF1cc000e6ab",
-			),
+			)
+			.unwrap(),
 			session_keys(
-				array_bytes::hex2array_unchecked(
+				<[u8; 32]>::dehexify(
 					"0x28a8af71db9703e6b8960d1dcb742deca13c574f81f781be5dbde84ec8d66d45",
 				)
+				.unwrap()
 				.unchecked_into(),
 			),
 		),
 		(
-			array_bytes::hex_n_into_unchecked::<_, AccountId, 20>(
+			array_bytes::dehexify_array_then_into::<_, AccountId, 20>(
 				"0xEB7e82A67CDFA3E742e0f3315Fd4EEd7B05730CC",
-			),
+			)
+			.unwrap(),
 			session_keys(
-				array_bytes::hex2array_unchecked(
+				<[u8; 32]>::dehexify(
 					"0xfee21e4e4865380734882253d27612da0e4413c93e5c817e38b8c5e034de7270",
 				)
+				.unwrap()
 				.unchecked_into(),
 			),
 		),
