@@ -21,6 +21,7 @@ on:
       - "**.ts"
       - "**.yml"
       - "**.sol"
+  merge_group:
 
 env:
   CACHE_VERSION: 1
