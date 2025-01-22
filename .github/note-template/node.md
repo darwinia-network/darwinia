@@ -1,8 +1,5 @@
 
 ## Resources
-### Upgrade Priority HIGH :red_circle:
-This node release introduces updates to host functions. To ensure compatibility, the node client must be upgraded to this version prior to the next runtime release.
-
 ### Pre-built Binary
 |  OS   |  Arch  |                                                              Download                                                               |
 | :---: | :----: | :---------------------------------------------------------------------------------------------------------------------------------: |
