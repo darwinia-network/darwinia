@@ -36,6 +36,11 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
 		log::info!("post");
 
+		assert!(Balances::locks(AccountId::from(
+			<[u8; 20]>::dehexify("0x52f6cbe5f29094d235df65e31b67977a235e6380").unwrap(),
+		))
+		.is_empty());
+
 		Ok(())
 	}
 
@@ -121,7 +126,7 @@ fn migrate() -> frame_support::weights::Weight {
 	use frame_support::traits::ReservableCurrency;
 
 	for (who, count) in [
-		("0x43269b2cf781E9a64Df38A2Fd849eEAd690852F0", 1),
+		("0x43269b2cf78´1E9a64Df38A2Fd849eEAd690852F0", 1),
 		("0x6dDf9E3168Ff67F1C0416879390D7e6557b87b66", 2),
 		("0x3e25247CfF03F99a7D83b28F207112234feE73a6", 1),
 		("0xB2960E11B253c107f973CD778bBe1520E35E8602", 1),
@@ -136,5 +141,13 @@ fn migrate() -> frame_support::weights::Weight {
 		Balances::unreserve(&who, 5_000 * UNIT * count);
 	}
 
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(30, 40)
+	use frame_support::traits::LockableCurrency;
+
+	if let Ok(who) = <[u8; 20]>::dehexify("0x52f6cbe5f29094d235df65e31b67977a235e6380") {
+		let who = AccountId::from(who);
+
+		Balances::remove_lock(*b"democrac", &who);
+	}
+
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(40, 50)
 }
