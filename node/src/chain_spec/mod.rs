@@ -24,22 +24,6 @@ pub mod darwinia;
 #[cfg(feature = "crab-runtime")]
 pub mod crab;
 
-#[cfg(feature = "koi-runtime")]
-pub mod koi;
-
-#[cfg(feature = "koi-runtime")]
-mod testnet_keys {
-	pub const C1: &str = "0x0eef9fabb6eb6fed2ab24a842931f8950426070a";
-	pub const C1_AURA: &str = "0xeed007f04d568b2d3bf329945a48c21a8ed030c81ca1dce61ad41c916599f405";
-	pub const C2: &str = "0xa858cde8f6cf178786578a3b0becf5c27d18300c";
-	pub const C2_AURA: &str = "0x28273ae24cc6048c515e6bcaefe98cbfaa50c69290d70cf8eca1de3329015c2f";
-	pub const C3: &str = "0x986b41d07776aa48f6d7a80caad49485f9a71714";
-	pub const C3_AURA: &str = "0xe25d860707bd1b88b9851cf40df3af3368cd57e5e82824cabac9c75fe537600f";
-	pub const SUDO: &str = "0x2748def2f9c3cfbbb963002935bc6d2e1c36ce2e";
-}
-#[cfg(feature = "koi-runtime")]
-use testnet_keys::*;
-
 // std
 use std::{env, fs, thread};
 // crates.io

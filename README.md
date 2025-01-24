@@ -40,17 +40,8 @@
 
 ## Release
 
-### Mainnet
-
 [![Release](https://img.shields.io/github/v/release/darwinia-network/darwinia)](https://github.com/darwinia-network/darwinia/releases)
 
-This contains the latest release of `Darwinia2` and `Crab2`.
-
-### Testnet
-
-[![Release](https://img.shields.io/github/v/release/darwinia-network/darwinia?include_prereleases)](https://github.com/darwinia-network/darwinia/releases)
-
-This contains the latest release of `Koi`.
 
 ### Additional
 

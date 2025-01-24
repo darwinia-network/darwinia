@@ -110,7 +110,7 @@ jobs:
     if: github.event_name == 'push' || !github.event.pull_request.draft
     strategy:
       matrix:
-        runtime: [runtime/darwinia, runtime/crab, runtime/koi]
+        runtime: [runtime/darwinia, runtime/crab]
     runs-on: ubuntu-latest
     steps:
       - name: Fetch latest code
@@ -131,15 +131,11 @@ jobs:
           [
             {
               chain: darwinia-dev,
-              compare-with: "https://darwinia-rpc.darwiniacommunitydao.xyz",
+              compare-with: "https://rpc.darwinia.network",
             },
             {
               chain: crab-dev,
-              compare-with: "https://crab-rpc.darwiniacommunitydao.xyz",
-            },
-            {
-              chain: koi-dev,
-              compare-with: "https://koi-rpc.darwinia.network",
+              compare-with: "https://crab-rpc.darwinia.network",
             },
           ]
     needs: [basic-checks]
@@ -167,7 +163,7 @@ jobs:
           chmod u+x darwinia
           sudo mv darwinia /usr/bin
       - name: Launch darwinia
-        run: darwinia --chain koi-dev --tmp --alice --unsafe-force-node-key-generation --tracing-api debug,trace --frontier-backend-type sql &
+        run: darwinia --chain darwinia-dev --tmp --alice --unsafe-force-node-key-generation --tracing-api debug,trace --frontier-backend-type sql &
       - name: Install Node 19
         uses: actions/setup-node@v4
         with:

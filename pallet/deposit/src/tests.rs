@@ -103,7 +103,7 @@ fn on_idle_should_work() {
 		(0..54).for_each(|_| {
 			<Deposit as OnIdle<_>>::on_idle(0, Weight::MAX);
 		});
-		assert_eq!(events().into_iter().count(), 54);
+		assert_eq!(events().len(), 54);
 		assert!(<Deposits<Runtime>>::get(1).is_none());
 		assert!(<Deposits<Runtime>>::get(2).is_none());
 		assert!(<Deposits<Runtime>>::get(3).is_none());
@@ -120,7 +120,7 @@ fn on_idle_should_work() {
 		(0..52).for_each(|_| {
 			<Deposit as OnIdle<_>>::on_idle(0, Weight::MAX);
 		});
-		assert_eq!(events().into_iter().count(), 0);
+		assert_eq!(events().len(), 0);
 		assert!(<Deposits<Runtime>>::get(1).is_none());
 	});
 	new_test_ext().execute_with(|| {

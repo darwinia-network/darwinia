@@ -46,14 +46,12 @@ enum Scheme {
 enum Network {
 	Darwinia,
 	Crab,
-	Koi,
 }
 impl Network {
 	fn as_bytes(&self) -> &'static [u8] {
 		match self {
 			Self::Darwinia => b"Darwinia2",
 			Self::Crab => b"Crab2",
-			Self::Koi => b"Koi",
 		}
 	}
 }

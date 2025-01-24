@@ -2541,7 +2541,6 @@ dependencies = [
  "frame-benchmarking-cli",
  "futures 0.3.31",
  "jsonrpsee",
- "koi-runtime",
  "log",
  "moonbeam-primitives-ext",
  "moonbeam-rpc-debug",
@@ -5759,105 +5758,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c33070833c9ee02266356de0c43f723152bd38bd96ddf52c82b3af10c9138b28"
 
 [[package]]
-name = "koi-runtime"
-version = "6.9.1"
-dependencies = [
- "array-bytes 9.1.2",
- "cumulus-pallet-aura-ext",
- "cumulus-pallet-parachain-system",
- "cumulus-pallet-session-benchmarking",
- "cumulus-pallet-xcm",
- "cumulus-pallet-xcmp-queue",
- "cumulus-primitives-aura",
- "cumulus-primitives-core",
- "cumulus-primitives-storage-weight-reclaim",
- "cumulus-primitives-utility",
- "darwinia-asset-limit",
- "darwinia-common-runtime",
- "darwinia-deposit",
- "darwinia-ethtx-forwarder",
- "darwinia-precompile-assets",
- "darwinia-precompile-state-storage",
- "darwinia-staking",
- "dc-primitives",
- "fp-evm",
- "fp-rpc",
- "fp-self-contained",
- "frame-benchmarking",
- "frame-executive",
- "frame-support",
- "frame-system",
- "frame-system-benchmarking",
- "frame-system-rpc-runtime-api",
- "frame-try-runtime",
- "log",
- "moonbeam-evm-tracer",
- "moonbeam-rpc-primitives-debug",
- "pallet-asset-manager",
- "pallet-assets",
- "pallet-aura",
- "pallet-authorship",
- "pallet-balances",
- "pallet-collective",
- "pallet-conviction-voting",
- "pallet-ethereum",
- "pallet-evm",
- "pallet-evm-precompile-blake2",
- "pallet-evm-precompile-bls12381",
- "pallet-evm-precompile-bn128",
- "pallet-evm-precompile-conviction-voting",
- "pallet-evm-precompile-dispatch",
- "pallet-evm-precompile-modexp",
- "pallet-evm-precompile-simple",
- "pallet-message-queue",
- "pallet-preimage",
- "pallet-proxy",
- "pallet-referenda",
- "pallet-scheduler",
- "pallet-session",
- "pallet-sudo",
- "pallet-timestamp",
- "pallet-transaction-payment",
- "pallet-transaction-payment-rpc-runtime-api",
- "pallet-treasury",
- "pallet-tx-pause",
- "pallet-utility",
- "pallet-whitelist",
- "pallet-xcm",
- "pallet-xcm-weight-trader",
- "parity-scale-codec",
- "polkadot-parachain-primitives",
- "polkadot-primitives",
- "polkadot-runtime-common",
- "precompile-utils",
- "scale-info",
- "sp-api",
- "sp-block-builder",
- "sp-consensus-aura",
- "sp-core",
- "sp-debug-derive",
- "sp-genesis-builder",
- "sp-inherents",
- "sp-io",
- "sp-keyring",
- "sp-offchain",
- "sp-runtime",
- "sp-session",
- "sp-staking",
- "sp-std",
- "sp-transaction-pool",
- "sp-version",
- "staging-parachain-info",
- "staging-xcm",
- "staging-xcm-builder",
- "staging-xcm-executor",
- "strum 0.26.3",
- "substrate-wasm-builder",
- "xcm-primitives",
- "xcm-runtime-apis",
-]
-
-[[package]]
 name = "kvdb"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8310,18 +8210,6 @@ name = "pallet-evm-precompile-blake2"
 version = "2.0.0-dev"
 source = "git+https://github.com/polkadot-evm/frontier?branch=stable2407#2e219e17a526125da003e64ef22ec037917083fa"
 dependencies = [
- "fp-evm",
-]
-
-[[package]]
-name = "pallet-evm-precompile-bls12381"
-version = "1.0.0-dev"
-source = "git+https://github.com/polkadot-evm/frontier?branch=stable2407#2e219e17a526125da003e64ef22ec037917083fa"
-dependencies = [
- "ark-bls12-381",
- "ark-ec",
- "ark-ff",
- "ark-std",
  "fp-evm",
 ]
 

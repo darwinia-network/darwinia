@@ -97,14 +97,14 @@ cargo make bn
 ## Without cargo-make.
 cargo build --locked -p darwinia --features all-runtime
 
-# Build the debug node with Koi runtime. (for Darwinia and Crab, replace the `koi` with the lowercase chain name)
+# Build the debug node with Darwinia runtime. (for Darwinia and Crab, replace the `darwinia` with the lowercase chain name)
 ## With cargo-make.
 ### Long version.
-cargo make build-koi
+cargo make build-darwinia
 ### Short version.
-cargo make bk
+cargo make bd
 ## Without cargo-make.
-cargo build --locked -p darwinia --features koi-runtime
+cargo build --locked -p darwinia --features darwinia-runtime
 
 # Build the release node with all runtime.
 ## With cargo-make.
@@ -115,14 +115,14 @@ cargo make brn
 ## Without cargo-make.
 cargo build --locked -p darwinia --features all-runtime -r
 
-# Build the release node with Koi runtime. (for Darwinia and Crab, replace the `koi` with the lowercase chain name)
+# Build the release node with Darwinia runtime. (for Darwinia and Crab, replace the `darwinia` with the lowercase chain name)
 ## With cargo-make.
 ### Long version.
-cargo make build-release-koi
+cargo make build-release-darwinia
 ### Short version.
-cargo make brk
+cargo make brd
 ## Without cargo-make.
-cargo build --locked -p darwinia --features koi-runtime -r
+cargo build --locked -p darwinia --features darwinia-runtime -r
 
 # Build the benchmark node with all runtime.
 ## With cargo-make.
@@ -133,41 +133,41 @@ cargo make bb
 ## Without cargo-make.
 cargo build --locked -p darwinia --features all-runtime --features runtime-benchmarks -r
 
-# Build the benchmark node with Koi runtime. (for Darwinia and Crab, replace the `koi` with the lowercase chain name)
+# Build the benchmark node with Darwinia runtime. (for Darwinia and Crab, replace the `darwinia` with the lowercase chain name)
 ## With cargo-make.
 ### Long version.
-cargo make build-benchmark-koi
+cargo make build-benchmark-darwinia
 ### Short version.
-cargo make bbk
+cargo make bbd
 ## Without cargo-make.
-cargo build --locked -p darwinia --features koi-runtime --features runtime-benchmarks -r
+cargo build --locked -p darwinia --features darwinia-runtime --features runtime-benchmarks -r
 
-# Run dev Koi node. (for Darwinia and Crab, replace the `koi` with the lowercase chain name)
+# Run dev Darwinia node. (for Darwinia and Crab, replace the `darwinia` with the lowercase chain name)
 ## With cargo-make.
 ### Long version.
-cargo make run-dev-koi
+cargo make run-dev-darwinia
 ### Short version.
-cargo make rdk
+cargo make rdd
 ## Without cargo-make.
-cargo run --locked -p darwinia --features koi-runtime -- --unsafe-rpc-external --tmp --rpc-cors all --rpc-methods unsafe --alice --unsafe-force-node-key-generation --chain koi-dev
+cargo run --locked -p darwinia --features darwinia-runtime -- --unsafe-rpc-external --tmp --rpc-cors all --rpc-methods unsafe --alice --unsafe-force-node-key-generation --chain darwinia-dev
 
-# Run release dev Koi node. (for Darwinia and Crab, replace the `koi` with the lowercase chain name)
+# Run release dev Darwinia node. (for Darwinia and Crab, replace the `darwinia` with the lowercase chain name)
 ## With cargo-make.
 ### Long version.
-cargo make run-release-dev-koi
+cargo make run-release-dev-darwinia
 ### Short version.
-cargo make rrdk
+cargo make rrdd
 ## Without cargo-make.
-cargo run --locked -p darwinia --features koi-runtime -r -- --unsafe-rpc-external --tmp --rpc-cors all --rpc-methods unsafe --alice --unsafe-force-node-key-generation --chain koi-dev
+cargo run --locked -p darwinia --features darwinia-runtime -r -- --unsafe-rpc-external --tmp --rpc-cors all --rpc-methods unsafe --alice --unsafe-force-node-key-generation --chain darwinia-dev
 
-# Run benchmark Koi node. (for Darwinia and Crab, replace the `koi` with the lowercase chain name)
+# Run benchmark Darwinia node. (for Darwinia and Crab, replace the `darwinia` with the lowercase chain name)
 ## With cargo-make.
 ### Long version.
-cargo make run-benchmark-koi
+cargo make run-benchmark-darwinia
 ### Short version.
-cargo make rbk
+cargo make rbd
 ## Without cargo-make.
-cargo run --locked -p darwinia --features koi-runtime --features runtime-benchmarks -r -- benchmark pallet --header .maintain/license-header --heap-pages 4096 --chain koi-dev --output runtime/koi/src/weights --pallets \* --extrinsic \* --steps 50 --repeat 20
+cargo run --locked -p darwinia --features darwinia-runtime --features runtime-benchmarks -r -- benchmark pallet --header .maintain/license-header --heap-pages 4096 --chain darwinia-dev --output runtime/darwinia/src/weights --pallets \* --extrinsic \* --steps 50 --repeat 20
 ```
 
 ## Public RPC Endpoint
@@ -182,10 +182,6 @@ cargo run --locked -p darwinia --features koi-runtime --features runtime-benchma
 - `://crab-rpc.darwinia.network` (`https` or `wss`)
 - `://darwiniacrab-rpc.dwellir.com` (`https` or `wss`)
 
-### Koi
-
-- `://koi-rpc.darwinia.network` (`https` or `wss`)
-
 ### Pangoro
 
 - https://fraa-flashbox-2871-rpc.a.stagenet.tanssi.network
@@ -194,7 +190,6 @@ cargo run --locked -p darwinia --features koi-runtime --features runtime-benchma
 
 ### Chain ID
 
-- [Koi - `701`](https://chainlist.org/chain/701)
 - [Crab - `44`](https://chainlist.org/chain/44)
 - [Darwinia - `46`](https://chainlist.org/chain/46)
 
@@ -202,7 +197,6 @@ cargo run --locked -p darwinia --features koi-runtime --features runtime-benchma
 
 - Darwinia: `ws://c1.darwinia2.darwinia.network:9944`
 - Crab: `ws://c1.crab2.darwinia.network:9944`
-- Koi: `ws://g3.testnets.darwinia.network:9942`
 
 ### Devnet Built-in Accounts
 
