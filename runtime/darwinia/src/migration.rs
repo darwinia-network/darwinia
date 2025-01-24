@@ -126,7 +126,7 @@ fn migrate() -> frame_support::weights::Weight {
 	use frame_support::traits::ReservableCurrency;
 
 	for (who, count) in [
-		("0x43269b2cf78´1E9a64Df38A2Fd849eEAd690852F0", 1),
+		("0x43269b2cf781E9a64Df38A2Fd849eEAd690852F0", 1),
 		("0x6dDf9E3168Ff67F1C0416879390D7e6557b87b66", 2),
 		("0x3e25247CfF03F99a7D83b28F207112234feE73a6", 1),
 		("0xB2960E11B253c107f973CD778bBe1520E35E8602", 1),
