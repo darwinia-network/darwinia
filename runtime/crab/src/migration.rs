@@ -50,13 +50,13 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	use array_bytes::Hexify;
+	use array_bytes::Dehexify;
 	use frame_support::traits::LockableCurrency;
 
 	if let Ok(who) = <[u8; 20]>::dehexify("0x3d6a81177e17d5dbbd36f23ea5328acdf3471209") {
 		let who = AccountId::from(who);
 
-		Balances::remove_lock(*b"vesting", &who);
+		Balances::remove_lock(*b"vesting ", &who);
 	}
 
 	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(5, 10)
