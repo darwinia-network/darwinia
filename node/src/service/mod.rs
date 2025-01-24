@@ -26,8 +26,6 @@ mod instant_finalize;
 pub use crab_runtime::RuntimeApi as CrabRuntimeApi;
 #[cfg(feature = "darwinia-runtime")]
 pub use darwinia_runtime::RuntimeApi as DarwiniaRuntimeApi;
-#[cfg(feature = "koi-runtime")]
-pub use koi_runtime::RuntimeApi as KoiRuntimeApi;
 
 // std
 use std::{
@@ -107,11 +105,6 @@ pub trait IdentifyVariant {
 	/// Returns if this is a configuration for the `Darwinia` network.
 	fn is_darwinia(&self) -> bool {
 		self.id().starts_with("darwinia")
-	}
-
-	/// Returns if this is a configuration for the `Koi` network.
-	fn is_koi(&self) -> bool {
-		self.id().starts_with("darwinia-koi")
 	}
 
 	/// Returns true if this configuration is for a development network.

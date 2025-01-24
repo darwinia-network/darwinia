@@ -342,10 +342,12 @@ mod runtime {
 	pub type MessageQueue = pallet_message_queue;
 	#[runtime::pallet_index(45)]
 	pub type AssetManager = pallet_asset_manager;
-	#[runtime::pallet_index(46)]
-	pub type XTokens = orml_xtokens;
+	// #[runtime::pallet_index(46)]
+	// pub type XTokens = orml_xtokens;
 	#[runtime::pallet_index(47)]
 	pub type AssetLimit = darwinia_asset_limit;
+	#[runtime::pallet_index(53)]
+	pub type XcmWeightTrader = pallet_xcm_weight_trader;
 
 	// EVM stuff.
 	#[runtime::pallet_index(36)]
