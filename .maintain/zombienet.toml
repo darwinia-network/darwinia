@@ -14,7 +14,7 @@ name      = "bob"
 validator = true
 
 [[parachains]]
-chain           = "koi-genesis"
+chain           = "darwinia-genesis"
 force_decorator = "generic-evm"
 id              = 2105
 [[parachains.collators]]

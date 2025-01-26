@@ -1,9 +1,9 @@
 [config]
 default_to_workspace = false
 skip_core_tasks      = true
+skip_crate_env_info  = true
 skip_git_env_info    = true
 skip_rust_env_info   = true
-skip_crate_env_info  = true
 
 [env]
 CHAIN             = "all"
@@ -12,14 +12,14 @@ NODE_COMPILE_ARGS = "--locked -p darwinia --features"
 # Checks.
 
 [tasks.fmt]
-toolchain = "nightly"
-command   = "cargo"
 args      = ["fmt"]
+command   = "cargo"
+toolchain = "nightly"
 
 [tasks.clippy]
-env     = { "SKIP_WASM_BUILD" = "1" }
+args    = ["--all-features", "clippy"]
 command = "cargo"
-args    = ["clippy", "--all-features"]
+env     = { "SKIP_WASM_BUILD" = "1" }
 
 [tasks.c]
 alias = "clippy"
@@ -27,34 +27,27 @@ alias = "clippy"
 # Build nodes.
 
 [tasks.build-node]
-command = "cargo"
-args    = [
-	"build",
-	"@@split(NODE_COMPILE_ARGS, )",
+args = [
 	"${CHAIN}-runtime",
 	"@@split(EXTRA_ARGS, )",
+	"@@split(NODE_COMPILE_ARGS, )",
+	"build",
 ]
+command = "cargo"
 
 [tasks.bn]
 alias = "build-node"
 
-[tasks.build-koi]
-extend = "build-node"
-env    = { "CHAIN" = "koi" }
-
-[tasks.bk]
-alias = "build-koi"
-
 [tasks.build-crab]
-extend = "build-node"
 env    = { "CHAIN" = "crab" }
+extend = "build-node"
 
 [tasks.bc]
 alias = "build-crab"
 
 [tasks.build-darwinia]
-extend = "build-node"
 env    = { "CHAIN" = "darwinia" }
+extend = "build-node"
 
 [tasks.bd]
 alias = "build-darwinia"
@@ -62,29 +55,22 @@ alias = "build-darwinia"
 # Build release nodes.
 
 [tasks.build-release-node]
-extend = "build-node"
 env    = { "EXTRA_ARGS" = "-r" }
+extend = "build-node"
 
 [tasks.brn]
 alias = "build-release-node"
 
-[tasks.build-release-koi]
-extend = "build-node"
-env    = { "CHAIN" = "koi", EXTRA_ARGS = "-r" }
-
-[tasks.brk]
-alias = "build-release-koi"
-
 [tasks.build-release-crab]
-extend = "build-node"
 env    = { "CHAIN" = "crab", EXTRA_ARGS = "-r" }
+extend = "build-node"
 
 [tasks.brc]
 alias = "build-release-crab"
 
 [tasks.build-release-darwinia]
-extend = "build-node"
 env    = { "CHAIN" = "darwinia", EXTRA_ARGS = "-r" }
+extend = "build-node"
 
 [tasks.brd]
 alias = "build-release-darwinia"
@@ -92,29 +78,22 @@ alias = "build-release-darwinia"
 # Build benchmark nodes.
 
 [tasks.build-benchmark]
-extend = "build-node"
 env    = { "EXTRA_ARGS" = "--features runtime-benchmarks -r" }
+extend = "build-node"
 
 [tasks.bb]
 alias = "build-benchmark"
 
-[tasks.build-benchmark-koi]
-extend = "build-node"
-env    = { "CHAIN" = "koi", "EXTRA_ARGS" = "--features runtime-benchmarks -r" }
-
-[tasks.bbk]
-alias = "build-benchmark-koi"
-
 [tasks.build-benchmark-crab]
-extend = "build-node"
 env    = { "CHAIN" = "crab", "EXTRA_ARGS" = "--features runtime-benchmarks -r" }
+extend = "build-node"
 
 [tasks.bbc]
 alias = "build-benchmark-crab"
 
 [tasks.build-benchmark-darwinia]
-extend = "build-node"
 env    = { "CHAIN" = "darwinia", "EXTRA_ARGS" = "--features runtime-benchmarks -r" }
+extend = "build-node"
 
 [tasks.bbd]
 alias = "build-benchmark-darwinia"
@@ -123,42 +102,36 @@ alias = "build-benchmark-darwinia"
 
 # This can not be used directly, as it requires a chain to be specified.
 [tasks.run-dev]
-command = "cargo"
-args    = [
-	"run",
-	"@@split(NODE_COMPILE_ARGS, )",
+args = [
+	"${CHAIN}-dev",
 	"${CHAIN}-runtime",
-	"@@split(EXTRA_ARGS, )",
 	"--",
-	"--unsafe-rpc-external",
-	"--tmp",
-	"--rpc-cors",
-	"all",
-	"--rpc-methods",
-	"unsafe",
 	"--alice",
 	"--unsafe-force-node-key-generation",
 	"--chain",
-	"${CHAIN}-dev"
+	"--collator",
+	"--rpc-cors",
+	"--rpc-methods",
+	"--tmp",
+	"--unsafe-rpc-external",
+	"@@split(EXTRA_ARGS, )",
+	"@@split(NODE_COMPILE_ARGS, )",
+	"all",
+	"run",
+	"unsafe",
 ]
-
-[tasks.run-dev-koi]
-extend = "run-dev"
-env    = { "CHAIN" = "koi" }
-
-[tasks.rdk]
-alias = "run-dev-koi"
+command = "cargo"
 
 [tasks.run-dev-crab]
-extend = "run-dev"
 env    = { "CHAIN" = "crab" }
+extend = "run-dev"
 
 [tasks.rdc]
 alias = "run-dev-crab"
 
 [tasks.run-dev-darwinia]
-extend = "run-dev"
 env    = { "CHAIN" = "darwinia" }
+extend = "run-dev"
 
 [tasks.rdd]
 alias = "run-dev-darwinia"
@@ -167,26 +140,19 @@ alias = "run-dev-darwinia"
 
 # This can not be used directly, as it requires a chain to be specified.
 [tasks.run-release]
-extend = "run-dev"
 env    = { "EXTRA_ARGS" = "-r" }
-
-[tasks.run-release-dev-koi]
 extend = "run-dev"
-env    = { "CHAIN" = "koi", "EXTRA_ARGS" = "-r" }
-
-[tasks.rrdk]
-alias = "run-release-dev-koi"
 
 [tasks.run-release-dev-crab]
-extend = "run-dev"
 env    = { "CHAIN" = "crab", "EXTRA_ARGS" = "-r" }
+extend = "run-dev"
 
 [tasks.rrdc]
 alias = "run-release-dev-crab"
 
 [tasks.run-release-dev-darwinia]
-extend = "run-dev"
 env    = { "CHAIN" = "darwinia", "EXTRA_ARGS" = "-r" }
+extend = "run-dev"
 
 [tasks.rrdd]
 alias = "run-release-dev-darwinia"
@@ -195,52 +161,45 @@ alias = "run-release-dev-darwinia"
 
 # This can not be used directly, as it requires a chain to be specified.
 [tasks.run-benchmark]
-command = "cargo"
-args    = [
-	"run",
-	"@@split(NODE_COMPILE_ARGS, )",
+args = [
+	"${CHAIN}-dev",
 	"${CHAIN}-runtime",
-	"--features",
-	"runtime-benchmarks",
-	"-r",
+	"*",
+	"*",
 	"--",
+	"--chain",
+	"--extrinsic",
+	"--features",
+	"--header",
+	"--heap-pages",
+	"--output",
+	"--pallet",
+	"--repeat",
+	"--steps",
+	"-r",
+	".maintain/license-header",
+	"20",
+	"4096",
+	"50",
+	"@@split(NODE_COMPILE_ARGS, )",
 	"benchmark",
 	"pallet",
-	"--header",
-	".maintain/license-header",
-	"--heap-pages",
-	"4096",
-	"--chain",
-	"${CHAIN}-dev",
-	"--output",
+	"run",
+	"runtime-benchmarks",
 	"runtime/${CHAIN}/src/weights",
-	"--pallet",
-	"*",
-	"--extrinsic",
-	"*",
-	"--steps",
-	"50",
-	"--repeat",
-	"20"
 ]
-
-[tasks.run-benchmark-koi]
-extend = "run-benchmark"
-env    = { "CHAIN" = "koi" }
-
-[tasks.rbk]
-alias = "run-benchmark-koi"
+command = "cargo"
 
 [tasks.run-benchmark-crab]
-extend = "run-benchmark"
 env    = { "CHAIN" = "crab" }
+extend = "run-benchmark"
 
 [tasks.rbc]
 alias = "run-benchmark-crab"
 
 [tasks.run-benchmark-darwinia]
-extend = "run-benchmark"
 env    = { "CHAIN" = "darwinia" }
+extend = "run-benchmark"
 
 [tasks.rbd]
 alias = "run-benchmark-darwinia"
@@ -274,13 +233,6 @@ args    = [
 	"--repeat",
 	"1"
 ]
-
-[tasks.run-benchmark-koi-check]
-extend = "run-benchmark-check"
-env    = { "CHAIN" = "koi" }
-
-[tasks.rbkc]
-alias = "run-benchmark-koi-check"
 
 [tasks.run-benchmark-crab-check]
 extend = "run-benchmark-check"
