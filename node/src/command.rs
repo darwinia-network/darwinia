@@ -257,17 +257,7 @@ pub fn run() -> Result<()> {
 				return $code;
 			}
 
-			#[cfg(feature = "koi-runtime")]
-			if $config.chain_spec.is_koi() {
-				let $partials = service::new_partial::<KoiRuntimeApi>(
-					&$config,
-					&$cli.eth_args.build_eth_rpc_config(),
-				)?;
-
-				return $code;
-			}
-
-			panic!("No feature(crab-runtime, darwinia-runtime, koi-runtime) is enabled!");
+			panic!("No feature(crab-runtime, darwinia-runtime) is enabled!");
 		}};
 	}
 
@@ -304,20 +294,7 @@ pub fn run() -> Result<()> {
 				});
 			}
 
-			#[cfg(feature = "koi-runtime")]
-			if chain_spec.is_koi() {
-				return runner.async_run(|$config| {
-					let $components = service::new_partial::<KoiRuntimeApi>(
-						&$config,
-						&$cli.eth_args.build_eth_rpc_config()
-					)?;
-					let task_manager = $components.task_manager;
-
-					{ $( $code )* }.map(|v| (v, task_manager))
-				});
-			}
-
-			panic!("No feature(crab-runtime, darwinia-runtime, koi-runtime) is enabled!");
+			panic!("No feature(crab-runtime, darwinia-runtime) is enabled!");
 		}}
 	}
 
@@ -546,12 +523,6 @@ where
 			return service::start_dev_node::<Net, DarwiniaRuntimeApi>(config, id, &eth_rpc_config)
 				.map_err(Into::into);
 		}
-
-		#[cfg(feature = "koi-runtime")]
-		if chain_spec.is_koi() {
-			return service::start_dev_node::<Net, KoiRuntimeApi>(config, id, &eth_rpc_config)
-				.map_err(Into::into);
-		}
 	}
 	#[cfg(feature = "crab-runtime")]
 	if chain_spec.is_crab() {
@@ -585,29 +556,13 @@ where
 		.map_err(Into::into);
 	}
 
-	#[cfg(feature = "koi-runtime")]
-	if chain_spec.is_koi() {
-		return service::start_parachain_node::<Net, KoiRuntimeApi>(
-			config,
-			polkadot_config,
-			collator_options,
-			id,
-			no_hardware_benchmarks,
-			storage_monitor,
-			&eth_rpc_config,
-		)
-		.await
-		.map(|r| r.0)
-		.map_err(Into::into);
-	}
-
-	panic!("No feature(crab-runtime, darwinia-runtime, koi-runtime) is enabled!");
+	panic!("No feature(crab-runtime, darwinia-runtime) is enabled!");
 }
 
 fn load_spec(id: &str) -> StdResult<Box<dyn ChainSpecT>, String> {
 	let id = if id.is_empty() {
 		let n = get_exec_name().unwrap_or_default();
-		["darwinia", "crab", "koi"]
+		["darwinia", "crab"]
 			.iter()
 			.cloned()
 			.find(|&chain| n.starts_with(chain))
@@ -628,12 +583,6 @@ fn load_spec(id: &str) -> StdResult<Box<dyn ChainSpecT>, String> {
 		"darwinia-genesis" => Box::new(darwinia::genesis_config()),
 		#[cfg(feature = "darwinia-runtime")]
 		"darwinia-dev" => Box::new(darwinia::development_config()),
-		#[cfg(feature = "koi-runtime")]
-		"koi" => Box::new(koi::config()),
-		#[cfg(feature = "koi-runtime")]
-		"koi-genesis" => Box::new(koi::genesis_config()),
-		#[cfg(feature = "koi-runtime")]
-		"koi-dev" => Box::new(koi::development_config()),
 		_ => Box::new(ChainSpec::from_json_file(PathBuf::from(id))?),
 	};
 
@@ -648,7 +597,7 @@ fn get_exec_name() -> Option<String> {
 }
 
 fn set_default_ss58_version(chain_spec: &dyn IdentifyVariant) {
-	let ss58_version = if chain_spec.is_crab() || chain_spec.is_koi() {
+	let ss58_version = if chain_spec.is_crab() {
 		Ss58AddressFormatRegistry::SubstrateAccount
 	} else {
 		Ss58AddressFormatRegistry::DarwiniaAccount

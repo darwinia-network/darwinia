@@ -45,7 +45,6 @@ darwinia-staking                  = { path = "pallet/staking", default-features 
 dc-inflation                      = { path = "core/inflation", default-features = false }
 dc-primitives                     = { path = "core/primitives", default-features = false }
 dc-types                          = { path = "core/types" }
-koi-runtime                       = { path = "runtime/koi" }
 
 # frontier
 fc-api                         = { git = "https://github.com/polkadot-evm/frontier", branch = "stable2407" }

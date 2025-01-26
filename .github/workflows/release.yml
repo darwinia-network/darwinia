@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - "v*"
-      - "koi*"
 
 env:
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
@@ -20,7 +19,7 @@ env:
   RUST_TOOLCHAIN: 1.74.0
 
   # Set this to true for CI testing purposes only.
-  # SKIP_BUILD: true
+  SKIP_BUILD: false
 
 jobs:
   build-nodes:
@@ -29,17 +28,9 @@ jobs:
     strategy:
       matrix:
         node:
-          - network: mainnet
-            features: darwinia-runtime,crab-runtime
+          - features: darwinia-runtime,crab-runtime
             bz2: true
-          - network: mainnet
-            features: darwinia-runtime,crab-runtime,evm-tracing
-            type: tracing
-          - network: testnet
-            features: koi-runtime
-            bz2: true
-          - network: testnet
-            features: koi-runtime,evm-tracing
+          - features: darwinia-runtime,crab-runtime,evm-tracing
             type: tracing
     steps:
       - name: Free disk space
@@ -60,16 +51,7 @@ jobs:
           swap-size-gb: 8
       - name: Fetch latest code
         uses: actions/checkout@v4
-      - name: Build mainnet node
-        if: ${{ startsWith(github.ref, 'refs/tags/v') && (matrix.node.network == 'mainnet') }}
-        uses: ./.github/actions/build
-        with:
-          features: ${{ matrix.node.features }}
-          suffix: ${{ matrix.node.type }}
-          enable_tar_bz2: ${{ matrix.node.bz2 }}
-          skip-build: ${{ env.SKIP_BUILD }}
-      - name: Build testnet node
-        if: ${{ startsWith(github.ref, 'refs/tags/koi') && (matrix.node.network == 'testnet') }}
+      - name: Build node
         uses: ./.github/actions/build
         with:
           features: ${{ matrix.node.features }}
@@ -95,13 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        runtime:
-          - name: darwinia
-            type: mainnet
-          - name: crab
-            type: mainnet
-          - name: koi
-            type: testnet
+        runtime: [darwinia, crab]
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v4
@@ -116,19 +92,7 @@ jobs:
           zstd -d wuh.zst
           chmod u+x ./wuh
           sudo mv ./wuh /usr/bin/wuh
-      - name: Filter
-        run: |
-          SKIP_BUILD=${{ env.SKIP_BUILD }}
-          IS_MAINNET=${{ matrix.runtime.type == 'mainnet' && startsWith(github.ref, 'refs/tags/v') }}
-          IS_TESTNET=${{ matrix.runtime.type == 'testnet' && startsWith(github.ref, 'refs/tags/koi') }}
-
-          echo "IS_MAINNET='$IS_MAINNET'" >> $GITHUB_ENV
-          echo "IS_TESTNET='$IS_TESTNET'" >> $GITHUB_ENV
-
-          if [[ "$SKIP_BUILD" != "true" && ( "$IS_MAINNET" == "true" || "$IS_TESTNET" == "true" ) ]] ; then
-            echo "FILTER=true" >> $GITHUB_ENV
-          fi
-      - name: Build ${{ matrix.runtime.name }} runtime
+      - name: Build ${{ matrix.runtime }} runtime
         id: srtool_build
         if: ${{ env.FILTER == 'true' }}
         uses: chevdor/srtool-actions@v0.9.2
@@ -137,20 +101,22 @@ jobs:
         with:
           image: paritytech/srtool
           tag: "1.74.0"
-          chain: ${{ matrix.runtime.name }}
+          chain: ${{ matrix.runtime }}
       - name: Prepare runtime
         run: |
-          IS_MAINNET=${{ env.IS_MAINNET }}
-          IS_TESTNET=${{ env.IS_TESTNET }}
-          FILTER=${{ env.FILTER }}
+          SKIP_BUILD=${{ env.SKIP_BUILD }}
 
-          export CHAIN=${{ matrix.runtime.name }}
+          export CHAIN=${{ matrix.runtime }}
 
           echo $CHAIN
 
           mkdir -p build
 
-          if [ "$FILTER" == "true" ]; then
+          if [ "$SKIP_BUILD" == "true" ]; then
+            echo SKIP_BUILD > build/${CHAIN}-srtool.json
+            echo SKIP_BUILD > build/${CHAIN}_runtime.compact.compressed.wasm
+            echo SKIP_BUILD > build/runtime.md
+          else
             echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${CHAIN}-srtool.json
 
             WASM_FILE='${{ steps.srtool_build.outputs.wasm_compressed }}'
@@ -165,15 +131,11 @@ jobs:
             cat .github/note-template/runtime.md \
               | gomplate -d srtool=build/${CHAIN}-srtool.json \
               > build/runtime.md
-          elif [[ "$IS_MAINNET" == "true" || "$IS_TESTNET" == "true" ]]; then
-            echo SKIP_BUILD > build/${CHAIN}-srtool.json
-            echo SKIP_BUILD > build/${CHAIN}_runtime.compact.compressed.wasm
-            echo SKIP_BUILD > build/runtime.md
           fi
-      - name: Upload ${{ matrix.runtime.name }} runtime
+      - name: Upload ${{ matrix.runtime }} runtime
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.runtime.name }}-runtime
+          name: ${{ matrix.runtime }}-runtime
           path: build
           retention-days: 1
       - name: Fail fast
@@ -258,16 +220,9 @@ jobs:
             > node.tmp.md
       - name: Fill note
         run: |
-          IS_MAINNET=${{ startsWith(github.ref, 'refs/tags/v') }}
-
-          if [ "$IS_MAINNET" == "true" ]; then
-            cat darwinia-runtime/runtime.md >> node.md
-            cat crab-runtime/runtime.md >> node.md
-            cat node.tmp.md >> node.md
-          else
-            cat koi-runtime/runtime.md >> node.md
-            cat node.tmp.md >> node.md
-          fi
+          cat darwinia-runtime/runtime.md >> node.md
+          cat crab-runtime/runtime.md >> node.md
+          cat node.tmp.md >> node.md
       - name: Hash file
         run: cd deploy && sha256sum * | tee sha256sums.txt
       # - name: Verify
@@ -284,4 +239,3 @@ jobs:
             deploy/*
           generate_release_notes: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: ${{ startsWith(github.ref, 'refs/tags/koi') }}

@@ -27,7 +27,6 @@ trauma      = { version = "2.2" }
 crab-runtime     = { workspace = true, optional = true }
 darwinia-runtime = { workspace = true, optional = true }
 dc-primitives    = { workspace = true, features = ["std"] }
-koi-runtime      = { workspace = true, optional = true }
 
 # frontier
 fc-api          = { workspace = true }
@@ -103,14 +102,12 @@ all-runtime = [
 	# darwinia
 	"crab-runtime",
 	"darwinia-runtime",
-	"koi-runtime",
 ]
 
 evm-tracing = [
 	# darwinia
 	"crab-runtime?/evm-tracing",
 	"darwinia-runtime?/evm-tracing",
-	"koi-runtime?/evm-tracing",
 
 	# moonbeam
 	"moonbeam-primitives-ext",
@@ -120,7 +117,6 @@ runtime-benchmarks = [
 	# darwinia
 	"crab-runtime?/runtime-benchmarks",
 	"darwinia-runtime?/runtime-benchmarks",
-	"koi-runtime?/runtime-benchmarks",
 
 	# polkadot-sdk
 	"frame-benchmarking",
@@ -140,5 +136,4 @@ fast-runtime = [
 	# darwinia
 	"crab-runtime?/fast-runtime",
 	"darwinia-runtime?/fast-runtime",
-	"koi-runtime?/fast-runtime",
 ]
