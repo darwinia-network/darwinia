@@ -36,6 +36,11 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
 		log::info!("post");
 
+		assert!(Balances::locks(AccountId::from(
+			<[u8; 20]>::dehexify("0x52f6cbe5f29094d235df65e31b67977a235e6380").unwrap(),
+		))
+		.is_empty());
+
 		Ok(())
 	}
 
@@ -136,5 +141,13 @@ fn migrate() -> frame_support::weights::Weight {
 		Balances::unreserve(&who, 5_000 * UNIT * count);
 	}
 
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(30, 40)
+	use frame_support::traits::LockableCurrency;
+
+	if let Ok(who) = <[u8; 20]>::dehexify("0x52f6cbe5f29094d235df65e31b67977a235e6380") {
+		let who = AccountId::from(who);
+
+		Balances::remove_lock(*b"democrac", &who);
+	}
+
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(40, 50)
 }

@@ -21,7 +21,7 @@
 use crate::*;
 // polkadot-sdk
 #[allow(unused_imports)]
-use frame_support::{migration, storage::unhashed};
+use frame_support::migration;
 
 pub struct CustomOnRuntimeUpgrade;
 impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
@@ -36,6 +36,11 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
 		log::info!("post");
 
+		assert!(Balances::locks(AccountId::from(
+			<[u8; 20]>::dehexify("0x3d6a81177e17d5dbbd36f23ea5328acdf3471209").unwrap(),
+		))
+		.is_empty());
+
 		Ok(())
 	}
 
@@ -45,5 +50,14 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 0)
+	use array_bytes::Dehexify;
+	use frame_support::traits::LockableCurrency;
+
+	if let Ok(who) = <[u8; 20]>::dehexify("0x3d6a81177e17d5dbbd36f23ea5328acdf3471209") {
+		let who = AccountId::from(who);
+
+		Balances::remove_lock(*b"vesting ", &who);
+	}
+
+	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(5, 10)
 }
