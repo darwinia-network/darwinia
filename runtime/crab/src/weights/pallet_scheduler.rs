@@ -100,14 +100,14 @@ impl<T: frame_system::Config> pallet_scheduler::WeightInfo for WeightInfo<T> {
 	fn service_task_fetched(s: u32, ) -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `179 + s * (1 ±0)`
-		//  Estimated: `4197809`
-		// Minimum execution time: 13_000_000 picoseconds.
-		Weight::from_parts(8_555_200, 0)
-			.saturating_add(Weight::from_parts(0, 4197809))
-			// Standard Error: 8
-			.saturating_add(Weight::from_parts(478, 0).saturating_mul(s.into()))
-			.saturating_add(T::DbWeight::get().reads(3))
-			.saturating_add(T::DbWeight::get().writes(2))
+		//  Estimated: `3644 + s * (1 ±0)`
+		// Minimum execution time: 19_743_000 picoseconds.
+		Weight::from_parts(19_962_000, 3644)
+			// Standard Error: 6
+			.saturating_add(Weight::from_parts(1_257, 0).saturating_mul(s.into()))
+			.saturating_add(T::DbWeight::get().reads(3_u64))
+			.saturating_add(T::DbWeight::get().writes(2_u64))
+			.saturating_add(Weight::from_parts(0, 1).saturating_mul(s.into()))
 	}
 	/// Storage: `Scheduler::Lookup` (r:0 w:1)
 	/// Proof: `Scheduler::Lookup` (`max_values`: None, `max_size`: Some(48), added: 2523, mode: `MaxEncodedLen`)
