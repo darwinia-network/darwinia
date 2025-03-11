@@ -30,7 +30,7 @@ darwinia_common_runtime::fast_runtime_or_not!(
 
 impl darwinia_staking::Config for Runtime {
 	type KtonStaking = darwinia_staking::KtonStaking<Self>;
-	type RewardPerSession = ConstU128<{ 80_000_000 * UNIT / 365 / SESSIONS_PER_DAY }>;
+	type RewardPerSession = ConstU128<{ 29_200_000 * UNIT / 365 / SESSIONS_PER_DAY }>;
 	type RingStaking = darwinia_staking::RingStaking<Self>;
 	type RuntimeEvent = RuntimeEvent;
 	type Treasury = pallet_config::TreasuryAccount;
