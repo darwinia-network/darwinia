@@ -20,6 +20,6 @@
 use crate::*;
 
 impl pallet_authorship::Config for Runtime {
-	type EventHandler = (DarwiniaStaking,);
+	type EventHandler = DarwiniaStaking;
 	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
 }

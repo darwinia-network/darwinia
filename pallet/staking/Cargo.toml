@@ -15,7 +15,6 @@ scale-info = { workspace = true }
 
 # darwinia
 darwinia-ethtx-forwarder = { workspace = true }
-dc-inflation             = { workspace = true }
 dc-types                 = { workspace = true }
 
 # frontier
@@ -35,14 +34,13 @@ frame-benchmarking = { workspace = true, optional = true }
 [dev-dependencies]
 # crates.io
 pretty_env_logger = { version = "0.5" }
-serde             = { version = "1.0", features = ["derive"] }
+serde             = { workspace = true }
 
 # polkadot-sdk
-pallet-balances  = { workspace = true, features = ["std"] }
-pallet-session   = { workspace = true, features = ["std"] }
-pallet-timestamp = { workspace = true, features = ["std"] }
-pallet-treasury  = { workspace = true, features = ["std"] }
-sp-io            = { workspace = true, features = ["std"] }
+pallet-balances = { workspace = true, features = ["std"] }
+pallet-session  = { workspace = true, features = ["std"] }
+pallet-treasury = { workspace = true, features = ["std"] }
+sp-io           = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]
@@ -55,7 +53,6 @@ std = [
 
 	# darwinia
 	"darwinia-ethtx-forwarder/std",
-	"dc-inflation/std",
 
 	# frontier
 	"fp-evm/std",

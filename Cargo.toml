@@ -28,8 +28,9 @@ ethereum     = { version = "0.15", default-features = false, features = ["with-c
 libsecp256k1 = { version = "0.7", default-features = false }
 log          = { version = "0.4" }
 scale-info   = { version = "2.11", default-features = false }
+serde        = { version = "1.0", features = ["derive"] }
 sha3         = { version = "0.10" }
-strum        = { version = "0.26", default-features = false }
+strum        = { version = "0.27", default-features = false }
 
 # darwinia
 crab-runtime                      = { path = "runtime/crab" }
@@ -42,7 +43,6 @@ darwinia-precompile-assets        = { path = "precompile/assets", default-featur
 darwinia-precompile-state-storage = { path = "precompile/state-storage", default-features = false }
 darwinia-runtime                  = { path = "runtime/darwinia" }
 darwinia-staking                  = { path = "pallet/staking", default-features = false }
-dc-inflation                      = { path = "core/inflation", default-features = false }
 dc-primitives                     = { path = "core/primitives", default-features = false }
 dc-types                          = { path = "core/types" }
 
@@ -178,7 +178,6 @@ sp-version                                 = { git = "https://github.com/parityt
 substrate-build-script-utils               = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407" }
 substrate-frame-rpc-system                 = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407" }
 substrate-prometheus-endpoint              = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407" }
-substrate-test-utils                       = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407" }
 substrate-wasm-builder                     = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407" }
 xcm                                        = { package = "staging-xcm", git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407", default-features = false }
 xcm-builder                                = { package = "staging-xcm-builder", git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2407", default-features = false }

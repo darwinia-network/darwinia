@@ -83,7 +83,7 @@ fn elect_should_work() {
 
 		assert_eq!(
 			<Runtime as Config>::RingStaking::elect(<CollatorCount<Runtime>>::get()).unwrap(),
-			vec![AccountId(4), AccountId(5), AccountId(6)]
+			[AccountId(4), AccountId(5), AccountId(6)]
 		);
 	});
 }
@@ -120,30 +120,38 @@ fn on_idle_allocate_ring_staking_reward_should_work() {
 
 #[test]
 fn on_new_session_should_work() {
-	ExtBuilder.inflation_type(0).build().execute_with(|| {
+	ExtBuilder.build().execute_with(|| {
 		new_session();
 		new_session();
 
-		assert_eq!(Session::validators(), vec![AccountId(1), AccountId(2), AccountId(3)]);
+		assert_eq!(Session::validators(), [AccountId(1), AccountId(2), AccountId(3)]);
 
 		NEXT_COLLATOR_ID.with(|v| *v.borrow_mut() = 4);
 		System::reset_events();
 		new_session();
 		new_session();
 
-		assert_eq!(Session::validators(), vec![AccountId(4), AccountId(5), AccountId(6)]);
-		// payout to treasury * 2 session
-		// +
+		assert_eq!(Session::validators(), [AccountId(4), AccountId(5), AccountId(6)]);
 		// payout to collators * 2 session
 		//
-		// 1 * 2 + 3 * 2 = 8
+		// 3 * 2 = 6
 		assert_eq!(
-			events().into_iter().filter(|e| matches!(e, Event::RewardAllocated { .. })).count(),
-			8
+			events()
+				.into_iter()
+				.filter(|e| matches!(e, Event::RewardAllocated { .. }))
+				.collect::<Vec<_>>(),
+			[
+				Event::RewardAllocated { who: AccountId(3), amount: 100 },
+				Event::RewardAllocated { who: AccountId(1), amount: 200 },
+				Event::RewardAllocated { who: AccountId(2), amount: 200 },
+				Event::RewardAllocated { who: AccountId(3), amount: 100 },
+				Event::RewardAllocated { who: AccountId(1), amount: 200 },
+				Event::RewardAllocated { who: AccountId(2), amount: 200 }
+			]
 		);
 		assert_eq!(
 			(1..=3).map(|who| { Balances::free_balance(AccountId(who)) }).collect::<Vec<_>>(),
-			vec![5059704513256525, 5059704513256525, 2529852256628310]
+			[1100, 1100, 600]
 		);
 
 		NEXT_COLLATOR_ID.with(|v| *v.borrow_mut() = 7);
@@ -151,69 +159,27 @@ fn on_new_session_should_work() {
 		new_session();
 		new_session();
 
-		assert_eq!(Session::validators(), vec![AccountId(7), AccountId(8), AccountId(9)]);
-		// payout to treasury * 2 session
-		// +
+		assert_eq!(Session::validators(), [AccountId(7), AccountId(8), AccountId(9)]);
 		// payout to collators * 2 session
 		//
-		// 1 * 2 + 3 * 2 = 8
+		// 3 * 2 = 6
 		assert_eq!(
-			events().into_iter().filter(|e| matches!(e, Event::RewardAllocated { .. })).count(),
-			8
+			events()
+				.into_iter()
+				.filter(|e| matches!(e, Event::RewardAllocated { .. }))
+				.collect::<Vec<_>>(),
+			[
+				Event::RewardAllocated { who: AccountId(6), amount: 100 },
+				Event::RewardAllocated { who: AccountId(5), amount: 200 },
+				Event::RewardAllocated { who: AccountId(4), amount: 200 },
+				Event::RewardAllocated { who: AccountId(6), amount: 100 },
+				Event::RewardAllocated { who: AccountId(5), amount: 200 },
+				Event::RewardAllocated { who: AccountId(4), amount: 200 }
+			]
 		);
 		assert_eq!(
 			(1..=3).map(|who| { Balances::free_balance(AccountId(who)) }).collect::<Vec<_>>(),
-			vec![5059704513256525, 5059704513256525, 2529852256628310]
-		);
-	});
-
-	// Reset.
-	NEXT_COLLATOR_ID.with(|v| *v.borrow_mut() = 1);
-
-	ExtBuilder.inflation_type(1).build().execute_with(|| {
-		new_session();
-		new_session();
-
-		assert_eq!(Session::validators(), vec![AccountId(1), AccountId(2), AccountId(3)]);
-
-		NEXT_COLLATOR_ID.with(|v| *v.borrow_mut() = 4);
-		System::reset_events();
-		new_session();
-		new_session();
-
-		assert_eq!(Session::validators(), vec![AccountId(4), AccountId(5), AccountId(6)]);
-		// payout to treasury * 2 session
-		// +
-		// payout to collators * 2 session
-		//
-		// 1 * 2 + 3 * 2 = 8
-		assert_eq!(
-			events().into_iter().filter(|e| matches!(e, Event::RewardAllocated { .. })).count(),
-			8
-		);
-		assert_eq!(
-			(1..=3).map(|who| { Balances::free_balance(AccountId(who)) }).collect::<Vec<_>>(),
-			vec![20000000000000000000100, 20000000000000000000100, 10000000000000000000100]
-		);
-
-		NEXT_COLLATOR_ID.with(|v| *v.borrow_mut() = 7);
-		System::reset_events();
-		new_session();
-		new_session();
-
-		assert_eq!(Session::validators(), vec![AccountId(7), AccountId(8), AccountId(9)]);
-		// payout to treasury * 2 session
-		// +
-		// payout to collators * 2 session
-		//
-		// 1 * 2 + 3 * 2 = 8
-		assert_eq!(
-			events().into_iter().filter(|e| matches!(e, Event::RewardAllocated { .. })).count(),
-			8
-		);
-		assert_eq!(
-			(1..=3).map(|who| { Balances::free_balance(AccountId(who)) }).collect::<Vec<_>>(),
-			vec![20000000000000000000100, 20000000000000000000100, 10000000000000000000100]
+			[1100, 1100, 600]
 		);
 	});
 }
@@ -232,21 +198,20 @@ fn allocate_ring_staking_reward_of_should_work() {
 		System::reset_events();
 
 		assert_ok!(Staking::allocate_ring_staking_reward_of(RuntimeOrigin::signed(who), who));
-		assert_eq!(events(), vec![Event::RewardAllocated { who, amount: 1 }]);
+		assert_eq!(events(), [Event::RewardAllocated { who, amount: 1 }]);
 	});
 }
 
 #[test]
 fn set_collator_count_should_work() {
 	ExtBuilder.build().execute_with(|| {
+		assert_eq!(<CollatorCount<Runtime>>::get(), 3);
 		assert_noop!(
 			Staking::set_collator_count(RuntimeOrigin::signed(AccountId(1)), 1),
 			DispatchError::BadOrigin
 		);
-		assert_noop!(
-			Staking::set_collator_count(RuntimeOrigin::root(), 0),
-			<Error<Runtime>>::ZeroCollatorCount
-		);
+		assert_ok!(Staking::set_collator_count(RuntimeOrigin::root(), 0));
+		assert_eq!(<CollatorCount<Runtime>>::get(), 1);
 
 		assert_ok!(Staking::set_collator_count(RuntimeOrigin::root(), 1));
 		assert_eq!(<CollatorCount<Runtime>>::get(), 1);
