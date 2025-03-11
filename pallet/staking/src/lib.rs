@@ -156,7 +156,6 @@ pub mod pallet {
 
 	/// All outstanding rewards since the last payment.
 	#[pallet::storage]
-	#[pallet::unbounded]
 	pub type PendingRewards<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, Balance>;
 
 	/// RING staking contract address.
@@ -165,6 +164,16 @@ pub mod pallet {
 	/// KTON staking contract address.
 	#[pallet::storage]
 	pub type KtonStakingContract<T: Config> = StorageValue<_, T::AccountId>;
+
+	/// Unallocated collator RING rewards.
+	#[pallet::storage]
+	pub type UnallocatedRingRewards<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, Balance>;
+
+	/// Unallocated collator KTON rewards.
+	///
+	/// The destination is the KTON staking contract.
+	#[pallet::storage]
+	pub type UnallocatedKtonRewards<T> = StorageValue<_, Balance, ValueQuery>;
 
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T> {
@@ -533,12 +542,14 @@ where
 				constant: None,
 				state_mutability: StateMutability::Payable,
 			},
-			&[Token::Address(who.into())],
+			&[Token::Address(who.clone().into())],
 			rsc,
 			amount.into(),
 			1_000_000.into(),
 		) {
 			log::error!("failed to forward call due to {e:?}");
+
+			<UnallocatedRingRewards<T>>::mutate(who, |u| u.map(|u| u + amount).or(Some(amount)));
 		}
 	}
 }
@@ -581,6 +592,8 @@ where
 			1_000_000.into(),
 		) {
 			log::error!("failed to forward call due to {e:?}");
+
+			<UnallocatedKtonRewards<T>>::mutate(|u| *u += amount);
 		}
 	}
 }
