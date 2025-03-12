@@ -19,11 +19,7 @@
 #![allow(clippy::derive_partial_eq_without_eq)]
 
 // std
-use std::{
-	collections::BTreeMap,
-	str::FromStr,
-	time::{SystemTime, UNIX_EPOCH},
-};
+use std::{collections::BTreeMap, str::FromStr};
 // crates.io
 use array_bytes::Dehexify;
 #[cfg(feature = "dev")]
@@ -63,8 +59,6 @@ pub fn development_config() -> ChainSpec {
 
 		// Consensus stuff.
 		"darwiniaStaking": {
-			"now": SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
-			"elapsedTime": 0,
 			"collatorCount": collators.len()
 		},
 		"session": {
@@ -231,8 +225,6 @@ pub fn genesis_config() -> ChainSpec {
 
 		// Consensus stuff.
 		"darwiniaStaking": {
-			"now": SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis(),
-			"elapsedTime": 0,
 			"collatorCount": 6
 		},
 		"session": {
