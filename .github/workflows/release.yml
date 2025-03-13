@@ -11,12 +11,11 @@ env:
 
   DOCKER_REGISTRY: ghcr.io
 
-  GOMPLATE_VERSION: v3.11.6
+  GOMPLATE_VERSION: v4.3.1
   GOMPLATE: gomplate_linux-amd64
   GOMPLATE_URL: https://github.com/hairyhenderson/gomplate/releases/download
 
   RUST_BACKTRACE: full
-  RUST_TOOLCHAIN: 1.74.0
 
   # Set this to true for CI testing purposes only.
   SKIP_BUILD: false
@@ -92,44 +91,56 @@ jobs:
           zstd -d wuh.zst
           chmod u+x ./wuh
           sudo mv ./wuh /usr/bin/wuh
-      - name: Build ${{ matrix.runtime }} runtime
-        id: srtool_build
-        if: ${{ env.SKIP_BUILD != 'true' }}
-        uses: chevdor/srtool-actions@v0.9.2
-        env:
-          BUILD_OPTS: --features=on-chain-release-build
+      - name: Build runtime
+        # It is recommended to use a specific version of the action in production.
+        #
+        # For example:
+        # uses: hack-ink/polkadot-runtime-releaser/action/build@vX.Y.Z
+        uses: hack-ink/polkadot-runtime-releaser/action/build@v0.2.0
         with:
-          image: paritytech/srtool
-          tag: "1.74.0"
-          chain: ${{ matrix.runtime }}
+          # The target runtime to build.
+          #
+          # For example, `polkadot-runtime` or `staging-kusama-runtime`.
+          runtime: ${{ matrix.runtime }}-runtime
+          # The features to enable for this release build.
+          #
+          # Generally, this would be `on-chain-release-build` in order to disable the logging to shrink the WASM binary size.
+          features: on-chain-release-build
+          # Rust toolchain version to build the runtime.
+          toolchain-ver: 1.81.0
+          # The workdir to build the runtime.
+          #
+          # By default, it is current directory.
+          # workdir: .
+          # The output directory of the WASM binary.
+          output-dir: .
       - name: Prepare runtime
         run: |
           SKIP_BUILD=${{ env.SKIP_BUILD }}
 
-          export CHAIN=${{ matrix.runtime }}
-
-          echo $CHAIN
+          # Template will use this env var.
+          export RUNTIME=${{ matrix.runtime }}
 
           mkdir -p build
 
           if [ "$SKIP_BUILD" == "true" ]; then
-            echo SKIP_BUILD > build/${CHAIN}-srtool.json
-            echo SKIP_BUILD > build/${CHAIN}_runtime.compact.compressed.wasm
+            echo SKIP_BUILD > build/${RUNTIME}.wasm
             echo SKIP_BUILD > build/runtime.md
           else
-            echo '${{ steps.srtool_build.outputs.json }}' | jq > build/${CHAIN}-srtool.json
-
-            WASM_FILE='${{ steps.srtool_build.outputs.wasm_compressed }}'
             WHITELIST_PALLET_INDEX=0x33
-            if [ "$CHAIN" == "crab" ]; then
+            if [ "$RUNTIME" == "crab" ]; then
               WHITELIST_PALLET_INDEX=0x2f
             fi
-            export WHITELIST_HASH=$(wuh ${WASM_FILE} ${WHITELIST_PALLET_INDEX} 0x01)
+            WASM=$(ls ${RUNTIME}*.wasm)
+            # Template will use this env var.
+            export WHITELIST_HASH=$(wuh ${WASM} ${WHITELIST_PALLET_INDEX} 0x01)
 
-            mv ${WASM_FILE} build/
+            mv ${WASM} build/
+
+            DIGEST=$(ls ${RUNTIME}*.json)
 
             cat .github/note-template/runtime.md \
-              | gomplate -d srtool=build/${CHAIN}-srtool.json \
+              | gomplate -d prr=${DIGEST} \
               > build/runtime.md
           fi
       - name: Upload ${{ matrix.runtime }} runtime
@@ -199,7 +210,6 @@ jobs:
       - name: Prepare nodes and runtimes
         run: |
           mkdir -p deploy
-          mv *runtime/*.json deploy/
           mv *runtime/*.wasm deploy/
           mv darwinia/*.tar.* deploy/
           mv darwinia-tracing/*.tar.* deploy/
