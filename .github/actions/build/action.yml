@@ -1,28 +1,19 @@
-name: "Build darwinia node"
+name: "Build Darwinia node"
 
 description: "Darwinia artifacts building action."
 
 inputs:
   features:
     description: "build features"
-    required: false
-    default: ""
-  suffix:
-    description: "output file suffix"
-    required: false
-    default: ""
-  enable_cache:
-    description: "enable cache"
-    required: false
-    default: "false"
-  cache_shrink_script:
-    description: "shrink cache script file path"
-    required: false
-    default: ".github/shrink-cache.sh"
+    required: true
   enable_tar_bz2:
     description: "enable package tar.bz2"
     required: false
     default: "false"
+  suffix:
+    description: "output file suffix"
+    required: false
+    default: ""
   skip-build:
     description: "use this for testing purposes only"
     required: false
@@ -38,51 +29,37 @@ runs:
         context: .
         file: .maintain/docker/ubuntu:20.04.Dockerfile
         tags: darwinia-network/build-tool:latest
-    - name: Cache cargo
-      if: ${{ inputs.enable_cache == 'true' && inputs.skip-build != 'true' }}
-      uses: actions/cache@v3
-      with:
-        path: |
-          ./target
-        key: darwinia-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-${{ hashFiles('Cargo.lock') }}
-        restore-keys: |
-          darwinia-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}-
-          darwinia-${{ runner.os }}-
+
     - name: Build node
       shell: bash
       run: |
-        FEATURES=${{ inputs.features }}
-        SUFFIX=${{ inputs.suffix }}
-        ENABLE_TAR_BZ2=${{ inputs.enable_tar_bz2 }}
-        SKIP_BUILD=${{ inputs.skip-build }}
+        set -euxo pipefail
+
+        FEATURES="${{ inputs.features }}"
+        SUFFIX="${{ inputs.suffix }}"
+        ENABLE_TAR_BZ2="${{ inputs.enable_tar_bz2 }}"
+        SKIP_BUILD="${{ inputs['skip-build'] }}"
+
+        APP_NAME="darwinia"
+        ARCH="x86_64-linux-gnu"
+        OUTPUT_BASENAME="${APP_NAME}${SUFFIX:+-$SUFFIX}-$ARCH"
+        BUILD_DIR="build"
 
         if [ "$SKIP_BUILD" != "true" ]; then
-          docker run -i --rm \
-            --name=build-darwinia \
-            -v=$(pwd):/build \
-            darwinia-network/build-tool:latest \
-              cargo b --release --locked \
-                -p darwinia \
-                --features=$FEATURES
+            docker run -i --rm \
+              --name=build-darwinia \
+              -v="$(pwd):/build" \
+              darwinia-network/build-tool:latest \
+                cargo b --release --locked -p darwinia --features="$FEATURES"
         else
           mkdir -p target/release
           echo SKIP_BUILD > target/release/darwinia
         fi
 
-        BUILD_DIR=build
-        mkdir -p $BUILD_DIR
+        mkdir -p "$BUILD_DIR"
 
-        if [ "$ENABLE_TAR_BZ2" == "true" ]; then
-          tar cjSf ${BUILD_DIR}/darwinia${SUFFIX:+-$SUFFIX}-x86_64-linux-gnu.tar.bz2 -C target/release darwinia
+        if [ "$ENABLE_TAR_BZ2" = "true" ]; then
+          tar cjf "$BUILD_DIR/${OUTPUT_BASENAME}.tar.bz2" -C target/release darwinia
         fi
 
-        tar cf ${BUILD_DIR}/darwinia${SUFFIX:+-$SUFFIX}-x86_64-linux-gnu.tar.zst -C target/release darwinia -I zstd
-    - name: Shrink cache
-      if: ${{ inputs.enable_cache == 'true' && inputs.skip-build != 'true' }}
-      shell: bash
-      run: |
-        docker run -i --rm \
-          --name=build-darwinia \
-          -v=$(pwd):/build \
-          darwinia-network/build-tool:latest \
-          ${{ inputs.cache_shrink_script }} release
+        tar cf "$BUILD_DIR/${OUTPUT_BASENAME}.tar.zst" -C target/release darwinia -I zstd
