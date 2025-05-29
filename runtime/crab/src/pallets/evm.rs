@@ -171,7 +171,7 @@ impl pallet_evm::Config for Runtime {
 	type FeeCalculator = TransactionPaymentGasPrice;
 	type FindAuthor = FindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
 	type GasLimitPovSizeRatio = pallet_config::GasLimitPovSizeRatio;
-	type GasLimitStorageGrowthRatio = GasLimitStorageGrowthRatio;
+	type GasLimitStorageGrowthRatio = pallet_config::GasLimitStorageGrowthRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = pallet_evm::EVMFungibleAdapter<Balances, ()>;
 	type OnCreate = ();

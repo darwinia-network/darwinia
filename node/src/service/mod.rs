@@ -320,7 +320,7 @@ where
 	let import_queue_service = import_queue.service();
 	let net_config = <sc_network::config::FullNetworkConfiguration<_, _, Net>>::new(
 		&parachain_config.network,
-		prometheus_registry.cloned(),
+		prometheus_registry.clone(),
 	);
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		cumulus_client_service::build_network(cumulus_client_service::BuildNetworkParams {
@@ -371,7 +371,7 @@ where
 	> = Default::default();
 	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
 	// for ethereum-compatibility rpc.
-	parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
+	parachain_config.rpc.id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
 	let tracing_requesters = frontier::spawn_tasks(
 		&task_manager,
 		client.clone(),
@@ -741,7 +741,7 @@ where
 	let prometheus_registry = config.prometheus_registry().cloned();
 	let net_config = <sc_network::config::FullNetworkConfiguration<_, _, Net>>::new(
 		&config.network,
-		prometheus_registry.cloned(),
+		prometheus_registry.clone(),
 	);
 	let metrics = Net::register_notification_metrics(None);
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
@@ -899,7 +899,7 @@ where
 	> = Default::default();
 	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
 	// for ethereum-compatibility rpc.
-	config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
+	config.rpc.id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
 	let tracing_requesters = frontier::spawn_tasks(
 		&task_manager,
 		client.clone(),

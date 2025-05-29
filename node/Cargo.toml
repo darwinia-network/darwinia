@@ -17,7 +17,7 @@ clap        = { version = "4.4", features = ["derive"] }
 color-eyre  = { version = "0.6" }
 color-print = { version = "0.3" }
 futures     = { version = "0.3" }
-jsonrpsee   = { version = "0.23", features = ["server"] }
+jsonrpsee   = { version = "0.24", features = ["server"] }
 log         = { workspace = true }
 serde       = { workspace = true }
 serde_json  = { version = "1.0", features = ["arbitrary_precision"] }
