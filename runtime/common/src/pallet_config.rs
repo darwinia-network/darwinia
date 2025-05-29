@@ -93,7 +93,6 @@ pub const MAXIMUM_BLOCK_WEIGHT: frame_support::weights::Weight =
 const AVERAGE_ON_INITIALIZE_RATIO: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(5);
 const WEIGHT_MILLISECS_PER_BLOCK: u64 = 2_000;
 const BLOCK_GAS_LIMIT: u64 = 20_000_000;
-const MAX_STORAGE_GROWTH: u64 = 400 * 1024;
 
 frame_support::parameter_types! {
 	pub const MaxBalance: Balance = Balance::MAX;
@@ -109,7 +108,8 @@ frame_support::parameter_types! {
 	pub const ReservedXcmpWeight: frame_support::weights::Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
 	pub const ReservedDmpWeight: frame_support::weights::Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
 
-	pub const GasLimitStorageGrowthRatio: u64 = BLOCK_GAS_LIMIT.saturating_div(MAX_STORAGE_GROWTH);
+	// Disable gas based storage growth limit.
+	pub const GasLimitStorageGrowthRatio: u64 = 0;
 
 	pub RuntimeBlockLength: frame_system::limits::BlockLength =
 		frame_system::limits::BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);

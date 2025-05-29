@@ -171,7 +171,7 @@ where
 						id: asset_id.clone().into(),
 						delegate: Runtime::Lookup::unlookup(spender.clone()),
 					},
-					0
+					0,
 				)?;
 			}
 			RuntimeHelper::<Runtime>::try_dispatch(
@@ -182,7 +182,7 @@ where
 					delegate: Runtime::Lookup::unlookup(spender),
 					amount,
 				},
-				0
+				0,
 			)?;
 		}
 
@@ -217,7 +217,7 @@ where
 					target: Runtime::Lookup::unlookup(to),
 					amount: value,
 				},
-				0
+				0,
 			)?;
 		}
 
@@ -262,7 +262,7 @@ where
 						destination: Runtime::Lookup::unlookup(to),
 						amount: value,
 					},
-					0
+					0,
 				)?;
 			} else {
 				RuntimeHelper::<Runtime>::try_dispatch(
@@ -273,7 +273,7 @@ where
 						target: Runtime::Lookup::unlookup(to),
 						amount: value,
 					},
-					0
+					0,
 				)?;
 			}
 		}
@@ -348,7 +348,7 @@ where
 					beneficiary: Runtime::Lookup::unlookup(to),
 					amount: value,
 				},
-				0
+				0,
 			)?;
 		}
 
@@ -383,7 +383,7 @@ where
 					who: Runtime::Lookup::unlookup(from),
 					amount: value,
 				},
-				0
+				0,
 			)?;
 		}
 
@@ -415,7 +415,7 @@ where
 					id: asset_id.into(),
 					owner: Runtime::Lookup::unlookup(owner),
 				},
-				0
+				0,
 			)?;
 		}
 
@@ -438,7 +438,7 @@ where
 					id: asset_id.into(),
 					who: Runtime::Lookup::unlookup(account),
 				},
-				0
+				0,
 			)?;
 		}
 
@@ -461,7 +461,7 @@ where
 					id: asset_id.into(),
 					who: Runtime::Lookup::unlookup(account),
 				},
-				0
+				0,
 			)?;
 		}
 
