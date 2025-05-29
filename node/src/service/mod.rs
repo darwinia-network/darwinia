@@ -675,7 +675,7 @@ where
 				proposer,
 				collator_service,
 				// Very limited proposal time.
-				authoring_duration: Duration::from_millis(1_500),
+				authoring_duration: Duration::from_millis(2_000),
 				reinitialize: false,
 			};
 			let fut = cumulus_client_consensus_aura::collators::lookahead::run::<
@@ -751,7 +751,7 @@ where
 			spawn_handle: task_manager.spawn_handle(),
 			import_queue,
 			block_announce_validator_builder: None,
-			warp_sync_params: None,
+			warp_sync_config: None,
 			block_relay: None,
 			metrics,
 		})?;
