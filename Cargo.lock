@@ -3516,7 +3516,7 @@ dependencies = [
 [[package]]
 name = "evm"
 version = "0.42.0"
-source = "git+https://github.com/rust-ethereum/evm.git?rev=f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6#f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6"
+source = "git+https://github.com/darwinia-network/evm.git?branch=stable2409#ed82c9d4f28ebb501d4b82d6a296e9bc9552ffc9"
 dependencies = [
  "auto_impl",
  "environmental",
@@ -3536,7 +3536,7 @@ dependencies = [
 [[package]]
 name = "evm-core"
 version = "0.42.0"
-source = "git+https://github.com/rust-ethereum/evm.git?rev=f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6#f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6"
+source = "git+https://github.com/darwinia-network/evm.git?branch=stable2409#ed82c9d4f28ebb501d4b82d6a296e9bc9552ffc9"
 dependencies = [
  "parity-scale-codec",
  "primitive-types",
@@ -3547,7 +3547,7 @@ dependencies = [
 [[package]]
 name = "evm-gasometer"
 version = "0.42.0"
-source = "git+https://github.com/rust-ethereum/evm.git?rev=f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6#f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6"
+source = "git+https://github.com/darwinia-network/evm.git?branch=stable2409#ed82c9d4f28ebb501d4b82d6a296e9bc9552ffc9"
 dependencies = [
  "environmental",
  "evm-core",
@@ -3558,7 +3558,7 @@ dependencies = [
 [[package]]
 name = "evm-runtime"
 version = "0.42.0"
-source = "git+https://github.com/rust-ethereum/evm.git?rev=f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6#f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6"
+source = "git+https://github.com/darwinia-network/evm.git?branch=stable2409#ed82c9d4f28ebb501d4b82d6a296e9bc9552ffc9"
 dependencies = [
  "auto_impl",
  "environmental",

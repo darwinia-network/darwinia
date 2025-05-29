@@ -184,14 +184,14 @@ xcm-executor                               = { package = "staging-xcm-executor",
 xcm-runtime-apis                           = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2409", default-features = false }
 
 [patch.crates-io]
-evm           = { git = "https://github.com/rust-ethereum/evm.git", rev = "f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6" }
-evm-gasometer = { git = "https://github.com/rust-ethereum/evm.git", rev = "f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6" }
-evm-runtime   = { git = "https://github.com/rust-ethereum/evm.git", rev = "f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6" }
+evm           = { git = "https://github.com/darwinia-network/evm.git", branch = "stable2409" }
+evm-gasometer = { git = "https://github.com/darwinia-network/evm.git", branch = "stable2409" }
+evm-runtime   = { git = "https://github.com/darwinia-network/evm.git", branch = "stable2409" }
 
 [patch."https://github.com/moonbeam-foundation/evm.git"]
-evm           = { git = "https://github.com/rust-ethereum/evm.git", rev = "f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6" }
-evm-gasometer = { git = "https://github.com/rust-ethereum/evm.git", rev = "f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6" }
-evm-runtime   = { git = "https://github.com/rust-ethereum/evm.git", rev = "f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6" }
+evm           = { git = "https://github.com/darwinia-network/evm.git", branch = "stable2409" }
+evm-gasometer = { git = "https://github.com/darwinia-network/evm.git", branch = "stable2409" }
+evm-runtime   = { git = "https://github.com/darwinia-network/evm.git", branch = "stable2409" }
 
 [profile.release]
 panic = "unwind"
