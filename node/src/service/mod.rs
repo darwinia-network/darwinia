@@ -315,8 +315,10 @@ where
 	let collator = parachain_config.role.is_authority();
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let import_queue_service = import_queue.service();
-	let net_config =
-		<sc_network::config::FullNetworkConfiguration<_, _, Net>>::new(&parachain_config.network);
+	let net_config = <sc_network::config::FullNetworkConfiguration<_, _, Net>>::new(
+		&parachain_config.network,
+		prometheus_registry.cloned(),
+	);
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		cumulus_client_service::build_network(cumulus_client_service::BuildNetworkParams {
 			parachain_config: &parachain_config,
@@ -734,8 +736,11 @@ where
 				_telemetry_worker_handle,
 			),
 	} = new_partial::<RuntimeApi>(&config, eth_rpc_config)?;
-	let net_config =
-		<sc_network::config::FullNetworkConfiguration<_, _, Net>>::new(&config.network);
+	let prometheus_registry = config.prometheus_registry().cloned();
+	let net_config = <sc_network::config::FullNetworkConfiguration<_, _, Net>>::new(
+		&config.network,
+		prometheus_registry.cloned(),
+	);
 	let metrics = Net::register_notification_metrics(None);
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		sc_service::build_network(sc_service::BuildNetworkParams {
@@ -880,7 +885,6 @@ where
 		log::warn!("You could add --alice or --bob to make dev chain seal instantly.");
 	}
 
-	let prometheus_registry = config.prometheus_registry().cloned();
 	let block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
 		task_manager.spawn_handle(),
 		storage_override.clone(),
