@@ -17,7 +17,7 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // std
-use std::{env, fs, io::ErrorKind, net::SocketAddr, path::PathBuf, result::Result as StdResult};
+use std::{env, fs, io::ErrorKind, path::PathBuf, result::Result as StdResult};
 // darwinia
 use crate::{
 	chain_spec::*,
@@ -30,7 +30,7 @@ use cumulus_client_cli::CollatorOptions;
 use cumulus_primitives_core::ParaId;
 use sc_cli::{
 	CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams, NetworkParams,
-	Result, SharedParams, SubstrateCli,
+	Result, RpcEndpoint, SharedParams, SubstrateCli,
 };
 use sc_network::{
 	config::NetworkBackendType, Litep2pNetworkBackend, NetworkBackend, NetworkWorker,
@@ -144,7 +144,7 @@ impl CliConfiguration<Self> for RelayChainCli {
 		Ok(self.shared_params().base_path()?.or_else(|| self.base_path.clone().map(Into::into)))
 	}
 
-	fn rpc_addr(&self, default_listen_port: u16) -> Result<Option<SocketAddr>> {
+	fn rpc_addr(&self, default_listen_port: u16) -> Result<Option<Vec<RpcEndpoint>>> {
 		self.base.base.rpc_addr(default_listen_port)
 	}
 

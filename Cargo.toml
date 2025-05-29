@@ -147,7 +147,6 @@ sc-network                                 = { git = "https://github.com/parityt
 sc-network-sync                            = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2409" }
 sc-offchain                                = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2409" }
 sc-rpc                                     = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2409" }
-sc-rpc-api                                 = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2409" }
 sc-service                                 = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2409" }
 sc-storage-monitor                         = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2409" }
 sc-sysinfo                                 = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2409" }
