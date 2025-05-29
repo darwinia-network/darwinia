@@ -28,7 +28,10 @@ sp-std          = { workspace = true }
 frame-benchmarking = { workspace = true, optional = true }
 
 [dev-dependencies]
+pallet-timestamp = { workspace = true, features = ["std"] }
+sp-io            = { workspace = true, features = ["std"] }
 sp-keyring       = { workspace = true, features = ["std"] }
+sp-version       = { workspace = true, features = ["std"] }
 
 [features]
 default = ["std"]

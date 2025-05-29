@@ -45,7 +45,7 @@
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-#[cfg(feature = "runtime-benchmarks")]
+#[cfg(all(test, feature = "runtime-benchmarks"))]
 mod mock;
 #[cfg(test)]
 mod tests;
