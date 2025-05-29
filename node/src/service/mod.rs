@@ -177,7 +177,7 @@ where
 			Ok((worker, telemetry))
 		})
 		.transpose()?;
-	let executor = sc_service::new_wasm_executor::<HostFunctions>(config);
+	let executor = sc_service::new_wasm_executor::<HostFunctions>(&config.executor);
 	let (client, backend, keystore_container, task_manager) =
 		sc_service::new_full_parts_record_import::<Block, RuntimeApi, _>(
 			config,
