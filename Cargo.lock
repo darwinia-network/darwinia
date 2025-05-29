@@ -15,7 +15,7 @@ dependencies = [
 [[package]]
 name = "account"
 version = "0.1.1"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#040dfdb2754e95d998a6a73ebf0bc2f210c1c9b3"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#58ac49819e650c253bd41a69ad368e2267974f1a"
 dependencies = [
  "blake2-rfc",
  "impl-serde",
@@ -3515,36 +3515,15 @@ dependencies = [
 
 [[package]]
 name = "evm"
-version = "0.41.2"
-source = "git+https://github.com/moonbeam-foundation/evm?branch=moonbeam-polkadot-stable2409#092e1f5a138a2f52cd5d0f009ff1c5ebea1cdc21"
-dependencies = [
- "auto_impl",
- "environmental",
- "ethereum",
- "evm-core 0.41.0",
- "evm-gasometer 0.41.0",
- "evm-runtime 0.41.0",
- "log",
- "parity-scale-codec",
- "primitive-types",
- "rlp",
- "scale-info",
- "serde",
- "sha3",
-]
-
-[[package]]
-name = "evm"
 version = "0.42.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d4b86ab0845a40c27ce2a54e01f4c1aa356bd2658028ae87c570e469a2286d6"
+source = "git+https://github.com/rust-ethereum/evm.git?rev=f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6#f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6"
 dependencies = [
  "auto_impl",
  "environmental",
  "ethereum",
- "evm-core 0.42.0",
- "evm-gasometer 0.42.0",
- "evm-runtime 0.42.0",
+ "evm-core",
+ "evm-gasometer",
+ "evm-runtime",
  "log",
  "parity-scale-codec",
  "primitive-types",
@@ -3556,20 +3535,8 @@ dependencies = [
 
 [[package]]
 name = "evm-core"
-version = "0.41.0"
-source = "git+https://github.com/moonbeam-foundation/evm?branch=moonbeam-polkadot-stable2409#092e1f5a138a2f52cd5d0f009ff1c5ebea1cdc21"
-dependencies = [
- "parity-scale-codec",
- "primitive-types",
- "scale-info",
- "serde",
-]
-
-[[package]]
-name = "evm-core"
 version = "0.42.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67c39818f9bc4cbd39fce2ed63c2707c3685b15e877796f730a1ff72a49dc094"
+source = "git+https://github.com/rust-ethereum/evm.git?rev=f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6#f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6"
 dependencies = [
  "parity-scale-codec",
  "primitive-types",
@@ -3579,48 +3546,23 @@ dependencies = [
 
 [[package]]
 name = "evm-gasometer"
-version = "0.41.0"
-source = "git+https://github.com/moonbeam-foundation/evm?branch=moonbeam-polkadot-stable2409#092e1f5a138a2f52cd5d0f009ff1c5ebea1cdc21"
-dependencies = [
- "environmental",
- "evm-core 0.41.0",
- "evm-runtime 0.41.0",
- "primitive-types",
-]
-
-[[package]]
-name = "evm-gasometer"
 version = "0.42.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8c114afd9f616fac0cfa7cbd0af139bef11b9e1901781d8a1620657ba49f37e"
+source = "git+https://github.com/rust-ethereum/evm.git?rev=f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6#f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6"
 dependencies = [
  "environmental",
- "evm-core 0.42.0",
- "evm-runtime 0.42.0",
+ "evm-core",
+ "evm-runtime",
  "primitive-types",
 ]
 
 [[package]]
 name = "evm-runtime"
-version = "0.41.0"
-source = "git+https://github.com/moonbeam-foundation/evm?branch=moonbeam-polkadot-stable2409#092e1f5a138a2f52cd5d0f009ff1c5ebea1cdc21"
-dependencies = [
- "auto_impl",
- "environmental",
- "evm-core 0.41.0",
- "primitive-types",
- "sha3",
-]
-
-[[package]]
-name = "evm-runtime"
 version = "0.42.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56a7f1d44af271868a63f66e724c2da74f661dbada2a1d5da87aa51231c218f3"
+source = "git+https://github.com/rust-ethereum/evm.git?rev=f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6#f45fcb7b423c6b0890e7a4f0ca3a681f344c52f6"
 dependencies = [
  "auto_impl",
  "environmental",
- "evm-core 0.42.0",
+ "evm-core",
  "primitive-types",
  "sha3",
 ]
@@ -3628,14 +3570,14 @@ dependencies = [
 [[package]]
 name = "evm-tracing-events"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#040dfdb2754e95d998a6a73ebf0bc2f210c1c9b3"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#58ac49819e650c253bd41a69ad368e2267974f1a"
 dependencies = [
  "environmental",
  "ethereum",
  "ethereum-types",
- "evm 0.41.2",
- "evm-gasometer 0.41.0",
- "evm-runtime 0.41.0",
+ "evm",
+ "evm-gasometer",
+ "evm-runtime",
  "parity-scale-codec",
  "sp-runtime-interface",
 ]
@@ -3813,7 +3755,7 @@ source = "git+https://github.com/polkadot-evm/frontier?branch=stable2409#a012990
 dependencies = [
  "ethereum",
  "ethereum-types",
- "evm 0.42.0",
+ "evm",
  "fc-api",
  "fc-mapping-sync",
  "fc-rpc-core",
@@ -4106,7 +4048,7 @@ version = "3.0.0-dev"
 source = "git+https://github.com/polkadot-evm/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
 dependencies = [
  "environmental",
- "evm 0.42.0",
+ "evm",
  "frame-support",
  "num_enum 0.7.3",
  "parity-scale-codec",
@@ -6947,7 +6889,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-client-evm-tracing"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#040dfdb2754e95d998a6a73ebf0bc2f210c1c9b3"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#58ac49819e650c253bd41a69ad368e2267974f1a"
 dependencies = [
  "ethereum-types",
  "evm-tracing-events",
@@ -6964,12 +6906,12 @@ dependencies = [
 [[package]]
 name = "moonbeam-evm-tracer"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#040dfdb2754e95d998a6a73ebf0bc2f210c1c9b3"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#58ac49819e650c253bd41a69ad368e2267974f1a"
 dependencies = [
  "ethereum-types",
- "evm 0.41.2",
- "evm-gasometer 0.41.0",
- "evm-runtime 0.41.0",
+ "evm",
+ "evm-gasometer",
+ "evm-runtime",
  "evm-tracing-events",
  "fp-evm",
  "moonbeam-primitives-ext",
@@ -6984,7 +6926,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-primitives-ext"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#040dfdb2754e95d998a6a73ebf0bc2f210c1c9b3"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#58ac49819e650c253bd41a69ad368e2267974f1a"
 dependencies = [
  "ethereum-types",
  "evm-tracing-events",
@@ -6997,7 +6939,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-debug"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#040dfdb2754e95d998a6a73ebf0bc2f210c1c9b3"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#58ac49819e650c253bd41a69ad368e2267974f1a"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -7014,7 +6956,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-trace"
 version = "0.6.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#040dfdb2754e95d998a6a73ebf0bc2f210c1c9b3"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#58ac49819e650c253bd41a69ad368e2267974f1a"
 dependencies = [
  "ethereum-types",
  "futures 0.3.31",
@@ -7028,7 +6970,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-core-types"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#040dfdb2754e95d998a6a73ebf0bc2f210c1c9b3"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#58ac49819e650c253bd41a69ad368e2267974f1a"
 dependencies = [
  "ethereum-types",
  "serde",
@@ -7038,7 +6980,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-debug"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#040dfdb2754e95d998a6a73ebf0bc2f210c1c9b3"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#58ac49819e650c253bd41a69ad368e2267974f1a"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -7072,7 +7014,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-primitives-debug"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#040dfdb2754e95d998a6a73ebf0bc2f210c1c9b3"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#58ac49819e650c253bd41a69ad368e2267974f1a"
 dependencies = [
  "environmental",
  "ethereum",
@@ -7090,7 +7032,7 @@ dependencies = [
 [[package]]
 name = "moonbeam-rpc-trace"
 version = "0.6.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#040dfdb2754e95d998a6a73ebf0bc2f210c1c9b3"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#58ac49819e650c253bd41a69ad368e2267974f1a"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -7893,7 +7835,7 @@ dependencies = [
 [[package]]
 name = "pallet-asset-manager"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#040dfdb2754e95d998a6a73ebf0bc2f210c1c9b3"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#58ac49819e650c253bd41a69ad368e2267974f1a"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -8263,7 +8205,7 @@ source = "git+https://github.com/polkadot-evm/frontier?branch=stable2409#a012990
 dependencies = [
  "ethereum",
  "ethereum-types",
- "evm 0.42.0",
+ "evm",
  "fp-consensus",
  "fp-ethereum",
  "fp-evm",
@@ -8285,7 +8227,7 @@ version = "6.0.0-dev"
 source = "git+https://github.com/polkadot-evm/frontier?branch=stable2409#a012990acd6f9ecd90c15e63abbb3f12704c4bd8"
 dependencies = [
  "environmental",
- "evm 0.42.0",
+ "evm",
  "fp-account",
  "fp-evm",
  "frame-benchmarking",
@@ -8323,7 +8265,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-conviction-voting"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#040dfdb2754e95d998a6a73ebf0bc2f210c1c9b3"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#58ac49819e650c253bd41a69ad368e2267974f1a"
 dependencies = [
  "account",
  "fp-evm",
@@ -9088,7 +9030,7 @@ dependencies = [
 [[package]]
 name = "pallet-xcm-weight-trader"
 version = "0.1.0"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#040dfdb2754e95d998a6a73ebf0bc2f210c1c9b3"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#58ac49819e650c253bd41a69ad368e2267974f1a"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -10642,7 +10584,7 @@ source = "git+https://github.com/polkadot-evm/frontier?branch=stable2409#a012990
 dependencies = [
  "derive_more 1.0.0",
  "environmental",
- "evm 0.42.0",
+ "evm",
  "fp-evm",
  "frame-support",
  "frame-system",
@@ -17340,7 +17282,7 @@ dependencies = [
 [[package]]
 name = "xcm-primitives"
 version = "0.1.1"
-source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#040dfdb2754e95d998a6a73ebf0bc2f210c1c9b3"
+source = "git+https://github.com/darwinia-network/moonbeam?branch=stable2409#58ac49819e650c253bd41a69ad368e2267974f1a"
 dependencies = [
  "cumulus-primitives-core",
  "ethereum",
