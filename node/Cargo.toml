@@ -14,6 +14,7 @@ substrate-build-script-utils = { workspace = true }
 array-bytes = { workspace = true }
 async-trait = { version = "0.1" }
 clap        = { version = "4.4", features = ["derive"] }
+color-eyre  = { version = "0.6" }
 color-print = { version = "0.3" }
 futures     = { version = "0.3" }
 jsonrpsee   = { version = "0.23", features = ["server"] }
