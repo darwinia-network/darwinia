@@ -297,7 +297,10 @@ where
 		.then_some(database_path.as_ref().map(|p| {
 			let _ = std::fs::create_dir_all(p);
 
-			sc_sysinfo::gather_hwbench(Some(p))
+			sc_sysinfo::gather_hwbench(
+				Some(p),
+				&frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE,
+			)
 		}))
 		.flatten();
 	let (relay_chain_interface, collator_key) =
@@ -495,7 +498,7 @@ where
 		// in there and swapping out the requirements for your own are probably a good idea. The
 		// requirements for a para-chain are dictated by its relay-chain.
 		if let Err(e) =
-			frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE.check_hardware(&hwbench)
+			frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE.check_hardware(&hwbench, false)
 		{
 			log::warn!(
 				"⚠️  The hardware does not meet the minimal requirements {e} for role 'Authority'.",
