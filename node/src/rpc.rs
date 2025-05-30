@@ -40,8 +40,6 @@ pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi, CIDP> {
 	pub pool: Arc<P>,
 	/// Graph pool instance.
 	pub graph: Arc<sc_transaction_pool::Pool<A>>,
-	/// Whether to deny unsafe calls
-	pub deny_unsafe: sc_rpc::DenyUnsafe,
 	/// The Node authority flag
 	pub is_authority: bool,
 	/// Network service
@@ -88,7 +86,23 @@ where
 
 /// Instantiate all RPC extensions.
 pub fn create_full<C, P, Be, A, EC, CIDP>(
-	deps: FullDeps<C, P, A, CIDP>,
+	FullDeps {
+		client,
+		pool,
+		graph,
+		is_authority,
+		network,
+		sync,
+		filter_pool,
+		frontier_backend,
+		max_past_logs,
+		fee_history_cache,
+		fee_history_cache_limit,
+		storage_override,
+		block_data_cache,
+		forced_parent_hashes,
+		pending_create_inherent_data_providers,
+	}: FullDeps<C, P, A, CIDP>,
 	subscription_task_executor: sc_rpc::SubscriptionTaskExecutor,
 	pubsub_notification_sinks: Arc<
 		fc_mapping_sync::EthereumBlockNotificationSinks<
@@ -132,29 +146,11 @@ where
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
 	use substrate_frame_rpc_system::{System, SystemApiServer};
 
-	let mut module = RpcExtension::new(());
-	let FullDeps {
-		client,
-		pool,
-		graph,
-		deny_unsafe,
-		is_authority,
-		network,
-		sync,
-		filter_pool,
-		frontier_backend,
-		max_past_logs,
-		fee_history_cache,
-		fee_history_cache_limit,
-		storage_override,
-		block_data_cache,
-		forced_parent_hashes,
-		pending_create_inherent_data_providers,
-	} = deps;
+	let mut io = RpcExtension::new(());
 
-	module.merge(System::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
-	module.merge(TransactionPayment::new(client.clone()).into_rpc())?;
-	module.merge(
+	io.merge(System::new(client.clone(), pool.clone()).into_rpc())?;
+	io.merge(TransactionPayment::new(client.clone()).into_rpc())?;
+	io.merge(
 		Eth::<Block, C, P, _, Be, A, CIDP, EC>::new(
 			client.clone(),
 			pool.clone(),
@@ -179,7 +175,7 @@ where
 
 	let tx_pool = TxPool::new(client.clone(), graph.clone());
 	if let Some(filter_pool) = filter_pool {
-		module.merge(
+		io.merge(
 			EthFilter::new(
 				client.clone(),
 				frontier_backend,
@@ -193,7 +189,7 @@ where
 		)?;
 	}
 
-	module.merge(
+	io.merge(
 		EthPubSub::new(
 			pool,
 			client.clone(),
@@ -204,7 +200,7 @@ where
 		)
 		.into_rpc(),
 	)?;
-	module.merge(
+	io.merge(
 		Net::new(
 			client.clone(),
 			network,
@@ -213,21 +209,21 @@ where
 		)
 		.into_rpc(),
 	)?;
-	module.merge(Web3::new(client.clone()).into_rpc())?;
-	module.merge(tx_pool.into_rpc())?;
+	io.merge(Web3::new(client.clone()).into_rpc())?;
+	io.merge(tx_pool.into_rpc())?;
 
 	if let Some(tracing_config) = maybe_tracing_config {
 		if let Some(trace_filter_requester) = tracing_config.tracing_requesters.trace {
-			module.merge(
+			io.merge(
 				Trace::new(client, trace_filter_requester, tracing_config.trace_filter_max_count)
 					.into_rpc(),
 			)?;
 		}
 
 		if let Some(debug_requester) = tracing_config.tracing_requesters.debug {
-			module.merge(Debug::new(debug_requester).into_rpc())?;
+			io.merge(Debug::new(debug_requester).into_rpc())?;
 		}
 	}
 
-	Ok(module)
+	Ok(io)
 }

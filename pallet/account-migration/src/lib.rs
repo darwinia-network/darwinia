@@ -43,13 +43,12 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
 
-#[cfg(test)]
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+#[cfg(all(test, feature = "runtime-benchmarks"))]
 mod mock;
 #[cfg(test)]
 mod tests;
-
-#[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
 
 mod weights;
 pub use weights::WeightInfo;

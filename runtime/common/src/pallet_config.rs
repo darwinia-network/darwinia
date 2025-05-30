@@ -79,32 +79,24 @@ use sp_core::U256;
 use sp_runtime::traits::AccountIdConversion;
 use sp_std::vec;
 
-/// We assume that ~5% of the block weight is consumed by `on_initialize` handlers. This is
-/// used to limit the maximal weight of a single extrinsic.
-const AVERAGE_ON_INITIALIZE_RATIO: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(5);
 /// We allow `Normal` extrinsics to fill up the block up to 75%, the rest can be used by
 /// `Operational` extrinsics.
 pub const NORMAL_DISPATCH_RATIO: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(75);
-const WEIGHT_MILLISECS_PER_BLOCK: u64 = 2_000;
 pub const MAXIMUM_BLOCK_WEIGHT: frame_support::weights::Weight =
 	frame_support::weights::Weight::from_parts(
 		frame_support::weights::constants::WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2),
 		cumulus_primitives_core::relay_chain::MAX_POV_SIZE as u64,
 	);
 
+// We assume that ~5% of the block weight is consumed by `on_initialize` handlers. This is
+// used to limit the maximal weight of a single extrinsic.
+const AVERAGE_ON_INITIALIZE_RATIO: sp_runtime::Perbill = sp_runtime::Perbill::from_percent(5);
+const WEIGHT_MILLISECS_PER_BLOCK: u64 = 2_000;
 const BLOCK_GAS_LIMIT: u64 = 20_000_000;
-
-// TODO: remove in stable2409.
-#[cfg(not(feature = "runtime-benchmarks"))]
-const EXISTENTIAL_DEPOSIT: Balance = 0;
-#[cfg(feature = "runtime-benchmarks")]
-const EXISTENTIAL_DEPOSIT: Balance = 1;
-frame_support::parameter_types! {
-	pub const ExistentialDeposit: Balance = EXISTENTIAL_DEPOSIT;
-}
 
 frame_support::parameter_types! {
 	pub const MaxBalance: Balance = Balance::MAX;
+	pub const ExistentialDeposit: Balance = 0;
 
 	// Retry a scheduled item every 10 blocks (1 minute) until the preimage exists.
 	pub const NoPreimagePostponement: Option<u32> = Some(10);
@@ -115,6 +107,9 @@ frame_support::parameter_types! {
 
 	pub const ReservedXcmpWeight: frame_support::weights::Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
 	pub const ReservedDmpWeight: frame_support::weights::Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
+
+	// Disable gas based storage growth limit.
+	pub const GasLimitStorageGrowthRatio: u64 = 0;
 
 	pub RuntimeBlockLength: frame_system::limits::BlockLength =
 		frame_system::limits::BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);

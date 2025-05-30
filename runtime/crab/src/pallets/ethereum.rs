@@ -27,5 +27,5 @@ impl pallet_ethereum::Config for Runtime {
 	type ExtraDataLength = ConstU32<64>;
 	type PostLogContent = PostBlockAndTxnHashes;
 	type RuntimeEvent = RuntimeEvent;
-	type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
+	type StateRoot = pallet_ethereum::IntermediateStateRoot<Self::Version>;
 }
