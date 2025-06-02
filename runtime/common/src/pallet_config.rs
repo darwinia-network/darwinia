@@ -94,10 +94,9 @@ const AVERAGE_ON_INITIALIZE_RATIO: sp_runtime::Perbill = sp_runtime::Perbill::fr
 const WEIGHT_MILLISECS_PER_BLOCK: u64 = 2_000;
 const BLOCK_GAS_LIMIT: u64 = 20_000_000;
 
-#[cfg(not(feature = "runtime-benchmarks"))]
 const EXISTENTIAL_DEPOSIT: Balance = 0;
-#[cfg(feature = "runtime-benchmarks")]
-const EXISTENTIAL_DEPOSIT: Balance = 100;
+// CONFLICT with `cargo test --features=runtime-benchmarks`.
+// const EXISTENTIAL_DEPOSIT: Balance = 100;
 frame_support::parameter_types! {
 	pub const ExistentialDeposit: Balance = EXISTENTIAL_DEPOSIT;
 }
