@@ -31,6 +31,8 @@ jobs:
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.issue.number }}/head
       - name: Try-Runtime
         # It is recommended to use a specific version of the action in production.
         #
