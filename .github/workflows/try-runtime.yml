@@ -47,7 +47,7 @@ jobs:
           # The features to enable for this try-runtime build.
           features: try-runtime
           # Rust toolchain version to build the runtime.
-          toolchain-ver: 1.81.0
+          toolchain-ver: 1.82.0
           # Try-Runtime CLI version.
           try-runtime-ver: 0.8.0
           # Whether to skip enforcing that the new runtime `spec_version` is greater or equal to the existing `spec_version`.
