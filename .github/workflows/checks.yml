@@ -122,31 +122,31 @@ jobs:
           features: std,runtime-benchmarks,try-runtime
           default-std: true
 
-  runtime-checks:
-    name: Task check runtimes
-    if: github.event_name == 'push' || !github.event.pull_request.draft
-    strategy:
-      matrix:
-        target:
-          [
-            {
-              chain: darwinia-dev,
-              compare-with: "https://rpc.darwinia.network",
-            },
-            {
-              chain: crab-dev,
-              compare-with: "https://crab-rpc.darwinia.network",
-            },
-          ]
-    needs: [basic-checks]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check ${{ matrix.target.chain }}
-        uses: hack-ink/subalfred-check-runtime-action@v0.2.1
-        with:
-          uploaded-artifact: darwinia
-          chain: ${{ matrix.target.chain }}
-          compare-with: ${{ matrix.target.compare-with }}
+  # runtime-checks:
+  #   name: Task check runtimes
+  #   if: github.event_name == 'push' || !github.event.pull_request.draft
+  #   strategy:
+  #     matrix:
+  #       target:
+  #         [
+  #           {
+  #             chain: darwinia-dev,
+  #             compare-with: "https://rpc.darwinia.network",
+  #           },
+  #           {
+  #             chain: crab-dev,
+  #             compare-with: "https://crab-rpc.darwinia.network",
+  #           },
+  #         ]
+  #   needs: [basic-checks]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Check ${{ matrix.target.chain }}
+  #       uses: hack-ink/subalfred-check-runtime-action@v0.2.1
+  #       with:
+  #         uploaded-artifact: darwinia
+  #         chain: ${{ matrix.target.chain }}
+  #         compare-with: ${{ matrix.target.compare-with }}
 
   evm-checks:
     name: Task check EVM

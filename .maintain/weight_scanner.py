@@ -151,7 +151,7 @@ class WeightParser:
         return results
 
     def scan_file(self, file_path: Path) -> List[WeightResult]:
-        """扫描单个文件"""
+        """Scan a single file."""
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()

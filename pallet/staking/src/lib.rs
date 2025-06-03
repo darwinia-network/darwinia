@@ -27,53 +27,6 @@
 #![deny(missing_docs)]
 #![allow(clippy::needless_borrows_for_generic_args)]
 
-#[allow(missing_docs)]
-pub mod migration {
-	// darwinia
-	use crate::*;
-	// polkadot-sdk
-	use frame_support::migration;
-
-	const PALLET: &[u8] = b"DarwiniaStaking";
-
-	pub fn migrate<T>() -> (u64, u64)
-	where
-		T: Config,
-	{
-		let (mut r, mut w) = (0, 0);
-
-		fn clear(item: &[u8], r: &mut u64, w: &mut u64) {
-			let res = migration::clear_storage_prefix(PALLET, item, &[], None, None);
-
-			*r += res.loops as u64;
-			*w += res.backend as u64;
-		}
-
-		clear(b"UnissuedReward", &mut r, &mut w);
-		clear(b"SessionStartTime", &mut r, &mut w);
-		clear(b"ElapsedTime", &mut r, &mut w);
-
-		StorageVersion::new(4).put::<Pallet<T>>();
-
-		w += 1;
-
-		(r, w)
-	}
-
-	pub fn post_check<T>()
-	where
-		T: Config,
-	{
-		fn assert_is_none(item: &[u8]) {
-			assert!(!migration::have_storage_value(PALLET, item, &[]));
-		}
-
-		assert_is_none(b"UnissuedReward");
-		assert_is_none(b"SessionStartTime");
-		assert_is_none(b"ElapsedTime");
-	}
-}
-
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
