@@ -18,6 +18,8 @@
 
 // core
 use core::marker::PhantomData;
+// alloc
+use alloc::vec::Vec;
 // crates.io
 use codec::Encode;
 // darwinia
@@ -28,7 +30,6 @@ use frame_support::{
 	traits::{ConstU128, Contains},
 };
 use sp_io::hashing::blake2_256;
-use sp_std::prelude::*;
 use xcm::latest::prelude::*;
 use xcm_executor::traits::ConvertLocation;
 
