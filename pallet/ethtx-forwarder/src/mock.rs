@@ -27,7 +27,6 @@ use crate::*;
 // polkadot-sdk
 use frame_support::derive_impl;
 use sp_runtime::BuildStorage;
-use sp_std::prelude::*;
 
 pub type AccountId = sp_core::H160;
 pub type Balance = u64;

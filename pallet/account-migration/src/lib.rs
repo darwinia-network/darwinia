@@ -43,6 +43,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
 
+extern crate alloc;
+
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 #[cfg(all(test, feature = "runtime-benchmarks"))]
@@ -53,6 +55,8 @@ mod tests;
 mod weights;
 pub use weights::WeightInfo;
 
+// alloc
+use alloc::{borrow::ToOwned, vec, vec::Vec};
 // crates.io
 use array_bytes::Hexify;
 // darwinia
@@ -75,7 +79,6 @@ use sp_runtime::{
 	traits::{IdentityLookup, Verify},
 	AccountId32,
 };
-use sp_std::prelude::*;
 
 #[frame_support::pallet]
 pub mod pallet {

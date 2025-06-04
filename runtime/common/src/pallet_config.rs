@@ -72,12 +72,13 @@ pub mod precompiles {
 	}
 }
 
+// alloc
+use alloc::vec;
 // darwinia
 use dc_primitives::*;
 // polkadot-sdk
 use sp_core::U256;
 use sp_runtime::traits::AccountIdConversion;
-use sp_std::vec;
 
 /// We allow `Normal` extrinsics to fill up the block up to 75%, the rest can be used by
 /// `Operational` extrinsics.
