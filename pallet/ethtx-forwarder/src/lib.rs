@@ -18,11 +18,15 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+extern crate alloc;
+
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
 mod test;
 
+// alloc
+use alloc::vec::Vec;
 // crates.io
 use codec::{Decode, Encode, MaxEncodedLen};
 use ethabi::{Function, Token};
@@ -48,7 +52,6 @@ use sp_runtime::{
 	traits::{BadOrigin, UniqueSaturatedInto},
 	DispatchError, RuntimeDebug,
 };
-use sp_std::vec::Vec;
 
 pub use pallet::*;
 

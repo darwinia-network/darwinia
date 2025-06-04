@@ -20,6 +20,8 @@
 // TODO:
 // #![deny(missing_docs)]
 
+extern crate alloc;
+
 #[cfg(feature = "runtime-benchmarks")]
 pub mod benchmark_helper;
 pub mod gov_origin;

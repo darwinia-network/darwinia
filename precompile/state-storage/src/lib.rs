@@ -19,11 +19,14 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(test)]
+extern crate alloc;
+
+#[cfg(test)]
 mod mock;
 #[cfg(test)]
 mod tests;
 
-// std
+// core
 use core::marker::PhantomData;
 // moonbeam
 use precompile_utils::prelude::*;

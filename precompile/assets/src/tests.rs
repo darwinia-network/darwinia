@@ -16,6 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+// alloc
+use alloc::str::from_utf8;
 // crates.io
 use sha3::{Digest, Keccak256};
 // darwinia
@@ -31,7 +33,6 @@ use precompile_utils::{
 // polkadot-sdk
 use frame_support::assert_ok;
 use sp_core::{H256, U256};
-use sp_std::str::from_utf8;
 
 fn precompiles() -> TestPrecompiles<Runtime> {
 	PrecompilesValue::get()
