@@ -67,7 +67,7 @@ impl pallet_referenda::Config for Runtime {
 	type SubmitOrigin = frame_system::EnsureSigned<Self::AccountId>;
 	type Tally = pallet_conviction_voting::TallyOf<Self>;
 	type Tracks = TracksInfo;
-	type UndecidingTimeout = ConstU32<{ 28 * DAYS }>;
+        type UndecidingTimeout = ConstU32<{ 42 * DAYS }>;
 	type Votes = pallet_conviction_voting::VotesOf<Self>;
 	type WeightInfo = weights::pallet_referenda::WeightInfo<Self>;
 }
