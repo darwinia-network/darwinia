@@ -5,6 +5,7 @@ on:
     types: [created]
 
 permissions:
+  contents: read
   # Necessary to comment on the pull requests.
   pull-requests: write
 

@@ -20,6 +20,11 @@ env:
   # Set this to true for CI testing purposes only.
   SKIP_BUILD: false
 
+permissions:
+  contents: write
+  actions: write
+  packages: write
+
 jobs:
   build-nodes:
     name: Build nodes
