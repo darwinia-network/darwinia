@@ -1,9 +1,5 @@
 name: Try Runtime
 
-on:
-  issue_comment:
-    types: [created]
-
 permissions:
   contents: read
   # Necessary to comment on the pull requests.
@@ -14,6 +10,10 @@ env:
   CARGO_TERM_COLOR: always
 
   RUST_BACKTRACE: full
+
+on:
+  issue_comment:
+    types: [created]
 
 jobs:
   try-runtime:

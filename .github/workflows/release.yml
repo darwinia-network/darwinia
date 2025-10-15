@@ -1,9 +1,9 @@
 name: Release
 
-on:
-  push:
-    tags:
-      - "v*"
+permissions:
+  contents: write
+  actions: write
+  packages: write
 
 env:
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
@@ -20,10 +20,10 @@ env:
   # Set this to true for CI testing purposes only.
   SKIP_BUILD: false
 
-permissions:
-  contents: write
-  actions: write
-  packages: write
+on:
+  push:
+    tags:
+      - "v*"
 
 jobs:
   build-nodes:

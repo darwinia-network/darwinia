@@ -1,9 +1,9 @@
 name: Staging
 
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+  packages: write
 
 env:
   CACHE_VERSION: 0
@@ -15,10 +15,10 @@ env:
 
   RUST_BACKTRACE: full
 
-permissions:
-  contents: read
-  actions: write
-  packages: write
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   build-node:

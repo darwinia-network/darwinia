@@ -1,4 +1,17 @@
 name: Rust
+
+permissions:
+  contents: read
+  actions: write
+
+env:
+  CACHE_VERSION: 1
+
+  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
+  CARGO_TERM_COLOR: always
+
+  RUST_BACKTRACE: full
+
 on:
   push:
     branches:
@@ -22,18 +35,6 @@ on:
       - "**.yml"
       - "**.sol"
   merge_group:
-
-env:
-  CACHE_VERSION: 1
-
-  CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
-  CARGO_TERM_COLOR: always
-
-  RUST_BACKTRACE: full
-
-permissions:
-  contents: read
-  actions: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
