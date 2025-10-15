@@ -30,11 +30,32 @@ jobs:
           - name: crab-runtime
             uri: ws://g1.crab2.darwinia.network:9944
     steps:
+      - name: Load pull request metadata
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            core.setOutput('is_fork', pr.head.repo.fork ? 'true' : 'false');
+            core.setOutput('head_sha', pr.head.sha);
+            core.setOutput('head_repo', pr.head.repo.full_name);
+      - name: Skip fork pull requests
+        if: steps.pr.outputs.is_fork == 'true'
+        run: |
+          echo "Skipping try-runtime for forked pull requests."
+          exit 0
       - name: Fetch latest code
+        if: steps.pr.outputs.is_fork == 'false'
         uses: actions/checkout@v4
         with:
-          ref: refs/pull/${{ github.event.issue.number }}/head
+          repository: ${{ steps.pr.outputs.head_repo }}
+          ref: ${{ steps.pr.outputs.head_sha }}
       - name: Try-Runtime
+        if: steps.pr.outputs.is_fork == 'false'
         # It is recommended to use a specific version of the action in production.
         #
         # For example:
