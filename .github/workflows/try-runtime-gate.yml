@@ -1,0 +1,79 @@
+name: Try Runtime Gate
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  gate:
+    if: >
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/bot try-runtime')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify requester is trusted
+        id: authz
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const assoc = context.payload.comment.author_association;
+            const ok = ['MEMBER','OWNER','COLLABORATOR'].includes(assoc);
+            return { ok, assoc };
+
+      - name: Reject if untrusted
+        if: fromJSON(steps.authz.outputs.result).ok != true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: `❌ Only collaborators can run \`/bot try-runtime\`. Your association: **${context.payload.comment.author_association}**`
+            });
+            core.setFailed('Unauthorized')
+
+      - name: Build label list from comment flags
+        id: labels
+        env:
+          BODY: ${{ github.event.comment.body }}
+        run: |
+          labels=("try-runtime")
+          if echo "$BODY" | grep -q -- '--disable-spec-version-check'; then
+            labels+=("try-runtime:skip-spec-check")
+          fi
+          if echo "$BODY" | grep -q -- '--disable-idempotency-checks'; then
+            labels+=("try-runtime:skip-idempotency")
+          fi
+          printf '%s\n' "${labels[@]}" | jq -R . | jq -s . > labels.json
+          echo "labels=$(cat labels.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Add labels to PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const ls = JSON.parse(process.env.LABELS);
+            await github.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              labels: ls
+            });
+        env:
+          LABELS: ${{ steps.labels.outputs.labels }}
+
+      - name: Acknowledge
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: `⏳ Queued **Try Runtime**. A PR job will execute and post results here.`
+            });

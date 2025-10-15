@@ -177,7 +177,7 @@ where
 			Ok((worker, telemetry))
 		})
 		.transpose()?;
-	let executor = sc_service::new_wasm_executor::<HostFunctions>(config);
+	let executor = sc_service::new_wasm_executor::<HostFunctions>(&config.executor);
 	let (client, backend, keystore_container, task_manager) =
 		sc_service::new_full_parts_record_import::<Block, RuntimeApi, _>(
 			config,
@@ -297,7 +297,10 @@ where
 		.then_some(database_path.as_ref().map(|p| {
 			let _ = std::fs::create_dir_all(p);
 
-			sc_sysinfo::gather_hwbench(Some(p))
+			sc_sysinfo::gather_hwbench(
+				Some(p),
+				&frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE,
+			)
 		}))
 		.flatten();
 	let (relay_chain_interface, collator_key) =
@@ -315,8 +318,10 @@ where
 	let collator = parachain_config.role.is_authority();
 	let prometheus_registry = parachain_config.prometheus_registry().cloned();
 	let import_queue_service = import_queue.service();
-	let net_config =
-		<sc_network::config::FullNetworkConfiguration<_, _, Net>>::new(&parachain_config.network);
+	let net_config = <sc_network::config::FullNetworkConfiguration<_, _, Net>>::new(
+		&parachain_config.network,
+		prometheus_registry.clone(),
+	);
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		cumulus_client_service::build_network(cumulus_client_service::BuildNetworkParams {
 			parachain_config: &parachain_config,
@@ -366,7 +371,7 @@ where
 	> = Default::default();
 	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
 	// for ethereum-compatibility rpc.
-	parachain_config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
+	parachain_config.rpc.id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
 	let tracing_requesters = frontier::spawn_tasks(
 		&task_manager,
 		client.clone(),
@@ -424,12 +429,11 @@ where
 			Ok((timestamp, parachain_inherent_data))
 		};
 
-		Box::new(move |deny_unsafe, subscription_task_executor| {
+		Box::new(move |subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {
 				client: client.clone(),
 				pool: pool.clone(),
 				graph: pool.pool().clone(),
-				deny_unsafe,
 				is_authority: collator,
 				network: network.clone(),
 				sync: sync_service.clone(),
@@ -494,7 +498,7 @@ where
 		// in there and swapping out the requirements for your own are probably a good idea. The
 		// requirements for a para-chain are dictated by its relay-chain.
 		if let Err(e) =
-			frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE.check_hardware(&hwbench)
+			frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE.check_hardware(&hwbench, false)
 		{
 			log::warn!(
 				"⚠️  The hardware does not meet the minimal requirements {e} for role 'Authority'.",
@@ -673,7 +677,7 @@ where
 				proposer,
 				collator_service,
 				// Very limited proposal time.
-				authoring_duration: Duration::from_millis(1_500),
+				authoring_duration: Duration::from_millis(2_000),
 				reinitialize: false,
 			};
 			let fut = cumulus_client_consensus_aura::collators::lookahead::run::<
@@ -734,8 +738,11 @@ where
 				_telemetry_worker_handle,
 			),
 	} = new_partial::<RuntimeApi>(&config, eth_rpc_config)?;
-	let net_config =
-		<sc_network::config::FullNetworkConfiguration<_, _, Net>>::new(&config.network);
+	let prometheus_registry = config.prometheus_registry().cloned();
+	let net_config = <sc_network::config::FullNetworkConfiguration<_, _, Net>>::new(
+		&config.network,
+		prometheus_registry.clone(),
+	);
 	let metrics = Net::register_notification_metrics(None);
 	let (network, system_rpc_tx, tx_handler_controller, start_network, sync_service) =
 		sc_service::build_network(sc_service::BuildNetworkParams {
@@ -746,7 +753,7 @@ where
 			spawn_handle: task_manager.spawn_handle(),
 			import_queue,
 			block_announce_validator_builder: None,
-			warp_sync_params: None,
+			warp_sync_config: None,
 			block_relay: None,
 			metrics,
 		})?;
@@ -880,7 +887,6 @@ where
 		log::warn!("You could add --alice or --bob to make dev chain seal instantly.");
 	}
 
-	let prometheus_registry = config.prometheus_registry().cloned();
 	let block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
 		task_manager.spawn_handle(),
 		storage_override.clone(),
@@ -893,7 +899,7 @@ where
 	> = Default::default();
 	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
 	// for ethereum-compatibility rpc.
-	config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
+	config.rpc.id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
 	let tracing_requesters = frontier::spawn_tasks(
 		&task_manager,
 		client.clone(),
@@ -952,12 +958,11 @@ where
 			Ok((timestamp, parachain_inherent_data))
 		};
 
-		Box::new(move |deny_unsafe, subscription_task_executor| {
+		Box::new(move |subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {
 				client: client.clone(),
 				pool: pool.clone(),
 				graph: pool.pool().clone(),
-				deny_unsafe,
 				is_authority: collator,
 				network: network.clone(),
 				sync: sync_service.clone(),

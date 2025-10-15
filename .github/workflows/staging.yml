@@ -1,9 +1,9 @@
 name: Staging
 
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+  packages: write
 
 env:
   CACHE_VERSION: 0
@@ -14,6 +14,11 @@ env:
   DOCKER_REGISTRY: ghcr.io
 
   RUST_BACKTRACE: full
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   build-node:

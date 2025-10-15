@@ -274,6 +274,7 @@ impl ExtBuilder {
 			keys: (1..=3)
 				.map(|i| (AccountId(i), AccountId(i), SessionKeys { uint: i.into() }))
 				.collect(),
+			..Default::default()
 		}
 		.assimilate_storage(&mut storage)
 		.unwrap();

@@ -34,17 +34,6 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
-		use array_bytes::Dehexify;
-
-		log::info!("post");
-
-		assert!(Balances::locks(AccountId::from(
-			<[u8; 20]>::dehexify("0x3d6a81177e17d5dbbd36f23ea5328acdf3471209").unwrap(),
-		))
-		.is_empty());
-
-		darwinia_staking::migration::post_check::<Runtime>();
-
 		Ok(())
 	}
 
@@ -54,16 +43,6 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	use array_bytes::Dehexify;
-	use frame_support::traits::LockableCurrency;
-
-	if let Ok(who) = <[u8; 20]>::dehexify("0x3d6a81177e17d5dbbd36f23ea5328acdf3471209") {
-		let who = AccountId::from(who);
-
-		Balances::remove_lock(*b"vesting ", &who);
-	}
-
-	let (r, w) = darwinia_staking::migration::migrate::<Runtime>();
-
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(r, w + 5)
+	frame_support::weights::Weight::zero()
+	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 0)
 }

@@ -28,7 +28,7 @@ pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia2"),
 	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
 	authoring_version: 0,
-	spec_version: 7_0_0_0,
+	spec_version: 7_0_2_0,
 	impl_version: 0,
 	apis: sp_version::create_apis_vec!([]),
 	transaction_version: 0,

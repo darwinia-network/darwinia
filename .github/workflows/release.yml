@@ -1,9 +1,9 @@
 name: Release
 
-on:
-  push:
-    tags:
-      - "v*"
+permissions:
+  contents: write
+  actions: write
+  packages: write
 
 env:
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
@@ -19,6 +19,11 @@ env:
 
   # Set this to true for CI testing purposes only.
   SKIP_BUILD: false
+
+on:
+  push:
+    tags:
+      - "v*"
 
 jobs:
   build-nodes:
@@ -107,7 +112,7 @@ jobs:
           # Generally, this would be `on-chain-release-build` in order to disable the logging to shrink the WASM binary size.
           features: on-chain-release-build
           # Rust toolchain version to build the runtime.
-          toolchain-ver: 1.81.0
+          toolchain-ver: 1.82.0
           # The workdir to build the runtime.
           #
           # By default, it is current directory.

@@ -84,7 +84,7 @@ pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia2"),
 	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
 	authoring_version: 0,
-	spec_version: 7_0_0_0,
+	spec_version: 7_0_2_0,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 0,
@@ -578,8 +578,8 @@ sp_api::impl_runtime_apis! {
 	}
 
 	impl xcm_runtime_apis::dry_run::DryRunApi<Block, RuntimeCall, RuntimeEvent, OriginCaller> for Runtime {
-		fn dry_run_call(origin: OriginCaller, call: RuntimeCall) -> Result<xcm_runtime_apis::dry_run::CallDryRunEffects<RuntimeEvent>, xcm_runtime_apis::dry_run::Error> {
-			PolkadotXcm::dry_run_call::<Runtime, XcmRouter, OriginCaller, RuntimeCall>(origin, call)
+		fn dry_run_call(origin: OriginCaller, call: RuntimeCall, result_xcms_version: xcm::Version) -> Result<xcm_runtime_apis::dry_run::CallDryRunEffects<RuntimeEvent>, xcm_runtime_apis::dry_run::Error> {
+			PolkadotXcm::dry_run_call::<Runtime, XcmRouter, OriginCaller, RuntimeCall>(origin, call, result_xcms_version)
 		}
 
 		fn dry_run_xcm(origin_location: xcm::VersionedLocation, xcm: xcm::VersionedXcm<RuntimeCall>) -> Result<xcm_runtime_apis::dry_run::XcmDryRunEffects<RuntimeEvent>, xcm_runtime_apis::dry_run::Error> {
