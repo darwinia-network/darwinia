@@ -1,4 +1,8 @@
 name: Notify release
+
+permissions:
+  contents: read
+
 env:
   GITHUB_TOKEN: ${{ secrets.GH_TKN_DARWINIA }}
 
