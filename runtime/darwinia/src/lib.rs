@@ -37,7 +37,7 @@ pub use darwinia_common_runtime::*;
 pub use dc_primitives::*;
 
 // alloc
-use alloc::{vec::Vec, vec};
+use alloc::{vec, vec::Vec};
 // crates.io
 use codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
