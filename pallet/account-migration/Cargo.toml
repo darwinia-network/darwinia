@@ -50,7 +50,6 @@ std = [
 	"pallet-assets/std",
 	"pallet-balances/std",
 	"sp-core/std",
-	"sp-io/std",
 	"sp-runtime/std",
 	"sp-std/std",
 	# polkadot-sdk optional

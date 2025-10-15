@@ -19,15 +19,20 @@
 // darwinia
 use crate::*;
 
-darwinia_common_runtime::fast_runtime_or_not!(DURATION, BlockNumber, 5 * MINUTES, 14 * DAYS);
+darwinia_common_runtime::fast_runtime_or_not!(
+	SESSIONS_PER_DAY,
+	Balance,
+	// 5 minutes.
+	24 * 60 / 5,
+	// 6 hours.
+	24 / 6
+);
 
 impl darwinia_staking::Config for Runtime {
-	type Currency = Balances;
-	type IssuingManager = darwinia_staking::BalancesIssuing<Self>;
 	type KtonStaking = darwinia_staking::KtonStaking<Self>;
+	type RewardPerSession = ConstU128<{ 40_000_000 * UNIT / 365 / SESSIONS_PER_DAY }>;
 	type RingStaking = darwinia_staking::RingStaking<Self>;
 	type RuntimeEvent = RuntimeEvent;
 	type Treasury = pallet_config::TreasuryAccount;
-	type UnixTime = Timestamp;
 	type WeightInfo = weights::darwinia_staking::WeightInfo<Self>;
 }

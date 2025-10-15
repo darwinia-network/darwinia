@@ -221,7 +221,7 @@ impl<R>
 where
 	R: pallet_authorship::Config + pallet_balances::Config,
 {
-	fn on_unbalanceds<B>(
+	fn on_unbalanceds(
 		mut fees_then_tips: impl Iterator<
 			Item = frame_support::traits::fungible::Credit<
 				R::AccountId,

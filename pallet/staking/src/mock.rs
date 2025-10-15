@@ -24,7 +24,6 @@ use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 // darwinia
 use crate::*;
-use dc_types::UNIT;
 // polkadot-sdk
 use frame_support::{
 	assert_ok, derive_impl,
@@ -78,12 +77,6 @@ impl frame_system::Config for Runtime {
 	type AccountId = AccountId;
 	type Block = frame_system::mocking::MockBlock<Self>;
 	type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
-}
-
-#[derive_impl(pallet_timestamp::config_preludes::TestDefaultConfig as pallet_timestamp::DefaultConfig)]
-impl pallet_timestamp::Config for Runtime {
-	type MinimumPeriod = ();
-	type Moment = Moment;
 }
 
 #[derive_impl(pallet_balances::config_preludes::TestDefaultConfig as pallet_balances::DefaultConfig)]
@@ -184,34 +177,7 @@ impl pallet_treasury::Config for Runtime {
 }
 
 frame_support::parameter_types! {
-	pub static InflationType: u8 = 0;
 	pub static NextCollatorId: u64 = 1;
-}
-pub enum StatedOnSessionEnd {}
-impl crate::IssuingManager<Runtime> for StatedOnSessionEnd {
-	fn inflate() -> Balance {
-		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
-			<crate::BalancesIssuing<Runtime>>::inflate()
-		} else {
-			<crate::TreasuryIssuing<Runtime, frame_support::traits::ConstU128<{ 20_000 * UNIT }>>>::inflate()
-		}
-	}
-
-	fn calculate_reward(issued: Balance) -> Balance {
-		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
-			<crate::BalancesIssuing<Runtime>>::calculate_reward(issued)
-		} else {
-			<crate::TreasuryIssuing<Runtime, frame_support::traits::ConstU128<{ 20_000 * UNIT }>>>::calculate_reward(issued)
-		}
-	}
-
-	fn reward(amount: Balance) -> sp_runtime::DispatchResult {
-		if INFLATION_TYPE.with(|v| *v.borrow()) == 0 {
-			<crate::BalancesIssuing<Runtime>>::reward(amount)
-		} else {
-			<crate::TreasuryIssuing<Runtime,frame_support::traits::ConstU128<{20_000 * UNIT}>>>::reward( amount)
-		}
-	}
 }
 pub enum RingStaking {}
 impl crate::Election<AccountId> for RingStaking {
@@ -259,20 +225,17 @@ impl crate::Reward<AccountId> for KtonStaking {
 	}
 }
 impl crate::Config for Runtime {
-	type Currency = Balances;
-	type IssuingManager = StatedOnSessionEnd;
 	type KtonStaking = KtonStaking;
+	type RewardPerSession = frame_support::traits::ConstU128<1_000>;
 	type RingStaking = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
 	type Treasury = TreasuryAccount;
-	type UnixTime = Timestamp;
 	type WeightInfo = ();
 }
 
 frame_support::construct_runtime! {
 	pub enum Runtime {
 		System: frame_system,
-		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
 		Session: pallet_session,
 		Treasury: pallet_treasury,
@@ -282,10 +245,6 @@ frame_support::construct_runtime! {
 
 pub enum Efflux {}
 impl Efflux {
-	pub fn time(millis: Moment) {
-		Timestamp::set_timestamp(<pallet_timestamp::Now<Runtime>>::get() + millis);
-	}
-
 	pub fn block(number: BlockNumber) {
 		let now = System::block_number();
 
@@ -298,12 +257,6 @@ impl Efflux {
 
 pub struct ExtBuilder;
 impl ExtBuilder {
-	pub fn inflation_type(self, r#type: u8) -> Self {
-		INFLATION_TYPE.with(|v| *v.borrow_mut() = r#type);
-
-		self
-	}
-
 	pub fn build(self) -> TestExternalities {
 		let _ = pretty_env_logger::try_init();
 		let mut storage =
@@ -321,6 +274,7 @@ impl ExtBuilder {
 			keys: (1..=3)
 				.map(|i| (AccountId(i), AccountId(i), SessionKeys { uint: i.into() }))
 				.collect(),
+			..Default::default()
 		}
 		.assimilate_storage(&mut storage)
 		.unwrap();
@@ -354,7 +308,6 @@ pub fn preset_session_keys() {
 
 pub fn initialize_block(number: BlockNumber) {
 	System::set_block_number(number);
-	Efflux::time(1);
 	AllPalletsWithSystem::on_initialize(number);
 }
 

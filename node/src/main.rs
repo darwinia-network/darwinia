@@ -28,5 +28,7 @@ mod rpc;
 mod service;
 
 fn main() -> sc_cli::Result<()> {
+	color_eyre::install().unwrap();
+
 	command::run()
 }

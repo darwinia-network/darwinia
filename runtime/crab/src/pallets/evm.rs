@@ -161,6 +161,7 @@ impl DispatchValidateT<AccountId, RuntimeCall> for DarwiniaDispatchValidator {
 }
 
 impl pallet_evm::Config for Runtime {
+	type AccountProvider = pallet_evm::FrameSystemAccountProvider<Self>;
 	type AddressMapping = pallet_evm::IdentityAddressMapping;
 	type BlockGasLimit = pallet_config::BlockGasLimit;
 	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
@@ -170,6 +171,7 @@ impl pallet_evm::Config for Runtime {
 	type FeeCalculator = TransactionPaymentGasPrice;
 	type FindAuthor = FindAuthor<pallet_session::FindAccountFromAuthorIndex<Self, Aura>>;
 	type GasLimitPovSizeRatio = pallet_config::GasLimitPovSizeRatio;
+	type GasLimitStorageGrowthRatio = pallet_config::GasLimitStorageGrowthRatio;
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = pallet_evm::EVMFungibleAdapter<Balances, ()>;
 	type OnCreate = ();
@@ -177,7 +179,6 @@ impl pallet_evm::Config for Runtime {
 	type PrecompilesValue = PrecompilesValue;
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
 	type RuntimeEvent = RuntimeEvent;
-	type SuicideQuickClearLimit = ();
 	type Timestamp = Timestamp;
 	type WeightInfo = ();
 	type WeightPerGas = pallet_config::WeightPerGas;

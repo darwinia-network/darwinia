@@ -60,6 +60,7 @@ impl fp_evm::FeeCalculator for FixedGasPrice {
 	}
 }
 impl pallet_evm::Config for Runtime {
+	type AccountProvider = pallet_evm::FrameSystemAccountProvider<Self>;
 	type AddressMapping = pallet_evm::IdentityAddressMapping;
 	type BlockGasLimit = BlockGasLimit;
 	type BlockHashMapping = pallet_evm::SubstrateBlockHashMapping<Self>;
@@ -69,6 +70,7 @@ impl pallet_evm::Config for Runtime {
 	type FeeCalculator = FixedGasPrice;
 	type FindAuthor = ();
 	type GasLimitPovSizeRatio = ();
+	type GasLimitStorageGrowthRatio = ();
 	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
 	type OnChargeTransaction = ();
 	type OnCreate = ();
@@ -76,7 +78,6 @@ impl pallet_evm::Config for Runtime {
 	type PrecompilesValue = ();
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
 	type RuntimeEvent = RuntimeEvent;
-	type SuicideQuickClearLimit = ();
 	type Timestamp = Timestamp;
 	type WeightInfo = ();
 	type WeightPerGas = WeightPerGas;
@@ -90,7 +91,7 @@ impl pallet_ethereum::Config for Runtime {
 	type ExtraDataLength = ();
 	type PostLogContent = PostBlockAndTxnHashes;
 	type RuntimeEvent = RuntimeEvent;
-	type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
+	type StateRoot = pallet_ethereum::IntermediateStateRoot<Self::Version>;
 }
 
 impl darwinia_ethtx_forwarder::Config for Runtime {

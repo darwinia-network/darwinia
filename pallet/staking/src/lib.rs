@@ -27,99 +27,6 @@
 #![deny(missing_docs)]
 #![allow(clippy::needless_borrows_for_generic_args)]
 
-#[allow(missing_docs)]
-pub mod migration {
-	// darwinia
-	use crate::*;
-	// polkadot-sdk
-	use frame_support::migration;
-
-	const PALLET: &[u8] = b"DarwiniaStaking";
-
-	pub fn migrate<T>() -> (u64, u64)
-	where
-		T: Config,
-	{
-		let ver = StorageVersion::get::<Pallet<T>>();
-		let (mut r, mut w) = (1, 0);
-
-		if ver != 2 {
-			log::warn!(
-				"\
-				[pallet::staking] skipping v2 to v3 migration: executed on wrong storage version.\
-				Expected version 2, found {ver:?}\
-				",
-			);
-
-			return (r, w);
-		}
-
-		fn clear(item: &[u8], r: &mut u64, w: &mut u64) {
-			let res = migration::clear_storage_prefix(PALLET, item, &[], None, None);
-
-			*r += res.loops as u64;
-			*w += res.backend as u64;
-		}
-
-		clear(b"Collators", &mut r, &mut w);
-		clear(b"Nominators", &mut r, &mut w);
-		clear(b"ExposureCacheStates", &mut r, &mut w);
-		clear(b"ExposureCache0", &mut r, &mut w);
-		clear(b"ExposureCache1", &mut r, &mut w);
-		clear(b"ExposureCache2", &mut r, &mut w);
-		clear(b"CacheStates", &mut r, &mut w);
-		clear(b"CollatorsCache0", &mut r, &mut w);
-		clear(b"CollatorsCache1", &mut r, &mut w);
-		clear(b"CollatorsCache2", &mut r, &mut w);
-		clear(b"MigrationStartPoint", &mut r, &mut w);
-		clear(b"RateLimit", &mut r, &mut w);
-		clear(b"RateLimitState", &mut r, &mut w);
-
-		if let Some(abc) = migration::take_storage_value::<(
-			BlockNumberFor<T>,
-			BTreeMap<T::AccountId, BlockNumberFor<T>>,
-		)>(PALLET, b"AuthoredBlocksCount", &[])
-		{
-			<AuthoredBlockCount<T>>::put(abc);
-
-			r += 1;
-			w += 1;
-		}
-
-		StorageVersion::new(3).put::<Pallet<T>>();
-
-		w += 1;
-
-		(r, w)
-	}
-
-	pub fn post_check<T>()
-	where
-		T: Config,
-	{
-		fn assert_is_none(item: &[u8]) {
-			assert!(!migration::have_storage_value(PALLET, item, &[]));
-		}
-
-		assert_is_none(b"Collators");
-		assert_is_none(b"Nominators");
-		assert_is_none(b"ExposureCacheStates");
-		assert_is_none(b"ExposureCache0");
-		assert_is_none(b"ExposureCache1");
-		assert_is_none(b"ExposureCache2");
-		assert_is_none(b"CacheStates");
-		assert_is_none(b"CollatorsCache0");
-		assert_is_none(b"CollatorsCache1");
-		assert_is_none(b"CollatorsCache2");
-		assert_is_none(b"MigrationStartPoint");
-		assert_is_none(b"RateLimit");
-		assert_is_none(b"RateLimitState");
-		assert_is_none(b"AuthoredBlocksCount");
-
-		assert!(<AuthoredBlockCount<T>>::exists());
-	}
-}
-
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
@@ -135,13 +42,9 @@ pub use weights::WeightInfo;
 use codec::FullCodec;
 use ethabi::{Function, Param, ParamType, StateMutability, Token};
 // darwinia
-use dc_types::{Balance, Moment};
+use dc_types::Balance;
 // polkadot-sdk
-use frame_support::{
-	pallet_prelude::*,
-	traits::{Currency, UnixTime},
-	PalletId,
-};
+use frame_support::{pallet_prelude::*, PalletId};
 use frame_system::pallet_prelude::*;
 use sp_core::H160;
 use sp_runtime::{
@@ -150,14 +53,12 @@ use sp_runtime::{
 };
 use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
-const PAYOUT_FRAC: Perbill = Perbill::from_percent(40);
-
 #[frame_support::pallet]
 pub mod pallet {
 	// darwinia
 	use crate::*;
 
-	const STORAGE_VERSION: StorageVersion = StorageVersion::new(3);
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(4);
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
@@ -167,15 +68,6 @@ pub mod pallet {
 		/// Weight information for extrinsic in this pallet.
 		type WeightInfo: WeightInfo;
 
-		/// Unix time interface.
-		type UnixTime: UnixTime;
-
-		/// Currency interface to pay the reward.
-		type Currency: Currency<Self::AccountId, Balance = Balance>;
-
-		/// Inflation and reward manager.
-		type IssuingManager: IssuingManager<Self>;
-
 		/// RING staking interface.
 		type RingStaking: Election<Self::AccountId> + Reward<Self::AccountId>;
 
@@ -183,7 +75,12 @@ pub mod pallet {
 		type KtonStaking: Reward<Self::AccountId>;
 
 		/// Treasury address.
+		#[pallet::constant]
 		type Treasury: Get<Self::AccountId>;
+
+		/// Reward amount per session.
+		#[pallet::constant]
+		type RewardPerSession: Get<Balance>;
 	}
 
 	#[allow(missing_docs)]
@@ -196,8 +93,6 @@ pub mod pallet {
 
 	#[pallet::error]
 	pub enum Error<T> {
-		/// Collator count mustn't be zero.
-		ZeroCollatorCount,
 		/// No reward to pay for this collator.
 		NoReward,
 	}
@@ -212,22 +107,9 @@ pub mod pallet {
 	pub type AuthoredBlockCount<T: Config> =
 		StorageValue<_, (BlockNumberFor<T>, BTreeMap<T::AccountId, BlockNumberFor<T>>), ValueQuery>;
 
-	/// Unissued reward to Treasury.
-	#[pallet::storage]
-	pub type UnissuedReward<T: Config> = StorageValue<_, Balance, ValueQuery>;
-
 	/// All outstanding rewards since the last payment.
 	#[pallet::storage]
-	#[pallet::unbounded]
 	pub type PendingRewards<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, Balance>;
-
-	/// Active session's start-time.
-	#[pallet::storage]
-	pub type SessionStartTime<T: Config> = StorageValue<_, Moment, ValueQuery>;
-
-	/// Elapsed time.
-	#[pallet::storage]
-	pub type ElapsedTime<T: Config> = StorageValue<_, Moment, ValueQuery>;
 
 	/// RING staking contract address.
 	#[pallet::storage]
@@ -236,40 +118,35 @@ pub mod pallet {
 	#[pallet::storage]
 	pub type KtonStakingContract<T: Config> = StorageValue<_, T::AccountId>;
 
+	/// Unallocated collator RING rewards.
+	#[pallet::storage]
+	pub type UnallocatedRingRewards<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, Balance>;
+
+	/// Unallocated collator KTON rewards.
+	///
+	/// The destination is the KTON staking contract.
+	#[pallet::storage]
+	pub type UnallocatedKtonRewards<T> = StorageValue<_, Balance, ValueQuery>;
+
 	#[pallet::genesis_config]
-	pub struct GenesisConfig<T: Config> {
-		/// Current timestamp.
-		pub now: Moment,
-		/// The running time of Darwinia1.
-		pub elapsed_time: Moment,
+	pub struct GenesisConfig<T> {
 		/// Genesis collator count.
 		pub collator_count: u32,
 		#[allow(missing_docs)]
 		pub _marker: PhantomData<T>,
 	}
-	impl<T> Default for GenesisConfig<T>
-	where
-		T: Config,
-	{
+	impl<T> Default for GenesisConfig<T> {
 		fn default() -> Self {
-			Self {
-				now: Default::default(),
-				elapsed_time: Default::default(),
-				collator_count: 1,
-				_marker: Default::default(),
-			}
+			Self { collator_count: 1, _marker: Default::default() }
 		}
 	}
 	#[pallet::genesis_build]
-	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
+	impl<T> BuildGenesisConfig for GenesisConfig<T>
+	where
+		T: Config,
+	{
 		fn build(&self) {
-			if self.collator_count == 0 {
-				panic!("[pallet::staking] collator count mustn't be 0");
-			}
-
-			<SessionStartTime<T>>::put(self.now);
-			<ElapsedTime<T>>::put(self.elapsed_time);
-			<CollatorCount<T>>::put(self.collator_count);
+			<CollatorCount<T>>::put(self.collator_count.max(1));
 		}
 	}
 
@@ -313,11 +190,7 @@ pub mod pallet {
 		pub fn set_collator_count(origin: OriginFor<T>, count: u32) -> DispatchResult {
 			ensure_root(origin)?;
 
-			if count == 0 {
-				return Err(<Error<T>>::ZeroCollatorCount)?;
-			}
-
-			<CollatorCount<T>>::put(count);
+			<CollatorCount<T>>::put(count.max(1));
 
 			Ok(())
 		}
@@ -373,14 +246,6 @@ pub mod pallet {
 
 		/// Allocate the session reward.
 		pub fn allocate_session_reward(amount: Balance) {
-			let treasury = <T as Config>::Treasury::get();
-
-			if T::IssuingManager::reward(amount).is_ok() {
-				Self::deposit_event(Event::RewardAllocated { who: treasury, amount });
-			} else {
-				<UnissuedReward<T>>::mutate(|v| *v += amount);
-			}
-
 			let reward_to_ring_staking = amount.saturating_div(2);
 			let reward_to_kton_staking = amount.saturating_sub(reward_to_ring_staking);
 			let (total_block_count, author_map) = <AuthoredBlockCount<T>>::take();
@@ -414,7 +279,7 @@ pub mod pallet {
 		fn prepare_new_session(i: u32) -> Option<Vec<T::AccountId>> {
 			let bn = <frame_system::Pallet<T>>::block_number();
 
-			log::info!("assembling new collators for new session {i} at #{bn:?}",);
+			log::info!("assembling new collators for new session {i} at #{bn:?}");
 
 			let collators = T::RingStaking::elect(<CollatorCount<T>>::get()).unwrap_or_default();
 
@@ -464,7 +329,7 @@ pub mod pallet {
 		T: Config,
 	{
 		fn end_session(_: u32) {
-			T::IssuingManager::on_session_end();
+			Self::allocate_session_reward(T::RewardPerSession::get());
 		}
 
 		fn start_session(_: u32) {}
@@ -498,77 +363,6 @@ pub trait Election<AccountId> {
 	}
 }
 impl<AccountId> Election<AccountId> for () {}
-
-/// Issuing and reward manager.
-pub trait IssuingManager<T>
-where
-	T: Config,
-{
-	/// Generic session termination procedures.
-	fn on_session_end() {
-		let inflation = Self::inflate();
-		let reward = Self::calculate_reward(inflation);
-
-		<Pallet<T>>::allocate_session_reward(reward);
-	}
-
-	/// Inflation settings.
-	fn inflate() -> Balance {
-		0
-	}
-
-	/// Calculate the reward.
-	fn calculate_reward(_: Balance) -> Balance {
-		0
-	}
-
-	/// The reward function.
-	fn reward(_: Balance) -> DispatchResult {
-		Ok(())
-	}
-}
-impl<T> IssuingManager<T> for () where T: Config {}
-/// Issue new token from pallet-balances.
-pub struct BalancesIssuing<T>(PhantomData<T>);
-impl<T> IssuingManager<T> for BalancesIssuing<T>
-where
-	T: Config,
-{
-	fn inflate() -> Balance {
-		let now = now::<T>() as Moment;
-		let session_duration = now - <SessionStartTime<T>>::get();
-		let elapsed_time = <ElapsedTime<T>>::mutate(|t| {
-			*t = t.saturating_add(session_duration);
-
-			*t
-		});
-
-		<SessionStartTime<T>>::put(now);
-
-		dc_inflation::issuing_in_period(session_duration, elapsed_time).unwrap_or_default()
-	}
-
-	fn calculate_reward(issued: Balance) -> Balance {
-		PAYOUT_FRAC * issued
-	}
-
-	fn reward(amount: Balance) -> DispatchResult {
-		let _ = T::Currency::deposit_creating(&T::Treasury::get(), amount);
-
-		Ok(())
-	}
-}
-/// Transfer issued token from pallet-treasury.
-pub struct TreasuryIssuing<T, R>(PhantomData<(T, R)>);
-impl<T, R> IssuingManager<T> for TreasuryIssuing<T, R>
-where
-	T: Config,
-	R: Get<Balance>,
-{
-	fn calculate_reward(_: Balance) -> Balance {
-		R::get()
-	}
-}
 
 /// Allocate the reward to a contract.
 pub trait Reward<AccountId> {
@@ -701,12 +495,14 @@ where
 				constant: None,
 				state_mutability: StateMutability::Payable,
 			},
-			&[Token::Address(who.into())],
+			&[Token::Address(who.clone().into())],
 			rsc,
 			amount.into(),
 			1_000_000.into(),
 		) {
 			log::error!("failed to forward call due to {e:?}");
+
+			<UnallocatedRingRewards<T>>::mutate(who, |u| u.map(|u| u + amount).or(Some(amount)));
 		}
 	}
 }
@@ -749,6 +545,8 @@ where
 			1_000_000.into(),
 		) {
 			log::error!("failed to forward call due to {e:?}");
+
+			<UnallocatedKtonRewards<T>>::mutate(|u| *u += amount);
 		}
 	}
 }
@@ -759,12 +557,4 @@ where
 	A: FullCodec,
 {
 	PalletId(*b"da/staki").into_account_truncating()
-}
-
-/// The current time in milliseconds.
-pub fn now<T>() -> Moment
-where
-	T: Config,
-{
-	T::UnixTime::now().as_millis()
 }

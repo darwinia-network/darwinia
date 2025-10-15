@@ -20,7 +20,10 @@
 use crate::*;
 
 impl darwinia_deposit::Config for Runtime {
+	#[cfg(not(feature = "runtime-benchmarks"))]
 	type DepositMigrator = darwinia_deposit::DepositMigrator<Self>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type DepositMigrator = ();
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
 	type Treasury = pallet_config::TreasuryAccount;

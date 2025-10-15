@@ -14,11 +14,12 @@ substrate-build-script-utils = { workspace = true }
 array-bytes = { workspace = true }
 async-trait = { version = "0.1" }
 clap        = { version = "4.4", features = ["derive"] }
+color-eyre  = { version = "0.6" }
 color-print = { version = "0.3" }
 futures     = { version = "0.3" }
-jsonrpsee   = { version = "0.23", features = ["server"] }
+jsonrpsee   = { version = "0.24", features = ["server"] }
 log         = { workspace = true }
-serde       = { version = "1.0", features = ["derive"] }
+serde       = { workspace = true }
 serde_json  = { version = "1.0", features = ["arbitrary_precision"] }
 tokio       = { version = "1.33" }
 trauma      = { version = "2.2" }

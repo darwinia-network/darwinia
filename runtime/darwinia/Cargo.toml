@@ -27,7 +27,6 @@ darwinia-ethtx-forwarder          = { workspace = true }
 darwinia-precompile-assets        = { workspace = true }
 darwinia-precompile-state-storage = { workspace = true }
 darwinia-staking                  = { workspace = true }
-dc-inflation                      = { workspace = true }
 dc-primitives                     = { workspace = true }
 
 # frontier
@@ -139,7 +138,6 @@ std = [
 	"darwinia-precompile-assets/std",
 	"darwinia-precompile-state-storage/std",
 	"darwinia-staking/std",
-	"dc-inflation/std",
 	"dc-primitives/std",
 
 	# frontier

@@ -34,13 +34,6 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 
 	#[cfg(feature = "try-runtime")]
 	fn post_upgrade(_state: Vec<u8>) -> Result<(), sp_runtime::DispatchError> {
-		log::info!("post");
-
-		assert!(Balances::locks(AccountId::from(
-			<[u8; 20]>::dehexify("0x52f6cbe5f29094d235df65e31b67977a235e6380").unwrap(),
-		))
-		.is_empty());
-
 		Ok(())
 	}
 
@@ -50,104 +43,6 @@ impl frame_support::traits::OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 }
 
 fn migrate() -> frame_support::weights::Weight {
-	use codec::Decode;
-	use frame_support::weights::Weight;
-
-	#[derive(Decode, Eq, Ord, PartialEq, PartialOrd)]
-	enum OldAssetType {
-		Xcm(xcm::v3::Location),
-	}
-
-	let supported_assets =
-		if let Some(supported_assets) = frame_support::storage::migration::get_storage_value::<
-			Vec<OldAssetType>,
-		>(b"AssetManager", b"SupportedFeePaymentAssets", &[])
-		{
-			sp_std::collections::btree_set::BTreeSet::from_iter(
-				supported_assets.into_iter().map(|OldAssetType::Xcm(location_v3)| location_v3),
-			)
-		} else {
-			return Weight::default();
-		};
-
-	let mut assets: Vec<(xcm::v4::Location, (bool, u128))> = Vec::new();
-
-	for (OldAssetType::Xcm(location_v3), units_per_seconds) in
-		frame_support::storage::migration::storage_key_iter::<
-			OldAssetType,
-			u128,
-			frame_support::Blake2_128Concat,
-		>(b"AssetManager", b"AssetTypeUnitsPerSecond")
-	{
-		let enabled = supported_assets.contains(&location_v3);
-
-		if let Ok(location_v4) = location_v3.try_into() {
-			assets.push((location_v4, (enabled, units_per_seconds)));
-		}
-	}
-
-	//***** Start mutate storage *****//
-
-	// Write asset metadata in new pallet_xcm_weight_trader
-	use frame_support::weights::WeightToFee as _;
-	for (asset_location, (enabled, units_per_second)) in assets {
-		let native_amount_per_second: u128 =
-			<Runtime as pallet_transaction_payment::Config>::WeightToFee::weight_to_fee(
-				&Weight::from_parts(
-					frame_support::weights::constants::WEIGHT_REF_TIME_PER_SECOND,
-					0,
-				),
-			);
-		let relative_price: u128 = native_amount_per_second
-			.saturating_mul(10u128.pow(pallet_xcm_weight_trader::RELATIVE_PRICE_DECIMALS))
-			.saturating_div(units_per_second);
-		pallet_xcm_weight_trader::SupportedAssets::<Runtime>::insert(
-			asset_location,
-			(enabled, relative_price),
-		);
-	}
-
-	// Remove storage value AssetManager::SupportedFeePaymentAssets
-	frame_support::storage::unhashed::kill(&frame_support::storage::storage_prefix(
-		b"AssetManager",
-		b"SupportedFeePaymentAssets",
-	));
-
-	// Remove storage map AssetManager::AssetTypeUnitsPerSecond
-	let _ = frame_support::storage::migration::clear_storage_prefix(
-		b"AssetManager",
-		b"AssetTypeUnitsPerSecond",
-		&[],
-		None,
-		None,
-	);
-
-	use array_bytes::Dehexify;
-	use frame_support::traits::ReservableCurrency;
-
-	for (who, count) in [
-		("0x43269b2cf781E9a64Df38A2Fd849eEAd690852F0", 1),
-		("0x6dDf9E3168Ff67F1C0416879390D7e6557b87b66", 2),
-		("0x3e25247CfF03F99a7D83b28F207112234feE73a6", 1),
-		("0xB2960E11B253c107f973CD778bBe1520E35E8602", 1),
-		("0xe59261f6D4088BcD69985A3D369Ff14cC54EF1E5", 1),
-		("0x1a469e3E616CBe7A7C40eC6b3E097aaDc2905A0A", 1),
-	] {
-		let Ok(who) = <[u8; 20]>::dehexify(who) else {
-			continue;
-		};
-		let who = AccountId::from(who);
-
-		Balances::unreserve(&who, 5_000 * UNIT * count);
-	}
-
-	use frame_support::traits::LockableCurrency;
-
-	if let Ok(who) = <[u8; 20]>::dehexify("0x52f6cbe5f29094d235df65e31b67977a235e6380") {
-		let who = AccountId::from(who);
-
-		Balances::remove_lock(*b"democrac", &who);
-	}
-
-	<Runtime as frame_system::Config>::DbWeight::get().reads_writes(40, 50)
+	frame_support::weights::Weight::zero()
+	// <Runtime as frame_system::Config>::DbWeight::get().reads_writes(0, 0)
 }
