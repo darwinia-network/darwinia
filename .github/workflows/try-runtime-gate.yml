@@ -40,8 +40,9 @@ jobs:
 
       - name: Build label list from comment flags
         id: labels
+        env:
+          BODY: ${{ github.event.comment.body }}
         run: |
-          BODY="${{ github.event.comment.body }}"
           labels=("try-runtime")
           if echo "$BODY" | grep -q -- '--disable-spec-version-check'; then
             labels+=("try-runtime:skip-spec-check")
