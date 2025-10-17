@@ -84,7 +84,7 @@ jobs:
 
       - name: Post comment to PR
         if: always()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');
