@@ -167,7 +167,7 @@ jobs:
       - name: Launch darwinia
         run: darwinia --chain darwinia-dev --tmp --alice --unsafe-force-node-key-generation --tracing-api debug,trace --frontier-backend-type sql &
       - name: Install Node 19
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 19
       - name: Fetch latest code
