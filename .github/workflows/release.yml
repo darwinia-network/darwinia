@@ -54,7 +54,7 @@ jobs:
         with:
           swap-size-gb: 8
       - name: Fetch latest code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Build node
         uses: ./.github/actions/build
         with:
@@ -84,7 +84,7 @@ jobs:
         runtime: [darwinia, crab]
     steps:
       - name: Fetch latest code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup gomplate
         run: |
           curl -LO ${{ env.GOMPLATE_URL }}/${{ env.GOMPLATE_VERSION }}/${{ env.GOMPLATE }}
@@ -168,7 +168,7 @@ jobs:
     needs: [build-nodes]
     steps:
       - name: Fetch Dockerfile
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Download node
         uses: actions/download-artifact@v4
       - name: Extract node
@@ -209,7 +209,7 @@ jobs:
     needs: [build-nodes, build-runtimes, publish-docker-image]
     steps:
       - name: Fetch note template
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Download nodes and runtimes
         uses: actions/download-artifact@v4
       - name: Prepare nodes and runtimes
