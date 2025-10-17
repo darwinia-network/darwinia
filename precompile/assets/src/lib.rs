@@ -19,12 +19,18 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(test)]
+extern crate alloc;
+
+#[cfg(test)]
 mod mock;
 #[cfg(test)]
 mod tests;
 
-// std
-use core::marker::PhantomData;
+// core
+use core::{
+	convert::{TryFrom, TryInto},
+	marker::PhantomData,
+};
 // polkadot-sdk
 use frame_support::{
 	dispatch::{GetDispatchInfo, PostDispatchInfo},
@@ -38,7 +44,6 @@ use frame_support::{
 };
 use sp_core::{MaxEncodedLen, H160, U256};
 use sp_runtime::traits::Bounded;
-use sp_std::convert::{TryFrom, TryInto};
 // moonbeam
 use precompile_utils::prelude::*;
 
