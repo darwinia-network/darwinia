@@ -65,7 +65,7 @@ jobs:
         with:
           swap-size-gb: 8
       - name: Fetch latest code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup build environment
         run: sudo apt install -y clang llvm protobuf-compiler
       - name: Cache cargo
@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch latest code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install nightly Rust
         run: rustup toolchain install nightly && rustup component add rustfmt --toolchain nightly
       - name: Check format
@@ -116,7 +116,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch latest code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Check
         uses: hack-ink/cargo-featalign-action@v0.1.1
         with:
@@ -171,7 +171,7 @@ jobs:
         with:
           node-version: 19
       - name: Fetch latest code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Action test
         run: |
           cd tests/ethereum
