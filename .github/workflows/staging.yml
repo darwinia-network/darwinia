@@ -50,7 +50,7 @@ jobs:
           enable_cache: true
           enable_tar_bz2: true
       - name: Upload node
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: darwinia
           path: build
