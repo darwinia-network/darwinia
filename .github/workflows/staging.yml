@@ -64,7 +64,7 @@ jobs:
       - name: Fetch Dockerfile
         uses: actions/checkout@v5
       - name: Download node
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
       - name: Extract node
         run: |
           mkdir -p dist
