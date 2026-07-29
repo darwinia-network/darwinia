@@ -23,6 +23,8 @@ on:
       - "**.ts"
       - "**.yml"
       - "**.sol"
+      - "tests/package.json"
+      - "tests/package-lock.json"
   pull_request:
     types: [opened, synchronize, ready_for_review]
     branches:
@@ -34,6 +36,8 @@ on:
       - "**.ts"
       - "**.yml"
       - "**.sol"
+      - "tests/package.json"
+      - "tests/package-lock.json"
   merge_group:
 
 concurrency:
@@ -166,14 +170,14 @@ jobs:
           sudo mv darwinia /usr/bin
       - name: Launch darwinia
         run: darwinia --chain darwinia-dev --tmp --alice --unsafe-force-node-key-generation --tracing-api debug,trace --frontier-backend-type sql &
-      - name: Install Node 19
+      - name: Install Node 20
         uses: actions/setup-node@v6
         with:
-          node-version: 19
+          node-version: 20
       - name: Fetch latest code
         uses: actions/checkout@v5
       - name: Action test
         run: |
           cd tests/ethereum
-          npm install
+          npm ci
           npm run test
