@@ -19,9 +19,29 @@
 pub use dc_primitives::*;
 
 // polkadot-sdk
-use frame_support::derive_impl;
+use frame_support::{derive_impl, weights::Weight};
 use sp_io::TestExternalities;
 use sp_runtime::BuildStorage;
+
+/// Zero weights for account migration benchmark tests.
+pub struct AccountMigrationWeightInfo;
+impl crate::WeightInfo for AccountMigrationWeightInfo {
+	fn migrate() -> Weight {
+		Weight::zero()
+	}
+}
+
+/// Zero weights for deposit benchmark tests.
+pub struct DepositWeightInfo;
+impl darwinia_deposit::WeightInfo for DepositWeightInfo {
+	fn migrate_for() -> Weight {
+		Weight::zero()
+	}
+
+	fn set_deposit_contract() -> Weight {
+		Weight::zero()
+	}
+}
 
 #[sp_version::runtime_version]
 pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
@@ -103,12 +123,12 @@ impl darwinia_deposit::Config for Runtime {
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
 	type Treasury = ();
-	type WeightInfo = ();
+	type WeightInfo = DepositWeightInfo;
 }
 
 impl crate::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
+	type WeightInfo = AccountMigrationWeightInfo;
 }
 
 frame_support::construct_runtime! {

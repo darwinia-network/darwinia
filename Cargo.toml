@@ -33,7 +33,6 @@ sha3         = { version = "0.10" }
 strum        = { version = "0.27", default-features = false }
 
 # darwinia
-crab-runtime                      = { path = "runtime/crab" }
 darwinia-account-migration        = { path = "pallet/account-migration", default-features = false }
 darwinia-asset-limit              = { path = "pallet/asset-limit", default-features = false }
 darwinia-common-runtime           = { path = "runtime/common", default-features = false }

@@ -23,17 +23,18 @@ use sp_keyring::{ed25519::Keyring as Ek, sr25519::Keyring as Sk};
 
 #[test]
 fn signable_message_should_work() {
-	["Darwinia2", "Crab2"].iter().for_each(|s| {
-		assert_eq!(
-			signable_message(s.as_bytes(), &Default::default()),
-			format!(
-				"<Bytes>I authorize the migration to {}, an unused address on {}. Sign this message to authorize using the Substrate key associated with the account on {} that you wish to migrate.</Bytes>",
-				"0x0000000000000000000000000000000000000000",
-				s,
-				&s[..s.len() - 1],
-			).as_bytes()
-		);
-	});
+	let network = "Darwinia2";
+
+	assert_eq!(
+		signable_message(network.as_bytes(), &Default::default()),
+		format!(
+			"<Bytes>I authorize the migration to {}, an unused address on {}. Sign this message to authorize using the Substrate key associated with the account on {} that you wish to migrate.</Bytes>",
+			"0x0000000000000000000000000000000000000000",
+			network,
+			&network[..network.len() - 1],
+		)
+		.as_bytes()
+	);
 }
 
 #[test]

@@ -20,9 +20,21 @@
 use crate::*;
 use dc_types::{Balance, Moment, UNIT};
 // polkadot-sdk
-use frame_support::derive_impl;
+use frame_support::{derive_impl, weights::Weight};
 use sp_io::TestExternalities;
 use sp_runtime::BuildStorage;
+
+/// Zero weights for tests.
+pub struct TestWeightInfo;
+impl WeightInfo for TestWeightInfo {
+	fn migrate_for() -> Weight {
+		Weight::zero()
+	}
+
+	fn set_deposit_contract() -> Weight {
+		Weight::zero()
+	}
+}
 
 #[derive_impl(frame_system::config_preludes::TestDefaultConfig)]
 impl frame_system::Config for Runtime {
@@ -48,7 +60,7 @@ impl crate::Config for Runtime {
 	type Ring = Balances;
 	type RuntimeEvent = RuntimeEvent;
 	type Treasury = ();
-	type WeightInfo = ();
+	type WeightInfo = TestWeightInfo;
 }
 
 frame_support::construct_runtime! {

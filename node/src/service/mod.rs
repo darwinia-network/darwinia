@@ -22,8 +22,6 @@ pub mod frontier;
 
 mod instant_finalize;
 
-#[cfg(feature = "crab-runtime")]
-pub use crab_runtime::RuntimeApi as CrabRuntimeApi;
 #[cfg(feature = "darwinia-runtime")]
 pub use darwinia_runtime::RuntimeApi as DarwiniaRuntimeApi;
 
@@ -96,11 +94,6 @@ type Service<RuntimeApi> = sc_service::PartialComponents<
 pub trait IdentifyVariant {
 	/// Get spec id.
 	fn id(&self) -> &str;
-
-	/// Returns if this is a configuration for the `Crab` network.
-	fn is_crab(&self) -> bool {
-		self.id().starts_with("crab")
-	}
 
 	/// Returns if this is a configuration for the `Darwinia` network.
 	fn is_darwinia(&self) -> bool {

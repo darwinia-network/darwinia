@@ -16,7 +16,7 @@ validator = true
 [[parachains]]
 chain           = "darwinia-genesis"
 force_decorator = "generic-evm"
-id              = 2105
+id              = 2046
 [[parachains.collators]]
 args     = ["--database=paritydb", "--force-authoring", "-lparachain=debug"]
 command  = "tmp/darwinia"

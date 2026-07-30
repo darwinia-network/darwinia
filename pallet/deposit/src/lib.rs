@@ -329,7 +329,7 @@ where
 			],
 			dc,
 			total.into(),
-			// Approximately consume 160,000 gas per deposit on Koi testnet.
+			// Bound the migration call per deposit.
 			(200_000 * cnt as u64).into(),
 		)?
 		.1
