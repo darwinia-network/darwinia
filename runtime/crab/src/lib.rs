@@ -21,6 +21,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![recursion_limit = "256"]
 
+extern crate alloc;
+
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
@@ -34,13 +36,14 @@ mod migration;
 pub use darwinia_common_runtime::*;
 pub use dc_primitives::*;
 
+// alloc
+use alloc::{vec, vec::Vec};
 // crates.io
 use codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 // polkadot-sdk
 use sp_core::{H160, H256, U256};
 use sp_runtime::RuntimeDebug;
-use sp_std::prelude::*;
 
 /// Block type as expected by this runtime.
 pub type Block = sp_runtime::generic::Block<Header, UncheckedExtrinsic>;
@@ -402,7 +405,7 @@ sp_api::impl_runtime_apis! {
 			Runtime::metadata_at_version(version)
 		}
 
-		fn metadata_versions() -> sp_std::vec::Vec<u32> {
+		fn metadata_versions() -> alloc::vec::Vec<u32> {
 			Runtime::metadata_versions()
 		}
 	}
@@ -1114,7 +1117,7 @@ sp_api::impl_runtime_apis! {
 
 			use frame_system_benchmarking::Pallet as SystemBench;
 			impl frame_system_benchmarking::Config for Runtime {
-				fn setup_set_code_requirements(code: &sp_std::vec::Vec<u8>) -> Result<(), BenchmarkError> {
+				fn setup_set_code_requirements(code: &alloc::vec::Vec<u8>) -> Result<(), BenchmarkError> {
 					ParachainSystem::initialize_for_set_code_benchmark(code.len() as u32);
 					Ok(())
 				}

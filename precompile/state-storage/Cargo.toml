@@ -16,7 +16,6 @@ precompile-utils = { workspace = true }
 
 # polkadot-sdk
 frame-support = { workspace = true }
-sp-std        = { workspace = true }
 
 [dev-dependencies]
 # crates.io
@@ -46,5 +45,4 @@ std = [
 
 	# polkadot-sdk
 	"frame-support/std",
-	"sp-std/std",
 ]

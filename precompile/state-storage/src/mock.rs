@@ -16,6 +16,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
+// core
+use core::marker::PhantomData;
+// alloc
+use alloc::vec::Vec;
 // crates.io
 use codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
@@ -27,7 +31,6 @@ use precompile_utils::Precompile;
 use frame_support::{derive_impl, StorageHasher};
 use sp_core::H160;
 use sp_runtime::BuildStorage;
-use sp_std::{marker::PhantomData, prelude::*};
 
 pub type Balance = u64;
 pub type AccountId = H160;

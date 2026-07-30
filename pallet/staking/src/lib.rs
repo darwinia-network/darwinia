@@ -27,6 +27,8 @@
 #![deny(missing_docs)]
 #![allow(clippy::needless_borrows_for_generic_args)]
 
+extern crate alloc;
+
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
@@ -38,6 +40,8 @@ mod benchmarking;
 mod weights;
 pub use weights::WeightInfo;
 
+// alloc
+use alloc::{borrow::ToOwned, boxed::Box, collections::btree_map::BTreeMap, vec, vec::Vec};
 // crates.io
 use codec::FullCodec;
 use ethabi::{Function, Param, ParamType, StateMutability, Token};
@@ -51,7 +55,6 @@ use sp_runtime::{
 	traits::{AccountIdConversion, Convert, One},
 	Perbill,
 };
-use sp_std::{collections::btree_map::BTreeMap, prelude::*};
 
 #[frame_support::pallet]
 pub mod pallet {

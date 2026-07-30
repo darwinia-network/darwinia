@@ -26,6 +26,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
 
+extern crate alloc;
+
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
@@ -39,6 +41,8 @@ pub use weights::WeightInfo;
 
 // core
 use core::marker::PhantomData;
+// alloc
+use alloc::{borrow::ToOwned, boxed::Box, vec, vec::Vec};
 // crates.io
 use ethabi::{Function, Param, ParamType, StateMutability, Token};
 // darwinia
@@ -52,7 +56,6 @@ use frame_support::{
 };
 use frame_system::pallet_prelude::*;
 use sp_core::H160;
-use sp_std::prelude::*;
 
 #[frame_support::pallet]
 pub mod pallet {

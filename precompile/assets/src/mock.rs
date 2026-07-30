@@ -18,6 +18,8 @@
 
 // core
 use core::marker::PhantomData;
+// alloc
+use alloc::vec::Vec;
 // crates.io
 use codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
@@ -29,7 +31,6 @@ use crate::*;
 use frame_support::derive_impl;
 use sp_core::H160;
 use sp_runtime::BuildStorage;
-use sp_std::prelude::*;
 
 pub type Balance = u128;
 pub type AssetId = u32;
