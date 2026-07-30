@@ -46,7 +46,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Crab has no maintained public RPC. Restore its entry when an official endpoint is available.
         runtime:
           - name: darwinia-runtime
             uri: wss://rpc.darwinia.network
