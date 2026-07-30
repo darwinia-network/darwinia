@@ -46,6 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Crab has no maintained public RPC. Restore its entry when an official endpoint is available.
         runtime:
           - name: darwinia-runtime
             uri: wss://rpc.darwinia.network
@@ -84,17 +85,56 @@ jobs:
           echo "disable_spec=$spec" >> "$GITHUB_OUTPUT"
           echo "disable_idemp=$idemp" >> "$GITHUB_OUTPUT"
 
-      - name: Try-Runtime
-        id: tr
-        uses: hack-ink/polkadot-runtime-releaser/action/try-runtime@v0.2.0
+      - name: Set up Try Runtime CLI
+        env:
+          TRY_RUNTIME_VERSION: "0.8.0"
+        run: |
+          curl --fail --location --retry 3 \
+            "https://github.com/paritytech/try-runtime-cli/releases/download/v${TRY_RUNTIME_VERSION}/try-runtime-x86_64-unknown-linux-musl" \
+            --output try-runtime
+          chmod +x try-runtime
+          mv try-runtime /usr/local/bin/try-runtime
+
+      - name: Build runtime
+        uses: hack-ink/polkadot-runtime-releaser/action/build@v0.2.0
         with:
           runtime: ${{ matrix.runtime.name }}
           features: try-runtime
           toolchain-ver: 1.82.0
-          try-runtime-ver: 0.8.0
-          disable-spec-version-check: ${{ steps.flags.outputs.disable_spec }}
-          disable-idempotency-checks: ${{ steps.flags.outputs.disable_idemp }}
-          uri: ${{ matrix.runtime.uri }}
+          output-dir: .
+
+      - name: Try Runtime
+        env:
+          DISABLE_IDEMP: ${{ steps.flags.outputs.disable_idemp }}
+          DISABLE_SPEC: ${{ steps.flags.outputs.disable_spec }}
+          RUNTIME_NAME: ${{ matrix.runtime.name }}
+          TRY_RUNTIME_URI: ${{ matrix.runtime.uri }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          runtime_files=(*_runtime-*.compact.compressed.wasm)
+          if [[ ${#runtime_files[@]} -ne 1 ]]; then
+            echo "::error::Expected exactly one runtime Wasm artifact, found ${#runtime_files[@]}."
+            exit 1
+          fi
+
+          mkdir -p out
+          args=(
+            --runtime "${runtime_files[0]}"
+            on-runtime-upgrade
+            --blocktime 6000
+          )
+          if [[ "$DISABLE_SPEC" == "true" ]]; then
+            args+=(--disable-spec-version-check)
+          fi
+          if [[ "$DISABLE_IDEMP" == "true" ]]; then
+            args+=(--disable-idempotency-checks)
+          fi
+          args+=(live -u "$TRY_RUNTIME_URI")
+
+          try-runtime "${args[@]}" 2>&1 |
+            tee "out/try-runtime-${RUNTIME_NAME}.log"
 
       - name: Collect summary
         if: always()
@@ -144,6 +184,7 @@ jobs:
               '',
               `- PR: #${process.env.PR_NUMBER}`,
               `- Commit: \`${process.env.TARGET_SHA}\``,
+              '- Runtime: `darwinia-runtime`',
               `- Disable spec-version check: \`${process.env.DISABLE_SPEC}\``,
               `- Disable idempotency checks: \`${process.env.DISABLE_IDEMP}\``,
               `- Conclusion: **${process.env.RESULT}**`,
