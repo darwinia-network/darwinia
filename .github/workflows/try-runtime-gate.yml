@@ -17,8 +17,7 @@ jobs:
       pr_number: ${{ steps.request.outputs.pr_number }}
       target_sha: ${{ steps.request.outputs.target_sha }}
     permissions:
-      issues: write
-      pull-requests: read
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - name: Verify requester is trusted
@@ -81,6 +80,7 @@ jobs:
             );
 
       - name: Acknowledge
+        continue-on-error: true
         uses: actions/github-script@v8
         env:
           TARGET_SHA: ${{ steps.request.outputs.target_sha }}
@@ -97,7 +97,7 @@ jobs:
     needs: gate
     permissions:
       contents: read
-      issues: write
+      pull-requests: write
     uses: ./.github/workflows/try-runtime-pr.yml
     with:
       disable_idempotency_checks: ${{ needs.gate.outputs.disable_idempotency_checks == 'true' }}
