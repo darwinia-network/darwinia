@@ -133,8 +133,35 @@ jobs:
           fi
           args+=(live -u "$TRY_RUNTIME_URI")
 
-          try-runtime "${args[@]}" 2>&1 |
-            tee "out/try-runtime-${RUNTIME_NAME}.log"
+          result_log="out/try-runtime-${RUNTIME_NAME}.log"
+          : > "$result_log"
+          for attempt in 1 2; do
+            attempt_log="out/try-runtime-${RUNTIME_NAME}-attempt-${attempt}.log"
+            set +e
+            try-runtime "${args[@]}" 2>&1 | tee "$attempt_log"
+            pipeline_status=("${PIPESTATUS[@]}")
+            set -e
+
+            status="${pipeline_status[0]}"
+            if [[ "$status" -eq 0 && "${pipeline_status[1]}" -ne 0 ]]; then
+              status="${pipeline_status[1]}"
+            fi
+            {
+              echo "### Attempt ${attempt}"
+              cat "$attempt_log"
+            } >> "$result_log"
+
+            if [[ "$status" -eq 0 ]]; then
+              exit 0
+            fi
+            if [[ "$attempt" -eq 2 ]] ||
+              ! grep -Eq 'status_code: 5[0-9]{2}' "$attempt_log"; then
+              exit "$status"
+            fi
+
+            echo "::warning::Try Runtime received a remote HTTP 5xx response; retrying once."
+            sleep 15
+          done
 
       - name: Collect summary
         if: always()
@@ -200,11 +227,29 @@ jobs:
 
       - name: Remove trigger labels
         if: always() && github.event_name == 'pull_request'
-        uses: actions-ecosystem/action-remove-labels@v1
+        uses: actions/github-script@v8
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          number: ${{ env.PR_NUMBER }}
-          labels: |
-            try-runtime
-            try-runtime:skip-spec-check
-            try-runtime:skip-idempotency
+          script: |
+            const triggerLabels = new Set([
+              'try-runtime',
+              'try-runtime:skip-spec-check',
+              'try-runtime:skip-idempotency'
+            ]);
+            const labels = context.payload.pull_request.labels
+              .map((label) => label.name)
+              .filter((name) => triggerLabels.has(name));
+
+            for (const name of labels) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: Number(process.env.PR_NUMBER),
+                  name
+                });
+              } catch (error) {
+                if (error.status !== 404) {
+                  throw error;
+                }
+              }
+            }
