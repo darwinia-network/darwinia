@@ -127,7 +127,7 @@ jobs:
       contains(github.event.pull_request.labels.*.name, 'try-runtime'))
     needs: try-runtime
     permissions:
-      issues: write
+      pull-requests: write
     runs-on: ubuntu-latest
     env:
       DISABLE_IDEMP: ${{ inputs.disable_idempotency_checks || contains(github.event.pull_request.labels.*.name, 'try-runtime:skip-idempotency') }}
