@@ -3,13 +3,31 @@ name: Try Runtime (PR)
 on:
   pull_request:
     types: [labeled, synchronize, reopened]
+  workflow_call:
+    inputs:
+      pr_number:
+        description: Pull request number for result comments
+        required: true
+        type: string
+      target_sha:
+        description: Commit SHA to test
+        required: true
+        type: string
+      disable_spec_version_check:
+        description: Disable the spec-version check
+        default: false
+        required: false
+        type: boolean
+      disable_idempotency_checks:
+        description: Disable idempotency checks
+        default: false
+        required: false
+        type: boolean
 
-permissions:
-  contents: read
-  pull-requests: write
+permissions: {}
 
 concurrency:
-  group: pr-${{ github.event.pull_request.number }}-try-runtime
+  group: pr-${{ inputs.pr_number || github.event.pull_request.number }}-try-runtime
   cancel-in-progress: true
 
 env:
@@ -19,32 +37,52 @@ env:
 
 jobs:
   try-runtime:
-    if: contains(github.event.pull_request.labels.*.name, 'try-runtime')
+    if: >
+      inputs.pr_number != '' ||
+      contains(github.event.pull_request.labels.*.name, 'try-runtime')
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         runtime:
           - name: darwinia-runtime
             uri: wss://rpc.darwinia.network
           - name: crab-runtime
             uri: ws://g1.crab2.darwinia.network:9944
+    env:
+      PR_NUMBER: ${{ inputs.pr_number || github.event.pull_request.number }}
+      TARGET_SHA: ${{ inputs.target_sha || github.event.pull_request.head.sha }}
 
     steps:
-      - name: Checkout PR code (unprivileged)
+      - name: Checkout requested code (unprivileged)
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ env.TARGET_SHA }}
           persist-credentials: false
 
-      - name: Resolve flags from labels
+      - name: Resolve flags
         id: flags
+        env:
+          CALL_DISABLE_IDEMP: ${{ inputs.disable_idempotency_checks }}
+          CALL_DISABLE_SPEC: ${{ inputs.disable_spec_version_check }}
+          CALL_PR_NUMBER: ${{ inputs.pr_number }}
+          PR_LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
         run: |
-          labels='${{ toJson(github.event.pull_request.labels.*.name) }}'
-          echo "$labels" > labels.txt
-          spec=false
-          idemp=false
-          grep -q 'try-runtime:skip-spec-check' labels.txt && spec=true
-          grep -q 'try-runtime:skip-idempotency' labels.txt && idemp=true
+          if [[ -n "$CALL_PR_NUMBER" ]]; then
+            spec="$CALL_DISABLE_SPEC"
+            idemp="$CALL_DISABLE_IDEMP"
+          else
+            spec=false
+            idemp=false
+            if grep -q 'try-runtime:skip-spec-check' <<< "$PR_LABELS"; then
+              spec=true
+            fi
+            if grep -q 'try-runtime:skip-idempotency' <<< "$PR_LABELS"; then
+              idemp=true
+            fi
+          fi
           echo "disable_spec=$spec" >> "$GITHUB_OUTPUT"
           echo "disable_idemp=$idemp" >> "$GITHUB_OUTPUT"
 
@@ -66,8 +104,8 @@ jobs:
           mkdir -p out
           {
             echo "### Try Runtime Result"
-            echo "- PR: #${{ github.event.pull_request.number }}"
-            echo "- Commit: \`${{ github.event.pull_request.head.sha }}\`"
+            echo "- PR: #$PR_NUMBER"
+            echo "- Commit: \`$TARGET_SHA\`"
             echo "- Runtime: \`${{ matrix.runtime.name }}\`"
             echo "- URI: \`${{ matrix.runtime.uri }}\`"
             echo "- Disable spec-version check: \`${{ steps.flags.outputs.disable_spec }}\`"
@@ -79,33 +117,54 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: try-runtime-${{ github.event.pull_request.number }}
+          name: try-runtime-${{ env.PR_NUMBER }}-${{ matrix.runtime.name }}
           path: out/
 
-      - name: Post comment to PR
-        if: always()
+  report:
+    if: >
+      always() &&
+      (inputs.pr_number != '' ||
+      contains(github.event.pull_request.labels.*.name, 'try-runtime'))
+    needs: try-runtime
+    permissions:
+      issues: write
+    runs-on: ubuntu-latest
+    env:
+      DISABLE_IDEMP: ${{ inputs.disable_idempotency_checks || contains(github.event.pull_request.labels.*.name, 'try-runtime:skip-idempotency') }}
+      DISABLE_SPEC: ${{ inputs.disable_spec_version_check || contains(github.event.pull_request.labels.*.name, 'try-runtime:skip-spec-check') }}
+      PR_NUMBER: ${{ inputs.pr_number || github.event.pull_request.number }}
+      RESULT: ${{ needs.try-runtime.result }}
+      TARGET_SHA: ${{ inputs.target_sha || github.event.pull_request.head.sha }}
+    steps:
+      - name: Post result to PR
         uses: actions/github-script@v8
         with:
           script: |
-            const fs = require('fs');
-            const files = fs.readdirSync('out').filter(f => f.endsWith('.md'));
-            let body = `### 🧪 Try Runtime Results (conclusion: **${{ job.status }}**)\n\n`;
-            for (const f of files) {
-              body += `<details><summary>${f}</summary>\n\n` + fs.readFileSync(`out/${f}`, 'utf8') + `\n\n</details>\n`;
-            }
-            await github.issues.createComment({
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              '### 🧪 Try Runtime Results',
+              '',
+              `- PR: #${process.env.PR_NUMBER}`,
+              `- Commit: \`${process.env.TARGET_SHA}\``,
+              `- Disable spec-version check: \`${process.env.DISABLE_SPEC}\``,
+              `- Disable idempotency checks: \`${process.env.DISABLE_IDEMP}\``,
+              `- Conclusion: **${process.env.RESULT}**`,
+              `- [Workflow run](${runUrl})`
+            ].join('\n');
+
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: ${{ github.event.pull_request.number }},
+              issue_number: Number(process.env.PR_NUMBER),
               body
             });
 
       - name: Remove trigger labels
-        if: always()
+        if: always() && github.event_name == 'pull_request'
         uses: actions-ecosystem/action-remove-labels@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          number: ${{ github.event.pull_request.number }}
+          number: ${{ env.PR_NUMBER }}
           labels: |
             try-runtime
             try-runtime:skip-spec-check
