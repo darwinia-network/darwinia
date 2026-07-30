@@ -17,7 +17,7 @@
 // along with Darwinia. If not, see <https://www.gnu.org/licenses/>.
 
 // std
-use std::{env, fs, io::ErrorKind, path::PathBuf, result::Result as StdResult};
+use std::{fs, io::ErrorKind, path::PathBuf, result::Result as StdResult};
 // darwinia
 use crate::{
 	chain_spec::*,
@@ -231,16 +231,6 @@ pub fn run() -> Result<()> {
 	/// Creates partial components for the runtime that are supported by the benchmarks.
 	macro_rules! construct_benchmark_partials {
 		($config:expr, $cli:ident, |$partials:ident| $code:expr) => {{
-			#[cfg(feature = "crab-runtime")]
-			if $config.chain_spec.is_crab() {
-				let $partials = service::new_partial::<CrabRuntimeApi>(
-					&$config,
-					&$cli.eth_args.build_eth_rpc_config(),
-				)?;
-
-				return $code;
-			}
-
 			#[cfg(feature = "darwinia-runtime")]
 			if $config.chain_spec.is_darwinia() {
 				let $partials = service::new_partial::<DarwiniaRuntimeApi>(
@@ -251,7 +241,7 @@ pub fn run() -> Result<()> {
 				return $code;
 			}
 
-			panic!("No feature(crab-runtime, darwinia-runtime) is enabled!");
+			panic!("No feature(darwinia-runtime) is enabled!");
 		}};
 	}
 
@@ -260,20 +250,7 @@ pub fn run() -> Result<()> {
 			let runner = $cli.create_runner($cmd)?;
 			let chain_spec = &runner.config().chain_spec;
 
-			set_default_ss58_version(chain_spec);
-
-			#[cfg(feature = "crab-runtime")]
-			if chain_spec.is_crab() {
-				return runner.async_run(|$config| {
-					let $components = service::new_partial::<CrabRuntimeApi>(
-						&$config,
-						&$cli.eth_args.build_eth_rpc_config()
-					)?;
-					let task_manager = $components.task_manager;
-
-					{ $( $code )* }.map(|v| (v, task_manager))
-				});
-			}
+			set_default_ss58_version();
 
 			#[cfg(feature = "darwinia-runtime")]
 			if chain_spec.is_darwinia() {
@@ -288,7 +265,7 @@ pub fn run() -> Result<()> {
 				});
 			}
 
-			panic!("No feature(crab-runtime, darwinia-runtime) is enabled!");
+			panic!("No feature(darwinia-runtime) is enabled!");
 		}}
 	}
 
@@ -297,9 +274,8 @@ pub fn run() -> Result<()> {
 	match &cli.subcommand {
 		Some(Subcommand::BuildSpec(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
-			let chain_spec = &runner.config().chain_spec;
 
-			set_default_ss58_version(chain_spec);
+			set_default_ss58_version();
 			runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
 		},
 		Some(Subcommand::CheckBlock(cmd)) => {
@@ -329,10 +305,9 @@ pub fn run() -> Result<()> {
 		},
 		Some(Subcommand::PurgeChain(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
-			let chain_spec = &runner.config().chain_spec;
 			let polkadot_cli = RelayChainCli::new(runner.config(), cli.relay_chain_args.iter());
 
-			set_default_ss58_version(chain_spec);
+			set_default_ss58_version();
 			runner.sync_run(|config| {
 				// Remove Frontier off-chain db
 				let db_config_dir = frontier::db_config_dir(&config);
@@ -395,9 +370,8 @@ pub fn run() -> Result<()> {
 			}),
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
-			let chain_spec = &runner.config().chain_spec;
 
-			set_default_ss58_version(chain_spec);
+			set_default_ss58_version();
 			runner.sync_run(|_config| {
 				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
 
@@ -414,7 +388,7 @@ pub fn run() -> Result<()> {
 
 			let runner = cli.create_runner(&**cmd)?;
 
-			set_default_ss58_version(&runner.config().chain_spec);
+			set_default_ss58_version();
 
 			match &**cmd {
 				BenchmarkCmd::Pallet(cmd) =>
@@ -446,7 +420,7 @@ pub fn run() -> Result<()> {
 			let polkadot_cli = RelayChainCli::new(runner.config(), cli.relay_chain_args.iter());
 
 			runner.run_node_until_exit(|config| async move {
-				set_default_ss58_version(&config.chain_spec);
+				set_default_ss58_version();
 
 				let tokio_handle = config.tokio_handle.clone();
 				let polkadot_config =
@@ -506,34 +480,12 @@ where
 	let chain_spec = &config.chain_spec;
 
 	if chain_spec.is_dev() {
-		#[cfg(feature = "crab-runtime")]
-		if chain_spec.is_crab() {
-			return service::start_dev_node::<Net, CrabRuntimeApi>(config, id, &eth_rpc_config)
-				.map_err(Into::into);
-		}
-
 		#[cfg(feature = "darwinia-runtime")]
 		if chain_spec.is_darwinia() {
 			return service::start_dev_node::<Net, DarwiniaRuntimeApi>(config, id, &eth_rpc_config)
 				.map_err(Into::into);
 		}
 	}
-	#[cfg(feature = "crab-runtime")]
-	if chain_spec.is_crab() {
-		return service::start_parachain_node::<Net, CrabRuntimeApi>(
-			config,
-			polkadot_config,
-			collator_options,
-			id,
-			no_hardware_benchmarks,
-			storage_monitor,
-			&eth_rpc_config,
-		)
-		.await
-		.map(|r| r.0)
-		.map_err(Into::into);
-	}
-
 	#[cfg(feature = "darwinia-runtime")]
 	if chain_spec.is_darwinia() {
 		return service::start_parachain_node::<Net, DarwiniaRuntimeApi>(
@@ -550,27 +502,12 @@ where
 		.map_err(Into::into);
 	}
 
-	panic!("No feature(crab-runtime, darwinia-runtime) is enabled!");
+	panic!("No feature(darwinia-runtime) is enabled!");
 }
 
 fn load_spec(id: &str) -> StdResult<Box<dyn ChainSpecT>, String> {
-	let id = if id.is_empty() {
-		let n = get_exec_name().unwrap_or_default();
-		["darwinia", "crab"]
-			.iter()
-			.cloned()
-			.find(|&chain| n.starts_with(chain))
-			.unwrap_or("darwinia")
-	} else {
-		id
-	};
+	let id = if id.is_empty() { "darwinia" } else { id };
 	let chain_spec = match id.to_lowercase().as_str() {
-		#[cfg(feature = "crab-runtime")]
-		"crab" => Box::new(crab::config()),
-		#[cfg(feature = "crab-runtime")]
-		"crab-genesis" => Box::new(crab::genesis_config()),
-		#[cfg(feature = "crab-runtime")]
-		"crab-dev" => Box::new(crab::development_config()),
 		#[cfg(feature = "darwinia-runtime")]
 		"darwinia" => Box::new(darwinia::config()),
 		#[cfg(feature = "darwinia-runtime")]
@@ -583,20 +520,6 @@ fn load_spec(id: &str) -> StdResult<Box<dyn ChainSpecT>, String> {
 	Ok(chain_spec)
 }
 
-fn get_exec_name() -> Option<String> {
-	env::current_exe()
-		.ok()
-		.and_then(|pb| pb.file_name().map(|s| s.to_os_string()))
-		.and_then(|s| s.into_string().ok())
-}
-
-fn set_default_ss58_version(chain_spec: &dyn IdentifyVariant) {
-	let ss58_version = if chain_spec.is_crab() {
-		Ss58AddressFormatRegistry::SubstrateAccount
-	} else {
-		Ss58AddressFormatRegistry::DarwiniaAccount
-	}
-	.into();
-
-	crypto::set_default_ss58_version(ss58_version);
+fn set_default_ss58_version() {
+	crypto::set_default_ss58_version(Ss58AddressFormatRegistry::DarwiniaAccount.into());
 }

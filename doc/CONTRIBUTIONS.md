@@ -97,7 +97,7 @@ cargo make bn
 ## Without cargo-make.
 cargo build --locked -p darwinia --features all-runtime
 
-# Build the debug node with Darwinia runtime. (for Darwinia and Crab, replace the `darwinia` with the lowercase chain name)
+# Build the debug node with Darwinia runtime.
 ## With cargo-make.
 ### Long version.
 cargo make build-darwinia
@@ -115,7 +115,7 @@ cargo make brn
 ## Without cargo-make.
 cargo build --locked -p darwinia --features all-runtime -r
 
-# Build the release node with Darwinia runtime. (for Darwinia and Crab, replace the `darwinia` with the lowercase chain name)
+# Build the release node with Darwinia runtime.
 ## With cargo-make.
 ### Long version.
 cargo make build-release-darwinia
@@ -133,7 +133,7 @@ cargo make bb
 ## Without cargo-make.
 cargo build --locked -p darwinia --features all-runtime --features runtime-benchmarks -r
 
-# Build the benchmark node with Darwinia runtime. (for Darwinia and Crab, replace the `darwinia` with the lowercase chain name)
+# Build the benchmark node with Darwinia runtime.
 ## With cargo-make.
 ### Long version.
 cargo make build-benchmark-darwinia
@@ -142,7 +142,7 @@ cargo make bbd
 ## Without cargo-make.
 cargo build --locked -p darwinia --features darwinia-runtime --features runtime-benchmarks -r
 
-# Run dev Darwinia node. (for Darwinia and Crab, replace the `darwinia` with the lowercase chain name)
+# Run dev Darwinia node.
 ## With cargo-make.
 ### Long version.
 cargo make run-dev-darwinia
@@ -151,7 +151,7 @@ cargo make rdd
 ## Without cargo-make.
 cargo run --locked -p darwinia --features darwinia-runtime -- --unsafe-rpc-external --tmp --rpc-cors all --rpc-methods unsafe --alice --unsafe-force-node-key-generation --chain darwinia-dev
 
-# Run release dev Darwinia node. (for Darwinia and Crab, replace the `darwinia` with the lowercase chain name)
+# Run release dev Darwinia node.
 ## With cargo-make.
 ### Long version.
 cargo make run-release-dev-darwinia
@@ -160,7 +160,7 @@ cargo make rrdd
 ## Without cargo-make.
 cargo run --locked -p darwinia --features darwinia-runtime -r -- --unsafe-rpc-external --tmp --rpc-cors all --rpc-methods unsafe --alice --unsafe-force-node-key-generation --chain darwinia-dev
 
-# Run benchmark Darwinia node. (for Darwinia and Crab, replace the `darwinia` with the lowercase chain name)
+# Run benchmark Darwinia node.
 ## With cargo-make.
 ### Long version.
 cargo make run-benchmark-darwinia
@@ -177,11 +177,6 @@ cargo run --locked -p darwinia --features darwinia-runtime --features runtime-be
 - `://rpc.darwinia.network` (`https` or `wss`)
 - `://darwinia-rpc.dwellir.com` (`https` or `wss`)
 
-### Crab
-
-- `://crab-rpc.darwinia.network` (`https` or `wss`)
-- `://darwiniacrab-rpc.dwellir.com` (`https` or `wss`)
-
 ### Pangoro
 
 - https://fraa-flashbox-2871-rpc.a.stagenet.tanssi.network
@@ -190,13 +185,11 @@ cargo run --locked -p darwinia --features darwinia-runtime --features runtime-be
 
 ### Chain ID
 
-- [Crab - `44`](https://chainlist.org/chain/44)
 - [Darwinia - `46`](https://chainlist.org/chain/46)
 
 ### Tracing Node Endpoint
 
 - Darwinia: `ws://c1.darwinia2.darwinia.network:9944`
-- Crab: `ws://c1.crab2.darwinia.network:9944`
 
 ### Devnet Built-in Accounts
 

@@ -9,7 +9,7 @@ done
 
 # ---
 
-for r in darwinia crab
+for r in darwinia
 do
   rm -rf target/${PROFILE}/wbuild/${r}-runtime 2> /dev/null || true
 done

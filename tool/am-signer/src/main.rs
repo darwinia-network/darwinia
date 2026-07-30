@@ -45,13 +45,11 @@ enum Scheme {
 #[derive(Clone, ValueEnum)]
 enum Network {
 	Darwinia,
-	Crab,
 }
 impl Network {
 	fn as_bytes(&self) -> &'static [u8] {
 		match self {
 			Self::Darwinia => b"Darwinia2",
-			Self::Crab => b"Crab2",
 		}
 	}
 }

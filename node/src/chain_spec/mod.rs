@@ -21,9 +21,6 @@
 #[cfg(feature = "darwinia-runtime")]
 pub mod darwinia;
 
-#[cfg(feature = "crab-runtime")]
-pub mod crab;
-
 // std
 use std::{env, fs, thread};
 // crates.io

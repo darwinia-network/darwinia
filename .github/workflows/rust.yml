@@ -5,7 +5,7 @@ permissions:
   actions: write
 
 env:
-  CACHE_VERSION: 1
+  CACHE_VERSION: 2
 
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
   CARGO_TERM_COLOR: always
@@ -116,7 +116,7 @@ jobs:
     if: github.event_name == 'push' || !github.event.pull_request.draft
     strategy:
       matrix:
-        runtime: [runtime/darwinia, runtime/crab]
+        runtime: [runtime/darwinia]
     runs-on: ubuntu-latest
     steps:
       - name: Fetch latest code
@@ -138,10 +138,6 @@ jobs:
   #           {
   #             chain: darwinia-dev,
   #             compare-with: "https://rpc.darwinia.network",
-  #           },
-  #           {
-  #             chain: crab-dev,
-  #             compare-with: "https://crab-rpc.darwinia.network",
   #           },
   #         ]
   #   needs: [basic-checks]

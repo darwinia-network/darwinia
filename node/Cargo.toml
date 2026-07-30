@@ -25,7 +25,6 @@ tokio       = { version = "1.33" }
 trauma      = { version = "2.2" }
 
 # darwinia
-crab-runtime     = { workspace = true, optional = true }
 darwinia-runtime = { workspace = true, optional = true }
 dc-primitives    = { workspace = true, features = ["std"] }
 
@@ -101,13 +100,11 @@ xcm                                   = { workspace = true, features = ["std"] }
 [features]
 all-runtime = [
 	# darwinia
-	"crab-runtime",
 	"darwinia-runtime",
 ]
 
 evm-tracing = [
 	# darwinia
-	"crab-runtime?/evm-tracing",
 	"darwinia-runtime?/evm-tracing",
 
 	# moonbeam
@@ -116,7 +113,6 @@ evm-tracing = [
 
 runtime-benchmarks = [
 	# darwinia
-	"crab-runtime?/runtime-benchmarks",
 	"darwinia-runtime?/runtime-benchmarks",
 
 	# polkadot-sdk
@@ -130,11 +126,9 @@ runtime-benchmarks = [
 
 dev = [
 	# darwinia
-	"crab-runtime?/dev",
 	"darwinia-runtime?/dev",
 ]
 fast-runtime = [
 	# darwinia
-	"crab-runtime?/fast-runtime",
 	"darwinia-runtime?/fast-runtime",
 ]

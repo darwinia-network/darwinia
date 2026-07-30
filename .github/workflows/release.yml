@@ -32,9 +32,9 @@ jobs:
     strategy:
       matrix:
         node:
-          - features: darwinia-runtime,crab-runtime
+          - features: darwinia-runtime
             bz2: true
-          - features: darwinia-runtime,crab-runtime,evm-tracing
+          - features: darwinia-runtime,evm-tracing
             type: tracing
     steps:
       - name: Free disk space
@@ -81,7 +81,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        runtime: [darwinia, crab]
+        runtime: [darwinia]
     steps:
       - name: Fetch latest code
         uses: actions/checkout@v5
@@ -133,9 +133,6 @@ jobs:
             echo SKIP_BUILD > build/runtime.md
           else
             WHITELIST_PALLET_INDEX=0x33
-            if [ "$RUNTIME" == "crab" ]; then
-              WHITELIST_PALLET_INDEX=0x2f
-            fi
             WASM=$(ls ${RUNTIME}*.wasm)
             # Template will use this env var.
             export WHITELIST_HASH=$(wuh ${WASM} ${WHITELIST_PALLET_INDEX} 0x01)
@@ -236,7 +233,6 @@ jobs:
       - name: Fill note
         run: |
           cat darwinia-runtime/runtime.md >> node.md
-          cat crab-runtime/runtime.md >> node.md
           cat node.tmp.md >> node.md
       - name: Hash file
         run: cd deploy && sha256sum * | tee sha256sums.txt

@@ -28,12 +28,33 @@ use crate::*;
 use frame_support::{
 	assert_ok, derive_impl,
 	traits::{OnFinalize, OnIdle, OnInitialize},
+	weights::Weight,
 };
 use sp_core::H160;
 use sp_io::TestExternalities;
 use sp_runtime::{BuildStorage, RuntimeAppPublic};
 
 pub type BlockNumber = frame_system::pallet_prelude::BlockNumberFor<Runtime>;
+
+/// Zero weights for tests.
+pub struct TestWeightInfo;
+impl crate::WeightInfo for TestWeightInfo {
+	fn allocate_ring_staking_reward_of() -> Weight {
+		Weight::zero()
+	}
+
+	fn set_ring_staking_contract() -> Weight {
+		Weight::zero()
+	}
+
+	fn set_kton_staking_contract() -> Weight {
+		Weight::zero()
+	}
+
+	fn set_collator_count() -> Weight {
+		Weight::zero()
+	}
+}
 
 #[derive(
 	Clone,
@@ -230,7 +251,7 @@ impl crate::Config for Runtime {
 	type RingStaking = RingStaking;
 	type RuntimeEvent = RuntimeEvent;
 	type Treasury = TreasuryAccount;
-	type WeightInfo = ();
+	type WeightInfo = TestWeightInfo;
 }
 
 frame_support::construct_runtime! {

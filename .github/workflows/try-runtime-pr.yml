@@ -49,8 +49,6 @@ jobs:
         runtime:
           - name: darwinia-runtime
             uri: wss://rpc.darwinia.network
-          - name: crab-runtime
-            uri: ws://g1.crab2.darwinia.network:9944
     env:
       PR_NUMBER: ${{ inputs.pr_number || github.event.pull_request.number }}
       TARGET_SHA: ${{ inputs.target_sha || github.event.pull_request.head.sha }}

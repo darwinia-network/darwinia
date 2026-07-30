@@ -38,13 +38,6 @@ command = "cargo"
 [tasks.bn]
 alias = "build-node"
 
-[tasks.build-crab]
-env    = { "CHAIN" = "crab" }
-extend = "build-node"
-
-[tasks.bc]
-alias = "build-crab"
-
 [tasks.build-darwinia]
 env    = { "CHAIN" = "darwinia" }
 extend = "build-node"
@@ -61,13 +54,6 @@ extend = "build-node"
 [tasks.brn]
 alias = "build-release-node"
 
-[tasks.build-release-crab]
-env    = { "CHAIN" = "crab", EXTRA_ARGS = "-r" }
-extend = "build-node"
-
-[tasks.brc]
-alias = "build-release-crab"
-
 [tasks.build-release-darwinia]
 env    = { "CHAIN" = "darwinia", EXTRA_ARGS = "-r" }
 extend = "build-node"
@@ -83,13 +69,6 @@ extend = "build-node"
 
 [tasks.bb]
 alias = "build-benchmark"
-
-[tasks.build-benchmark-crab]
-env    = { "CHAIN" = "crab", "EXTRA_ARGS" = "--features runtime-benchmarks -r" }
-extend = "build-node"
-
-[tasks.bbc]
-alias = "build-benchmark-crab"
 
 [tasks.build-benchmark-darwinia]
 env    = { "CHAIN" = "darwinia", "EXTRA_ARGS" = "--features runtime-benchmarks -r" }
@@ -122,13 +101,6 @@ args = [
 ]
 command = "cargo"
 
-[tasks.run-dev-crab]
-env    = { "CHAIN" = "crab" }
-extend = "run-dev"
-
-[tasks.rdc]
-alias = "run-dev-crab"
-
 [tasks.run-dev-darwinia]
 env    = { "CHAIN" = "darwinia" }
 extend = "run-dev"
@@ -142,13 +114,6 @@ alias = "run-dev-darwinia"
 [tasks.run-release]
 env    = { "EXTRA_ARGS" = "-r" }
 extend = "run-dev"
-
-[tasks.run-release-dev-crab]
-env    = { "CHAIN" = "crab", "EXTRA_ARGS" = "-r" }
-extend = "run-dev"
-
-[tasks.rrdc]
-alias = "run-release-dev-crab"
 
 [tasks.run-release-dev-darwinia]
 env    = { "CHAIN" = "darwinia", "EXTRA_ARGS" = "-r" }
@@ -190,13 +155,6 @@ args = [
 ]
 command = "cargo"
 
-[tasks.run-benchmark-crab]
-env    = { "CHAIN" = "crab" }
-extend = "run-benchmark"
-
-[tasks.rbc]
-alias = "run-benchmark-crab"
-
 [tasks.run-benchmark-darwinia]
 env    = { "CHAIN" = "darwinia" }
 extend = "run-benchmark"
@@ -233,13 +191,6 @@ args    = [
 	"--repeat",
 	"1"
 ]
-
-[tasks.run-benchmark-crab-check]
-extend = "run-benchmark-check"
-env    = { "CHAIN" = "crab" }
-
-[tasks.rbcc]
-alias = "run-benchmark-crab-check"
 
 [tasks.run-benchmark-darwinia-check]
 extend = "run-benchmark-check"
