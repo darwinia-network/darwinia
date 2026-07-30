@@ -84,17 +84,84 @@ jobs:
           echo "disable_spec=$spec" >> "$GITHUB_OUTPUT"
           echo "disable_idemp=$idemp" >> "$GITHUB_OUTPUT"
 
-      - name: Try-Runtime
-        id: tr
-        uses: hack-ink/polkadot-runtime-releaser/action/try-runtime@v0.2.0
+      - name: Set up Try Runtime CLI
+        env:
+          TRY_RUNTIME_VERSION: "0.8.0"
+        run: |
+          curl --fail --location --retry 3 \
+            "https://github.com/paritytech/try-runtime-cli/releases/download/v${TRY_RUNTIME_VERSION}/try-runtime-x86_64-unknown-linux-musl" \
+            --output try-runtime
+          chmod +x try-runtime
+          mv try-runtime /usr/local/bin/try-runtime
+
+      - name: Build runtime
+        uses: hack-ink/polkadot-runtime-releaser/action/build@v0.2.0
         with:
           runtime: ${{ matrix.runtime.name }}
           features: try-runtime
           toolchain-ver: 1.82.0
-          try-runtime-ver: 0.8.0
-          disable-spec-version-check: ${{ steps.flags.outputs.disable_spec }}
-          disable-idempotency-checks: ${{ steps.flags.outputs.disable_idemp }}
-          uri: ${{ matrix.runtime.uri }}
+          output-dir: .
+
+      - name: Try Runtime
+        timeout-minutes: 30
+        env:
+          DISABLE_IDEMP: ${{ steps.flags.outputs.disable_idemp }}
+          DISABLE_SPEC: ${{ steps.flags.outputs.disable_spec }}
+          RUNTIME_NAME: ${{ matrix.runtime.name }}
+          TRY_RUNTIME_URI: ${{ matrix.runtime.uri }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          runtime_files=(*_runtime-*.compact.compressed.wasm)
+          if [[ ${#runtime_files[@]} -ne 1 ]]; then
+            echo "::error::Expected exactly one runtime Wasm artifact, found ${#runtime_files[@]}."
+            exit 1
+          fi
+
+          mkdir -p out
+          args=(
+            --runtime "${runtime_files[0]}"
+            on-runtime-upgrade
+            --blocktime 6000
+          )
+          if [[ "$DISABLE_SPEC" == "true" ]]; then
+            args+=(--disable-spec-version-check)
+          fi
+          if [[ "$DISABLE_IDEMP" == "true" ]]; then
+            args+=(--disable-idempotency-checks)
+          fi
+          args+=(live -u "$TRY_RUNTIME_URI")
+
+          result_log="out/try-runtime-${RUNTIME_NAME}.log"
+          : > "$result_log"
+          for attempt in 1 2; do
+            attempt_log="out/try-runtime-${RUNTIME_NAME}-attempt-${attempt}.log"
+            set +e
+            try-runtime "${args[@]}" 2>&1 | tee "$attempt_log"
+            pipeline_status=("${PIPESTATUS[@]}")
+            set -e
+
+            status="${pipeline_status[0]}"
+            if [[ "$status" -eq 0 && "${pipeline_status[1]}" -ne 0 ]]; then
+              status="${pipeline_status[1]}"
+            fi
+            {
+              echo "### Attempt ${attempt}"
+              cat "$attempt_log"
+            } >> "$result_log"
+
+            if [[ "$status" -eq 0 ]]; then
+              exit 0
+            fi
+            if [[ "$attempt" -eq 2 ]] ||
+              ! grep -Eq 'status_code: 5[0-9]{2}' "$attempt_log"; then
+              exit "$status"
+            fi
+
+            echo "::warning::Try Runtime received a remote HTTP 5xx response; retrying once."
+            sleep 15
+          done
 
       - name: Collect summary
         if: always()
@@ -144,6 +211,7 @@ jobs:
               '',
               `- PR: #${process.env.PR_NUMBER}`,
               `- Commit: \`${process.env.TARGET_SHA}\``,
+              '- Runtime: `darwinia-runtime`',
               `- Disable spec-version check: \`${process.env.DISABLE_SPEC}\``,
               `- Disable idempotency checks: \`${process.env.DISABLE_IDEMP}\``,
               `- Conclusion: **${process.env.RESULT}**`,
@@ -159,11 +227,29 @@ jobs:
 
       - name: Remove trigger labels
         if: always() && github.event_name == 'pull_request'
-        uses: actions-ecosystem/action-remove-labels@v1
+        uses: actions/github-script@v8
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          number: ${{ env.PR_NUMBER }}
-          labels: |
-            try-runtime
-            try-runtime:skip-spec-check
-            try-runtime:skip-idempotency
+          script: |
+            const triggerLabels = new Set([
+              'try-runtime',
+              'try-runtime:skip-spec-check',
+              'try-runtime:skip-idempotency'
+            ]);
+            const labels = context.payload.pull_request.labels
+              .map((label) => label.name)
+              .filter((name) => triggerLabels.has(name));
+
+            for (const name of labels) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: Number(process.env.PR_NUMBER),
+                  name
+                });
+              } catch (error) {
+                if (error.status !== 404) {
+                  throw error;
+                }
+              }
+            }
