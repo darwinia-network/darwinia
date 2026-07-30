@@ -4,16 +4,21 @@ on:
   issue_comment:
     types: [created]
 
-permissions:
-  contents: read
-  issues: write
-  pull-requests: write
+permissions: {}
 
 jobs:
   gate:
     if: >
       github.event.issue.pull_request &&
       contains(github.event.comment.body, '/bot try-runtime')
+    outputs:
+      disable_idempotency_checks: ${{ steps.request.outputs.disable_idempotency_checks }}
+      disable_spec_version_check: ${{ steps.request.outputs.disable_spec_version_check }}
+      pr_number: ${{ steps.request.outputs.pr_number }}
+      target_sha: ${{ steps.request.outputs.target_sha }}
+    permissions:
+      issues: write
+      pull-requests: read
     runs-on: ubuntu-latest
     steps:
       - name: Verify requester is trusted
@@ -38,42 +43,64 @@ jobs:
             });
             core.setFailed('Unauthorized')
 
-      - name: Build label list from comment flags
-        id: labels
-        env:
-          BODY: ${{ github.event.comment.body }}
-        run: |
-          labels=("try-runtime")
-          if echo "$BODY" | grep -q -- '--disable-spec-version-check'; then
-            labels+=("try-runtime:skip-spec-check")
-          fi
-          if echo "$BODY" | grep -q -- '--disable-idempotency-checks'; then
-            labels+=("try-runtime:skip-idempotency")
-          fi
-          printf '%s\n' "${labels[@]}" | jq -R . | jq -s . > labels.json
-          echo "labels=$(cat labels.json)" >> "$GITHUB_OUTPUT"
-
-      - name: Add labels to PR
+      - name: Resolve request
+        id: request
         uses: actions/github-script@v8
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
         with:
           script: |
-            const ls = JSON.parse(process.env.LABELS);
-            await github.issues.addLabels({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.issue.number,
-              labels: ls
+            const { owner, repo } = context.repo;
+            const pull_number = context.payload.issue.number;
+            const { data: pull } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number
             });
-        env:
-          LABELS: ${{ steps.labels.outputs.labels }}
+
+            if (pull.state === 'closed' && !pull.merged) {
+              core.setFailed('Try Runtime cannot run for a closed, unmerged pull request.');
+              return;
+            }
+            if (pull.merged && !pull.merge_commit_sha) {
+              core.setFailed('The merged pull request has no merge commit SHA.');
+              return;
+            }
+
+            const targetSha = pull.merged ? pull.merge_commit_sha : pull.head.sha;
+            const comment = process.env.COMMENT_BODY || '';
+            core.setOutput('pr_number', String(pull_number));
+            core.setOutput('target_sha', targetSha);
+            core.setOutput(
+              'disable_spec_version_check',
+              String(comment.includes('--disable-spec-version-check'))
+            );
+            core.setOutput(
+              'disable_idempotency_checks',
+              String(comment.includes('--disable-idempotency-checks'))
+            );
 
       - name: Acknowledge
         uses: actions/github-script@v8
+        env:
+          TARGET_SHA: ${{ steps.request.outputs.target_sha }}
         with:
           script: |
-            await github.issues.createComment({
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.payload.issue.number,
-              body: `⏳ Queued **Try Runtime**. A PR job will execute and post results here.`
+              body: `⏳ Queued **Try Runtime** for \`${process.env.TARGET_SHA}\`. The workflow will post results here.`
             });
+
+  try-runtime:
+    needs: gate
+    permissions:
+      contents: read
+      issues: write
+    uses: ./.github/workflows/try-runtime-pr.yml
+    with:
+      disable_idempotency_checks: ${{ needs.gate.outputs.disable_idempotency_checks == 'true' }}
+      disable_spec_version_check: ${{ needs.gate.outputs.disable_spec_version_check == 'true' }}
+      pr_number: ${{ needs.gate.outputs.pr_number }}
+      target_sha: ${{ needs.gate.outputs.target_sha }}
