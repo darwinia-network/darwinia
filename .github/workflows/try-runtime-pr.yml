@@ -103,6 +103,7 @@ jobs:
           output-dir: .
 
       - name: Try Runtime
+        timeout-minutes: 30
         env:
           DISABLE_IDEMP: ${{ steps.flags.outputs.disable_idemp }}
           DISABLE_SPEC: ${{ steps.flags.outputs.disable_spec }}
