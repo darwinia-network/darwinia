@@ -18,9 +18,6 @@
 
 #[frame_support::pallet]
 pub mod custom_origins {
-	// FRAME-generated code currently triggers Clippy's `manual_inspect` lint.
-	#![allow(clippy::manual_inspect)]
-
 	// crates.io
 	use strum::EnumString;
 	// darwinia

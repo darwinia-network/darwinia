@@ -91,9 +91,6 @@ impl<O: Into<Result<ForwardEthOrigin, O>> + From<ForwardEthOrigin>> EnsureOrigin
 
 #[frame_support::pallet]
 pub mod pallet {
-	// FRAME-generated code currently triggers Clippy's `manual_inspect` lint.
-	#![allow(clippy::manual_inspect)]
-
 	use super::*;
 	use frame_system::pallet_prelude::*;
 
