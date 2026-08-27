@@ -79,6 +79,9 @@ use sp_std::prelude::*;
 
 #[frame_support::pallet]
 pub mod pallet {
+	// FRAME-generated code currently triggers Clippy's `manual_inspect` lint.
+	#![allow(clippy::manual_inspect)]
+
 	use super::*;
 
 	pub(crate) const KTON_ID: AssetId = 1026;

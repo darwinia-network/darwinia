@@ -26,6 +26,9 @@
 
 #[frame_support::pallet]
 pub mod pallet {
+	// FRAME-generated code currently triggers Clippy's `manual_inspect` lint.
+	#![allow(clippy::manual_inspect)]
+
 	// polkadot-sdk
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
