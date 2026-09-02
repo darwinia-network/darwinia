@@ -18,6 +18,7 @@
 
 // darwinia
 use crate::*;
+use darwinia_precompile_assets::AccountToAssetId;
 use pallet_config::precompiles::{self, *};
 // frontier
 use pallet_evm::{ExitError, IsPrecompileResult, Precompile};
@@ -51,25 +52,52 @@ impl Precompiles {
 			ADDR_EXPERIMENTAL,
 		]
 	}
+
+	fn reserved_asset_id(address: [u8; 20]) -> Option<AssetId> {
+		let asset_id = AssetIdConverter::account_to_asset_id(address.into());
+
+		(0x402..0x600).contains(&asset_id).then_some(asset_id)
+	}
+
+	/// Asset precompiles only execute at their canonical low-u64 H160 addresses.
+	/// The round-trip check prevents non-zero high bytes from aliasing the same asset ID.
+	fn is_canonical_asset_precompile(address: [u8; 20]) -> bool {
+		Self::reserved_asset_id(address)
+			.map(|asset_id| address == precompiles::address_of(asset_id))
+			.unwrap_or(false)
+	}
+
+	fn is_asset_precompile_alias(address: [u8; 20]) -> bool {
+		Self::reserved_asset_id(address).is_some() && !Self::is_canonical_asset_precompile(address)
+	}
+
+	fn is_precompile_address(address: [u8; 20]) -> bool {
+		Self::set().contains(&address) || Self::reserved_asset_id(address).is_some()
+	}
+
+	fn precompile_context_error(
+		code_address: [u8; 20],
+		context_address: [u8; 20],
+	) -> Option<&'static str> {
+		if Self::is_asset_precompile_alias(code_address) {
+			return Some("Non-canonical asset precompile address.");
+		}
+
+		(Self::is_precompile_address(code_address)
+			&& code_address > precompiles::address_of(9)
+			&& code_address != context_address)
+			.then_some("Cannot be called using `DELEGATECALL` or `CALLCODE`.")
+	}
 }
 impl pallet_evm::PrecompileSet for Precompiles {
 	fn execute(
 		&self,
 		handle: &mut impl pallet_evm::PrecompileHandle,
 	) -> Option<pallet_evm::PrecompileResult> {
-		// darwinia
-		use darwinia_precompile_assets::AccountToAssetId;
-
 		let (code_addr, context_addr) = (handle.code_address().0, handle.context().address.0);
 
-		// Filter known precompile addresses except Ethereum officials
-		if Self::set().contains(&code_addr)
-			&& code_addr > precompiles::address_of(9)
-			&& code_addr != context_addr
-		{
-			return Some(Err(precompile_utils::prelude::revert(
-				"Cannot be called using `DELEGATECALL` or `CALLCODE`.",
-			)));
+		if let Some(message) = Self::precompile_context_error(code_addr, context_addr) {
+			return Some(Err(precompile_utils::prelude::revert(message)));
 		};
 
 		let output = match code_addr {
@@ -90,7 +118,7 @@ impl pallet_evm::PrecompileSet for Precompiles {
 				Runtime,
 				DarwiniaDispatchValidator,
 			>>::execute(handle),
-			a if (0x402..0x600).contains(&AssetIdConverter::account_to_asset_id(a.into())) =>
+			a if Self::is_canonical_asset_precompile(a) =>
 				<darwinia_precompile_assets::ERC20Assets<Runtime, AssetIdConverter>>::execute(
 					handle,
 				),
@@ -106,9 +134,69 @@ impl pallet_evm::PrecompileSet for Precompiles {
 
 	fn is_precompile(&self, address: H160, _gas: u64) -> IsPrecompileResult {
 		IsPrecompileResult::Answer {
-			is_precompile: Self::set().contains(&address.0),
+			is_precompile: Self::is_precompile_address(address.0),
 			extra_cost: 0,
 		}
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn asset_precompile_alias_is_reserved_but_not_executable() {
+		let canonical = precompiles::address_of(0x402);
+		let mut alias = canonical;
+		alias[11] = 1;
+
+		assert_eq!(H160::from(alias).to_low_u64_be(), 0x402);
+		assert_eq!(Precompiles::reserved_asset_id(alias), Some(0x402));
+		assert!(Precompiles::is_canonical_asset_precompile(canonical));
+		assert!(!Precompiles::is_canonical_asset_precompile(alias));
+		assert!(Precompiles::is_asset_precompile_alias(alias));
+		assert!(Precompiles::is_precompile_address(alias));
+		assert_eq!(
+			Precompiles::precompile_context_error(alias, alias),
+			Some("Non-canonical asset precompile address.")
+		);
+		assert_eq!(
+			Precompiles::precompile_context_error(alias, [0xAA; 20]),
+			Some("Non-canonical asset precompile address.")
+		);
+	}
+
+	#[test]
+	fn asset_precompile_rejects_foreign_execution_context() {
+		let canonical = precompiles::address_of(0x402);
+
+		assert_eq!(Precompiles::precompile_context_error(canonical, canonical), None);
+		assert_eq!(
+			Precompiles::precompile_context_error(canonical, [0xAA; 20]),
+			Some("Cannot be called using `DELEGATECALL` or `CALLCODE`.")
+		);
+	}
+
+	#[test]
+	fn every_non_zero_asset_address_prefix_is_rejected() {
+		let canonical = precompiles::address_of(0x402);
+
+		for byte_index in 0..12 {
+			let mut alias = canonical;
+			alias[byte_index] = 1;
+
+			assert!(Precompiles::is_asset_precompile_alias(alias));
+			assert!(Precompiles::precompile_context_error(alias, alias).is_some());
+		}
+	}
+
+	#[test]
+	fn dynamic_asset_precompiles_are_reported_consistently() {
+		assert!(Precompiles::is_precompile_address(precompiles::address_of(0x402)));
+		assert!(Precompiles::is_precompile_address(precompiles::address_of(0x500)));
+		assert!(Precompiles::is_precompile_address(precompiles::address_of(0x5ff)));
+		assert!(!Precompiles::is_canonical_asset_precompile(precompiles::address_of(0x401)));
+		assert!(!Precompiles::is_canonical_asset_precompile(precompiles::address_of(0x600)));
 	}
 }
 
