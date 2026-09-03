@@ -94,7 +94,7 @@ jobs:
           .github/shrink-cache.sh
       - name: Upload
         if: matrix.action == 'build'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: darwinia
           path: darwinia

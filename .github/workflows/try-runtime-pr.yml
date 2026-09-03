@@ -180,7 +180,7 @@ jobs:
 
       - name: Upload artifacts (fallback for forks)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: try-runtime-${{ env.PR_NUMBER }}-${{ matrix.runtime.name }}
           path: out/
