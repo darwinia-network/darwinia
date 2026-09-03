@@ -122,58 +122,6 @@ impl pallet_evm::PrecompileSet for Precompiles {
 	}
 }
 
-#[cfg(test)]
-mod tests {
-	use super::*;
-
-	#[test]
-	fn asset_precompile_alias_is_not_a_precompile() {
-		let canonical = precompiles::address_of(0x402);
-		let mut alias = canonical;
-		alias[11] = 1;
-
-		assert_eq!(H160::from(alias).to_low_u64_be(), 0x402);
-		assert!(Precompiles::is_asset_precompile(canonical));
-		assert!(!Precompiles::is_asset_precompile(alias));
-		assert!(!Precompiles::is_precompile_address(alias));
-		assert_eq!(Precompiles::precompile_context_error(alias, alias), None);
-		assert_eq!(Precompiles::precompile_context_error(alias, [0xAA; 20]), None);
-	}
-
-	#[test]
-	fn asset_precompile_rejects_foreign_execution_context() {
-		let canonical = precompiles::address_of(0x402);
-
-		assert_eq!(Precompiles::precompile_context_error(canonical, canonical), None);
-		assert_eq!(
-			Precompiles::precompile_context_error(canonical, [0xAA; 20]),
-			Some("Cannot be called using `DELEGATECALL` or `CALLCODE`.")
-		);
-	}
-
-	#[test]
-	fn every_non_zero_asset_address_prefix_is_outside_the_precompile_range() {
-		let canonical = precompiles::address_of(0x402);
-
-		for byte_index in 0..12 {
-			let mut alias = canonical;
-			alias[byte_index] = 1;
-
-			assert!(!Precompiles::is_asset_precompile(alias));
-			assert!(!Precompiles::is_precompile_address(alias));
-		}
-	}
-
-	#[test]
-	fn dynamic_asset_precompiles_are_reported_consistently() {
-		assert!(Precompiles::is_precompile_address(precompiles::address_of(0x402)));
-		assert!(Precompiles::is_precompile_address(precompiles::address_of(0x500)));
-		assert!(Precompiles::is_precompile_address(precompiles::address_of(0x5ff)));
-		assert!(!Precompiles::is_asset_precompile(precompiles::address_of(0x401)));
-		assert!(!Precompiles::is_asset_precompile(precompiles::address_of(0x600)));
-	}
-}
-
 pub struct TransactionPaymentGasPrice;
 impl pallet_evm::FeeCalculator for TransactionPaymentGasPrice {
 	fn min_gas_price() -> (U256, frame_support::weights::Weight) {
@@ -247,4 +195,56 @@ impl pallet_evm::Config for Runtime {
 	type WeightInfo = ();
 	type WeightPerGas = pallet_config::WeightPerGas;
 	type WithdrawOrigin = pallet_evm::EnsureAddressNever<Self::AccountId>;
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn asset_precompile_alias_is_not_a_precompile() {
+		let canonical = precompiles::address_of(0x402);
+		let mut alias = canonical;
+		alias[11] = 1;
+
+		assert_eq!(H160::from(alias).to_low_u64_be(), 0x402);
+		assert!(Precompiles::is_asset_precompile(canonical));
+		assert!(!Precompiles::is_asset_precompile(alias));
+		assert!(!Precompiles::is_precompile_address(alias));
+		assert_eq!(Precompiles::precompile_context_error(alias, alias), None);
+		assert_eq!(Precompiles::precompile_context_error(alias, [0xAA; 20]), None);
+	}
+
+	#[test]
+	fn asset_precompile_rejects_foreign_execution_context() {
+		let canonical = precompiles::address_of(0x402);
+
+		assert_eq!(Precompiles::precompile_context_error(canonical, canonical), None);
+		assert_eq!(
+			Precompiles::precompile_context_error(canonical, [0xAA; 20]),
+			Some("Cannot be called using `DELEGATECALL` or `CALLCODE`.")
+		);
+	}
+
+	#[test]
+	fn every_non_zero_asset_address_prefix_is_outside_the_precompile_range() {
+		let canonical = precompiles::address_of(0x402);
+
+		for byte_index in 0..12 {
+			let mut alias = canonical;
+			alias[byte_index] = 1;
+
+			assert!(!Precompiles::is_asset_precompile(alias));
+			assert!(!Precompiles::is_precompile_address(alias));
+		}
+	}
+
+	#[test]
+	fn dynamic_asset_precompiles_are_reported_consistently() {
+		assert!(Precompiles::is_precompile_address(precompiles::address_of(0x402)));
+		assert!(Precompiles::is_precompile_address(precompiles::address_of(0x500)));
+		assert!(Precompiles::is_precompile_address(precompiles::address_of(0x5ff)));
+		assert!(!Precompiles::is_asset_precompile(precompiles::address_of(0x401)));
+		assert!(!Precompiles::is_asset_precompile(precompiles::address_of(0x600)));
+	}
 }
