@@ -18,7 +18,6 @@
 
 // darwinia
 use crate::*;
-use darwinia_precompile_assets::AccountToAssetId;
 use pallet_config::precompiles::{self, *};
 // frontier
 use pallet_evm::{ExitError, IsPrecompileResult, Precompile};
@@ -53,36 +52,19 @@ impl Precompiles {
 		]
 	}
 
-	fn reserved_asset_id(address: [u8; 20]) -> Option<AssetId> {
-		let asset_id = AssetIdConverter::account_to_asset_id(address.into());
-
-		(0x402..0x600).contains(&asset_id).then_some(asset_id)
-	}
-
-	/// Asset precompiles only execute at their canonical low-u64 H160 addresses.
-	/// The round-trip check prevents non-zero high bytes from aliasing the same asset ID.
-	fn is_canonical_asset_precompile(address: [u8; 20]) -> bool {
-		Self::reserved_asset_id(address)
-			.map(|asset_id| address == precompiles::address_of(asset_id))
-			.unwrap_or(false)
-	}
-
-	fn is_asset_precompile_alias(address: [u8; 20]) -> bool {
-		Self::reserved_asset_id(address).is_some() && !Self::is_canonical_asset_precompile(address)
+	fn is_asset_precompile(address: [u8; 20]) -> bool {
+		// Compare the full address so a non-zero prefix cannot alias an asset precompile.
+		(ADDR_KTON..ADDR_DEPOSIT_DEPRECATED).contains(&address)
 	}
 
 	fn is_precompile_address(address: [u8; 20]) -> bool {
-		Self::set().contains(&address) || Self::reserved_asset_id(address).is_some()
+		Self::set().contains(&address) || Self::is_asset_precompile(address)
 	}
 
 	fn precompile_context_error(
 		code_address: [u8; 20],
 		context_address: [u8; 20],
 	) -> Option<&'static str> {
-		if Self::is_asset_precompile_alias(code_address) {
-			return Some("Non-canonical asset precompile address.");
-		}
-
 		(Self::is_precompile_address(code_address)
 			&& code_address > precompiles::address_of(9)
 			&& code_address != context_address)
@@ -118,7 +100,7 @@ impl pallet_evm::PrecompileSet for Precompiles {
 				Runtime,
 				DarwiniaDispatchValidator,
 			>>::execute(handle),
-			a if Self::is_canonical_asset_precompile(a) =>
+			a if Self::is_asset_precompile(a) =>
 				<darwinia_precompile_assets::ERC20Assets<Runtime, AssetIdConverter>>::execute(
 					handle,
 				),
@@ -145,25 +127,17 @@ mod tests {
 	use super::*;
 
 	#[test]
-	fn asset_precompile_alias_is_reserved_but_not_executable() {
+	fn asset_precompile_alias_is_not_a_precompile() {
 		let canonical = precompiles::address_of(0x402);
 		let mut alias = canonical;
 		alias[11] = 1;
 
 		assert_eq!(H160::from(alias).to_low_u64_be(), 0x402);
-		assert_eq!(Precompiles::reserved_asset_id(alias), Some(0x402));
-		assert!(Precompiles::is_canonical_asset_precompile(canonical));
-		assert!(!Precompiles::is_canonical_asset_precompile(alias));
-		assert!(Precompiles::is_asset_precompile_alias(alias));
-		assert!(Precompiles::is_precompile_address(alias));
-		assert_eq!(
-			Precompiles::precompile_context_error(alias, alias),
-			Some("Non-canonical asset precompile address.")
-		);
-		assert_eq!(
-			Precompiles::precompile_context_error(alias, [0xAA; 20]),
-			Some("Non-canonical asset precompile address.")
-		);
+		assert!(Precompiles::is_asset_precompile(canonical));
+		assert!(!Precompiles::is_asset_precompile(alias));
+		assert!(!Precompiles::is_precompile_address(alias));
+		assert_eq!(Precompiles::precompile_context_error(alias, alias), None);
+		assert_eq!(Precompiles::precompile_context_error(alias, [0xAA; 20]), None);
 	}
 
 	#[test]
@@ -178,15 +152,15 @@ mod tests {
 	}
 
 	#[test]
-	fn every_non_zero_asset_address_prefix_is_rejected() {
+	fn every_non_zero_asset_address_prefix_is_outside_the_precompile_range() {
 		let canonical = precompiles::address_of(0x402);
 
 		for byte_index in 0..12 {
 			let mut alias = canonical;
 			alias[byte_index] = 1;
 
-			assert!(Precompiles::is_asset_precompile_alias(alias));
-			assert!(Precompiles::precompile_context_error(alias, alias).is_some());
+			assert!(!Precompiles::is_asset_precompile(alias));
+			assert!(!Precompiles::is_precompile_address(alias));
 		}
 	}
 
@@ -195,8 +169,8 @@ mod tests {
 		assert!(Precompiles::is_precompile_address(precompiles::address_of(0x402)));
 		assert!(Precompiles::is_precompile_address(precompiles::address_of(0x500)));
 		assert!(Precompiles::is_precompile_address(precompiles::address_of(0x5ff)));
-		assert!(!Precompiles::is_canonical_asset_precompile(precompiles::address_of(0x401)));
-		assert!(!Precompiles::is_canonical_asset_precompile(precompiles::address_of(0x600)));
+		assert!(!Precompiles::is_asset_precompile(precompiles::address_of(0x401)));
+		assert!(!Precompiles::is_asset_precompile(precompiles::address_of(0x600)));
 	}
 }
 

@@ -25,7 +25,7 @@ darwinia_common_runtime::impl_account_migration_tests! {}
 // darwinia_common_runtime::impl_maintenance_tests! {}
 
 #[test]
-fn non_canonical_asset_precompile_address_reverts() {
+fn non_canonical_asset_address_is_not_a_precompile() {
 	use mock::*;
 	use pallet_evm::Runner as _;
 	use sp_core::{H160, U256};
@@ -38,7 +38,7 @@ fn non_canonical_asset_precompile_address_reverts() {
 		let result = <Runtime as pallet_evm::Config>::Runner::call(
 			caller,
 			alias,
-			Vec::new(),
+			vec![0x18, 0x16, 0x0D, 0xDD],
 			U256::zero(),
 			1_000_000,
 			None,
@@ -51,15 +51,10 @@ fn non_canonical_asset_precompile_address_reverts() {
 			None,
 			<Runtime as pallet_evm::Config>::config(),
 		)
-		.expect("EVM call should execute and return a precompile revert");
+		.expect("ordinary EVM call should execute");
 
-		assert!(result.exit_reason.is_revert());
-		assert_eq!(
-			result.value,
-			precompile_utils::solidity::revert::revert_as_bytes(
-				"Non-canonical asset precompile address."
-			)
-		);
+		assert!(result.exit_reason.is_succeed());
+		assert!(result.value.is_empty());
 	});
 }
 
