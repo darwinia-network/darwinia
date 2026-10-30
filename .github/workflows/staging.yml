@@ -6,8 +6,6 @@ permissions:
   packages: write
 
 env:
-  CACHE_VERSION: 0
-
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
   CARGO_TERM_COLOR: always
 
@@ -40,17 +38,14 @@ jobs:
         with:
           swap-size-gb: 8
       - name: Fetch latest code
-        uses: actions/checkout@v5
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Build node
         uses: ./.github/actions/build
         with:
-          package: darwinia
           features: all-runtime
-          cache_prefix: staging-${{ env.CACHE_VERSION }}
-          enable_cache: true
           enable_tar_bz2: true
       - name: Upload node
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: darwinia
           path: build
@@ -62,9 +57,12 @@ jobs:
     needs: [build-node]
     steps:
       - name: Fetch Dockerfile
-        uses: actions/checkout@v5
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Download node
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          name: darwinia
+          path: darwinia
       - name: Extract node
         run: |
           mkdir -p dist
