@@ -43,8 +43,6 @@ pub use assets::*;
 
 mod deposit;
 
-mod account_migration;
-
 // Consensus stuff.
 mod authorship;
 

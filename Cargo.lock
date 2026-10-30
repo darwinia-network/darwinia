@@ -2444,7 +2444,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia"
-version = "7.0.5"
+version = "7.0.6"
 dependencies = [
  "array-bytes 9.1.2",
  "async-trait",
@@ -2527,31 +2527,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwinia-account-migration"
-version = "7.0.5"
-dependencies = [
- "array-bytes 9.1.2",
- "darwinia-deposit",
- "dc-primitives",
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "pallet-assets",
- "pallet-balances",
- "pallet-timestamp",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-keyring",
- "sp-runtime",
- "sp-std",
- "sp-version",
-]
-
-[[package]]
 name = "darwinia-asset-limit"
-version = "7.0.5"
+version = "7.0.6"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2562,9 +2539,8 @@ dependencies = [
 
 [[package]]
 name = "darwinia-common-runtime"
-version = "7.0.5"
+version = "7.0.6"
 dependencies = [
- "array-bytes 9.1.2",
  "cumulus-primitives-core",
  "darwinia-precompile-assets",
  "dc-primitives",
@@ -2593,7 +2569,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-deposit"
-version = "7.0.5"
+version = "7.0.6"
 dependencies = [
  "darwinia-ethtx-forwarder",
  "dc-types",
@@ -2615,7 +2591,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-ethtx-forwarder"
-version = "7.0.5"
+version = "7.0.6"
 dependencies = [
  "array-bytes 9.1.2",
  "ethabi",
@@ -2644,7 +2620,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-assets"
-version = "7.0.5"
+version = "7.0.6"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -2665,7 +2641,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-state-storage"
-version = "7.0.5"
+version = "7.0.6"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -2684,7 +2660,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-runtime"
-version = "7.0.5"
+version = "7.0.6"
 dependencies = [
  "array-bytes 9.1.2",
  "cumulus-pallet-aura-ext",
@@ -2696,7 +2672,6 @@ dependencies = [
  "cumulus-primitives-core",
  "cumulus-primitives-storage-weight-reclaim",
  "cumulus-primitives-utility",
- "darwinia-account-migration",
  "darwinia-asset-limit",
  "darwinia-common-runtime",
  "darwinia-deposit",
@@ -2762,7 +2737,6 @@ dependencies = [
  "sp-genesis-builder",
  "sp-inherents",
  "sp-io",
- "sp-keyring",
  "sp-offchain",
  "sp-runtime",
  "sp-session",
@@ -2782,7 +2756,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking"
-version = "7.0.5"
+version = "7.0.6"
 dependencies = [
  "darwinia-ethtx-forwarder",
  "dc-types",
@@ -2847,7 +2821,7 @@ dependencies = [
 
 [[package]]
 name = "dc-primitives"
-version = "7.0.5"
+version = "7.0.6"
 dependencies = [
  "dc-types",
  "fp-account",
@@ -2857,7 +2831,7 @@ dependencies = [
 
 [[package]]
 name = "dc-types"
-version = "7.0.5"
+version = "7.0.6"
 
 [[package]]
 name = "der"

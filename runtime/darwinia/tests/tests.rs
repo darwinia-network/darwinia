@@ -21,8 +21,21 @@ pub mod mock;
 darwinia_common_runtime::impl_weight_tests! {}
 darwinia_common_runtime::impl_fee_tests! {}
 darwinia_common_runtime::impl_evm_tests! {}
-darwinia_common_runtime::impl_account_migration_tests! {}
 // darwinia_common_runtime::impl_maintenance_tests! {}
+
+#[test]
+fn retired_account_migration_index_is_not_reused() {
+	use frame_support::traits::PalletsInfoAccess;
+	use mock::*;
+
+	assert!(AllPalletsWithSystem::infos().iter().all(|pallet| pallet.index != 10));
+
+	// The old call encoded index 10, call 0, a 32-byte source, a 20-byte
+	// destination, and a 64-byte signature. Its index must remain invalid.
+	let mut old_call = vec![10, 0];
+	old_call.extend_from_slice(&[0; 32 + 20 + 64]);
+	assert!(<RuntimeCall as codec::Decode>::decode(&mut old_call.as_slice()).is_err());
+}
 
 #[test]
 fn non_canonical_asset_address_is_not_a_precompile() {

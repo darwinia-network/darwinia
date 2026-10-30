@@ -91,7 +91,8 @@ macro_rules! impl_self_contained_call {
 				info: &Self::SignedInfo,
 				dispatch_info: &sp_runtime::traits::DispatchInfoOf<RuntimeCall>,
 				len: usize,
-			) -> Option<Result<(), sp_runtime::transaction_validity::TransactionValidityError>> {
+			) -> Option<Result<(), sp_runtime::transaction_validity::TransactionValidityError>>
+			{
 				match self {
 					RuntimeCall::Ethereum(call) =>
 						call.pre_dispatch_self_contained(info, dispatch_info, len),
