@@ -84,7 +84,7 @@ pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia2"),
 	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
 	authoring_version: 0,
-	spec_version: 7_0_5_0,
+	spec_version: 7_0_6_0,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 0,
@@ -138,8 +138,7 @@ mod runtime {
 	// pub type Vesting = pallet_vesting;
 	#[runtime::pallet_index(9)]
 	pub type Deposit = darwinia_deposit;
-	#[runtime::pallet_index(10)]
-	pub type AccountMigration = darwinia_account_migration;
+	// Index 10 is reserved for the retired AccountMigration pallet.
 
 	// Consensus stuff.
 	#[runtime::pallet_index(11)]
@@ -268,8 +267,7 @@ mod runtime {
 	// pub type Vesting = pallet_vesting;
 	#[runtime::pallet_index(9)]
 	pub type Deposit = darwinia_deposit;
-	#[runtime::pallet_index(10)]
-	pub type AccountMigration = darwinia_account_migration;
+	// Index 10 is reserved for the retired AccountMigration pallet.
 
 	// Consensus stuff.
 	#[runtime::pallet_index(11)]
@@ -365,7 +363,6 @@ mod runtime {
 #[cfg(feature = "runtime-benchmarks")]
 frame_benchmarking::define_benchmarks! {
 	// darwinia
-	[darwinia_account_migration, AccountMigration]
 	[darwinia_deposit, Deposit]
 	[darwinia_staking, DarwiniaStaking]
 	// polkadot-sdk

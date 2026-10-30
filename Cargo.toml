@@ -17,7 +17,7 @@ edition    = "2021"
 homepage   = "https://darwinia.network"
 license    = "GPL-3.0"
 repository = "https://github.com/darwinia-network/darwinia"
-version    = "7.0.5"
+version    = "7.0.6"
 
 [workspace.dependencies]
 # crates.io
@@ -33,7 +33,6 @@ sha3         = { version = "0.10" }
 strum        = { version = "0.27", default-features = false }
 
 # darwinia
-darwinia-account-migration        = { path = "pallet/account-migration", default-features = false }
 darwinia-asset-limit              = { path = "pallet/asset-limit", default-features = false }
 darwinia-common-runtime           = { path = "runtime/common", default-features = false }
 darwinia-deposit                  = { path = "pallet/deposit", default-features = false }
@@ -163,7 +162,6 @@ sp-debug-derive                            = { git = "https://github.com/parityt
 sp-genesis-builder                         = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2409", default-features = false }
 sp-inherents                               = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2409", default-features = false }
 sp-io                                      = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2409", default-features = false }
-sp-keyring                                 = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2409", default-features = false }
 sp-keystore                                = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2409" }
 sp-offchain                                = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2409", default-features = false }
 sp-runtime                                 = { git = "https://github.com/paritytech/polkadot-sdk", branch = "stable2409", default-features = false }
