@@ -55,7 +55,7 @@ jobs:
 
     steps:
       - name: Checkout requested code (unprivileged)
-        uses: actions/checkout@v5
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           ref: ${{ env.TARGET_SHA }}
           persist-credentials: false
@@ -180,7 +180,7 @@ jobs:
 
       - name: Upload artifacts (fallback for forks)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: try-runtime-${{ env.PR_NUMBER }}-${{ matrix.runtime.name }}
           path: out/
