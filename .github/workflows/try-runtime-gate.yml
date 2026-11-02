@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Verify requester is trusted
         id: authz
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const assoc = context.payload.comment.author_association;
@@ -31,7 +31,7 @@ jobs:
 
       - name: Reject if untrusted
         if: fromJSON(steps.authz.outputs.result).ok != true
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             await github.issues.createComment({
@@ -44,7 +44,7 @@ jobs:
 
       - name: Resolve request
         id: request
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           COMMENT_BODY: ${{ github.event.comment.body }}
         with:
@@ -81,7 +81,7 @@ jobs:
 
       - name: Acknowledge
         continue-on-error: true
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           TARGET_SHA: ${{ steps.request.outputs.target_sha }}
         with:
