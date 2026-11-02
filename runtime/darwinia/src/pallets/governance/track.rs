@@ -61,7 +61,7 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 7]
 			max_deciding: 100,
 			decision_deposit: DARWINIA_PROPOSAL_REQUIREMENT,
 			prepare_period: 10 * MINUTES,
-			decision_period: 42 * DAYS,
+			decision_period: 28 * DAYS,
 			confirm_period: 10 * MINUTES,
 			min_enactment_period: 30 * MINUTES,
 			min_approval: pallet_referenda::Curve::make_reciprocal(
