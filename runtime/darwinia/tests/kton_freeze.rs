@@ -152,7 +152,7 @@ fn batch_proxy_and_derivative_calls_cannot_move_kton() {
 		);
 
 		let delegate = H160::repeat_byte(0xCC).into();
-		assert_ok!(Proxy::add_proxy(RuntimeOrigin::signed(ROOT), delegate, ProxyType::Any, 0));
+		assert_ok!(Proxy::add_proxy(RuntimeOrigin::signed(ROOT), delegate, Default::default(), 0));
 		let proxy = RuntimeCall::Proxy(pallet_proxy::Call::proxy {
 			real: ROOT,
 			force_proxy_type: None,

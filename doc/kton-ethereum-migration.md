@@ -62,6 +62,7 @@ the snapshot, burn tokens, mint Ethereum tokens, or perform governance submissio
 ```sh
 SKIP_WASM_BUILD=1 cargo test --locked -p darwinia-runtime --features try-runtime --profile ci-dev
 SKIP_WASM_BUILD=1 cargo test --locked -p darwinia-runtime --features dev,try-runtime --profile ci-dev
+RUSTFLAGS='-C panic=abort' SKIP_WASM_BUILD=1 cargo check --locked -p darwinia-runtime --no-default-features --target wasm32-unknown-unknown --profile ci-dev
 cargo +nightly fmt --all -- --check
 ```
 
@@ -69,3 +70,16 @@ Runtime tests cover the upgrade's idempotency and storage preservation, all
 current asset call variants, approved ERC-20 transfers, reads after freezing,
 nested utility and proxy dispatch, unrelated transfers, and rollback of
 staking-like contract bookkeeping on a rejected KTON transfer.
+
+Local validation on 2026-11-16, using the pinned Rust 1.82.0 toolchain:
+
+- Production runtime with `try-runtime`: 36 tests passed.
+- Dev runtime with `try-runtime`: 36 tests passed.
+- `wasm32-unknown-unknown` without default features: check passed.
+- Nightly formatting and `git diff --check`: passed.
+- All 33 locked SDK asset call variants are represented in the filter and dispatch
+  tests; external dependency sources and checksums are unchanged.
+
+The `try-runtime` results above are local tests of the migration checks. A Try
+Runtime simulation against finalized mainnet state and production Wasm artifact
+validation remain prerequisites before an actual upgrade.
