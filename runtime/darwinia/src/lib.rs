@@ -72,10 +72,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
-	(
-		migration::CustomOnRuntimeUpgrade,
-		cumulus_pallet_xcmp_queue::migration::v5::MigrateV4ToV5<Runtime>,
-	),
+	(migration::FreezeKton, cumulus_pallet_xcmp_queue::migration::v5::MigrateV4ToV5<Runtime>),
 >;
 
 /// Runtime version.
@@ -84,7 +81,7 @@ pub const VERSION: sp_version::RuntimeVersion = sp_version::RuntimeVersion {
 	spec_name: sp_runtime::create_runtime_str!("Darwinia2"),
 	impl_name: sp_runtime::create_runtime_str!("DarwiniaOfficialRust"),
 	authoring_version: 0,
-	spec_version: 7_0_6_0,
+	spec_version: 7_0_7_0,
 	impl_version: 0,
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 0,
