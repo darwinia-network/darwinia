@@ -49,7 +49,7 @@ jobs:
     name: Task ${{ matrix.action }} darwinia
     if: github.event_name == 'push' || !github.event.pull_request.draft
     needs: [features-checks]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         action: [build, test]
