@@ -91,36 +91,11 @@ mod storage {
 	>;
 }
 
-/// Freeze existing KTON holdings without moving balances, burning supply, or unstaking users.
-pub struct FreezeKton;
-impl OnRuntimeUpgrade for FreezeKton {
-	fn on_runtime_upgrade() -> Weight {
-		let id = AssetIds::Kton as AssetId;
-		let db = <Runtime as frame_system::Config>::DbWeight::get();
-		let Some(mut asset) = storage::Asset::get(id) else {
-			log::error!("KTON freeze: asset {id} is missing; pre-upgrade checks must pass");
-			return db.reads(1);
-		};
-
-		match asset.status {
-			storage::AssetStatus::Live => {
-				asset.status = storage::AssetStatus::Frozen;
-				storage::Asset::insert(id, asset);
-				log::info!("KTON asset {id} frozen for the Ethereum migration snapshot");
-				db.reads_writes(1, 1)
-			},
-			storage::AssetStatus::Frozen => db.reads(1),
-			storage::AssetStatus::Destroying => {
-				// Never resurrect an asset whose destruction has already started.
-				log::error!("KTON freeze: asset {id} is destroying; pre-upgrade checks must pass");
-				db.reads(1)
-			},
-		}
-	}
-
+pub struct CustomOnRuntimeUpgrade;
+impl OnRuntimeUpgrade for CustomOnRuntimeUpgrade {
 	#[cfg(feature = "try-runtime")]
 	fn pre_upgrade() -> Result<Vec<u8>, sp_runtime::DispatchError> {
-		Self::snapshot()
+		snapshot()
 	}
 
 	#[cfg(feature = "try-runtime")]
@@ -131,35 +106,62 @@ impl OnRuntimeUpgrade for FreezeKton {
 			"KTON must be frozen after the upgrade"
 		);
 		frame_support::ensure!(
-			Self::snapshot()? == state,
+			snapshot()? == state,
 			"KTON freeze changed holdings, issuance, permissions, metadata, approvals, or collator count"
 		);
 		Ok(())
 	}
+
+	fn on_runtime_upgrade() -> Weight {
+		migrate()
+	}
+}
+
+/// Freeze existing KTON holdings in place for the Ethereum migration snapshot.
+fn migrate() -> Weight {
+	let id = AssetIds::Kton as AssetId;
+	let db = <Runtime as frame_system::Config>::DbWeight::get();
+	let Some(mut asset) = storage::Asset::get(id) else {
+		log::error!("KTON freeze: asset {id} is missing; pre-upgrade checks must pass");
+		return db.reads(1);
+	};
+
+	match asset.status {
+		storage::AssetStatus::Live => {
+			asset.status = storage::AssetStatus::Frozen;
+			storage::Asset::insert(id, asset);
+			log::info!("KTON asset {id} frozen for the Ethereum migration snapshot");
+			db.reads_writes(1, 1)
+		},
+		storage::AssetStatus::Frozen => db.reads(1),
+		storage::AssetStatus::Destroying => {
+			// Never resurrect an asset whose destruction has already started.
+			log::error!("KTON freeze: asset {id} is destroying; pre-upgrade checks must pass");
+			db.reads(1)
+		},
+	}
 }
 
 #[cfg(feature = "try-runtime")]
-impl FreezeKton {
-	fn snapshot() -> Result<Vec<u8>, sp_runtime::DispatchError> {
-		let id = AssetIds::Kton as AssetId;
-		let mut asset = storage::Asset::get(id).ok_or("KTON asset missing")?;
-		frame_support::ensure!(
-			matches!(asset.status, storage::AssetStatus::Live | storage::AssetStatus::Frozen),
-			"Cannot freeze a destroying KTON asset"
-		);
-		// Normalize the single field this upgrade is allowed to change.
-		asset.status = storage::AssetStatus::Frozen;
-		let accounts = storage::Account::iter_prefix(id).collect::<Vec<_>>();
-		let approvals = storage::Approvals::iter_prefix((id,)).collect::<Vec<_>>();
-		Ok((
-			asset,
-			sp_core::hashing::blake2_256(&accounts.encode()),
-			sp_core::hashing::blake2_256(&approvals.encode()),
-			storage::Metadata::get(id),
-			darwinia_staking::CollatorCount::<Runtime>::get(),
-		)
-			.encode())
-	}
+fn snapshot() -> Result<Vec<u8>, sp_runtime::DispatchError> {
+	let id = AssetIds::Kton as AssetId;
+	let mut asset = storage::Asset::get(id).ok_or("KTON asset missing")?;
+	frame_support::ensure!(
+		matches!(asset.status, storage::AssetStatus::Live | storage::AssetStatus::Frozen),
+		"Cannot freeze a destroying KTON asset"
+	);
+	// Normalize the single field this upgrade is allowed to change.
+	asset.status = storage::AssetStatus::Frozen;
+	let accounts = storage::Account::iter_prefix(id).collect::<Vec<_>>();
+	let approvals = storage::Approvals::iter_prefix((id,)).collect::<Vec<_>>();
+	Ok((
+		asset,
+		sp_core::hashing::blake2_256(&accounts.encode()),
+		sp_core::hashing::blake2_256(&approvals.encode()),
+		storage::Metadata::get(id),
+		darwinia_staking::CollatorCount::<Runtime>::get(),
+	)
+		.encode())
 }
 
 #[cfg(test)]
@@ -202,9 +204,9 @@ mod tests {
 			expected.status = storage::AssetStatus::Frozen;
 			let db = <Runtime as frame_system::Config>::DbWeight::get();
 
-			assert_eq!(FreezeKton::on_runtime_upgrade(), db.reads_writes(1, 1));
+			assert_eq!(CustomOnRuntimeUpgrade::on_runtime_upgrade(), db.reads_writes(1, 1));
 			assert_eq!(storage::Asset::get(id), Some(expected.clone()));
-			assert_eq!(FreezeKton::on_runtime_upgrade(), db.reads(1));
+			assert_eq!(CustomOnRuntimeUpgrade::on_runtime_upgrade(), db.reads(1));
 			assert_eq!(storage::Asset::get(id), Some(expected));
 			assert_eq!(Assets::balance(id, ROOT), 100);
 			assert_eq!(Assets::total_issuance(id), 100);
@@ -223,7 +225,7 @@ mod tests {
 	fn frozen_asset_rejects_direct_internal_balance_changes() {
 		externalities().execute_with(|| {
 			let id = AssetIds::Kton as AssetId;
-			FreezeKton::on_runtime_upgrade();
+			CustomOnRuntimeUpgrade::on_runtime_upgrade();
 			let recipient = H160::repeat_byte(0xBB).into();
 			assert!(
 				Assets::transfer(RuntimeOrigin::signed(ROOT), id.into(), recipient, 10).is_err()
@@ -248,15 +250,15 @@ mod tests {
 	fn try_runtime_checks_preserve_the_snapshot() {
 		externalities().execute_with(|| {
 			for _ in 0..2 {
-				let before = FreezeKton::pre_upgrade().unwrap();
-				FreezeKton::on_runtime_upgrade();
-				assert_ok!(FreezeKton::post_upgrade(before));
+				let before = CustomOnRuntimeUpgrade::pre_upgrade().unwrap();
+				CustomOnRuntimeUpgrade::on_runtime_upgrade();
+				assert_ok!(CustomOnRuntimeUpgrade::post_upgrade(before));
 			}
-			let before = FreezeKton::pre_upgrade().unwrap();
+			let before = CustomOnRuntimeUpgrade::pre_upgrade().unwrap();
 			storage::Asset::mutate(AssetIds::Kton as AssetId, |asset| {
 				asset.as_mut().unwrap().supply += 1
 			});
-			assert!(FreezeKton::post_upgrade(before).is_err());
+			assert!(CustomOnRuntimeUpgrade::post_upgrade(before).is_err());
 		});
 	}
 
@@ -268,12 +270,12 @@ mod tests {
 			storage::Asset::mutate(id, |asset| {
 				asset.as_mut().unwrap().status = storage::AssetStatus::Destroying
 			});
-			assert!(FreezeKton::pre_upgrade().is_err());
-			FreezeKton::on_runtime_upgrade();
+			assert!(CustomOnRuntimeUpgrade::pre_upgrade().is_err());
+			CustomOnRuntimeUpgrade::on_runtime_upgrade();
 			assert_eq!(storage::Asset::get(id).unwrap().status, storage::AssetStatus::Destroying);
 			storage::Asset::remove(id);
-			assert!(FreezeKton::pre_upgrade().is_err());
-			FreezeKton::on_runtime_upgrade();
+			assert!(CustomOnRuntimeUpgrade::pre_upgrade().is_err());
+			CustomOnRuntimeUpgrade::on_runtime_upgrade();
 			assert!(!storage::Asset::contains_key(id));
 		});
 	}
