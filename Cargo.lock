@@ -2444,7 +2444,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia"
-version = "7.0.6"
+version = "7.0.7"
 dependencies = [
  "array-bytes 9.1.2",
  "async-trait",
@@ -2528,7 +2528,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-asset-limit"
-version = "7.0.6"
+version = "7.0.7"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2539,7 +2539,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-common-runtime"
-version = "7.0.6"
+version = "7.0.7"
 dependencies = [
  "cumulus-primitives-core",
  "darwinia-precompile-assets",
@@ -2569,7 +2569,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-deposit"
-version = "7.0.6"
+version = "7.0.7"
 dependencies = [
  "darwinia-ethtx-forwarder",
  "dc-types",
@@ -2591,7 +2591,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-ethtx-forwarder"
-version = "7.0.6"
+version = "7.0.7"
 dependencies = [
  "array-bytes 9.1.2",
  "ethabi",
@@ -2620,7 +2620,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-assets"
-version = "7.0.6"
+version = "7.0.7"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -2641,7 +2641,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-precompile-state-storage"
-version = "7.0.6"
+version = "7.0.7"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -2660,7 +2660,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-runtime"
-version = "7.0.6"
+version = "7.0.7"
 dependencies = [
  "array-bytes 9.1.2",
  "cumulus-pallet-aura-ext",
@@ -2756,7 +2756,7 @@ dependencies = [
 
 [[package]]
 name = "darwinia-staking"
-version = "7.0.6"
+version = "7.0.7"
 dependencies = [
  "darwinia-ethtx-forwarder",
  "dc-types",
@@ -2821,7 +2821,7 @@ dependencies = [
 
 [[package]]
 name = "dc-primitives"
-version = "7.0.6"
+version = "7.0.7"
 dependencies = [
  "dc-types",
  "fp-account",
@@ -2831,7 +2831,7 @@ dependencies = [
 
 [[package]]
 name = "dc-types"
-version = "7.0.6"
+version = "7.0.7"
 
 [[package]]
 name = "der"

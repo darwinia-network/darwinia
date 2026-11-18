@@ -29,7 +29,7 @@ frame_support::parameter_types! {
 impl frame_system::Config for Runtime {
 	type AccountData = pallet_balances::AccountData<Balance>;
 	type AccountId = AccountId;
-	type BaseCallFilter = frame_support::traits::Everything;
+	type BaseCallFilter = KtonCallFilter;
 	type Block = Block;
 	type BlockLength = pallet_config::RuntimeBlockLength;
 	type BlockWeights = pallet_config::RuntimeBlockWeights;

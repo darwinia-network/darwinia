@@ -24,6 +24,62 @@ pub enum AssetIds {
 	Kton = 1026,
 }
 
+/// Keep Darwinia KTON immutable while its balances are migrated to Ethereum.
+///
+/// Asset precompiles dispatch these same calls, so this also covers ERC-20 writes.
+/// Root and explicit `dispatch_bypass_filter` callers remain trusted governance paths.
+pub struct KtonCallFilter;
+impl frame_support::traits::Contains<RuntimeCall> for KtonCallFilter {
+	fn contains(call: &RuntimeCall) -> bool {
+		use pallet_assets::Call;
+
+		let RuntimeCall::Assets(call) = call else {
+			return true;
+		};
+
+		// Check every asset call, including thawing, team changes, refunds, and destruction.
+		let id = match call {
+			Call::create { id, .. }
+			| Call::force_create { id, .. }
+			| Call::start_destroy { id, .. }
+			| Call::destroy_accounts { id, .. }
+			| Call::destroy_approvals { id, .. }
+			| Call::finish_destroy { id, .. }
+			| Call::mint { id, .. }
+			| Call::burn { id, .. }
+			| Call::transfer { id, .. }
+			| Call::transfer_keep_alive { id, .. }
+			| Call::force_transfer { id, .. }
+			| Call::freeze { id, .. }
+			| Call::thaw { id, .. }
+			| Call::freeze_asset { id, .. }
+			| Call::thaw_asset { id, .. }
+			| Call::transfer_ownership { id, .. }
+			| Call::set_team { id, .. }
+			| Call::set_metadata { id, .. }
+			| Call::clear_metadata { id, .. }
+			| Call::force_set_metadata { id, .. }
+			| Call::force_clear_metadata { id, .. }
+			| Call::force_asset_status { id, .. }
+			| Call::approve_transfer { id, .. }
+			| Call::cancel_approval { id, .. }
+			| Call::force_cancel_approval { id, .. }
+			| Call::transfer_approved { id, .. }
+			| Call::touch { id, .. }
+			| Call::refund { id, .. }
+			| Call::set_min_balance { id, .. }
+			| Call::touch_other { id, .. }
+			| Call::refund_other { id, .. }
+			| Call::block { id, .. }
+			| Call::transfer_all { id, .. } => id.0,
+			// FRAME's uninhabited variant. New SDK calls must be handled above.
+			Call::__Ignore(..) => return false,
+		};
+
+		id != AssetIds::Kton as AssetId
+	}
+}
+
 impl pallet_assets::Config for Runtime {
 	type ApprovalDeposit = ();
 	#[cfg(feature = "runtime-benchmarks")]
