@@ -6,16 +6,16 @@
 mod mock;
 
 use frame_support::{
-	assert_ok,
-	traits::{fungibles::Inspect, Contains},
+	assert_noop, assert_ok,
+	traits::{fungibles::Inspect, Contains, GetCallIndex},
 };
 use mock::*;
 use pallet_assets::Call as AssetCall;
 use pallet_evm::Runner;
 use sp_core::{H160, U256};
-use sp_runtime::traits::Dispatchable;
+use sp_runtime::traits::{Dispatchable, Header as _};
 
-fn asset_calls(asset: AssetId) -> Vec<RuntimeCall> {
+fn asset_calls(asset: AssetId) -> Vec<AssetCall<Runtime>> {
 	let id = asset.into();
 	let who = ROOT;
 	vec![
@@ -68,9 +68,6 @@ fn asset_calls(asset: AssetId) -> Vec<RuntimeCall> {
 		AssetCall::block { id, who },
 		AssetCall::transfer_all { id, dest: who, keep_alive: false },
 	]
-	.into_iter()
-	.map(RuntimeCall::Assets)
-	.collect()
 }
 
 fn ext() -> sp_io::TestExternalities {
@@ -91,7 +88,10 @@ fn transfer() -> RuntimeCall {
 #[test]
 fn every_kton_asset_call_is_filtered_but_other_assets_are_allowed() {
 	ext().execute_with(|| {
-		for call in asset_calls(KTON_ID) {
+		let calls = asset_calls(KTON_ID);
+		let indices: Vec<_> = calls.iter().map(GetCallIndex::get_call_index).collect();
+		assert_eq!(indices, AssetCall::<Runtime>::get_call_indices());
+		for call in calls.into_iter().map(RuntimeCall::Assets) {
 			assert!(!KtonCallFilter::contains(&call));
 			let result = call.dispatch(RuntimeOrigin::signed(ROOT));
 			assert_eq!(
@@ -99,7 +99,7 @@ fn every_kton_asset_call_is_filtered_but_other_assets_are_allowed() {
 				frame_system::Error::<Runtime>::CallFiltered.into()
 			);
 		}
-		for call in asset_calls(KTON_ID + 1) {
+		for call in asset_calls(KTON_ID + 1).into_iter().map(RuntimeCall::Assets) {
 			assert!(KtonCallFilter::contains(&call));
 		}
 		assert_eq!(Assets::balance(KTON_ID, ROOT), 100);
@@ -114,6 +114,7 @@ fn non_kton_transfers_continue_to_work() {
 		let recipient = H160::repeat_byte(0xBB).into();
 		assert_ok!(Assets::force_create(RuntimeOrigin::root(), id.into(), ROOT, true, 1));
 		assert_ok!(Assets::mint(RuntimeOrigin::signed(ROOT), id.into(), ROOT, 100));
+		Executive::execute_on_runtime_upgrade();
 		let call = RuntimeCall::Assets(AssetCall::transfer {
 			id: id.into(),
 			target: recipient,
@@ -168,8 +169,8 @@ fn batch_proxy_and_derivative_calls_cannot_move_kton() {
 	});
 }
 
-fn abi(selector: [u8; 4], args: &[U256]) -> Vec<u8> {
-	let mut data = selector.to_vec();
+fn abi(signature: &str, args: &[U256]) -> Vec<u8> {
+	let mut data = sp_core::hashing::keccak_256(signature.as_bytes())[..4].to_vec();
 	for arg in args {
 		let mut word = [0; 32];
 		arg.to_big_endian(&mut word);
@@ -203,7 +204,7 @@ fn evm_call(caller: H160, target: H160, data: Vec<u8>) -> fp_evm::CallInfo {
 }
 
 #[test]
-fn existing_erc20_approvals_do_not_bypass_the_runtime_filter() {
+fn erc20_writes_are_rejected_and_existing_allowances_remain_readable() {
 	ext().execute_with(|| {
 		let owner: H160 = ROOT.into();
 		let spender = H160::repeat_byte(0xCC);
@@ -216,25 +217,30 @@ fn existing_erc20_approvals_do_not_bypass_the_runtime_filter() {
 			spender.into(),
 			50
 		));
+		Executive::execute_on_runtime_upgrade();
 		let attempts = [
-			(owner, abi([0xa9, 0x05, 0x9c, 0xbb], &[address_arg(recipient), 10.into()])),
+			(owner, abi("transfer(address,uint256)", &[address_arg(recipient), 10.into()])),
 			(
 				spender,
 				abi(
-					[0x23, 0xb8, 0x72, 0xdd],
+					"transferFrom(address,address,uint256)",
 					&[address_arg(owner), address_arg(recipient), 10.into()],
 				),
 			),
 			(
 				owner,
 				abi(
-					[0x23, 0xb8, 0x72, 0xdd],
+					"transferFrom(address,address,uint256)",
 					&[address_arg(owner), address_arg(recipient), 10.into()],
 				),
 			),
-			(owner, abi([0x40, 0xc1, 0x0f, 0x19], &[address_arg(recipient), 10.into()])),
-			(owner, abi([0x9d, 0xc2, 0x9f, 0xac], &[address_arg(owner), 10.into()])),
-			(owner, abi([0x09, 0x5e, 0xa7, 0xb3], &[address_arg(spender), 10.into()])),
+			(owner, abi("mint(address,uint256)", &[address_arg(recipient), 10.into()])),
+			(owner, abi("burn(address,uint256)", &[address_arg(owner), 10.into()])),
+			(owner, abi("approve(address,uint256)", &[address_arg(spender), 0.into()])),
+			(owner, abi("approve(address,uint256)", &[address_arg(recipient), 10.into()])),
+			(owner, abi("transfer_ownership(address)", &[address_arg(recipient)])),
+			(owner, abi("freeze(address)", &[address_arg(owner)])),
+			(owner, abi("thaw(address)", &[address_arg(owner)])),
 		];
 		for (caller, data) in attempts {
 			let result = evm_call(caller, token, data);
@@ -247,45 +253,69 @@ fn existing_erc20_approvals_do_not_bypass_the_runtime_filter() {
 		assert_eq!(Assets::balance(KTON_ID, ROOT), 100);
 		assert_eq!(Assets::balance(KTON_ID, AccountId::from(recipient)), 0);
 		assert_eq!(Assets::total_issuance(KTON_ID), 100);
-		assert_eq!(
-			<Assets as frame_support::traits::fungibles::approvals::Inspect<AccountId>>::allowance(
-				KTON_ID,
-				&ROOT,
-				&spender.into()
+		for (account, expected) in [(spender, 50), (recipient, 0)] {
+			let result = evm_call(
+				owner,
+				token,
+				abi("allowance(address,address)", &[address_arg(owner), address_arg(account)]),
+			);
+			assert!(result.exit_reason.is_succeed());
+			assert_eq!(U256::from_big_endian(&result.value), U256::from(expected));
+		}
+	});
+}
+
+#[test]
+fn first_block_of_the_new_runtime_freezes_kton() {
+	ext().execute_with(|| {
+		frame_system::LastRuntimeUpgrade::<Runtime>::put(frame_system::LastRuntimeUpgradeInfo {
+			spec_name: VERSION.spec_name,
+			spec_version: 7_0_6_0.into(),
+		});
+		darwinia_staking::CollatorCount::<Runtime>::put(17);
+		let header = Header::new(
+			2,
+			Default::default(),
+			Default::default(),
+			System::block_hash(1),
+			Default::default(),
+		);
+		Executive::initialize_block(&header);
+		assert_eq!(System::last_runtime_upgrade_spec_version(), VERSION.spec_version);
+		assert_eq!(darwinia_staking::CollatorCount::<Runtime>::get(), 17);
+		assert_noop!(
+			Assets::transfer(
+				RuntimeOrigin::signed(ROOT),
+				KTON_ID.into(),
+				H160::repeat_byte(0xBB).into(),
+				1
 			),
-			50
+			pallet_assets::Error::<Runtime>::AssetNotLive
 		);
 	});
 }
 
 #[test]
 fn erc20_balance_supply_and_metadata_reads_remain_available() {
+	use precompile_utils::{prelude::UnboundedBytes, solidity::encode_return_value};
+
 	ext().execute_with(|| {
 		let owner: H160 = ROOT.into();
 		let token = H160::from_low_u64_be(KTON_ID);
-		// Exercise the actual Executive hook registration, not just the pallet API.
-		darwinia_staking::CollatorCount::<Runtime>::put(17);
 		Executive::execute_on_runtime_upgrade();
-		assert_eq!(darwinia_staking::CollatorCount::<Runtime>::get(), 17);
-		assert!(Assets::transfer(
-			RuntimeOrigin::signed(ROOT),
-			KTON_ID.into(),
-			H160::repeat_byte(0xBB).into(),
-			1
-		)
-		.is_err());
-		for data in [
-			abi([0x70, 0xa0, 0x82, 0x31], &[address_arg(owner)]),
-			abi([0x18, 0x16, 0x0d, 0xdd], &[]),
-		] {
+		for data in [abi("balanceOf(address)", &[address_arg(owner)]), abi("totalSupply()", &[])] {
 			let result = evm_call(owner, token, data);
 			assert!(result.exit_reason.is_succeed());
 			assert_eq!(U256::from_big_endian(&result.value), U256::from(100));
 		}
-		for selector in
-			[[0x06, 0xfd, 0xde, 0x03], [0x95, 0xd8, 0x9b, 0x41], [0x31, 0x3c, 0xe5, 0x67]]
-		{
-			assert!(evm_call(owner, token, abi(selector, &[])).exit_reason.is_succeed());
+		for (signature, expected) in [
+			("name()", encode_return_value(UnboundedBytes::from("Darwinia Commitment Token"))),
+			("symbol()", encode_return_value(UnboundedBytes::from("KTON"))),
+			("decimals()", encode_return_value(18u8)),
+		] {
+			let result = evm_call(owner, token, abi(signature, &[]));
+			assert!(result.exit_reason.is_succeed());
+			assert_eq!(result.value, expected);
 		}
 	});
 }
@@ -301,7 +331,7 @@ fn other_asset_precompiles_still_allow_transfers_after_the_upgrade() {
 		let result = evm_call(
 			ROOT.into(),
 			H160::from_low_u64_be(id),
-			abi([0xa9, 0x05, 0x9c, 0xbb], &[address_arg(recipient), 10.into()]),
+			abi("transfer(address,uint256)", &[address_arg(recipient), 10.into()]),
 		);
 		assert!(result.exit_reason.is_succeed());
 		assert_eq!(Assets::balance(id, AccountId::from(recipient)), 10);
@@ -356,10 +386,11 @@ fn contract_call_failure_rolls_back_its_own_bookkeeping() {
 		pallet_evm::AccountCodes::<Runtime>::insert(contract, code);
 		// Existing principal held by the contract before the upgrade.
 		assert_ok!(Assets::mint(RuntimeOrigin::signed(ROOT), KTON_ID.into(), contract.into(), 25));
+		Executive::execute_on_runtime_upgrade();
 		let result = evm_call(
 			caller,
 			contract,
-			abi([0xa9, 0x05, 0x9c, 0xbb], &[address_arg(recipient), 10.into()]),
+			abi("transfer(address,uint256)", &[address_arg(recipient), 10.into()]),
 		);
 		assert!(matches!(result.exit_reason, fp_evm::ExitReason::Revert(_)));
 		assert_eq!(

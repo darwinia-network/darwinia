@@ -72,8 +72,8 @@ impl frame_support::traits::Contains<RuntimeCall> for KtonCallFilter {
 			| Call::refund_other { id, .. }
 			| Call::block { id, .. }
 			| Call::transfer_all { id, .. } => id.0,
-			// New SDK asset calls require an explicit review of their asset identifier.
-			_ => return false,
+			// FRAME's uninhabited variant. New SDK calls must be handled above.
+			Call::__Ignore(..) => return false,
 		};
 
 		id != AssetIds::Kton as AssetId
